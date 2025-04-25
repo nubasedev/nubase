@@ -11,11 +11,14 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "turbo": "^2.5.0"
+    "turbo": "^2.5.1"
   },
   "engines": {
     "node": ">=18"
   },
   "packageManager": "npm@10.9.2",
-  "workspaces": ["apps/*", "packages/*"]
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

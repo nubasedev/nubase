@@ -11,7 +11,8 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@repo/ui": "*"
+    "@repo/ui": "*",
+    "@repo/design-system": "*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.3",

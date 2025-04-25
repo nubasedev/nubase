@@ -17,6 +17,8 @@
     "react": "^19"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.0.12",
+    "@tailwindcss/postcss": "^4.0.12",
     "@repo/tailwind-config": "*",
     "@repo/typescript-config": "*",
     "@types/react": "^19.0.12",

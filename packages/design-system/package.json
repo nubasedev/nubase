@@ -1,5 +1,5 @@
 {
-  "name": "@turbo-with-tailwind-v4/design-system",
+  "name": "@repo/design-system",
   "version": "0.0.0",
   "license": "MIT",
   "sideEffects": ["**/*.css"],
@@ -16,16 +16,15 @@
     "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": "^18.2.0"
+    "react": "^19"
   },
   "devDependencies": {
-    "@types/react": "^19.0.10",
+    "@types/react": "^19.0.12",
     "typescript": "^5.8.2"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.0.12",
     "@tailwindcss/postcss": "^4.0.12",
-    "@turbo-with-tailwind-v4/utils": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.12"
