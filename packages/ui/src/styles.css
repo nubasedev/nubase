@@ -1,3 +1,58 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+
+@theme {
+    /* --- Your theme variables --- */
+    --color-surface-0: oklch(0.18 0.01 240);
+    --color-surface-1: oklch(0.22 0.015 240);
+    --color-surface-2: oklch(0.26 0.02 240);
+    --color-surface-3: oklch(0.3 0.02 240);
+    --color-surface-inverse: oklch(0.95 0.01 240);
+  
+    --color-text-primary: oklch(0.95 0.01 240);
+    --color-text-secondary: oklch(0.75 0.01 240);
+    --color-text-muted: oklch(0.55 0.01 240);
+    --color-text-disabled: oklch(0.4 0.01 240);
+    --color-text-inverse: oklch(0.18 0.01 240);
+  
+    /* --- Primary/Accent Color (Example: Vibrant Blue) --- */
+    --color-primary-base: oklch(0.65 0.18 260);
+    --color-primary-hover: oklch(0.7 0.18 260);
+    --color-primary-text: oklch(0.1 0.01 240);
+    --color-primary-muted: oklch(0.45 0.1 260);
+    --color-primary-subtle-bg: oklch(0.25 0.05 260);
+  
+    /* An alternative accent color. */
+    --color-secondary-base: oklch(0.72 0.11 178);
+    --color-secondary-hover: oklch(0.77 0.11 178);
+    --color-secondary-text: oklch(0.15 0.03 178);
+    --color-secondary-muted: oklch(0.55 0.08 178);
+    --color-secondary-subtle-bg: oklch(0.25 0.03 178);
+  
+    /* --- Border Colors --- */
+    --color-border-base: oklch(0.3 0.015 240);
+    --color-border-interactive: var(--color-primary-base);
+    --color-border-muted: oklch(0.24 0.01 240);
+    --color-border-strong: oklch(0.4 0.02 240);
+  
+    /* --- Status Colors --- */
+    /* Destructive / Error (Red Tone) */
+    --color-destructive-base: oklch(0.6 0.2 25);
+    --color-destructive-hover: oklch(0.65 0.2 25);
+    --color-destructive-text: oklch(0.95 0.05 25);
+    --color-destructive-subtle-bg: oklch(0.25 0.06 25);
+  
+    /* Success (Green Tone) */
+    --color-success-base: oklch(0.65 0.18 150);
+    --color-success-hover: oklch(0.7 0.18 150);
+    --color-success-text: oklch(0.15 0.05 150);
+    --color-success-subtle-bg: oklch(0.25 0.05 150);
+  
+    /* Warning (Yellow/Orange Tone) */
+    --color-warning-base: oklch(0.75 0.15 85);
+    --color-warning-hover: oklch(0.8 0.15 85);
+    --color-warning-text: oklch(0.25 0.08 85);
+    --color-warning-subtle-bg: oklch(0.28 0.04 85);
+    --color-focus-ring: var(--color-primary-base);
+  }
+  
