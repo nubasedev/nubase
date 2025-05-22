@@ -6,8 +6,7 @@
   "files": ["dist"],
   "exports": {
     "./theme.css": "./src/theme.css",
-    "./styles.css": "./dist/styles.css",
-    "./Button": "./src/Button.tsx"
+    "./styles.css": "./dist/styles.css"
   },
   "scripts": {
     "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
