@@ -1,0 +1,74 @@
+// src/converters/toZod.ts
+
+import { z } from 'zod';
+import {
+  StringSchema,
+  NumberSchema,
+  ObjectSchema,
+  ArraySchema,
+  NuSchema, // The union type of all nu schemas
+  ObjectOutput // Type utility to get object output type
+} from '../schema/types';
+
+
+/**
+ * Infers the Zod schema type corresponding to a given NuSchema type.
+ * This is a conditional type that maps NuSchema types to their Zod equivalents
+ * and preserves the output type.
+ */
+export type NuSchemaToZodSchema<S extends NuSchema> =
+  S extends StringSchema ? z.ZodString :
+  S extends NumberSchema ? z.ZodNumber :
+  S extends ObjectSchema<infer TShape> ? z.ZodObject<{
+      [K in keyof TShape]: NuSchemaToZodSchema<TShape[K]>;
+    }, any, z.ZodTypeAny, ObjectOutput<TShape>> : // Recursive mapping for object shape
+  S extends ArraySchema<infer TElementSchema> ? z.ZodArray<NuSchemaToZodSchema<TElementSchema>> : // Recursive mapping for array element
+  z.ZodSchema<any>; // Fallback for unknown types
+
+
+/**
+ * Converts a nubase schema to a Zod schema.
+ * Preserves the TypeScript output type.
+ * Metadata (label, description etc.) is NOT translated to Zod schema properties
+ * as Zod doesn't have direct equivalents in its core schema structure.
+ * It only translates the validation structure and output type.
+ *
+ * @param schema The nubase schema to convert.
+ * @returns The equivalent Zod schema.
+ */
+export function toZod<S extends NuSchema>(schema: S): NuSchemaToZodSchema<S> {
+  if (schema instanceof StringSchema) {
+    // Add Zod string validations based on schema._meta or specific properties if they exist
+    // e.g., if (schema._meta.minLength) zodSchema = zodSchema.min(schema._meta.minLength);
+    // For now, just the base type:
+    return z.string() as NuSchemaToZodSchema<S>;
+  }
+
+  if (schema instanceof NumberSchema) {
+    // Add Zod number validations similarly
+    return z.number() as NuSchemaToZodSchema<S>;
+  }
+
+  if (schema instanceof ObjectSchema) {
+    const zodShape: z.ZodObject<any>['_shape'] = {};
+    // Recursively convert each schema in the shape
+    for (const key in schema._shape) {
+      if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {
+        zodShape[key] = toZod(schema._shape[key]); // Recursive call
+      }
+    }
+    // Zod object constructor needs the shape object
+    return z.object(zodShape) as NuSchemaToZodSchema<S>;
+  }
+
+  if (schema instanceof ArraySchema) {
+     // Recursively convert the element schema
+    const zodElementSchema = toZod(schema._element);
+    // Zod array constructor needs the element schema
+    return z.array(zodElementSchema) as NuSchemaToZodSchema<S>;
+  }
+
+  // Handle other schema types here...
+  // For now, throw an error for unsupported types
+  throw new Error(`Unsupported schema type for Zod conversion: ${schema.constructor.name}`);
+}
