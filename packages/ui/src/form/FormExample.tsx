@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import type { FC } from 'react';
 import { FieldInfo } from './FieldInfo';
+import { TextInput, Button } from '../form-controls';
 
 export type FormProps = {
   
@@ -51,13 +52,14 @@ export const Form: FC<FormProps> = ({  }) => {
               // Avoid hasty abstractions. Render props are great!
               return (
                 <>
-                  <label htmlFor={field.name}>First Name:</label>
-                  <input
+                  <TextInput
                     id={field.name}
                     name={field.name}
+                    label="First Name:"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    error={field.state.meta.errors.join(', ') || undefined}
                   />
                   <FieldInfo field={field} />
                 </>
@@ -70,13 +72,14 @@ export const Form: FC<FormProps> = ({  }) => {
             name="lastName"
             children={(field) => (
               <>
-                <label htmlFor={field.name}>Last Name:</label>
-                <input
+                <TextInput
                   id={field.name}
                   name={field.name}
+                  label="Last Name:"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  error={field.state.meta.errors.join(', ') || undefined}
                 />
                 <FieldInfo field={field} />
               </>
@@ -86,9 +89,9 @@ export const Form: FC<FormProps> = ({  }) => {
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
-            <button type="submit" disabled={!canSubmit}>
+            <Button type="submit" disabled={!canSubmit}>
               {isSubmitting ? '...' : 'Submit'}
-            </button>
+            </Button>
           )}
         />
       </form>
