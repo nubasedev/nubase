@@ -32,9 +32,24 @@
 
   /* Text Color */
   --color-text: var(--theme-color-text);
+  --color-text-muted: var(--theme-color-text-muted);
+  --color-text-placeholder: var(--theme-color-text-placeholder);
 
   /* Background Color */
   --color-background: var(--theme-color-background);
+  --color-surface: var(--theme-color-surface);
+  --color-surface-hover: var(--theme-color-surface-hover);
+
+  /* Border Colors */
+  --color-border: var(--theme-color-border);
+  --color-border-focus: var(--theme-color-border-focus);
+  --color-border-error: var(--theme-color-border-error);
+
+  /* State Colors */
+  --color-error: var(--theme-color-error);
+  --color-error-50: oklch(96% 0.013 17);
+  --color-error-500: oklch(63% 0.24 27);
+  --color-error-600: oklch(55% 0.27 27);
 }
 
 @layer base {
@@ -43,7 +58,15 @@
     --theme-color-secondary: var(--color-secondary-500);
 
     --theme-color-text: var(--color-slate-800);
-    --theme-color-background: var(--color-slate-200);
+    --theme-color-text-muted: var(--color-slate-600);
+    --theme-color-text-placeholder: var(--color-slate-400);
+    --theme-color-background: var(--color-slate-50);
+    --theme-color-surface: var(--color-white);
+    --theme-color-surface-hover: var(--color-slate-100);
+    --theme-color-border: var(--color-slate-300);
+    --theme-color-border-focus: var(--color-primary-500);
+    --theme-color-border-error: var(--color-error-500);
+    --theme-color-error: var(--color-error-500);
   }
 
   [data-theme="dark"] {
@@ -51,7 +74,15 @@
     --theme-color-secondary: var(--color-secondary-400);
 
     --theme-color-text: var(--color-slate-50);
-    --theme-color-background: var(--color-slate-900);
+    --theme-color-text-muted: var(--color-slate-400);
+    --theme-color-text-placeholder: var(--color-slate-500);
+    --theme-color-background: var(--color-slate-950);
+    --theme-color-surface: var(--color-slate-900);
+    --theme-color-surface-hover: var(--color-slate-800);
+    --theme-color-border: var(--color-slate-700);
+    --theme-color-border-focus: var(--color-primary-400);
+    --theme-color-border-error: var(--color-error-500);
+    --theme-color-error: var(--color-error-500);
   }
 }
 
