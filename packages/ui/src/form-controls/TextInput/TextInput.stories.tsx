@@ -13,9 +13,8 @@ const meta: Meta<typeof TextInput> = {
       control: { type: 'select' },
       options: ['sm', 'md', 'lg'],
     },
-    variant: {
-      control: { type: 'select' },
-      options: ['default', 'error'],
+    hasError: {
+      control: 'boolean',
     },
   },
   decorators: [
@@ -36,44 +35,17 @@ export const Default: Story = {
   },
 };
 
-export const WithLabel: Story = {
-  args: {
-    label: 'Email Address',
-    placeholder: 'john@example.com',
-    type: 'email',
-  },
-};
-
-export const Required: Story = {
-  args: {
-    label: 'Username',
-    placeholder: 'Enter username',
-    required: true,
-  },
-};
-
-export const WithHint: Story = {
-  args: {
-    label: 'Password',
-    placeholder: 'Enter your password',
-    type: 'password',
-    hint: 'Must be at least 8 characters long',
-  },
-};
-
 export const WithError: Story = {
   args: {
-    label: 'Email',
     placeholder: 'john@example.com',
     type: 'email',
-    error: 'Please enter a valid email address',
+    hasError: true,
     value: 'invalid-email',
   },
 };
 
 export const Disabled: Story = {
   args: {
-    label: 'Disabled Input',
     placeholder: 'Cannot type here',
     disabled: true,
   },
@@ -82,24 +54,33 @@ export const Disabled: Story = {
 export const Sizes: Story = {
   render: () => (
     <div className="space-y-4">
-      <TextInput label="Small" size="sm" placeholder="Small input" />
-      <TextInput label="Medium" size="md" placeholder="Medium input" />
-      <TextInput label="Large" size="lg" placeholder="Large input" />
+      <TextInput size="sm" placeholder="Small input" />
+      <TextInput size="md" placeholder="Medium input" />
+      <TextInput size="lg" placeholder="Large input" />
     </div>
   ),
 };
 
-export const DarkMode: Story = {
-  args: {
-    label: 'Dark Mode Input',
-    placeholder: 'This looks great in dark mode',
-    hint: 'Toggle dark mode to see the theme',
-  },
-  decorators: [
-    (Story) => (
-      <div data-theme="dark" className="w-96 p-8 bg-background text-text">
-        <Story />
-      </div>
-    ),
-  ],
+export const Types: Story = {
+  render: () => (
+    <div className="space-y-4">
+      <TextInput type="text" placeholder="Text input" />
+      <TextInput type="email" placeholder="Email input" />
+      <TextInput type="password" placeholder="Password input" />
+      <TextInput type="number" placeholder="Number input" />
+      <TextInput type="tel" placeholder="Phone input" />
+      <TextInput type="url" placeholder="URL input" />
+    </div>
+  ),
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="space-y-4">
+      <TextInput placeholder="Normal state" />
+      <TextInput placeholder="Error state" hasError={true} />
+      <TextInput placeholder="Disabled state" disabled />
+      <TextInput placeholder="Read only" readOnly value="Read only value" />
+    </div>
+  ),
 };

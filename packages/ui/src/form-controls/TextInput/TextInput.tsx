@@ -11,30 +11,14 @@ const inputVariants = cva(
         md: 'px-4 py-3 text-sm',
         lg: 'px-4 py-4 text-base',
       },
-      variant: {
-        default: '',
-        error: 'border-border-error focus:border-border-error focus:ring-error/10',
+      hasError: {
+        true: 'border-border-error focus:border-border-error focus:ring-error/10',
+        false: '',
       },
     },
     defaultVariants: {
       size: 'md',
-      variant: 'default',
-    },
-  }
-);
-
-const labelVariants = cva(
-  'block text-sm font-medium text-text mb-2',
-  {
-    variants: {
-      variant: {
-        default: '',
-        required: "after:content-['*'] after:text-error after:ml-1",
-        muted: 'text-text-muted font-normal',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
+      hasError: false,
     },
   }
 );
@@ -42,39 +26,17 @@ const labelVariants = cva(
 export interface TextInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'>,
     VariantProps<typeof inputVariants> {
-  label?: string;
-  hint?: string;
-  error?: string;
-  required?: boolean;
+  hasError?: boolean;
 }
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  ({ className, size, variant, label, hint, error, required, id, ...props }, ref) => {
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
-    const hasError = !!error;
-    const finalVariant = hasError ? 'error' : variant;
-    const labelVariant = required ? 'required' : 'default';
-
+  ({ className, size, hasError, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-1">
-        {label && (
-          <label htmlFor={inputId} className={labelVariants({ variant: labelVariant })}>
-            {label}
-          </label>
-        )}
-        <input
-          ref={ref}
-          id={inputId}
-          className={cn(inputVariants({ size, variant: finalVariant }), className)}
-          {...props}
-        />
-        {hint && !hasError && (
-          <div className="text-xs text-text-muted mt-1">{hint}</div>
-        )}
-        {hasError && (
-          <div className="text-xs text-error mt-1">{error}</div>
-        )}
-      </div>
+      <input
+        ref={ref}
+        className={cn(inputVariants({ size, hasError }), className)}
+        {...props}
+      />
     );
   }
 );
