@@ -1,3 +1,3 @@
-export { TextInput, type TextInputProps } from './text-input';
-export { Label, type LabelProps } from './label';
-export { Button, type ButtonProps } from './button';
+export { TextInput, type TextInputProps } from './TextInput/TextInput';
+export { Label, type LabelProps } from './Label/Label';
+export { Button, type ButtonProps } from './Button/Button';
