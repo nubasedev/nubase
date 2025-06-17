@@ -322,4 +322,258 @@ describe('nubase Schema Library (nu)', () => {
          expectTypeOf(zodNested._output).toMatchTypeOf<{ items: Array<{ id: number }> }>(); // Should infer nested type
     });
 
+  // --- Computed Metadata Tests ---
+  describe('Computed Metadata', () => {
+    it('should add computed metadata to string property', async () => {
+      const productSchema = nu.object({
+        name: nu.string().meta({
+          label: 'Product Name',
+          description: 'Enter the name of the product',
+        }),
+        category: nu.string().meta({
+          label: 'Category',
+        }),
+      }).withComputed({
+        name: {
+          label: async (obj) => `Product: ${obj.name}`,
+          description: async (obj) => `Description for ${obj.name} in ${obj.category}`,
+        }
+      });
+
+      expect(productSchema._computedMeta).toBeDefined();
+      expect(productSchema._computedMeta.name).toBeDefined();
+      expect(productSchema._computedMeta.name?.label).toBeTypeOf('function');
+      expect(productSchema._computedMeta.name?.description).toBeTypeOf('function');
+
+      // Test computed values
+      const testData = { name: 'iPhone', category: 'Electronics' };
+      const computedLabel = await productSchema._computedMeta.name?.label?.(testData);
+      const computedDescription = await productSchema._computedMeta.name?.description?.(testData);
+
+      expect(computedLabel).toBe('Product: iPhone');
+      expect(computedDescription).toBe('Description for iPhone in Electronics');
+    });
+
+    it('should add computed metadata to number property', async () => {
+      const productSchema = nu.object({
+        name: nu.string().meta({ label: 'Product Name' }),
+        price: nu.number().meta({ label: 'Price' }),
+        discount: nu.number().meta({ label: 'Discount %' }),
+      }).withComputed({
+        price: {
+          label: async (obj) => `Price of ${obj.name}`,
+          description: async (obj) => `Current price: $${obj.price} (${obj.discount}% off)`,
+        }
+      });
+
+      const testData = { name: 'Laptop', price: 999.99, discount: 10 };
+      const computedLabel = await productSchema._computedMeta.price?.label?.(testData);
+      const computedDescription = await productSchema._computedMeta.price?.description?.(testData);
+
+      expect(computedLabel).toBe('Price of Laptop');
+      expect(computedDescription).toBe('Current price: $999.99 (10% off)');
+    });
+
+    it('should add computed metadata to boolean property', async () => {
+      const productSchema = nu.object({
+        name: nu.string().meta({ label: 'Product Name' }),
+        inStock: nu.boolean().meta({ label: 'In Stock' }),
+        quantity: nu.number().meta({ label: 'Quantity' }),
+      }).withComputed({
+        inStock: {
+          label: async (obj) => `${obj.name} Availability`,
+          description: async (obj) => obj.inStock 
+            ? `${obj.name} is available (${obj.quantity} units)`
+            : `${obj.name} is out of stock`,
+        }
+      });
+
+      const testDataInStock = { name: 'Tablet', inStock: true, quantity: 15 };
+      const testDataOutOfStock = { name: 'Phone', inStock: false, quantity: 0 };
+
+      const labelInStock = await productSchema._computedMeta.inStock?.label?.(testDataInStock);
+      const descriptionInStock = await productSchema._computedMeta.inStock?.description?.(testDataInStock);
+      
+      const labelOutOfStock = await productSchema._computedMeta.inStock?.label?.(testDataOutOfStock);
+      const descriptionOutOfStock = await productSchema._computedMeta.inStock?.description?.(testDataOutOfStock);
+
+      expect(labelInStock).toBe('Tablet Availability');
+      expect(descriptionInStock).toBe('Tablet is available (15 units)');
+      expect(labelOutOfStock).toBe('Phone Availability');
+      expect(descriptionOutOfStock).toBe('Phone is out of stock');
+    });
+
+    it('should add computed metadata to multiple properties', async () => {
+      const userSchema = nu.object({
+        firstName: nu.string().meta({ label: 'First Name' }),
+        lastName: nu.string().meta({ label: 'Last Name' }),
+        age: nu.number().meta({ label: 'Age' }),
+        email: nu.string().meta({ label: 'Email' }),
+      }).withComputed({
+        firstName: {
+          label: async (obj) => `First Name (${obj.firstName})`,
+        },
+        lastName: {
+          label: async (obj) => `Last Name (${obj.lastName})`,
+        },
+        email: {
+          label: async (obj) => `Email for ${obj.firstName} ${obj.lastName}`,
+          description: async (obj) => `Contact ${obj.firstName} at ${obj.email}`,
+        }
+      });
+
+      const testData = { 
+        firstName: 'John', 
+        lastName: 'Doe', 
+        age: 30, 
+        email: 'john.doe@example.com' 
+      };
+
+      const firstNameLabel = await userSchema._computedMeta.firstName?.label?.(testData);
+      const lastNameLabel = await userSchema._computedMeta.lastName?.label?.(testData);
+      const emailLabel = await userSchema._computedMeta.email?.label?.(testData);
+      const emailDescription = await userSchema._computedMeta.email?.description?.(testData);
+
+      expect(firstNameLabel).toBe('First Name (John)');
+      expect(lastNameLabel).toBe('Last Name (Doe)');
+      expect(emailLabel).toBe('Email for John Doe');
+      expect(emailDescription).toBe('Contact John at john.doe@example.com');
+    });
+
+    it('should handle computed defaultValue property', async () => {
+      const settingsSchema = nu.object({
+        username: nu.string().meta({ label: 'Username' }),
+        theme: nu.string().meta({ label: 'Theme' }),
+        displayName: nu.string().meta({ label: 'Display Name' }),
+      }).withComputed({
+        displayName: {
+          defaultValue: async (obj) => obj.username || 'Anonymous User',
+        },
+        theme: {
+          defaultValue: async (obj) => obj.username.includes('admin') ? 'dark' : 'light',
+        }
+      });
+
+      const regularUser = { username: 'john_doe', theme: 'custom', displayName: 'John' };
+      const adminUser = { username: 'admin_user', theme: 'custom', displayName: 'Admin' };
+
+      const regularDisplayDefault = await settingsSchema._computedMeta.displayName?.defaultValue?.(regularUser);
+      const regularThemeDefault = await settingsSchema._computedMeta.theme?.defaultValue?.(regularUser);
+      
+      const adminDisplayDefault = await settingsSchema._computedMeta.displayName?.defaultValue?.(adminUser);
+      const adminThemeDefault = await settingsSchema._computedMeta.theme?.defaultValue?.(adminUser);
+
+      expect(regularDisplayDefault).toBe('john_doe');
+      expect(regularThemeDefault).toBe('light');
+      expect(adminDisplayDefault).toBe('admin_user');
+      expect(adminThemeDefault).toBe('dark');
+    });
+
+    it('should allow computed metadata for nested object properties', async () => {
+      const orderSchema = nu.object({
+        id: nu.string().meta({ label: 'Order ID' }),
+        customer: nu.object({
+          name: nu.string().meta({ label: 'Customer Name' }),
+          email: nu.string().meta({ label: 'Email' }),
+        }).meta({ label: 'Customer Info' }),
+        total: nu.number().meta({ label: 'Total' }),
+      }).withComputed({
+        id: {
+          label: async (obj) => `Order #${obj.id}`,
+        },
+        total: {
+          label: async (obj) => `Total for ${obj.customer.name}`,
+          description: async (obj) => `Order ${obj.id}: $${obj.total}`,
+        }
+      });
+
+      const testData = {
+        id: 'ORD-001',
+        customer: { name: 'Alice Smith', email: 'alice@example.com' },
+        total: 299.99
+      };
+
+      const idLabel = await orderSchema._computedMeta.id?.label?.(testData);
+      const totalLabel = await orderSchema._computedMeta.total?.label?.(testData);
+      const totalDescription = await orderSchema._computedMeta.total?.description?.(testData);
+
+      expect(idLabel).toBe('Order #ORD-001');
+      expect(totalLabel).toBe('Total for Alice Smith');
+      expect(totalDescription).toBe('Order ORD-001: $299.99');
+    });
+
+    it('should preserve original schema functionality with computed metadata', () => {
+      const productSchema = nu.object({
+        name: nu.string().meta({
+          label: 'Product Name',
+          description: 'Enter the name of the product',
+        }),
+        price: nu.number().meta({
+          label: 'Price',
+          description: 'Enter the price of the product',
+        }),
+        inStock: nu.boolean().meta({
+          label: 'In Stock',
+          description: 'Is the product currently in stock?',
+        }),
+      }).withComputed({
+        price: {
+          label: async (obj) => `Price of ${obj.name}`
+        }
+      });
+
+      // Test that original parsing still works
+      const validData = { name: 'Test Product', price: 99.99, inStock: true };
+      const parsed = productSchema.parse(validData);
+      expect(parsed).toEqual(validData);
+
+      // Test that original metadata is preserved
+      expect(productSchema._shape.name._meta.label).toBe('Product Name');
+      expect(productSchema._shape.price._meta.label).toBe('Price');
+      expect(productSchema._shape.inStock._meta.label).toBe('In Stock');
+
+      // Test that computed metadata is added
+      expect(productSchema._computedMeta).toBeDefined();
+      expect(productSchema._computedMeta.price).toBeDefined();
+      expect(productSchema._computedMeta.price?.label).toBeTypeOf('function');
+    });
+
+    it('should handle empty computed metadata gracefully', () => {
+      const simpleSchema = nu.object({
+        name: nu.string().meta({ label: 'Name' }),
+        value: nu.number().meta({ label: 'Value' }),
+      }).withComputed({});
+
+      expect(simpleSchema._computedMeta).toBeDefined();
+      expect(Object.keys(simpleSchema._computedMeta)).toHaveLength(0);
+
+      // Original functionality should still work
+      const testData = { name: 'test', value: 42 };
+      expect(simpleSchema.parse(testData)).toEqual(testData);
+    });
+
+    it('should type-check computed metadata functions correctly', async () => {
+      const schema = nu.object({
+        id: nu.number(),
+        name: nu.string(),
+        active: nu.boolean(),
+      }).withComputed({
+        name: {
+          label: async (obj) => {
+            // TypeScript should infer obj as { id: number, name: string, active: boolean }
+            expectTypeOf(obj).toMatchTypeOf<{ id: number; name: string; active: boolean }>();
+            expectTypeOf(obj.id).toBeNumber();
+            expectTypeOf(obj.name).toBeString();
+            expectTypeOf(obj.active).toBeBoolean();
+            return `Name: ${obj.name}`;
+          }
+        }
+      });
+
+      const testData = { id: 1, name: 'Test', active: true };
+      const result = await schema._computedMeta.name?.label?.(testData);
+      expect(result).toBe('Name: Test');
+    });
+  });
+
 });

@@ -9,7 +9,12 @@ export interface SchemaMetadata<Output = any> {
   defaultValue?: Output;
 }
 
-// Base schema class
+// ComputedSchemaMetadata should have the same properties as SchemaMetadata but 
+// the values should be functions that return the same types, but Promises.
+export type ComputedSchemaMetadata<Output = any, Input = any> = {
+  [K in keyof SchemaMetadata<Output>]: (input: Input) => Promise<SchemaMetadata<Output>[K]>;
+};
+
 export abstract class BaseSchema<Output = any> {
   /**
    * Phantom property used for TypeScript type inference.

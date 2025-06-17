@@ -1,6 +1,6 @@
 // src/schema/types.ts
 
-import { BaseSchema } from './base-schema';
+import { BaseSchema, ComputedSchemaMetadata } from './base-schema';
 
 // --- Primitive Schemas ---
 
@@ -52,12 +52,74 @@ export type ObjectOutput<TShape extends ObjectShape> = {
   [K in keyof TShape]: TShape[K]['_outputType'];
 };
 
+/**
+ * Type representing computed metadata for object properties.
+ */
+export type ObjectComputedMetadata<TShape extends ObjectShape> = {
+  [K in keyof TShape]?: Partial<ComputedSchemaMetadata<TShape[K]['_outputType'], ObjectOutput<TShape>>>;
+};
+
 export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectOutput<TShape>> {
   _shape: TShape;
+  _computedMeta: ObjectComputedMetadata<TShape> = {};
 
   constructor(shape: TShape) {
     super();
     this._shape = shape;
+  }
+
+  /**
+   * Add computed metadata to the object schema.
+   * @param computedMeta Object mapping property keys to computed metadata functions.
+   * @returns The schema instance for chaining.
+   */
+  withComputed(computedMeta: ObjectComputedMetadata<TShape>): this {
+    this._computedMeta = computedMeta;
+    return this;
+  }
+
+  /**
+   * Get the computed metadata for a specific property.
+   * @param key The property key.
+   * @param data The parsed object data to pass to computed functions.
+   * @returns Promise resolving to the computed metadata.
+   */
+  async getComputedMeta(key: keyof TShape, data: ObjectOutput<TShape>): Promise<Partial<import('./base-schema').SchemaMetadata<TShape[typeof key]['_outputType']>>> {
+    const computedMeta = this._computedMeta[key];
+    if (!computedMeta) {
+      return {};
+    }
+
+    const result: any = {};
+    
+    if (computedMeta.label) {
+      result.label = await computedMeta.label(data);
+    }
+    
+    if (computedMeta.description) {
+      result.description = await computedMeta.description(data);
+    }
+    
+    if (computedMeta.defaultValue) {
+      result.defaultValue = await computedMeta.defaultValue(data);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get all computed metadata for all properties.
+   * @param data The parsed object data to pass to computed functions.
+   * @returns Promise resolving to a map of property keys to computed metadata.
+   */
+  async getAllComputedMeta(data: ObjectOutput<TShape>): Promise<Record<keyof TShape, Partial<import('./base-schema').SchemaMetadata<any>>>> {
+    const result: any = {};
+    
+    for (const key in this._shape) {
+      result[key] = await this.getComputedMeta(key, data);
+    }
+    
+    return result;
   }
 
   parse(data: any): ObjectOutput<TShape> {
