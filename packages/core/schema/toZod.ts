@@ -50,7 +50,7 @@ export function toZod<S extends NuSchema>(schema: S): NuSchemaToZodSchema<S> {
   }
 
   if (schema instanceof ObjectSchema) {
-    const zodShape: z.ZodObject<any>['_shape'] = {};
+    const zodShape: Record<string, z.ZodTypeAny> = {};
     // Recursively convert each schema in the shape
     for (const key in schema._shape) {
       if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {

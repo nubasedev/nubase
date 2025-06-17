@@ -24,18 +24,42 @@ type Story = StoryObj<typeof meta>;
 
 // Create a simple user schema for the story
 const userSchema = nu.object({
-  firstName: nu.string().label('First Name').description('Enter your first name'),
-  lastName: nu.string().label('Last Name').description('Enter your last name'),
-  age: nu.number().label('Age').description('Enter your age'),
-  isActive: nu.boolean().label('Active Status').description('Check if you are currently active'),
+  firstName: nu.string().meta({
+    label: 'First Name',
+    description: 'Enter your first name',
+  }),
+  lastName: nu.string().meta({
+    label: 'Last Name',
+    description: 'Enter your last name',
+  }),
+  age: nu.number().meta({
+    label: 'Age',
+    description: 'Enter your age',
+  }),
+  isActive: nu.boolean().meta({
+    label: 'Active Status',
+    description: 'Check if you are currently active',
+  }),
 });
 
 // Create a product schema for another story
 const productSchema = nu.object({
-  name: nu.string().label('Product Name').description('Name of the product'),
-  price: nu.number().label('Price').description('Price in USD'),
-  inStock: nu.boolean().label('In Stock').description('Is the product currently in stock?'),
-  description: nu.string().label('Description').description('Product description'),
+  name: nu.string().meta({
+    label: 'Product Name',
+    description: 'Enter the name of the product',
+  }),
+  price: nu.number().meta({
+    label: 'Price',
+    description: 'Enter the price of the product',
+  }),
+  inStock: nu.boolean().meta({
+    label: 'In Stock',
+    description: 'Is the product currently in stock?',
+  }),
+  description: nu.string().meta({
+    label: 'Description',
+    description: 'Product description',
+  }),
 });
 
 export const UserForm: Story = {
@@ -71,8 +95,14 @@ export const ProductForm: Story = {
 export const CustomSubmitText: Story = {
   args: {
     schema: nu.object({
-      email: nu.string().label('Email Address').description('Your email address'),
-      password: nu.string().label('Password').description('Choose a secure password'),
+      email: nu.string().meta({
+        label: 'Email Address',
+        description: 'Your email address',
+      }),
+      password: nu.string().meta({
+        label: 'Password',
+        description: 'Choose a secure password',
+      }),
     }),
     submitText: 'Sign Up Now',
     className: 'w-80',
@@ -89,7 +119,9 @@ export const CustomSubmitText: Story = {
 export const MinimalSchema: Story = {
   args: {
     schema: nu.object({
-      message: nu.string().label('Message'),
+      message: nu.string().meta({
+        label: 'Message',
+      }),
     }),
     submitText: 'Send',
     className: 'w-72',

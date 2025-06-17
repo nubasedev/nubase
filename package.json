@@ -6,6 +6,7 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
+    "typecheck": "turbo run typecheck",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write"
   },

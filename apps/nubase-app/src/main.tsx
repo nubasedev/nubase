@@ -1,6 +1,5 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Card } from "@repo/ui/card";
 import "./globals.css";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routes/routes";

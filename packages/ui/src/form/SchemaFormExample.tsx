@@ -7,17 +7,25 @@ export const SchemaFormExample: React.FC = () => {
   // Define a schema for a contact form
   const contactSchema = nu.object({
     name: nu.string()
-      .label('Full Name')
-      .description('Enter your full name'),
+      .meta({
+        label: 'Full Name',
+        description: 'Enter your full name',
+      }),
     email: nu.string()
-      .label('Email Address')
-      .description('Enter your email address'),
+      .meta({
+        label: 'Email Address',
+        description: 'Enter your email address',
+      }),
     age: nu.number()
-      .label('Age')
-      .description('Enter your age'),
+      .meta({
+        label: 'Age',
+        description: 'Enter your age',
+      }),
     subscribe: nu.boolean()
-      .label('Subscribe to Newsletter')
-      .description('Would you like to receive our newsletter?'),
+      .meta({
+        label: 'Subscribe to Newsletter',
+        description: 'Would you like to receive our newsletter?',
+      }),
   });
 
   const handleSubmit = (data: any) => {
