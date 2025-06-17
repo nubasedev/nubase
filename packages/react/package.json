@@ -1,25 +1,38 @@
 {
-  "name": "@repo/react",
-  "version": "0.0.0",
+  "name": "@nubase/react",
+  "version": "0.1.0",
+  "description": "React components and utilities for nubase",
+  "keywords": ["react", "components", "forms", "table", "ui"],
   "sideEffects": [
     "**/*.css"
   ],
   "files": [
     "dist"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
-    "./styles.css": "./dist/index.css",
-    "./theme.css": "./src/theme/theme.css",
-    "./*": "./src/*.tsx"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./theme.css": "./dist/theme.css"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "scripts": {
-    "build": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
+    "build": "tsup && tailwindcss -i ./src/styles.css -o ./dist/styles.css && cp ./src/theme/theme.css ./dist/theme.css",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "dev": "storybook dev -p 6006",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "react": "^19"
@@ -36,9 +49,11 @@
     "postcss": "^8.5.3",
     "storybook": "^9.0.10",
     "tailwindcss": "^4.1.3",
+    "tsup": "^8.0.0",
     "typescript": "5.8.2"
   },
   "dependencies": {
+    "@nubase/core": "file:../core",
     "@tailwindcss/cli": "^4.1.3",
     "@tailwindcss/postcss": "^4.1.3",
     "@tanstack/react-form": "^1.12.3",

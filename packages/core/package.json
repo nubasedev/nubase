@@ -1,24 +1,42 @@
 {
-  "name": "@repo/core",
-  "version": "0.0.0",
+  "name": "@nubase/core",
+  "version": "0.1.0",
+  "description": "Core schema and types for nubase",
+  "keywords": ["schema", "types", "validation", "zod"],
   "sideEffects": [
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "schema"
   ],
-  "main": "./schema/index.ts",
-  "types": "./schema/index.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./schema/index.ts",
-    "./schema": "./schema/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT",
   "scripts": {
+    "build": "tsup",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
+    "tsup": "^8.0.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vitest": "^3.1.4"

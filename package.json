@@ -8,7 +8,10 @@
     "check-types": "turbo run check-types",
     "typecheck": "turbo run typecheck",
     "format-and-lint": "biome check .",
-    "format-and-lint:fix": "biome check . --write"
+    "format-and-lint:fix": "biome check . --write",
+    "publish:core": "cd packages/core && npm run build && npm publish",
+    "publish:react": "cd packages/react && npm run build && npm publish",
+    "publish:all": "npm run publish:core && npm run publish:react"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
