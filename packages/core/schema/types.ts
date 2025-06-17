@@ -74,7 +74,9 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
         const schema = this._shape[key];
         const value = (data as any)[key]; // Get value from input data
         try {
-          result[key] = schema.parse(value); // Recursively parse property
+          if (schema) {
+            result[key] = schema.parse(value); // Recursively parse property
+          }
         } catch (e: any) {
           errors.push(`Property "${key}": ${e.message}`);
         }

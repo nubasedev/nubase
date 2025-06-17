@@ -3,10 +3,10 @@
 import { z } from 'zod'; // We'll need Zod later for toZod conversion
 
 // Define metadata types
-export interface SchemaMetadata {
+export interface SchemaMetadata<Output = any> {
   label?: string;
   description?: string;
-  [key: string]: any; // Allow arbitrary UI or other metadata
+  defaultValue?: Output;
 }
 
 // Base schema class
@@ -18,36 +18,15 @@ export abstract class BaseSchema<Output = any> {
    */
   readonly _outputType!: Output;
 
-  _meta: SchemaMetadata = {};
+  _meta: SchemaMetadata<Output> = {};
 
   /**
-   * Add a label to the schema.
-   * @param label The label text.
+   * Replace the schema metadata with a new object.
+   * @param meta The new metadata object.
    * @returns The schema instance for chaining.
    */
-  label(label: string): this {
-    this._meta.label = label;
-    return this;
-  }
-
-  /**
-   * Add a description to the schema.
-   * @param description The description text.
-   * @returns The schema instance for chaining.
-   */
-  description(description: string): this {
-    this._meta.description = description;
-    return this;
-  }
-
-  /**
-   * Add arbitrary metadata to the schema.
-   * @param key The metadata key.
-   * @param value The metadata value.
-   * @returns The schema instance for chaining.
-   */
-  metadata(key: string, value: any): this {
-    this._meta[key] = value;
+  meta(meta: SchemaMetadata<Output>): this {
+    this._meta = meta;
     return this;
   }
 

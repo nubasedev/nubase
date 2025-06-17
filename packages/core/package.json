@@ -1,5 +1,5 @@
 {
-  "name": "@repo/schema",
+  "name": "@repo/core",
   "version": "0.0.0",
   "sideEffects": [
     "**/*.css"
@@ -7,7 +7,12 @@
   "files": [
     "dist"
   ],
-  "exports": {},
+  "main": "./schema/index.ts",
+  "types": "./schema/index.ts",
+  "exports": {
+    ".": "./schema/index.ts",
+    "./schema": "./schema/index.ts"
+  },
   "license": "MIT",
   "scripts": {
     "test": "vitest"
