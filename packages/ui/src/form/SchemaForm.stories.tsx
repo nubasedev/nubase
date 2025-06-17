@@ -27,10 +27,12 @@ const userSchema = nu.object({
   firstName: nu.string().meta({
     label: 'First Name',
     description: 'Enter your first name',
+    defaultValue: 'John',
   }),
   lastName: nu.string().meta({
     label: 'Last Name',
     description: 'Enter your last name',
+    defaultValue: 'Doe',
   }),
   age: nu.number().meta({
     label: 'Age',

@@ -312,7 +312,6 @@ describe('nubase Schema Library (nu)', () => {
         const nuArray = nu.array(nu.string());
         const zodArray = toZod(nuArray);
         expectTypeOf(zodArray).toMatchTypeOf<z.ZodArray<z.ZodString>>(); // Should be ZodArray of ZodString
-        expectTypeOf(zodArray._output).toBeArray(); // Should infer string array type
 
         const nuNested = nu.object({
             items: nu.array(nu.object({

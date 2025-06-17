@@ -12,6 +12,9 @@ export type SchemaFormProps<TShape extends ObjectShape> = {
 
 // Helper function to get the default value for a schema
 function getDefaultValue(schema: BaseSchema<any>): any {
+  if (schema._meta?.defaultValue !== undefined) {
+    return schema._meta.defaultValue;
+  }
   if (schema instanceof StringSchema) {
     return '';
   }
