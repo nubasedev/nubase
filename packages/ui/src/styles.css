@@ -1,2 +1,2 @@
 @import "tailwindcss";
-@import "@repo/design-system/theme.css";
+@import "./theme/theme.css";

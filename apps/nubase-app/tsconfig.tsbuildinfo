@@ -1,1 +1,1 @@
-{"root":["./tailwind.config.d.ts","./vite.config.ts","./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts"],"version":"5.7.3"}
+{"root":["./vite.config.ts","./src/app.d.ts","./src/main.tsx","./src/test.test.ts","./src/vite-env.d.ts","./src/routes/about.tsx","./src/routes/home.tsx","./src/routes/resource.tsx","./src/routes/root.tsx","./src/routes/routes.ts","./src/screens/about.tsx","./src/screens/home.tsx","./src/screens/resource.tsx"],"version":"5.7.3"}

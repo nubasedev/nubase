@@ -1,0 +1,4 @@
+export declare const resourceRoute: import("@tanstack/react-router").Route<import("@tanstack/react-router").RootRoute<undefined, {}, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, {}, undefined, unknown, unknown>, "/r/$resource", "/r/$resource", string, "/r/$resource", (search: Record<string, unknown>) => {
+    id: string | undefined;
+}, import("@tanstack/router-core").ResolveParams<"/r/$resource">, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, {}, undefined, unknown, unknown>;
+//# sourceMappingURL=resource.d.ts.map

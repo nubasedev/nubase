@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/design-system": "*",
     "@repo/ui": "*",
     "@tailwindcss/vite": "4.1.4",
     "@tanstack/react-router": "^1.121.2",
