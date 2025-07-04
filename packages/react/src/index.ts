@@ -1,11 +1,17 @@
 // Form components
-export * from './form';
+export * from "./form";
 
 // Form controls
-export * from './form-controls';
+export * from "./form-controls";
 
-// Table components  
-export * from './table';
+// Hooks
+export * from "./hooks";
+
+// Table components
+export * from "./table";
 
 // Utilities
-export * from './utils';
+export * from "./utils";
+
+// Main app component
+export { NubaseApp, type NubaseAppProps } from "./NubaseApp";

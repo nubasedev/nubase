@@ -3,36 +3,32 @@
   "version": "0.1.0",
   "description": "React components and utilities for nubase",
   "keywords": ["react", "components", "forms", "table", "ui"],
-  "sideEffects": [
-    "**/*.css"
-  ],
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "sideEffects": ["**/*.css"],
+  "files": ["dist"],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/js/index.d.ts",
+      "import": "./dist/js/index.mjs",
+      "require": "./dist/js/index.js"
     },
-    "./styles.css": "./dist/styles.css",
-    "./theme.css": "./dist/theme.css"
+    "./styles.css": "./dist/css/styles.css"
   },
   "publishConfig": {
     "access": "public"
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsup && tailwindcss -i ./src/styles.css -o ./dist/styles.css && cp ./src/theme/theme.css ./dist/theme.css",
+    "build:ts": "tsup",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/css/styles.css && cp ./src/theme/theme.css ./dist/css/theme.css",
+    "build:storybook": "storybook build",
+    "build": "npm run build:ts && npm run build:css",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "dev": "storybook dev -p 6006",
+    "prepublishOnly": "npm run build",
+    "watch:ts": "tsup --watch",
+    "watch:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "prepublishOnly": "npm run build"
+    "dev": "concurrently \"npm:watch:ts\" \"npm:watch:css\" \"npm:storybook\""
   },
   "peerDependencies": {
     "react": "^19"
@@ -50,19 +46,22 @@
     "storybook": "^9.0.10",
     "tailwindcss": "^4.1.3",
     "tsup": "^8.0.0",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "concurrently": "^9.2.0"
   },
   "dependencies": {
     "@nubase/core": "file:../core",
+    "@repo/core": "*",
     "@tailwindcss/cli": "^4.1.3",
     "@tailwindcss/postcss": "^4.1.3",
     "@tanstack/react-form": "^1.12.3",
+    "@tanstack/react-router": "^1.121.2",
+    "@tanstack/react-router-devtools": "^1.121.12",
     "@tanstack/react-table": "^8.21.3",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.3.1",
     "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.12",
-    "@repo/core": "*"
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^4.0.12"
   }
 }

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { SchemaForm } from './SchemaForm';
 import { nu } from '@repo/core';
 
-const meta: Meta<typeof SchemaForm> = {
+const meta = {
   title: 'Form/SchemaForm',
   component: SchemaForm,
   parameters: {
@@ -17,13 +17,14 @@ const meta: Meta<typeof SchemaForm> = {
   argTypes: {
     onSubmit: { action: 'submitted' },
   },
-};
+} satisfies Meta<typeof SchemaForm<any>> 
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-// Create a simple user schema for the story
-const userSchema = nu.object({
+type Story = StoryObj<typeof SchemaForm<any>>;
+
+// Basic contact schema
+const ContactSchema = nu.object({
   firstName: nu.string().meta({
     label: 'First Name',
     description: 'Enter your first name',
@@ -34,104 +35,136 @@ const userSchema = nu.object({
     description: 'Enter your last name',
     defaultValue: 'Doe',
   }),
-  age: nu.number().meta({
-    label: 'Age',
-    description: 'Enter your age',
+  email: nu.string().meta({
+    label: 'Email',
+    description: 'Enter your email address',
   }),
-  isActive: nu.boolean().meta({
-    label: 'Active Status',
-    description: 'Check if you are currently active',
-  }),
+  phone: nu.string().meta({
+    label: 'Phone',
+    description: 'Enter your phone number',
+  })
 });
 
-// Create a product schema for another story
-const productSchema = nu.object({
+// Contact schema with computed metadata
+const ContactWithComputedSchema = nu.object({
+  firstName: nu.string().meta({
+    label: 'First Name',
+    description: 'Enter your first name',
+    defaultValue: 'Jane',
+  }),
+  lastName: nu.string().meta({
+    label: 'Last Name',
+    description: 'Enter your last name',
+    defaultValue: 'Smith',
+  }),
+  company: nu.string().meta({
+    label: 'Company',
+    description: 'Enter your company name',
+  }),
+  title: nu.string().meta({
+    label: 'Job Title',
+    description: 'Enter your job title',
+  })
+}).withComputed({
+  title: {
+    label: async (obj) => `Title at ${obj.company || 'Company'}`,
+  }
+});
+
+// Contact schema with layout configuration
+const ContactWithLayoutSchema = nu.object({
   name: nu.string().meta({
-    label: 'Product Name',
-    description: 'Enter the name of the product',
+    label: 'Full Name',
+    description: 'Enter your full name',
   }),
-  price: nu.number().meta({
-    label: 'Price',
-    description: 'Enter the price of the product',
+  email: nu.string().meta({
+    label: 'Email Address',
+    description: 'Enter your email address',
   }),
-  inStock: nu.boolean().meta({
-    label: 'In Stock',
-    description: 'Is the product currently in stock?',
+  message: nu.string().meta({
+    label: 'Message',
+    description: 'Enter your message',
   }),
-  description: nu.string().meta({
-    label: 'Description',
-    description: 'Product description',
-  }),
+  urgent: nu.boolean().meta({
+    label: 'Urgent',
+    description: 'Is this message urgent?',
+  })
+}).withLayouts({
+  "default": {
+    "type": "form",
+    "groups": [
+      {
+        "label": "Contact Information",
+        "fields": [
+          {
+            "name": "name",
+            "size": 6
+          },
+          {
+            "name": "email",
+            "size": 6
+          }
+        ]
+      },
+      {
+        "label": "Message Details",
+        "fields": [
+          {
+            "name": "message",
+            "size": 12
+          },
+          {
+            "name": "urgent",
+            "size": 3
+          }
+        ]
+      }
+    ]
+  }
 });
 
-export const UserForm: Story = {
+
+export const Default: Story = {
   args: {
-    schema: userSchema,
-    submitText: 'Create User',
+    schema: ContactSchema,
+    submitText: 'Submit Contact',
     className: 'w-96',
   },
   parameters: {
     docs: {
       description: {
-        story: 'A user registration form generated from a schema with string, number, and boolean fields.',
+        story: 'Basic contact form with first name, last name, email, and phone fields.',
       },
     },
   },
 };
 
-export const ProductForm: Story = {
+export const WithComputed: Story = {
   args: {
-    schema: productSchema,
-    submitText: 'Add Product',
+    schema: ContactWithComputedSchema,
+    submitText: 'Save Contact',
     className: 'w-96',
   },
   parameters: {
     docs: {
       description: {
-        story: 'A product form demonstrating how the SchemaForm adapts to different schema structures.',
+        story: 'Contact form with computed metadata that dynamically updates the job title label based on company.',
       },
     },
   },
 };
 
-export const CustomSubmitText: Story = {
+export const WithLayout: Story = {
   args: {
-    schema: nu.object({
-      email: nu.string().meta({
-        label: 'Email Address',
-        description: 'Your email address',
-      }),
-      password: nu.string().meta({
-        label: 'Password',
-        description: 'Choose a secure password',
-      }),
-    }),
-    submitText: 'Sign Up Now',
-    className: 'w-80',
+    schema: ContactWithLayoutSchema,
+    submitText: 'Send Message',
+    className: 'w-full max-w-2xl',
+    layoutName: 'default',
   },
   parameters: {
     docs: {
       description: {
-        story: 'Demonstrates customizing the submit button text.',
-      },
-    },
-  },
-};
-
-export const MinimalSchema: Story = {
-  args: {
-    schema: nu.object({
-      message: nu.string().meta({
-        label: 'Message',
-      }),
-    }),
-    submitText: 'Send',
-    className: 'w-72',
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: 'A minimal form with just one field.',
+        story: 'Contact form using a custom layout that groups fields into Contact Information and Message Details sections.',
       },
     },
   },

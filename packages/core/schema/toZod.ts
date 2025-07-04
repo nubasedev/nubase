@@ -8,7 +8,7 @@ import {
   ArraySchema,
   NuSchema, // The union type of all nu schemas
   ObjectOutput // Type utility to get object output type
-} from '../schema/types';
+} from './schema';
 
 
 /**

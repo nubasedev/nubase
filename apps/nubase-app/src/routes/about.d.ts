@@ -1,2 +1,0 @@
-export declare const aboutRoute: import("@tanstack/react-router").Route<import("@tanstack/react-router").RootRoute<undefined, {}, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, {}, undefined, unknown, unknown>, "/about", "/about", string, "/about", undefined, import("@tanstack/router-core").ResolveParams<"/about">, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, import("@tanstack/router-core").AnyContext, {}, undefined, unknown, unknown>;
-//# sourceMappingURL=about.d.ts.map

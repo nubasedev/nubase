@@ -1,8 +1,4 @@
-// src/nu.ts
-
-import { BaseSchema } from "./base-schema";
-import { StringSchema, NumberSchema, ObjectShape, ObjectSchema, ArraySchema, BooleanSchema } from "./types";
-
+import { StringSchema, NumberSchema, ObjectShape, ObjectSchema, ArraySchema, BooleanSchema, BaseSchema } from "./schema";
 
 /**
  * The main nubase schema instance.

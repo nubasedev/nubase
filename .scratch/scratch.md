@@ -19,4 +19,4 @@ const productSchema = nu.object({
   price: {
     label: (obj) => `Price of ${obj.name}`
   }
-});
+}).withLayouts({})

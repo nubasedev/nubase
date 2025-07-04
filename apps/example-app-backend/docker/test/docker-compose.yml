@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+  postgresql:
+    image: "postgres:16.4"
+    volumes:
+      - ./postgresql-data:/var/lib/postgresql/data
+      - ./postgresql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=anglio
+      - POSTGRES_USER=test_admin
+      - POSTGRES_PASSWORD=test_password

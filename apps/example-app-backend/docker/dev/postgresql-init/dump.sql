@@ -1,0 +1,1505 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 16.4
+-- Dumped by pg_dump version 17.4
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_stat_statements IS 'track planning and execution statistics of all SQL statements executed';
+
+
+--
+-- Name: calculate_streak(integer, date); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.calculate_streak(v_user_id integer, v_today_date date) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  streak INT := 0;
+  latest_day DATE;
+BEGIN
+  -- Find the latest day with activity (today or yesterday)
+  SELECT MAX(date(a."timestamp")) INTO latest_day
+  FROM activities a
+  WHERE a.user_id = v_user_id
+    AND date(a."timestamp") >= v_today_date - INTERVAL '1 day'
+    AND date(a."timestamp") <= v_today_date;
+
+  -- If there's no activity today or yesterday, return 0
+  IF latest_day IS NULL THEN
+    RETURN 0;
+  END IF;
+
+  -- Calculate the streak starting from the latest day with activity
+  WITH activity_dates AS (
+    SELECT DISTINCT date(a."timestamp") AS activity_date
+    FROM activities a
+    WHERE a.user_id = v_user_id
+      AND date(a."timestamp") <= latest_day
+  ),
+  ordered_dates AS (
+    SELECT
+      activity_date,
+      ROW_NUMBER() OVER (ORDER BY activity_date DESC) AS rn
+    FROM activity_dates
+  ),
+  grouped_dates AS (
+    SELECT
+      activity_date,
+      rn,
+      latest_day - activity_date AS date_diff,
+      (latest_day - activity_date) - (rn - 1) AS diff
+    FROM ordered_dates
+  ),
+  streak_group AS (
+    SELECT COUNT(*) AS streak_length
+    FROM grouped_dates
+    WHERE diff = 0
+  )
+  SELECT streak_length INTO streak FROM streak_group;
+
+  RETURN streak;
+END;
+$$;
+
+
+--
+-- Name: has_non_capital_start(text[]); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.has_non_capital_start(words text[]) RETURNS boolean
+    LANGUAGE sql IMMUTABLE
+    AS $$
+    SELECT EXISTS (
+        SELECT 1 
+        FROM unnest(words) AS word 
+        WHERE substr(word, 1, 1) !~ '^[A-Z]'
+    );
+$$;
+
+
+--
+-- Name: update_activity_summary(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_activity_summary() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    REFRESH MATERIALIZED VIEW public.activity_summary;
+    RETURN NULL;
+END;
+$$;
+
+
+--
+-- Name: update_frequency_bracket_gutenberg(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.update_frequency_bracket_gutenberg() RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    total_words INT;
+    bracket_0 INT := 800;
+    bracket_1 INT := 1600;
+    bracket_2 INT := 3200;
+    bracket_3 INT := 6400;
+    bracket_4 INT := 12800;
+    bracket_5 INT := 25600;
+    bracket_6 INT := 51200;
+BEGIN
+    
+    UPDATE public.dictionary
+    SET frequency_bracket_gutenberg = NULL;
+    
+    SELECT COUNT(*) INTO total_words FROM public.dictionary WHERE frequency_gutenberg IS NOT NULL;
+
+    UPDATE public.dictionary
+    SET frequency_bracket_gutenberg = 
+    CASE 
+        WHEN row_number <= bracket_0 THEN 0
+        WHEN row_number <= bracket_1 THEN 1
+        WHEN row_number <= bracket_2 THEN 2
+        WHEN row_number <= bracket_3 THEN 3
+        WHEN row_number <= bracket_4 THEN 4
+        WHEN row_number <= bracket_5 THEN 5
+        WHEN row_number <= bracket_6 THEN 6
+        ELSE NULL
+    END
+    FROM (
+        SELECT id, frequency_gutenberg,
+               ROW_NUMBER() OVER (ORDER BY frequency_gutenberg DESC) AS row_number
+        FROM public.dictionary
+        WHERE frequency_gutenberg IS NOT NULL
+    ) AS subquery
+    WHERE public.dictionary.id = subquery.id;
+
+END;
+$$;
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: activities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.activities (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    type character varying NOT NULL,
+    data jsonb NOT NULL,
+    "timestamp" timestamp without time zone NOT NULL,
+    description character varying NOT NULL,
+    CONSTRAINT type_constraint CHECK (((type)::text = ANY ((ARRAY['card_review'::character varying, 'card_view'::character varying, 'lesson_completed'::character varying, 'guided_scenario_completed'::character varying])::text[])))
+);
+
+
+--
+-- Name: activities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.activities ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.activities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: api_cache; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.api_cache (
+    id integer NOT NULL,
+    key character varying NOT NULL,
+    value jsonb NOT NULL,
+    context character varying NOT NULL
+);
+
+
+--
+-- Name: api_cache_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.api_cache ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.api_cache_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: cards; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.cards (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    queue_state character varying NOT NULL,
+    ease_factor numeric DEFAULT 2.5 NOT NULL,
+    lapse_count integer DEFAULT 0 NOT NULL,
+    "interval" integer,
+    due_at timestamp with time zone,
+    learning_step integer,
+    relearning_step integer,
+    history jsonb,
+    title character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    last_studied_at timestamp with time zone,
+    dictionary_ai_entry_id integer NOT NULL,
+    CONSTRAINT check_interval CHECK (((((queue_state)::text = 'new'::text) AND ("interval" IS NULL)) OR (((queue_state)::text <> 'new'::text) AND ("interval" IS NOT NULL)))),
+    CONSTRAINT check_learning_step CHECK ((((queue_state)::text <> 'learning'::text) OR (learning_step IS NOT NULL))),
+    CONSTRAINT check_relearning_step CHECK ((((queue_state)::text <> 'relapsed'::text) OR (relearning_step IS NOT NULL)))
+);
+
+
+--
+-- Name: question_thread_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.question_thread_messages (
+    id integer NOT NULL,
+    "user" character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    message character varying NOT NULL,
+    thread_id integer NOT NULL,
+    format character varying NOT NULL,
+    CONSTRAINT chat_message_type_check CHECK (((format)::text = ANY (ARRAY[('markdown'::character varying)::text, ('text'::character varying)::text]))),
+    CONSTRAINT chat_message_user_check CHECK ((("user")::text = ANY (ARRAY[('user'::character varying)::text, ('support'::character varying)::text, ('ai'::character varying)::text])))
+);
+
+
+--
+-- Name: chat_message_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.question_thread_messages ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.chat_message_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: question_threads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.question_threads (
+    id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    owner_id integer NOT NULL,
+    context jsonb,
+    title character varying NOT NULL,
+    updated_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: chat_thread_column1_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.question_threads ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.chat_thread_column1_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: courses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.courses (
+    id integer NOT NULL,
+    title character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    cover_url character varying NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    index integer NOT NULL,
+    uuid uuid NOT NULL,
+    structure jsonb
+);
+
+
+--
+-- Name: courses_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.courses ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.courses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: dictionary_ai_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.dictionary_ai_entries (
+    id integer NOT NULL,
+    entry character varying NOT NULL,
+    meaning character varying NOT NULL,
+    similar_to character varying[] NOT NULL,
+    opposite_to character varying[] NOT NULL,
+    related_to character varying,
+    language character varying NOT NULL,
+    example_dialog character varying[],
+    ipa jsonb NOT NULL,
+    part_of_speech character varying NOT NULL,
+    example_sentences jsonb NOT NULL
+);
+
+
+--
+-- Name: dictionary_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.dictionary_entries (
+    id integer NOT NULL,
+    entry character varying NOT NULL,
+    words character varying[] NOT NULL,
+    language character varying NOT NULL,
+    wordfreq_bin_index integer,
+    vocabulary_level integer,
+    is_profanity boolean DEFAULT false NOT NULL,
+    suitable_for_discovery boolean GENERATED ALWAYS AS ((public.has_non_capital_start((words)::text[]) AND (NOT is_profanity))) STORED
+);
+
+
+--
+-- Name: dictionary_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.dictionary_history (
+    id integer NOT NULL,
+    user_id integer,
+    entry character varying NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: dictionary_history_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.dictionary_history ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.dictionary_history_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: dictionary_ipa; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.dictionary_ipa (
+    id integer NOT NULL,
+    entry character varying NOT NULL,
+    ipa jsonb NOT NULL
+);
+
+
+--
+-- Name: dictionary_ipa_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.dictionary_ipa ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.dictionary_ipa_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: dictionary_v2_index_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.dictionary_entries ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.dictionary_v2_index_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenarios; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenarios (
+    id integer NOT NULL,
+    user_character_role character varying NOT NULL,
+    ai_character_role character varying NOT NULL,
+    introduction character varying NOT NULL,
+    title character varying NOT NULL,
+    uuid uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    example_dialog jsonb NOT NULL,
+    ai_character_id character varying NOT NULL,
+    user_character_id character varying NOT NULL,
+    videos jsonb,
+    vocabulary_groups jsonb NOT NULL
+);
+
+
+--
+-- Name: role_playing_scenarios_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenarios ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.role_playing_scenarios_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenario_thread_messages; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_thread_messages (
+    id integer NOT NULL,
+    "user" character varying NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    message character varying NOT NULL,
+    thread_id integer NOT NULL,
+    format character varying NOT NULL,
+    grammar_analysis jsonb,
+    CONSTRAINT chat_message_type_check CHECK (((format)::text = ANY (ARRAY[('markdown'::character varying)::text, ('text'::character varying)::text])))
+);
+
+
+--
+-- Name: scenario_chat_message_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenario_thread_messages ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scenario_chat_message_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenario_threads; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_threads (
+    id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    owner_id integer NOT NULL,
+    context jsonb,
+    updated_at timestamp with time zone NOT NULL,
+    scenario_id integer NOT NULL,
+    title character varying NOT NULL
+);
+
+
+--
+-- Name: scenario_chat_threads_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenario_threads ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scenario_chat_threads_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenario_section_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_section_items (
+    id integer NOT NULL,
+    index integer NOT NULL,
+    scenario_section_id integer NOT NULL,
+    scenario_id integer NOT NULL
+);
+
+
+--
+-- Name: scenario_list_items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenario_section_items ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scenario_list_items_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenario_sections; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenario_sections (
+    id integer NOT NULL,
+    title character varying NOT NULL,
+    index integer NOT NULL,
+    uuid uuid NOT NULL
+);
+
+
+--
+-- Name: scenario_lists_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenario_sections ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scenario_lists_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: scenarios_history; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.scenarios_history (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    scenario_id integer NOT NULL,
+    "timestamp" timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: scenarios_history_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.scenarios_history ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.scenarios_history_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: sentence_analysis; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.sentence_analysis (
+    id integer NOT NULL,
+    is_correct boolean NOT NULL,
+    suggestions character varying[] NOT NULL,
+    suggested_sentences character varying[] NOT NULL,
+    negative_form character varying,
+    interrogative_form character varying,
+    negative_interrogative_form character varying,
+    owner_id integer NOT NULL,
+    sentence character varying NOT NULL
+);
+
+
+--
+-- Name: sentence_analysis_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.sentence_analysis ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.sentence_analysis_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.units (
+    id integer NOT NULL,
+    title character varying NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    course_id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    uuid uuid NOT NULL,
+    lesson_json jsonb NOT NULL,
+    exercises jsonb NOT NULL,
+    videos jsonb,
+    slug character varying,
+    scenario_id integer,
+    subtitles jsonb,
+    time_maps jsonb,
+    audio jsonb,
+    lesson_markdown character varying NOT NULL
+);
+
+
+--
+-- Name: series_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.units ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.series_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: text_to_speech_audio_files; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.text_to_speech_audio_files (
+    id integer NOT NULL,
+    text character varying NOT NULL,
+    storage_key character varying NOT NULL,
+    unique_voice_name character varying NOT NULL
+);
+
+
+--
+-- Name: text_to_speech_audio_files_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.text_to_speech_audio_files ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.text_to_speech_audio_files_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: total_words; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.total_words (
+    count bigint
+);
+
+
+--
+-- Name: translations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.translations (
+    id integer NOT NULL,
+    text character varying NOT NULL,
+    language character varying NOT NULL,
+    translation character varying NOT NULL
+);
+
+
+--
+-- Name: translations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.translations ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.translations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: unit_translated_subtitles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.unit_translated_subtitles (
+    id integer NOT NULL,
+    language_code character varying NOT NULL,
+    original_subtitles_hash character varying NOT NULL,
+    subtitles jsonb NOT NULL,
+    unit_id integer NOT NULL,
+    voice_name character varying NOT NULL
+);
+
+
+--
+-- Name: unit_translated_subtitles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.unit_translated_subtitles ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.unit_translated_subtitles_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: user_cards_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.cards ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.user_cards_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: user_scenarios; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_scenarios (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    scenario_id integer NOT NULL,
+    completed_at timestamp with time zone
+);
+
+
+--
+-- Name: user_scenarios_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_scenarios ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.user_scenarios_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: user_units; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_units (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    unit_id integer NOT NULL,
+    completed_at timestamp with time zone
+);
+
+
+--
+-- Name: user_units_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_units ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.user_units_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    profile_picture_url character varying,
+    flags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    created_at timestamp without time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+    email character varying,
+    roles character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    first_language character varying NOT NULL,
+    dev_mode boolean NOT NULL,
+    display_name character varying,
+    voice_dictionary_gb character varying NOT NULL,
+    voice_dictionary_us character varying NOT NULL,
+    setup_complete boolean NOT NULL,
+    vocabulary_level integer DEFAULT 1 NOT NULL,
+    firebase_uid character varying NOT NULL,
+    target_language character varying NOT NULL,
+    selected_course_id integer,
+    theme character varying NOT NULL,
+    ui_language character varying NOT NULL,
+    guided_conversation_mode character varying NOT NULL,
+    display_lesson_videos_when_available boolean NOT NULL,
+    voice_tutor character varying NOT NULL,
+    voice_example_female character varying NOT NULL,
+    voice_example_male character varying NOT NULL,
+    subtitle_mode character varying NOT NULL,
+    CONSTRAINT guided_conversation_mode_check CHECK (((guided_conversation_mode IS NULL) OR ((guided_conversation_mode)::text = ANY ((ARRAY['free-text'::character varying, 'pills'::character varying])::text[])))),
+    CONSTRAINT subtitle_mode_check CHECK (((subtitle_mode)::text = ANY ((ARRAY['none'::character varying, 'both'::character varying, 'translated'::character varying, 'original'::character varying])::text[]))),
+    CONSTRAINT target_language_check CHECK (((target_language)::text = 'en'::text)),
+    CONSTRAINT theme_check CHECK (((theme)::text = ANY ((ARRAY['dark'::character varying, 'light'::character varying, 'system'::character varying])::text[]))),
+    CONSTRAINT ui_language_check CHECK (((ui_language)::text = ANY ((ARRAY['en'::character varying, 'pt'::character varying])::text[])))
+);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.users ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: word_card_discovery_feed; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.word_card_discovery_feed (
+    id integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    word_card_template_id integer NOT NULL,
+    vocabulary_level integer NOT NULL,
+    word character varying NOT NULL
+);
+
+
+--
+-- Name: word_card_discovery_feed_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.word_card_discovery_feed ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.word_card_discovery_feed_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: word_card_skipped_words; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.word_card_skipped_words (
+    id integer NOT NULL,
+    user_id integer NOT NULL,
+    word character varying NOT NULL
+);
+
+
+--
+-- Name: word_card_skipped_words_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.word_card_skipped_words ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.word_card_skipped_words_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: word_card_templates_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.dictionary_ai_entries ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.word_card_templates_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: activities activities_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.activities
+    ADD CONSTRAINT activities_pk PRIMARY KEY (id);
+
+
+--
+-- Name: api_cache api_cache_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.api_cache
+    ADD CONSTRAINT api_cache_pk PRIMARY KEY (id);
+
+
+--
+-- Name: cards cards_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT cards_unique UNIQUE (user_id, dictionary_ai_entry_id);
+
+
+--
+-- Name: question_thread_messages chat_message_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.question_thread_messages
+    ADD CONSTRAINT chat_message_pk PRIMARY KEY (id);
+
+
+--
+-- Name: question_threads chat_thread_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.question_threads
+    ADD CONSTRAINT chat_thread_pk PRIMARY KEY (id);
+
+
+--
+-- Name: courses courses_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.courses
+    ADD CONSTRAINT courses_pk PRIMARY KEY (id);
+
+
+--
+-- Name: courses courses_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.courses
+    ADD CONSTRAINT courses_unique UNIQUE (uuid);
+
+
+--
+-- Name: dictionary_ai_entries dictionary_ai_entries_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_ai_entries
+    ADD CONSTRAINT dictionary_ai_entries_unique UNIQUE (entry, part_of_speech, related_to, language);
+
+
+--
+-- Name: dictionary_history dictionary_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_history
+    ADD CONSTRAINT dictionary_history_pk PRIMARY KEY (id);
+
+
+--
+-- Name: dictionary_ipa dictionary_ipa_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_ipa
+    ADD CONSTRAINT dictionary_ipa_pk PRIMARY KEY (id);
+
+
+--
+-- Name: dictionary_entries dictionary_v2_index_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_entries
+    ADD CONSTRAINT dictionary_v2_index_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenarios role_playing_scenarios_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenarios
+    ADD CONSTRAINT role_playing_scenarios_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenario_thread_messages scenario_chat_message_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_thread_messages
+    ADD CONSTRAINT scenario_chat_message_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenario_threads scenario_chat_threads_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_threads
+    ADD CONSTRAINT scenario_chat_threads_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenario_sections scenario_lists_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_sections
+    ADD CONSTRAINT scenario_lists_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenario_sections scenario_lists_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_sections
+    ADD CONSTRAINT scenario_lists_unique UNIQUE (uuid);
+
+
+--
+-- Name: scenario_section_items scenario_section_items_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_section_items
+    ADD CONSTRAINT scenario_section_items_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenarios_history scenarios_history_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenarios_history
+    ADD CONSTRAINT scenarios_history_pk PRIMARY KEY (id);
+
+
+--
+-- Name: scenarios scenarios_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenarios
+    ADD CONSTRAINT scenarios_unique UNIQUE (uuid);
+
+
+--
+-- Name: sentence_analysis sentence_analysis_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sentence_analysis
+    ADD CONSTRAINT sentence_analysis_pk PRIMARY KEY (id);
+
+
+--
+-- Name: sentence_analysis sentence_analysis_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sentence_analysis
+    ADD CONSTRAINT sentence_analysis_unique UNIQUE (sentence);
+
+
+--
+-- Name: units series_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.units
+    ADD CONSTRAINT series_pk PRIMARY KEY (id);
+
+
+--
+-- Name: text_to_speech_audio_files text_to_speech_audio_files_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.text_to_speech_audio_files
+    ADD CONSTRAINT text_to_speech_audio_files_pk PRIMARY KEY (id);
+
+
+--
+-- Name: text_to_speech_audio_files text_to_speech_audio_files_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.text_to_speech_audio_files
+    ADD CONSTRAINT text_to_speech_audio_files_unique UNIQUE (text, unique_voice_name);
+
+
+--
+-- Name: translations translations_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.translations
+    ADD CONSTRAINT translations_pk PRIMARY KEY (id);
+
+
+--
+-- Name: dictionary_entries unique_language_entry; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_entries
+    ADD CONSTRAINT unique_language_entry UNIQUE (language, entry);
+
+
+--
+-- Name: unit_translated_subtitles unit_translated_subtitles_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unit_translated_subtitles
+    ADD CONSTRAINT unit_translated_subtitles_pk PRIMARY KEY (id);
+
+
+--
+-- Name: unit_translated_subtitles unit_translated_subtitles_unique_combo; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unit_translated_subtitles
+    ADD CONSTRAINT unit_translated_subtitles_unique_combo UNIQUE (unit_id, language_code, voice_name);
+
+
+--
+-- Name: cards user_cards_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT user_cards_pk PRIMARY KEY (id);
+
+
+--
+-- Name: user_scenarios user_scenarios_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_scenarios
+    ADD CONSTRAINT user_scenarios_pk PRIMARY KEY (id);
+
+
+--
+-- Name: user_units user_units_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_units
+    ADD CONSTRAINT user_units_pk PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pk PRIMARY KEY (id);
+
+
+--
+-- Name: users users_un; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_un UNIQUE (email);
+
+
+--
+-- Name: users users_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_unique UNIQUE (firebase_uid);
+
+
+--
+-- Name: units uuid_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.units
+    ADD CONSTRAINT uuid_unique UNIQUE (uuid);
+
+
+--
+-- Name: word_card_discovery_feed word_card_discovery_feed_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.word_card_discovery_feed
+    ADD CONSTRAINT word_card_discovery_feed_pk PRIMARY KEY (id);
+
+
+--
+-- Name: word_card_skipped_words word_card_skipped_words_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.word_card_skipped_words
+    ADD CONSTRAINT word_card_skipped_words_pk PRIMARY KEY (id);
+
+
+--
+-- Name: word_card_skipped_words word_card_skipped_words_user_id_word_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.word_card_skipped_words
+    ADD CONSTRAINT word_card_skipped_words_user_id_word_unique UNIQUE (user_id, word);
+
+
+--
+-- Name: dictionary_ai_entries word_card_templates_pk; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_ai_entries
+    ADD CONSTRAINT word_card_templates_pk PRIMARY KEY (id);
+
+
+--
+-- Name: activities_timestamp_date_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX activities_timestamp_date_idx ON public.activities USING btree (date("timestamp"));
+
+
+--
+-- Name: activities_timestamp_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX activities_timestamp_idx ON public.activities USING btree ("timestamp");
+
+
+--
+-- Name: activities_user_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX activities_user_id_idx ON public.activities USING btree (user_id);
+
+
+--
+-- Name: api_cache_context_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_cache_context_idx ON public.api_cache USING btree (context, key);
+
+
+--
+-- Name: dictionary_ipa_entry_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX dictionary_ipa_entry_idx ON public.dictionary_ipa USING btree (entry);
+
+
+--
+-- Name: dictionary_suitable_for_discovery_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dictionary_suitable_for_discovery_idx ON public.dictionary_entries USING btree (suitable_for_discovery);
+
+
+--
+-- Name: dictionary_vocabulary_level_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX dictionary_vocabulary_level_idx ON public.dictionary_entries USING btree (vocabulary_level);
+
+
+--
+-- Name: activities activities_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.activities
+    ADD CONSTRAINT activities_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cards cards_dictionary_ai_entries_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT cards_dictionary_ai_entries_fk FOREIGN KEY (dictionary_ai_entry_id) REFERENCES public.dictionary_ai_entries(id);
+
+
+--
+-- Name: cards cards_dictionary_ipa_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT cards_dictionary_ipa_fk FOREIGN KEY (id) REFERENCES public.dictionary_ipa(id) ON DELETE CASCADE;
+
+
+--
+-- Name: question_thread_messages chat_message_thread_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.question_thread_messages
+    ADD CONSTRAINT chat_message_thread_id_fk FOREIGN KEY (thread_id) REFERENCES public.question_threads(id) ON DELETE CASCADE;
+
+
+--
+-- Name: question_threads chat_thread_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.question_threads
+    ADD CONSTRAINT chat_thread_fk FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: dictionary_history dictionary_history_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dictionary_history
+    ADD CONSTRAINT dictionary_history_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_thread_messages scenario_chat_message_scenario_chat_threads_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_thread_messages
+    ADD CONSTRAINT scenario_chat_message_scenario_chat_threads_fk FOREIGN KEY (thread_id) REFERENCES public.scenario_threads(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_section_items scenario_section_items_scenario_lists_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_section_items
+    ADD CONSTRAINT scenario_section_items_scenario_lists_fk FOREIGN KEY (scenario_section_id) REFERENCES public.scenario_sections(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_section_items scenario_section_items_scenarios_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_section_items
+    ADD CONSTRAINT scenario_section_items_scenarios_fk FOREIGN KEY (scenario_id) REFERENCES public.scenarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_threads scenario_threads_scenarios_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_threads
+    ADD CONSTRAINT scenario_threads_scenarios_fk FOREIGN KEY (scenario_id) REFERENCES public.scenarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenario_threads scenario_threads_users_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenario_threads
+    ADD CONSTRAINT scenario_threads_users_fk FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenarios_history scenarios_history_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenarios_history
+    ADD CONSTRAINT scenarios_history_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: scenarios_history scenarios_history_scenarios_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.scenarios_history
+    ADD CONSTRAINT scenarios_history_scenarios_fk FOREIGN KEY (scenario_id) REFERENCES public.scenarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: sentence_analysis sentence_analysis_users_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.sentence_analysis
+    ADD CONSTRAINT sentence_analysis_users_fk FOREIGN KEY (owner_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: unit_translated_subtitles unit_translated_subtitles_units_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.unit_translated_subtitles
+    ADD CONSTRAINT unit_translated_subtitles_units_fk FOREIGN KEY (unit_id) REFERENCES public.units(id) ON DELETE CASCADE;
+
+
+--
+-- Name: units units_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.units
+    ADD CONSTRAINT units_fk FOREIGN KEY (course_id) REFERENCES public.courses(id) ON DELETE CASCADE;
+
+
+--
+-- Name: units units_scenarios_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.units
+    ADD CONSTRAINT units_scenarios_fk FOREIGN KEY (scenario_id) REFERENCES public.scenarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: cards user_cards_user_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.cards
+    ADD CONSTRAINT user_cards_user_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_scenarios user_scenarios_scenario_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_scenarios
+    ADD CONSTRAINT user_scenarios_scenario_id_fk FOREIGN KEY (scenario_id) REFERENCES public.scenarios(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_scenarios user_scenarios_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_scenarios
+    ADD CONSTRAINT user_scenarios_user_id_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_units user_units_unit_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_units
+    ADD CONSTRAINT user_units_unit_id_fk FOREIGN KEY (unit_id) REFERENCES public.units(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_units user_units_user_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_units
+    ADD CONSTRAINT user_units_user_id_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: word_card_discovery_feed word_card_discovery_feed_word_card_templates_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.word_card_discovery_feed
+    ADD CONSTRAINT word_card_discovery_feed_word_card_templates_fk FOREIGN KEY (word_card_template_id) REFERENCES public.dictionary_ai_entries(id) ON DELETE CASCADE;
+
+
+--
+-- Name: word_card_skipped_words word_card_skipped_words_users_fk; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.word_card_skipped_words
+    ADD CONSTRAINT word_card_skipped_words_users_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
