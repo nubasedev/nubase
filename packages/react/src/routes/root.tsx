@@ -1,6 +1,7 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useNubaseConfig } from "src/config";
 
 type Theme = "light" | "dark";
 
@@ -18,6 +19,7 @@ export const useTheme = () => useContext(ThemeContext);
 
 function RootComponent() {
   const [theme, setTheme] = useState<Theme>("dark");
+  const config = useNubaseConfig();
 
   // Initialize theme from localStorage and keep document in sync
   useEffect(() => {
@@ -43,7 +45,7 @@ function RootComponent() {
           <nav className="flex items-center justify-between">
             <div className="flex gap-4">
               <Link to="/" className="[&.active]:font-bold hover:text-primary">
-                Home
+                {config.appName}
               </Link>
               <Link
                 to="/about"

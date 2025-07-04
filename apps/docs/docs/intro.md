@@ -2,46 +2,58 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Welcome to Nubase
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Let's discover **Nubase in less than 5 minutes**.
+
+## What is Nubase?
+
+Nubase is a powerful framework for building applications with **type-safe schemas** and **computed metadata**. It provides a comprehensive solution for managing data structures, forms, and business logic in a declarative way.
+
+## Key Features
+
+- **Type-safe schemas**: Define your data structures with full TypeScript support
+- **Computed metadata**: Automatically derive properties and validation rules
+- **React integration**: Built-in React components for forms and data display
+- **Flexible architecture**: Works with any backend or database
 
 ## Getting Started
 
-Get started by **creating a new site**.
+Get started by **installing Nubase** in your project:
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+```bash
+npm install @nubase/core @nubase/react
+```
 
 ### What you'll need
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+- [Node.js](https://nodejs.org/en/download/) version 18.0 or above
+- TypeScript for full type safety benefits
+- React (if using the React components)
 
-## Generate a new site
+## Your First Schema
 
-Generate a new Docusaurus site using the **classic template**.
+Create a simple schema to get started:
 
-The classic template will automatically be added to your project after you run the command:
+```typescript
+import { defineSchema } from '@nubase/core';
 
-```bash
-npm init docusaurus@latest my-website classic
+const userSchema = defineSchema({
+  name: 'User',
+  fields: {
+    id: { type: 'string', required: true },
+    email: { type: 'email', required: true },
+    name: { type: 'string', required: true },
+    age: { type: 'number', min: 0, max: 150 },
+    isActive: { type: 'boolean', default: true }
+  }
+});
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
+## Next Steps
 
-The command also installs all necessary dependencies you need to run Docusaurus.
+- Check out the [Resources](./resources) page for more examples
+- Explore the tutorial sections to learn about advanced features
+- Visit our [GitHub repository](https://github.com/your-org/nubase) for source code and examples
 
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+Ready to build something amazing with Nubase? Let's dive in!

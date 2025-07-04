@@ -3,15 +3,8 @@
   "version": "0.1.0",
   "description": "Core schema and types for nubase",
   "keywords": ["schema", "types", "validation", "zod"],
-  "sideEffects": [
-    "**/*.css"
-  ],
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "sideEffects": ["**/*.css"],
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +20,9 @@
     "build": "tsup",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "watch:ts": "tsup --watch",
+    "dev": "concurrently \"npm:watch:ts\""
   },
   "devDependencies": {
     "tsup": "^8.0.0",

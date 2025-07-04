@@ -14,4 +14,6 @@ export * from "./table";
 export * from "./utils";
 
 // Main app component
-export { NubaseApp, type NubaseAppProps } from "./NubaseApp";
+export { NubaseApp, type NubaseAppProps } from "./nubase-app/NubaseApp";
+
+export * from "./config";

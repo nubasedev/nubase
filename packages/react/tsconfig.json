@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@repo/core": ["../core/schema/index.ts"]
+      "@repo/core": ["../core/src/schema/index.ts"]
     }
   },
   "include": ["src"],
