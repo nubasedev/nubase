@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { NavItem } from "../../config/types";
 
 // Helper function to flatten items for search
 export const flattenNavItems = (

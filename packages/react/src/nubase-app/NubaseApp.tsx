@@ -1,7 +1,7 @@
 import { RouterProvider } from "@tanstack/react-router";
 import type { FC } from "react";
-import type { NubaseFrontendConfig } from "src";
-import { NubaseConfigProvider } from "src/config";
+import type { NubaseFrontendConfig } from "src/config/config";
+import { NubaseConfigProvider } from "src/config/NubaseConfigContext";
 import { router } from "src/routes/router";
 import "src/theme/theme.css";
 

@@ -7,11 +7,16 @@
   "files": ["dist"],
   "exports": {
     ".": {
-      "types": "./dist/js/index.d.ts",
-      "import": "./dist/js/index.mjs",
-      "require": "./dist/js/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     },
-    "./styles.css": "./dist/css/styles.css"
+    "./styles.css": "./dist/css/styles.css",
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.mjs",
+      "require": "./dist/*.js"
+    }
   },
   "publishConfig": {
     "access": "public"

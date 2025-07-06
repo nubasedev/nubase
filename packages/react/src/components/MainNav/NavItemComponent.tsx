@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import { cn } from "src/utils";
 import { SafeLink } from "./SafeLink";
-import type { NavItem } from "./types";
+import type { NavItem } from "../../config/types";
 import { navItemVariants } from "./variants";
 
 // NavItem component
