@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { getLayout } from './useLayout';
 import { nu } from '@repo/core';
+import { describe, expect, it } from 'vitest';
+import { getLayout } from './useLayout';
 
 describe('getLayout (useLayout logic)', () => {
   // Create a test schema

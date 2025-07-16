@@ -1,5 +1,5 @@
 {
-  "name": "@nubase/core",
+  "name": "@repo/core",
   "version": "0.1.0",
   "description": "Core schema and types for nubase",
   "keywords": ["schema", "types", "validation", "zod"],

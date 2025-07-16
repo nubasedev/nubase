@@ -1,6 +1,6 @@
+import { nu } from '@repo/core';
 import type { Meta, StoryObj } from '@storybook/react';
 import { SchemaForm } from './SchemaForm';
-import { nu } from '@repo/core';
 
 const meta = {
   title: 'Form/SchemaForm',

@@ -1,7 +1,7 @@
+import { BaseSchema, BooleanSchema, Infer, NumberSchema, ObjectSchema, StringSchema } from '@repo/core';
 import { useForm } from '@tanstack/react-form';
-import { useState, type FC } from 'react';
-import { TextInput, Button, FormControl } from '../form-controls';
-import { ObjectSchema, ObjectShape, StringSchema, NumberSchema, BooleanSchema, BaseSchema, Infer, Layout } from '@repo/core';
+import { useState } from 'react';
+import { Button, FormControl, TextInput } from '../form-controls';
 import { useComputedMetadata } from '../hooks/useComputedMetadata';
 import { useLayout } from '../hooks/useLayout';
 

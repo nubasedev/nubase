@@ -1,6 +1,6 @@
+import { nu } from '@repo/core';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { nu } from '@repo/core';
 import { useComputedMetadata } from './hooks/useComputedMetadata';
 
 // Test component to debug computed metadata
