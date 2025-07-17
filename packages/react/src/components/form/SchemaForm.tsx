@@ -127,6 +127,9 @@ export const SchemaForm = <TSchema extends ObjectSchema<any>>({
     {} as any,
   );
 
+  // Initialize form state that will be updated when the form changes
+  const [formState, setFormState] = useState(defaultValues);
+
   const form = useForm({
     defaultValues,
     listeners: {
@@ -148,14 +151,12 @@ export const SchemaForm = <TSchema extends ObjectSchema<any>>({
     },
   });
 
-  const [setFormState] = useState(form.state.values);
-
   // Use computed metadata hook to get merged metadata
   const {
     metadata: mergedMetadata,
     isComputing,
     error: metadataError,
-  } = useComputedMetadata(schema, form.state.values, computedMetadata);
+  } = useComputedMetadata(schema, formState, computedMetadata);
 
   // Use layout hook to get the layout (either specified or default)
   const layout = useLayout(schema, layoutName);

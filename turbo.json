@@ -12,6 +12,10 @@
       "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "storybook": {
+      "cache": false,
+      "persistent": true
     }
   }
 }

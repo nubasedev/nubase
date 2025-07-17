@@ -9,7 +9,7 @@
     "typecheck": "turbo run typecheck",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "storybook": "cd packages/react && npm run storybook",
+    "storybook": "turbo run storybook",
     "build:core": "cd packages/core && npm run build",
     "build:react": "cd packages/react && npm run build",
     "publish:core": "cd packages/core && npm run build && npm publish",
