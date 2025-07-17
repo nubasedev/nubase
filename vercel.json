@@ -14,7 +14,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/apps/docs/build/$1"
+      "dest": "/build/$1"
     }
   ],
   "installCommand": "npm install",
