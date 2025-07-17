@@ -1,0 +1,22 @@
+{
+  "builds": [
+    {
+      "src": "apps/docs/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/apps/docs/build/$1"
+    }
+  ],
+  "installCommand": "npm install",
+  "buildCommand": "cd apps/docs && npm run build"
+}

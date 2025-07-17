@@ -9,7 +9,7 @@
     "ignoreUnknown": false,
     "ignore": [
       "**/build/**",
-      "**/dist/**", 
+      "**/dist/**",
       "**/node_modules/**",
       "**/.turbo/**",
       "**/coverage/**",

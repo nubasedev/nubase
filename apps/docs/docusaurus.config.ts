@@ -16,14 +16,14 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: "https://your-nubase-docs.example.com",
+  url: "https://nubase.dev",
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: "/",
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "nubase", // Usually your GitHub org/user name.
+  organizationName: "nubasedev", // Usually your GitHub org/user name.
   projectName: "nubase", // Usually your repo name.
 
   onBrokenLinks: "throw",
