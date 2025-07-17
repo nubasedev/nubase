@@ -4,8 +4,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const filename = fileURLToPath(import.meta.url);
+const dirName = dirname(filename);
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -30,7 +30,7 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      src: join(__dirname, "../src"),
+      src: join(dirName, "../src"),
     };
 
     return config;
