@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { MainNav } from "src/components/MainNav/MainNav";
+import { MainNav } from "src/components/main-nav/MainNav";
 import type { NavItem } from "src/config/types";
 
 // Sample navigation data

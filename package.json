@@ -9,6 +9,9 @@
     "typecheck": "turbo run typecheck",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
+    "storybook": "cd packages/react && npm run storybook",
+    "build:core": "cd packages/core && npm run build",
+    "build:react": "cd packages/react && npm run build",
     "publish:core": "cd packages/core && npm run build && npm publish",
     "publish:react": "cd packages/react && npm run build && npm publish",
     "publish:all": "npm run publish:core && npm run publish:react"
@@ -22,11 +25,6 @@
     "node": ">=18"
   },
   "packageManager": "npm@10.9.2",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "dependencies": {
-    
-  }
+  "workspaces": ["apps/*", "packages/*"],
+  "dependencies": {}
 }

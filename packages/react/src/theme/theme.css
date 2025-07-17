@@ -97,11 +97,11 @@
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
 
-    @variant md {
+    @media (min-width: 768px) {
       font-size: var(--text-4xl);
     }
 
-    @variant lg {
+    @media (min-width: 1024px) {
       font-size: var(--text-5xl);
     }
   }

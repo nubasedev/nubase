@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
-import { MainNav } from "src/components/MainNav/MainNav";
+import { MainNav } from "src/components/main-nav/MainNav";
 import type { NavItem } from "src/config/types";
 import { useNubaseConfig } from "src/config/NubaseConfigContext";
 

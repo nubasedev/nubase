@@ -1,13 +1,19 @@
-import { BaseSchema, BooleanSchema, Infer, NumberSchema, ObjectSchema, StringSchema } from '@repo/core';
-import { useForm } from '@tanstack/react-form';
-import { useState } from 'react';
-import { Button, FormControl, TextInput } from '../form-controls';
-import { useComputedMetadata } from '../hooks/useComputedMetadata';
-import { useLayout } from '../hooks/useLayout';
+import {
+  type BaseSchema,
+  BooleanSchema,
+  type Infer,
+  NumberSchema,
+  type ObjectSchema,
+  StringSchema,
+} from "@repo/core";
+import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
+import { Button, FormControl, TextInput } from "src/components/form-controls";
+import { useComputedMetadata, useLayout } from "src/hooks";
 
 export type SchemaFormProps<
   TSchema extends ObjectSchema<any>,
-  TData extends Infer<TSchema> = Infer<TSchema>
+  TData extends Infer<TSchema> = Infer<TSchema>,
 > = {
   schema: TSchema;
   onSubmit: (data: TData) => void | Promise<void>;
@@ -20,7 +26,7 @@ export type SchemaFormProps<
     /** Debounce delay in milliseconds for computed metadata updates (default: 300ms) */
     debounceMs?: number;
   };
-}
+};
 
 // Helper function to get the default value for a schema
 function getDefaultValue(schema: BaseSchema<any>): any {
@@ -28,7 +34,7 @@ function getDefaultValue(schema: BaseSchema<any>): any {
     return schema._meta.defaultValue;
   }
   if (schema instanceof StringSchema) {
-    return '';
+    return "";
   }
   if (schema instanceof NumberSchema) {
     return 0;
@@ -45,11 +51,11 @@ function renderFormControl(
   fieldName: string,
   schema: BaseSchema<any>,
   field: any,
-  metadata?: any
+  metadata?: any,
 ) {
   // Use merged metadata if provided, otherwise fall back to schema metadata
   const fieldMetadata = metadata || schema._meta;
-  
+
   const baseProps = {
     id: field.name,
     name: field.name,
@@ -61,7 +67,7 @@ function renderFormControl(
       <TextInput
         {...baseProps}
         type="text"
-        value={field.state.value || ''}
+        value={field.state.value || ""}
         onChange={(e) => field.handleChange(e.target.value)}
         placeholder={fieldMetadata.description}
       />
@@ -97,28 +103,29 @@ function renderFormControl(
     <TextInput
       {...baseProps}
       type="text"
-      value={String(field.state.value || '')}
+      value={String(field.state.value || "")}
       onChange={(e) => field.handleChange(e.target.value)}
       placeholder="Unsupported field type"
     />
   );
 }
 
-export const SchemaForm = <
-  TSchema extends ObjectSchema<any>
->({
+export const SchemaForm = <TSchema extends ObjectSchema<any>>({
   schema,
   onSubmit,
-  submitText = 'Submit',
-  className = '',
+  submitText = "Submit",
+  className = "",
   layoutName,
   computedMetadata,
 }: SchemaFormProps<TSchema>) => {
   // Create default values from schema
-  const defaultValues = Object.entries(schema._shape).reduce((acc, [key, fieldSchema]) => {
-    acc[key] = getDefaultValue(fieldSchema as BaseSchema<any>);
-    return acc;
-  }, {} as any);
+  const defaultValues = Object.entries(schema._shape).reduce(
+    (acc, [key, fieldSchema]) => {
+      acc[key] = getDefaultValue(fieldSchema as BaseSchema<any>);
+      return acc;
+    },
+    {} as any,
+  );
 
   const form = useForm({
     defaultValues,
@@ -126,7 +133,7 @@ export const SchemaForm = <
       onChange: (formStateEvent) => {
         setFormState(formStateEvent.formApi.state.values);
       },
-      onChangeDebounceMs:200
+      onChangeDebounceMs: 200,
     },
     onSubmit: async ({ value }) => {
       try {
@@ -134,21 +141,21 @@ export const SchemaForm = <
         const parsedData = schema.parse(value);
         await onSubmit(parsedData);
       } catch (error) {
-        console.error('Form validation error:', error);
+        console.error("Form validation error:", error);
         // In a real app, you might want to handle this error differently
         throw error;
       }
     },
   });
 
-  const [formState, setFormState] = useState(form.state.values);
+  const [setFormState] = useState(form.state.values);
 
   // Use computed metadata hook to get merged metadata
-  const { metadata: mergedMetadata, isComputing, error: metadataError } = useComputedMetadata(
-    schema,
-    form.state.values,
-    computedMetadata
-  );
+  const {
+    metadata: mergedMetadata,
+    isComputing,
+    error: metadataError,
+  } = useComputedMetadata(schema, form.state.values, computedMetadata);
 
   // Use layout hook to get the layout (either specified or default)
   const layout = useLayout(schema, layoutName);
@@ -160,7 +167,7 @@ export const SchemaForm = <
           <strong>Metadata Error:</strong> {metadataError.message}
         </div>
       )}
-      
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -170,17 +177,19 @@ export const SchemaForm = <
         className="space-y-4"
       >
         {/* Always render using layout configuration */}
-        <div className={`layout-${layout.type} ${layout.className || ''}`}>
+        <div className={`layout-${layout.type} ${layout.className || ""}`}>
           {layout.groups.map((group, groupIndex) => (
-            <div 
+            <div
               key={groupIndex}
-              className={`form-group ${group.className || ''} mb-6`}
+              className={`form-group ${group.className || ""} mb-6`}
             >
               {group.label && (
                 <h3 className="text-lg font-medium mb-3">{group.label}</h3>
               )}
               {group.description && (
-                <p className="text-sm text-gray-600 mb-3">{group.description}</p>
+                <p className="text-sm text-gray-600 mb-3">
+                  {group.description}
+                </p>
               )}
               <div className="space-y-4">
                 {(() => {
@@ -189,13 +198,16 @@ export const SchemaForm = <
                   let currentRow: typeof group.fields = [];
                   let currentRowWidth = 0;
 
-                  group.fields.forEach((field) => {
-                    if (field.hidden) return;
-                    
+                  for (const field of group.fields) {
+                    if (field.hidden) continue;
+
                     const fieldSize = field.size || 12;
-                    
+
                     // If adding this field would exceed 12, start a new row
-                    if (currentRowWidth + fieldSize > 12 && currentRow.length > 0) {
+                    if (
+                      currentRowWidth + fieldSize > 12 &&
+                      currentRow.length > 0
+                    ) {
                       rows.push([...currentRow]);
                       currentRow = [field];
                       currentRowWidth = fieldSize;
@@ -203,51 +215,57 @@ export const SchemaForm = <
                       currentRow.push(field);
                       currentRowWidth += fieldSize;
                     }
-                    
+
                     // If this field exactly fills the row, start a new row
                     if (currentRowWidth === 12) {
                       rows.push([...currentRow]);
                       currentRow = [];
                       currentRowWidth = 0;
                     }
-                  });
-                  
+                  }
+
                   // Add any remaining fields in the last row
                   if (currentRow.length > 0) {
                     rows.push([...currentRow]);
                   }
 
                   return rows.map((row, rowIndex) => (
-                    <div key={rowIndex} className="grid grid-cols-12 gap-4 w-full">
+                    <div
+                      key={rowIndex}
+                      className="grid grid-cols-12 gap-4 w-full"
+                    >
                       {row.map((field) => {
                         const fieldName = field.name as string;
-                        const currentSchema = schema._shape[fieldName] as BaseSchema<any>;
-                        const fieldMetadata = mergedMetadata[fieldName] || currentSchema._meta;
+                        const currentSchema = schema._shape[
+                          fieldName
+                        ] as BaseSchema<any>;
+                        const fieldMetadata =
+                          mergedMetadata[fieldName] || currentSchema._meta;
                         const fieldSize = field.size || 12;
-                        
+
                         // Generate the correct col-span class based on size
                         const getColSpanClass = (size: number) => {
                           const colSpanMap: Record<number, string> = {
-                            1: 'col-span-1',
-                            2: 'col-span-2', 
-                            3: 'col-span-3',
-                            4: 'col-span-4',
-                            5: 'col-span-5',
-                            6: 'col-span-6',
-                            7: 'col-span-7',
-                            8: 'col-span-8',
-                            9: 'col-span-9',
-                            10: 'col-span-10',
-                            11: 'col-span-11',
-                            12: 'col-span-12'
+                            1: "col-span-1",
+                            2: "col-span-2",
+                            3: "col-span-3",
+                            4: "col-span-4",
+                            5: "col-span-5",
+                            6: "col-span-6",
+                            7: "col-span-7",
+                            8: "col-span-8",
+                            9: "col-span-9",
+                            10: "col-span-10",
+                            11: "col-span-11",
+                            12: "col-span-12",
                           };
-                          return colSpanMap[size] || 'col-span-12';
+                          return colSpanMap[size] || "col-span-12";
                         };
-                        
+
                         return (
-                          <div 
+                          <div
                             key={fieldName}
-                            className={`${getColSpanClass(fieldSize)} ${field.className || ''}`}
+                            className={`${getColSpanClass(fieldSize)} ${field.className || ""}`}
                           >
                             <form.Field
                               name={fieldName}
@@ -257,21 +275,29 @@ export const SchemaForm = <
                                     currentSchema.parse(value);
                                     return undefined;
                                   } catch (error) {
-                                    return error instanceof Error ? error.message : 'Invalid value';
+                                    return error instanceof Error
+                                      ? error.message
+                                      : "Invalid value";
                                   }
                                 },
                               }}
-                              children={(fieldState) => (
+                            >
+                              {(fieldState) => (
                                 <FormControl
                                   label={fieldMetadata.label || fieldName}
                                   hint={fieldMetadata.description}
                                   field={fieldState}
                                   required={true}
                                 >
-                                  {renderFormControl(fieldName, currentSchema, fieldState, fieldMetadata)}
+                                  {renderFormControl(
+                                    fieldName,
+                                    currentSchema,
+                                    fieldState,
+                                    fieldMetadata,
+                                  )}
                                 </FormControl>
                               )}
-                            />
+                            </form.Field>
                           </div>
                         );
                       })}
@@ -285,12 +311,17 @@ export const SchemaForm = <
 
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
+        >
+          {([canSubmit, isSubmitting]) => (
             <Button type="submit" disabled={!canSubmit || isComputing}>
-              {isSubmitting ? 'Submitting...' : isComputing ? 'Computing...' : submitText}
+              {isSubmitting
+                ? "Submitting..."
+                : isComputing
+                  ? "Computing..."
+                  : submitText}
             </Button>
           )}
-        />
+        </form.Subscribe>
       </form>
     </div>
   );

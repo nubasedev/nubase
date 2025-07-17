@@ -11,12 +11,7 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./styles.css": "./dist/css/styles.css",
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.mjs",
-      "require": "./dist/*.js"
-    }
+    "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {
     "access": "public"
@@ -24,7 +19,7 @@
   "license": "MIT",
   "scripts": {
     "build:ts": "tsup",
-    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/css/styles.css && cp ./src/theme/theme.css ./dist/css/theme.css",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
     "build:storybook": "storybook build",
     "build": "npm run build:ts && npm run build:css",
     "check-types": "tsc --noEmit",
