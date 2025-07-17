@@ -1,9 +1,9 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { MainNav } from "src/components/main-nav/MainNav";
-import type { NavItem } from "src/config/types";
 import { useNubaseConfig } from "src/config/NubaseConfigContext";
+import type { NavItem } from "src/config/types";
 
 // Dummy navigation items for now
 const dummyNavItems: NavItem[] = [

@@ -12,7 +12,9 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe"
   },
   "dependencies": {
     "@docusaurus/core": "3.8.1",

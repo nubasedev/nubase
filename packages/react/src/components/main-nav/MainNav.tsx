@@ -1,9 +1,9 @@
-import { forwardRef, useState, useMemo, useEffect } from "react";
 import type { VariantProps } from "class-variance-authority";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import { cn } from "src/utils";
-import { NavItems } from "./NavItems";
 import type { NavItem } from "../../config/types";
-import { flattenNavItems, filterNavItems } from "./types";
+import { NavItems } from "./NavItems";
+import { filterNavItems, flattenNavItems } from "./types";
 import { mainNavVariants, searchVariants } from "./variants";
 
 export interface MainNavProps

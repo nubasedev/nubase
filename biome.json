@@ -7,7 +7,17 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": []
+    "ignore": [
+      "**/build/**",
+      "**/dist/**", 
+      "**/node_modules/**",
+      "**/.turbo/**",
+      "**/coverage/**",
+      "**/.next/**",
+      "**/out/**",
+      "**/.storybook/build/**",
+      "**/storybook-static/**"
+    ]
   },
   "formatter": {
     "enabled": true,

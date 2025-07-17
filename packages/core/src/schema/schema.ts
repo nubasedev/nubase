@@ -5,10 +5,12 @@ export interface SchemaMetadata<Output = any> {
   defaultValue?: Output;
 }
 
-// ComputedSchemaMetadata should have the same properties as SchemaMetadata but 
+// ComputedSchemaMetadata should have the same properties as SchemaMetadata but
 // the values should be functions that return the same types, but Promises.
 export type ComputedSchemaMetadata<Output = any, Input = any> = {
-  [K in keyof SchemaMetadata<Output>]: (input: Input) => Promise<SchemaMetadata<Output>[K]>;
+  [K in keyof SchemaMetadata<Output>]: (
+    input: Input,
+  ) => Promise<SchemaMetadata<Output>[K]>;
 };
 
 export abstract class BaseSchema<Output = any> {
@@ -47,7 +49,7 @@ export abstract class BaseSchema<Output = any> {
 
 export class BooleanSchema extends BaseSchema<boolean> {
   parse(data: any): boolean {
-    if (typeof data !== 'boolean') {
+    if (typeof data !== "boolean") {
       throw new Error(`Expected boolean, received ${typeof data}`);
     }
     return data;
@@ -56,7 +58,7 @@ export class BooleanSchema extends BaseSchema<boolean> {
 
 export class StringSchema extends BaseSchema<string> {
   parse(data: any): string {
-    if (typeof data !== 'string') {
+    if (typeof data !== "string") {
       throw new Error(`Expected string, received ${typeof data}`);
     }
     return data;
@@ -66,7 +68,7 @@ export class StringSchema extends BaseSchema<string> {
 
 export class NumberSchema extends BaseSchema<number> {
   parse(data: any): number {
-    if (typeof data !== 'number' || !Number.isFinite(data)) {
+    if (typeof data !== "number" || !Number.isFinite(data)) {
       throw new Error(`Expected number, received ${typeof data}`);
     }
     return data;
@@ -90,14 +92,16 @@ export type ObjectShape = {
  * Use mapped types to get the output type of each property schema.
  */
 export type ObjectOutput<TShape extends ObjectShape> = {
-  [K in keyof TShape]: TShape[K]['_outputType'];
+  [K in keyof TShape]: TShape[K]["_outputType"];
 };
 
 /**
  * Type representing computed metadata for object properties.
  */
 export type ObjectComputedMetadata<TShape extends ObjectShape> = {
-  [K in keyof TShape]?: Partial<ComputedSchemaMetadata<TShape[K]['_outputType'], ObjectOutput<TShape>>>;
+  [K in keyof TShape]?: Partial<
+    ComputedSchemaMetadata<TShape[K]["_outputType"], ObjectOutput<TShape>>
+  >;
 };
 
 // --- Layout Types ---
@@ -139,7 +143,7 @@ export interface LayoutGroup<TShape extends ObjectShape> {
  */
 export interface Layout<TShape extends ObjectShape> {
   /** Type of layout */
-  type: 'form' | 'grid' | 'tabs' | 'accordion' | 'custom';
+  type: "form" | "grid" | "tabs" | "accordion" | "custom";
   /** Groups of fields within the layout */
   groups: LayoutGroup<TShape>[];
   /** Additional CSS classes for the layout */
@@ -162,7 +166,9 @@ export type ObjectLayouts<TShape extends ObjectShape> = {
   [layoutName: string]: Layout<TShape>;
 };
 
-export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectOutput<TShape>> {
+export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<
+  ObjectOutput<TShape>
+> {
   _shape: TShape;
   _computedMeta: ObjectComputedMetadata<TShape> = {};
   _layouts: ObjectLayouts<TShape> = {};
@@ -224,22 +230,25 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
    * @param data The parsed object data to pass to computed functions.
    * @returns Promise resolving to the computed metadata.
    */
-  async getComputedMeta(key: keyof TShape, data: ObjectOutput<TShape>): Promise<Partial<SchemaMetadata<TShape[typeof key]['_outputType']>>> {
+  async getComputedMeta(
+    key: keyof TShape,
+    data: ObjectOutput<TShape>,
+  ): Promise<Partial<SchemaMetadata<TShape[typeof key]["_outputType"]>>> {
     const computedMeta = this._computedMeta[key];
     if (!computedMeta) {
       return {};
     }
 
     const result: any = {};
-    
+
     if (computedMeta.label) {
       result.label = await computedMeta.label(data);
     }
-    
+
     if (computedMeta.description) {
       result.description = await computedMeta.description(data);
     }
-    
+
     if (computedMeta.defaultValue) {
       result.defaultValue = await computedMeta.defaultValue(data);
     }
@@ -252,13 +261,15 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
    * @param data The parsed object data to pass to computed functions.
    * @returns Promise resolving to a map of property keys to computed metadata.
    */
-  async getAllComputedMeta(data: ObjectOutput<TShape>): Promise<Record<keyof TShape, Partial<SchemaMetadata<any>>>> {
+  async getAllComputedMeta(
+    data: ObjectOutput<TShape>,
+  ): Promise<Record<keyof TShape, Partial<SchemaMetadata<any>>>> {
     const result: any = {};
-    
+
     for (const key in this._shape) {
       result[key] = await this.getComputedMeta(key, data);
     }
-    
+
     return result;
   }
 
@@ -267,9 +278,11 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
    * @param data The current form data to pass to computed functions.
    * @returns Promise resolving to a map of property keys to merged metadata.
    */
-  async getAllMergedMeta(data: Partial<ObjectOutput<TShape>>): Promise<Record<keyof TShape, SchemaMetadata<any>>> {
+  async getAllMergedMeta(
+    data: Partial<ObjectOutput<TShape>>,
+  ): Promise<Record<keyof TShape, SchemaMetadata<any>>> {
     const result: any = {};
-    
+
     // Start with static metadata for each property
     for (const key in this._shape) {
       if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
@@ -279,7 +292,7 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
         }
       }
     }
-    
+
     // Only compute if we have computed metadata and valid data
     if (Object.keys(this._computedMeta).length > 0) {
       try {
@@ -297,7 +310,7 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
               } else {
                 // Provide reasonable defaults for computation
                 if (schema instanceof StringSchema) {
-                  completeData[key] = '';
+                  completeData[key] = "";
                 } else if (schema instanceof NumberSchema) {
                   completeData[key] = 0;
                 } else if (schema instanceof BooleanSchema) {
@@ -309,30 +322,32 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
             }
           }
         }
-        
+
         // Compute all metadata at once
-        const computedMeta = await this.getAllComputedMeta(completeData as ObjectOutput<TShape>);
-        
+        const computedMeta = await this.getAllComputedMeta(
+          completeData as ObjectOutput<TShape>,
+        );
+
         // Merge computed metadata with static metadata
         for (const key in computedMeta) {
           if (computedMeta[key]) {
             result[key] = {
               ...result[key],
-              ...computedMeta[key]
+              ...computedMeta[key],
             };
           }
         }
       } catch (error) {
         // If computation fails, just use static metadata
-        console.warn('Failed to compute metadata:', error);
+        console.warn("Failed to compute metadata:", error);
       }
     }
-    
+
     return result;
   }
 
   parse(data: any): ObjectOutput<TShape> {
-    if (typeof data !== 'object' || data === null) {
+    if (typeof data !== "object" || data === null) {
       throw new Error(`Expected object, received ${typeof data}`);
     }
 
@@ -356,16 +371,18 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
 
     // Basic handling for extra keys (can be made configurable)
     for (const key in data) {
-        if (Object.prototype.hasOwnProperty.call(data, key) && !Object.prototype.hasOwnProperty.call(this._shape, key)) {
-            // For now, ignore extra keys. Could throw an error or strip them.
-            // errors.push(`Unknown property "${key}"`);
-            // console.warn(`Warning: Unknown property "${key}" in object data.`);
-        }
+      if (
+        Object.prototype.hasOwnProperty.call(data, key) &&
+        !Object.prototype.hasOwnProperty.call(this._shape, key)
+      ) {
+        // For now, ignore extra keys. Could throw an error or strip them.
+        // errors.push(`Unknown property "${key}"`);
+        // console.warn(`Warning: Unknown property "${key}" in object data.`);
+      }
     }
 
-
     if (errors.length > 0) {
-      throw new Error(`Object validation failed:\n${errors.join('\n')}`);
+      throw new Error(`Object validation failed:\n${errors.join("\n")}`);
     }
 
     return result as ObjectOutput<TShape>;
@@ -375,10 +392,13 @@ export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<ObjectO
 /**
  * Infers the TypeScript output type from an element schema for an array.
  */
-export type ArrayOutput<TElementSchema extends BaseSchema<any>> = Array<TElementSchema['_outputType']>;
+export type ArrayOutput<TElementSchema extends BaseSchema<any>> = Array<
+  TElementSchema["_outputType"]
+>;
 
-
-export class ArraySchema<TElementSchema extends BaseSchema<any>> extends BaseSchema<ArrayOutput<TElementSchema>> {
+export class ArraySchema<
+  TElementSchema extends BaseSchema<any>,
+> extends BaseSchema<ArrayOutput<TElementSchema>> {
   _element: TElementSchema;
 
   constructor(elementSchema: TElementSchema) {
@@ -403,7 +423,7 @@ export class ArraySchema<TElementSchema extends BaseSchema<any>> extends BaseSch
     }
 
     if (errors.length > 0) {
-        throw new Error(`Array validation failed:\n${errors.join('\n')}`);
+      throw new Error(`Array validation failed:\n${errors.join("\n")}`);
     }
 
     return result as ArrayOutput<TElementSchema>;
@@ -416,7 +436,7 @@ export class ArraySchema<TElementSchema extends BaseSchema<any>> extends BaseSch
  * const userSchema = nu.object({ name: nu.string() });
  * type User = Infer&lt;typeof userSchema&gt;; // { name: string }
  */
-export type Infer<T extends BaseSchema<any>> = T['_outputType'];
+export type Infer<T extends BaseSchema<any>> = T["_outputType"];
 
 // Refine NuSchema union after defining concrete types
 export type NuSchema =

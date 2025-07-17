@@ -1,21 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Label } from './Label';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Label } from "./Label";
 
 const meta: Meta<typeof Label> = {
-  title: 'Form Controls/Label',
+  title: "Form Controls/Label",
   component: Label,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     variant: {
-      control: { type: 'select' },
-      options: ['default', 'required', 'muted'],
+      control: { type: "select" },
+      options: ["default", "required", "muted"],
     },
     size: {
-      control: { type: 'select' },
-      options: ['sm', 'md', 'lg'],
+      control: { type: "select" },
+      options: ["sm", "md", "lg"],
     },
   },
 };
@@ -25,21 +25,21 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: 'Email Address',
+    children: "Email Address",
   },
 };
 
 export const Required: Story = {
   args: {
-    children: 'Full Name',
+    children: "Full Name",
     required: true,
   },
 };
 
 export const Muted: Story = {
   args: {
-    children: 'Optional Field',
-    variant: 'muted',
+    children: "Optional Field",
+    variant: "muted",
   },
 };
 
@@ -65,7 +65,7 @@ export const Variants: Story = {
 
 export const DarkMode: Story = {
   args: {
-    children: 'Dark Mode Label',
+    children: "Dark Mode Label",
     required: true,
   },
   decorators: [

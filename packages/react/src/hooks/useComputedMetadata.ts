@@ -1,5 +1,10 @@
-import { ObjectOutput, ObjectSchema, ObjectShape, SchemaMetadata } from '@repo/core';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type {
+  ObjectOutput,
+  ObjectSchema,
+  ObjectShape,
+  SchemaMetadata,
+} from "@repo/core";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UseComputedMetadataOptions {
   /** Debounce delay in milliseconds (default: 300ms) */
@@ -17,13 +22,13 @@ export interface UseComputedMetadataResult<TShape extends ObjectShape> {
 
 /**
  * Hook that provides debounced computed metadata for a form schema.
- * 
+ *
  * This hook:
  * 1. Watches for changes in form data
  * 2. Debounces the computation to avoid excessive recalculation
  * 3. Merges static metadata with computed metadata
  * 4. Returns the final merged metadata for all properties
- * 
+ *
  * @param schema The ObjectSchema with potential computed metadata
  * @param formData Current form data (partial object)
  * @param options Configuration options
@@ -32,12 +37,14 @@ export interface UseComputedMetadataResult<TShape extends ObjectShape> {
 export function useComputedMetadata<TShape extends ObjectShape>(
   schema: ObjectSchema<TShape>,
   formData: Partial<ObjectOutput<TShape>>,
-  options: UseComputedMetadataOptions = {}
+  options: UseComputedMetadataOptions = {},
 ): UseComputedMetadataResult<TShape> {
   const { debounceMs = 300 } = options;
-  
+
   // State for the computed metadata
-  const [metadata, setMetadata] = useState<Record<keyof TShape, SchemaMetadata<any>>>(() => {
+  const [metadata, setMetadata] = useState<
+    Record<keyof TShape, SchemaMetadata<any>>
+  >(() => {
     // Initialize with static metadata only
     const initialMeta: any = {};
     for (const key in schema._shape) {
@@ -50,48 +57,54 @@ export function useComputedMetadata<TShape extends ObjectShape>(
     }
     return initialMeta;
   });
-  
+
   const [isComputing, setIsComputing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  
+
   // Refs for debouncing
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const computingRef = useRef(false);
-  
+
   // Compute metadata function
-  const computeMetadata = useCallback(async (data: Partial<ObjectOutput<TShape>>) => {
-    // Prevent concurrent computations
-    if (computingRef.current) return;
-    
-    try {
-      computingRef.current = true;
-      setError(null);
-      setIsComputing(true);
-      
-      const mergedMeta = await schema.getAllMergedMeta(data);
-      
-      // Always update metadata since we want reactive updates
-      setMetadata(mergedMeta);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error during metadata computation');
-      setError(error);
-      console.warn('Failed to compute metadata:', error);
-    } finally {
-      computingRef.current = false;
-      setIsComputing(false);
-    }
-  }, [schema]);
-  
+  const computeMetadata = useCallback(
+    async (data: Partial<ObjectOutput<TShape>>) => {
+      // Prevent concurrent computations
+      if (computingRef.current) return;
+
+      try {
+        computingRef.current = true;
+        setError(null);
+        setIsComputing(true);
+
+        const mergedMeta = await schema.getAllMergedMeta(data);
+
+        // Always update metadata since we want reactive updates
+        setMetadata(mergedMeta);
+      } catch (err) {
+        const error =
+          err instanceof Error
+            ? err
+            : new Error("Unknown error during metadata computation");
+        setError(error);
+        console.warn("Failed to compute metadata:", error);
+      } finally {
+        computingRef.current = false;
+        setIsComputing(false);
+      }
+    },
+    [schema],
+  );
+
   // Create a stable key for formData changes to trigger effect properly
   const formDataKey = JSON.stringify(formData);
-  
+
   // Debounced computation effect
   useEffect(() => {
     // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
+
     // Only compute if we have computed metadata definitions
     if (Object.keys(schema._computedMeta).length > 0) {
       // Set up new debounced computation
@@ -113,7 +126,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
       setIsComputing(false);
       setError(null);
     }
-    
+
     // Cleanup timeout on unmount
     return () => {
       if (timeoutRef.current) {
@@ -121,10 +134,10 @@ export function useComputedMetadata<TShape extends ObjectShape>(
       }
     };
   }, [formDataKey, computeMetadata, debounceMs, schema]);
-  
+
   return {
     metadata,
     isComputing,
-    error
+    error,
   };
 }

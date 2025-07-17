@@ -1,7 +1,7 @@
 import { RouterProvider } from "@tanstack/react-router";
 import type { FC } from "react";
-import type { NubaseFrontendConfig } from "src/config/config";
 import { NubaseConfigProvider } from "src/config/NubaseConfigContext";
+import type { NubaseFrontendConfig } from "src/config/config";
 import { router } from "src/routes/router";
 
 export type NubaseAppProps = {

@@ -1,21 +1,21 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './Button';
+import type { Meta, StoryObj } from "@storybook/react";
+import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
-  title: 'Form Controls/Button',
+  title: "Form Controls/Button",
   component: Button,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     variant: {
-      control: { type: 'select' },
-      options: ['default', 'secondary', 'outline', 'ghost', 'destructive'],
+      control: { type: "select" },
+      options: ["default", "secondary", "outline", "ghost", "destructive"],
     },
     size: {
-      control: { type: 'select' },
-      options: ['sm', 'md', 'lg', 'icon'],
+      control: { type: "select" },
+      options: ["sm", "md", "lg", "icon"],
     },
   },
 };
@@ -25,7 +25,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: 'Button',
+    children: "Button",
   },
 };
 
@@ -82,7 +82,7 @@ export const WithIcons: Story = {
 
 export const DarkMode: Story = {
   args: {
-    children: 'Dark Mode Button',
+    children: "Dark Mode Button",
   },
   decorators: [
     (Story) => (

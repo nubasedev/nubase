@@ -8,6 +8,13 @@
     "typecheck": {
       "dependsOn": ["^typecheck"]
     },
+    "lint": {
+      "dependsOn": ["^lint"]
+    },
+    "lint:fix": {
+      "dependsOn": ["^lint:fix"],
+      "cache": false
+    },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,

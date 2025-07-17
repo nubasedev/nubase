@@ -1,20 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { TextInput } from './TextInput';
+import type { Meta, StoryObj } from "@storybook/react";
+import { TextInput } from "./TextInput";
 
 const meta: Meta<typeof TextInput> = {
-  title: 'Form Controls/TextInput',
+  title: "Form Controls/TextInput",
   component: TextInput,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     size: {
-      control: { type: 'select' },
-      options: ['sm', 'md', 'lg'],
+      control: { type: "select" },
+      options: ["sm", "md", "lg"],
     },
     hasError: {
-      control: 'boolean',
+      control: "boolean",
     },
   },
   decorators: [
@@ -31,22 +31,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    placeholder: 'Enter your text...',
+    placeholder: "Enter your text...",
   },
 };
 
 export const WithError: Story = {
   args: {
-    placeholder: 'john@example.com',
-    type: 'email',
+    placeholder: "john@example.com",
+    type: "email",
     hasError: true,
-    value: 'invalid-email',
+    value: "invalid-email",
   },
 };
 
 export const Disabled: Story = {
   args: {
-    placeholder: 'Cannot type here',
+    placeholder: "Cannot type here",
     disabled: true,
   },
 };

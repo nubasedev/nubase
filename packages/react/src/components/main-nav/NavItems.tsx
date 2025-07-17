@@ -1,6 +1,6 @@
 import type { FC } from "react";
-import { NavItemComponent } from "./NavItemComponent";
 import type { NavItem } from "../../config/types";
+import { NavItemComponent } from "./NavItemComponent";
 
 // Main NavItems component
 interface NavItemsProps {

@@ -24,6 +24,8 @@
     "build": "npm run build:ts && npm run build:css",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
     "watch:ts": "tsup --watch",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",

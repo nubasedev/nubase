@@ -1,5 +1,5 @@
-import { Layout, ObjectSchema, ObjectShape } from '@repo/core';
-import { useMemo } from 'react';
+import type { Layout, ObjectSchema, ObjectShape } from "@repo/core";
+import { useMemo } from "react";
 
 /**
  * Pure function version of useLayout for testing and non-React contexts.
@@ -7,7 +7,7 @@ import { useMemo } from 'react';
  */
 export function getLayout<TShape extends ObjectShape>(
   schema: ObjectSchema<TShape>,
-  layoutName?: string
+  layoutName?: string,
 ): Layout<TShape> {
   // If a layout name is provided and the layout exists, use it
   if (layoutName && schema.hasLayout(layoutName)) {
@@ -19,17 +19,17 @@ export function getLayout<TShape extends ObjectShape>(
 
   // Create a default layout with all fields in a single group
   const fieldNames = Object.keys(schema._shape) as (keyof TShape)[];
-  
+
   const defaultLayout: Layout<TShape> = {
-    type: 'form',
+    type: "form",
     groups: [
       {
-        fields: fieldNames.map(name => ({
+        fields: fieldNames.map((name) => ({
           name,
           size: 12, // Full width for all fields
-        }))
-      }
-    ]
+        })),
+      },
+    ],
   };
 
   return defaultLayout;
@@ -42,7 +42,7 @@ export function getLayout<TShape extends ObjectShape>(
  */
 export function useLayout<TShape extends ObjectShape>(
   schema: ObjectSchema<TShape>,
-  layoutName?: string
+  layoutName?: string,
 ): Layout<TShape> {
   return useMemo(() => getLayout(schema, layoutName), [schema, layoutName]);
 }
