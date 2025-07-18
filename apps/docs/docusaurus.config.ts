@@ -45,7 +45,7 @@ const config: Config = {
           routeBasePath: "/", // Set docs as the root
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/your-org/nubase/tree/main/apps/docs/",
+          editUrl: "https://github.com/nubasedev/nubase/tree/main/apps/docs/",
         },
         blog: {
           showReadingTime: true,
@@ -55,7 +55,7 @@ const config: Config = {
           },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl: "https://github.com/your-org/nubase/tree/main/apps/docs/",
+          editUrl: "https://github.com/nubasedev/nubase/tree/main/apps/docs/",
           // Useful options to enforce blogging best practices
           onInlineTags: "warn",
           onInlineAuthors: "warn",
@@ -86,7 +86,7 @@ const config: Config = {
         },
         { to: "/blog", label: "Blog", position: "left" },
         {
-          href: "https://github.com/your-org/nubase",
+          href: "https://github.com/nubasedev/nubase",
           label: "GitHub",
           position: "right",
         },
@@ -134,7 +134,11 @@ const config: Config = {
             },
             {
               label: "GitHub",
-              href: "https://github.com/your-org/nubase",
+              href: "https://github.com/nubasedev/nubase",
+            },
+            {
+              label: "Storybook",
+              href: "https://storybook.nubase.dev/",
             },
           ],
         },
