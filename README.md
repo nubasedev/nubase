@@ -118,19 +118,6 @@ npm run build:react
 - **Storybook** - Component development
 - **Turborepo** - Monorepo management
 
-## Publishing
-
-```bash
-# Publish core package
-npm run publish:core
-
-# Publish react package
-npm run publish:react
-
-# Publish both packages
-npm run publish:all
-```
-
 ## Contributing
 
 1. Fork the repository
