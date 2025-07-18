@@ -2,39 +2,33 @@ import type { NavItem } from "@nubase/core";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
-import { MainNav } from "src/components/main-nav/MainNav";
-import { useNubaseConfig } from "src/config/NubaseConfigContext";
+import { MainNav } from "../components/main-nav/MainNav";
 
 // Dummy navigation items for now
 const dummyNavItems: NavItem[] = [
   {
     id: "dashboard",
     label: "Dashboard",
-    icon: "📊",
     href: "/",
   },
   {
     id: "resources",
     label: "Resources",
-    icon: "📁",
     children: [
       {
         id: "contacts",
         label: "Contacts",
-        icon: "👥",
         href: "/r/contacts",
         badge: "12",
       },
       {
         id: "projects",
         label: "Projects",
-        icon: "🚀",
         href: "/r/projects",
       },
       {
         id: "documents",
         label: "Documents",
-        icon: "📄",
         href: "/r/documents",
         badge: "NEW",
       },
@@ -43,24 +37,20 @@ const dummyNavItems: NavItem[] = [
   {
     id: "analytics",
     label: "Analytics",
-    icon: "📈",
     children: [
       {
         id: "reports",
         label: "Reports",
-        icon: "📋",
         href: "/analytics/reports",
       },
       {
         id: "insights",
         label: "Insights",
-        icon: "💡",
         href: "/analytics/insights",
       },
       {
         id: "metrics",
         label: "Metrics",
-        icon: "📊",
         href: "/analytics/metrics",
       },
     ],
@@ -68,24 +58,20 @@ const dummyNavItems: NavItem[] = [
   {
     id: "tools",
     label: "Tools",
-    icon: "🔧",
     children: [
       {
         id: "integrations",
         label: "Integrations",
-        icon: "🔗",
         href: "/tools/integrations",
       },
       {
         id: "api",
         label: "API Explorer",
-        icon: "⚡",
         href: "/tools/api",
       },
       {
         id: "webhooks",
         label: "Webhooks",
-        icon: "🪝",
         href: "/tools/webhooks",
         badge: "3",
       },
@@ -94,30 +80,25 @@ const dummyNavItems: NavItem[] = [
   {
     id: "settings",
     label: "Settings",
-    icon: "⚙️",
     children: [
       {
         id: "profile",
         label: "Profile",
-        icon: "👤",
         href: "/settings/profile",
       },
       {
         id: "team",
         label: "Team",
-        icon: "👥",
         href: "/settings/team",
       },
       {
         id: "billing",
         label: "Billing",
-        icon: "💳",
         href: "/settings/billing",
       },
       {
         id: "security",
         label: "Security",
-        icon: "🔒",
         href: "/settings/security",
       },
     ],
@@ -125,14 +106,11 @@ const dummyNavItems: NavItem[] = [
   {
     id: "about",
     label: "About",
-    icon: "ℹ️",
     href: "/about",
   },
 ];
 
 function RootComponent() {
-  const config = useNubaseConfig();
-
   // Set dark mode on mount
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");

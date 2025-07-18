@@ -1,7 +1,7 @@
-import { aboutRoute } from "src/routes/about";
-import { homeRoute } from "src/routes/home";
-import { resourceRoute } from "src/routes/resource";
-import { rootRoute } from "src/routes/root";
+import { aboutRoute } from "./about";
+import { homeRoute } from "./home";
+import { resourceRoute } from "./resource";
+import { rootRoute } from "./root";
 
 export const routeTree = rootRoute.addChildren([
   homeRoute,

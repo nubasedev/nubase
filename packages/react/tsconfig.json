@@ -15,7 +15,6 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2022",
-    "baseUrl": ".",
     "jsx": "react-jsx"
   },
   "include": ["src"],

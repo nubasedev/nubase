@@ -1,7 +1,7 @@
 import type React from "react";
 import { forwardRef } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "src/utils";
+import { cn } from "../../../utils";
 
 const labelVariants = cva("block text-sm font-medium text-text", {
   variants: {
