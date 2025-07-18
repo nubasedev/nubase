@@ -54,7 +54,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "@nubase/core": "file:../core",
+    "@nubase/core": "*",
     "@tailwindcss/cli": "^4.1.3",
     "@tailwindcss/postcss": "^4.1.3",
     "@tanstack/react-form": "^1.12.3",
