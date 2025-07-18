@@ -37,11 +37,6 @@ export const NavItemComponent: FC<NavItemComponentProps> = ({
   const content = (
     <>
       <div className="flex items-center gap-2 flex-1">
-        {item.icon && (
-          <span className="flex-shrink-0 w-4 h-4 flex items-center justify-center">
-            {item.icon}
-          </span>
-        )}
         <span className="flex-1 truncate">{item.label}</span>
         {item.badge && (
           <span className="ml-auto px-2 py-0.5 text-xs bg-primary/10 text-primary rounded-full">
