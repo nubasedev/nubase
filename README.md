@@ -1,58 +1,154 @@
-# Turborepo Tailwind CSS starter
+# Nubase
 
-This Turborepo starter is maintained by the Turborepo core team.
+A highly-opinionated, batteries-included, meta-framework for building business applications and internal tools with TypeScript.
 
-## Using this example
+## What is Nubase?
 
-Run the following command:
+Nubase is primarily a frontend framework for the web that focuses on applications centered around dashboards and CRUD operations (Create, Read, Update, Delete). Think of Nubase as an open-source alternative to platforms like Retool and Airtable, except that you have full control over the code and data.
 
-```sh
-npx create-turbo@latest -e with-tailwind
+### Perfect for:
+- Business applications (CRM, ERP, Ticket Management)
+- Internal tools (Admin panels, Data management systems)
+- Dashboard-centric applications
+
+## Why Nubase?
+
+Every business application has common requirements:
+- Authentication and authorization
+- Dashboards
+- Searching, filtering, viewing and editing data
+- Configuration pages
+- Theming
+
+Nubase eliminates the need to reinvent these core components for each new project. By deliberately choosing low-flexibility in favor of exceptional gains in development speed, consistency, and out-of-the-box quality, Nubase is designed to excel at the 85% of common business application requirements.
+
+## How it Works
+
+Nubase is a schema-driven framework where you define your application as a collection of schemas and business logic. A selected Nubase runtime executes and renders the application for you. Instead of writing frontend code directly, you describe your application structure, and Nubase handles the rendering.
+
+```tsx
+<NubaseApplication config={config} />
 ```
 
-## What's inside?
+## Architecture
 
-This Turborepo includes the following packages/apps:
+This is a Turborepo-based monorepo with the following structure:
 
-### Apps and Packages
+### Core Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `web`: another [Next.js](https://nextjs.org/) app with [Tailwind CSS](https://tailwindcss.com/)
-- `react`: a stub React component library with [Tailwind CSS](https://tailwindcss.com/) shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **[@nubase/core](./packages/core)** - Core schema system with Zod-based validation, computed metadata, and layout definitions
+- **[@nubase/react](./packages/react)** - React components, form controls, and hooks for building nubase applications
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Example Applications
 
-### Building packages/react
+- **[apps/docs](./apps/docs)** - Docusaurus documentation site
+- **[example/questlog-frontend](./example/questlog-frontend)** - React frontend example using Vite
+- **[example/questlog-backend](./example/questlog-backend)** - Node.js backend example
+- **[example/questlog-schema](./example/questlog-schema)** - Shared schema definitions for example app
 
-This example is set up to produce compiled styles for `react` components into the `dist` directory. The component `.tsx` files are consumed by the Next.js apps directly using `transpilePackages` in `next.config.ts`. This was chosen for several reasons:
+## Getting Started
 
-- Make sharing one `tailwind.config.ts` to apps and packages as easy as possible.
-- Make package compilation simple by only depending on the Next.js Compiler and `tailwindcss`.
-- Ensure Tailwind classes do not overwrite each other. The `react` package uses a `ui-` prefix for it's classes.
-- Maintain clear package export boundaries.
+### Prerequisites
 
-Another option is to consume `packages/react` directly from source without building. If using this option, you will need to update the `tailwind.config.ts` in your apps to be aware of your package locations, so it can find all usages of the `tailwindcss` class names for CSS compilation.
+- Node.js >= 18
+- npm >= 10.9.2
 
-For example, in [tailwind.config.ts](packages/tailwind-config/tailwind.config.ts):
+### Installation
 
-```js
-  content: [
-    // app content
-    `src/**/*.{js,ts,jsx,tsx}`,
-    // include packages if not transpiling
-    "../../packages/react/*.{js,ts,jsx,tsx}",
-  ],
+```bash
+git clone https://github.com/your-org/nubase.git
+cd nubase
+npm install
 ```
 
-If you choose this strategy, you can remove the `tailwindcss` and `autoprefixer` dependencies from the `react` package.
+### Development
 
-### Utilities
+```bash
+# Start development mode for all packages
+npm run dev
 
-This Turborepo has some additional tools already setup for you:
+# Run type checking
+npm run typecheck
 
-- [Tailwind CSS](https://tailwindcss.com/) for styles
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+# Run linting
+npm run lint
+
+# Run tests
+cd packages/core && npm run test
+```
+
+### Building
+
+```bash
+# Build all packages
+npm run build
+
+# Build specific packages
+npm run build:core
+npm run build:react
+```
+
+## Key Features
+
+### Schema System
+- **BaseSchema** - Abstract base class for all schemas with metadata support
+- **Primitive Schemas** - StringSchema, NumberSchema, BooleanSchema for basic types
+- **Complex Schemas** - ObjectSchema for object validation with computed metadata and layout support
+- **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
+- **Computed Metadata** - Async functions that compute metadata based on form data
+
+### React Components
+- **Form System** - SchemaForm component with TanStack Form integration
+- **Form Controls** - TextInput, Button, Label, FormControl components
+- **Hooks** - useComputedMetadata, useLayout for schema-driven UI
+- **Routing** - TanStack Router integration for navigation
+- **Styling** - Tailwind CSS v4 with theme support
+
+## Tech Stack
+
+- **TypeScript** - Static type checking
+- **React 19** - UI framework
+- **Zod** - Schema validation
+- **TanStack Form** - Form management
+- **TanStack Router** - Routing
+- **TanStack Table** - Data tables
+- **Tailwind CSS v4** - Styling
+- **Biome** - Code formatting and linting
+- **Vitest** - Testing
+- **Storybook** - Component development
+- **Turborepo** - Monorepo management
+
+## Publishing
+
+```bash
+# Publish core package
+npm run publish:core
+
+# Publish react package
+npm run publish:react
+
+# Publish both packages
+npm run publish:all
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Commands
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development commands and project guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## Support
+
+- 📚 [Documentation](./apps/docs)
+- 🐛 [Issues](https://github.com/your-org/nubase/issues)
+- 💬 [Discussions](https://github.com/your-org/nubase/discussions)
