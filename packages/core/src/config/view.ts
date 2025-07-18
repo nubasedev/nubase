@@ -2,11 +2,13 @@ import type { ObjectSchema } from "../schema/schema";
 
 export type ViewType = "object";
 
-export type View = {
-  type: ViewType;
+export type ViewBase = {
+  title: string;
 };
 
-export type ObjectView = {
+export type ObjectView = ViewBase & {
   type: "object";
   schema: ObjectSchema<any>;
 };
+
+export type View = ObjectView;
