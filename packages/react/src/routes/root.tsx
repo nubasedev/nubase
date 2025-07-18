@@ -142,11 +142,7 @@ function RootComponent() {
     <div className="min-h-screen bg-background text-text">
       <div className="flex h-screen">
         {/* Sidebar Navigation */}
-        <MainNav
-          items={dummyNavItems}
-          width="md"
-          searchPlaceholder="Search navigation..."
-        />
+        <MainNav items={dummyNavItems} width="md" />
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
