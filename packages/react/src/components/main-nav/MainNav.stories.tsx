@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { MainNav } from "src/components/main-nav/MainNav";
-import type { NavItem } from "src/config/types";
+import type { NavItem } from "@nubase/core";
 
 // Sample navigation data
 const sampleNavItems: NavItem[] = [
@@ -134,19 +134,16 @@ const minimalNavItems: NavItem[] = [
   {
     id: "home",
     label: "Home",
-    icon: "🏠",
     href: "/home",
   },
   {
     id: "about",
     label: "About",
-    icon: "ℹ️",
     href: "/about",
   },
   {
     id: "contact",
     label: "Contact",
-    icon: "📞",
     href: "/contact",
   },
 ];
@@ -155,22 +152,18 @@ const deepNavItems: NavItem[] = [
   {
     id: "level1",
     label: "Level 1",
-    icon: "📁",
     children: [
       {
         id: "level2",
         label: "Level 2",
-        icon: "📁",
         children: [
           {
             id: "level3",
             label: "Level 3",
-            icon: "📁",
             children: [
               {
                 id: "level4",
                 label: "Level 4 Item",
-                icon: "📄",
                 href: "/deep/item",
               },
             ],

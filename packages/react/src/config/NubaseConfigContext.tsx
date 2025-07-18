@@ -1,5 +1,5 @@
+import type { NubaseFrontendConfig } from "@nubase/core";
 import { type ReactNode, createContext, useContext } from "react";
-import type { NubaseFrontendConfig } from "../../../core/src/config/config";
 
 interface NubaseConfigContextType {
   config: NubaseFrontendConfig;
