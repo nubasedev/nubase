@@ -1,5 +1,5 @@
 {
-  "name": "@nubase/example-app-schema",
+  "name": "example/schema",
   "version": "0.1.0",
   "description": "Schema for the Example App",
   "sideEffects": ["**/*.css"],

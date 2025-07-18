@@ -3,7 +3,12 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "build/**"]
+    },
+    "example/*#build": {
+      "dependsOn": ["packages/*#build"],
+      "outputs": ["dist/**", "build/**"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]

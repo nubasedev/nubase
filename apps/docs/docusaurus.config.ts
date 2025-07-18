@@ -5,9 +5,8 @@ import { themes as prismThemes } from "prism-react-renderer";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "Nubase Documentation",
-  tagline:
-    "Build powerful applications with type-safe schemas and computed metadata",
+  title: "Nubase",
+  tagline: "Build business applications and internal tools at unmatched speed.",
   favicon: "img/favicon.ico",
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future

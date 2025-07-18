@@ -14,6 +14,7 @@
     "storybook": "turbo run storybook",
     "build:core": "cd packages/core && npm run build",
     "build:react": "cd packages/react && npm run build",
+    "build:react:storybook": "cd packages/react && npm run build:storybook",
     "publish:core": "cd packages/core && npm run build && npm publish",
     "publish:react": "cd packages/react && npm run build && npm publish",
     "publish:all": "npm run publish:core && npm run publish:react"
