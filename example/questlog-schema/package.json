@@ -1,7 +1,7 @@
 {
-  "name": "example-schema",
+  "name": "questlog-schema",
   "version": "0.1.0",
-  "description": "Schema for the Example App",
+  "description": "Schema for the Questlog App",
   "sideEffects": ["**/*.css"],
   "files": ["dist"],
   "exports": {

@@ -1,5 +1,5 @@
 {
-  "name": "example-backend",
+  "name": "questlog-backend",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
