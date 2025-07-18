@@ -1,4 +1,4 @@
-import type { NavItem } from "@nubase/react";
+import type { NavItem } from "@nubase/core";
 
 export const config = {
   appName: "Ticket",
@@ -6,7 +6,6 @@ export const config = {
     {
       id: "home",
       label: "Home",
-      icon: "home",
       href: "/",
       children: [],
     } satisfies NavItem,

@@ -12,6 +12,7 @@
     "lint:fix": "biome check . --write --unsafe"
   },
   "dependencies": {
+    "questlog-schema": "*",
     "@nubase/react": "*",
     "@tailwindcss/vite": "4.1.4",
     "@tanstack/react-router": "^1.121.2",

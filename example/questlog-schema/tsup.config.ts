@@ -7,6 +7,6 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  outDir: "dist/js",
+  outDir: "dist",
   external: ["react", "react-dom"],
 });
