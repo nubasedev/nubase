@@ -15,7 +15,7 @@ Computed metadata enables you to:
 ### 1. Define a Schema with Computed Metadata
 
 ```typescript
-import { nu } from '@repo/core';
+import { nu } from '@nubase/core';
 
 const productSchema = nu.object({
   name: nu.string().meta({
@@ -48,7 +48,7 @@ const productSchema = nu.object({
 ### 2. Use the Schema in a Form
 
 ```tsx
-import { SchemaForm } from '@repo/react';
+import { SchemaForm } from '@nubase/react';
 
 const ProductForm = () => {
   const handleSubmit = async (data) => {

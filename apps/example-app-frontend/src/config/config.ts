@@ -1,5 +1,4 @@
-import type { NubaseFrontendConfig } from "@repo/react/config/config";
-import type { NavItem } from "@repo/react/config/types";
+import type { NubaseFrontendConfig, NavItem } from "@nubase/react";
 
 export const config = {
   appName: "Ticket",
