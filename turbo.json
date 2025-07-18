@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**", "storybook-static/**"]
     },
     "example/*#build": {
       "dependsOn": ["packages/*#build"],
