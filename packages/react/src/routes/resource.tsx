@@ -1,6 +1,6 @@
 import { createRoute } from "@tanstack/react-router";
-import { rootRoute } from "./root";
 import ResourceScreen from "../screens/Resource";
+import { rootRoute } from "./root";
 
 export const resourceRoute = createRoute({
   getParentRoute: () => rootRoute,

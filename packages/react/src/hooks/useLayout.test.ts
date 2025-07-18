@@ -23,7 +23,7 @@ describe("getLayout (useLayout logic)", () => {
     // All fields should have size 12 (full width)
     if (firstGroup?.fields) {
       for (const field of firstGroup.fields) {
-      expect(field.size).toBe(12);
+        expect(field.size).toBe(12);
       }
     }
 

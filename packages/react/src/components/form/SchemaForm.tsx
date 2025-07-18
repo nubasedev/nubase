@@ -8,11 +8,11 @@ import {
 } from "@nubase/core";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
-import { TextInput } from "../form-controls/TextInput/TextInput";
-import { useLayout } from "../../hooks/useLayout";
 import { useComputedMetadata } from "../../hooks/useComputedMetadata";
-import { FormControl } from "../form-controls/FormControl/FormControl";
+import { useLayout } from "../../hooks/useLayout";
 import { Button } from "../form-controls/Button/Button";
+import { FormControl } from "../form-controls/FormControl/FormControl";
+import { TextInput } from "../form-controls/TextInput/TextInput";
 
 export type SchemaFormProps<
   TSchema extends ObjectSchema<any>,

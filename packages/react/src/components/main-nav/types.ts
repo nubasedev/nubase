@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import type { NavItem } from "@nubase/core";
+import type { ReactNode } from "react";
 
 // Helper function to flatten items for search
 export const flattenNavItems = (

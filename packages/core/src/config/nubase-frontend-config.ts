@@ -1,4 +1,4 @@
-import type { NavItem } from "./types";
+import type { NavItem } from "./nav-item";
 
 export type NubaseFrontendConfig = {
   appName: string;

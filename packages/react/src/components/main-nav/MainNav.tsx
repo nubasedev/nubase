@@ -1,10 +1,10 @@
+import type { NavItem } from "@nubase/core";
 import type { VariantProps } from "class-variance-authority";
 import { forwardRef, useEffect, useMemo, useState } from "react";
+import { cn } from "../../utils";
 import { NavItems } from "./NavItems";
 import { filterNavItems, flattenNavItems } from "./types";
 import { mainNavVariants, searchVariants } from "./variants";
-import type { NavItem } from "@nubase/core";
-import { cn } from "../../utils";
 
 export interface MainNavProps
   extends React.HTMLAttributes<HTMLDivElement>,

@@ -1,4 +1,14 @@
 {
+  "typescript.preferences.includePackageJsonAutoImports": "auto",
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "typescript.suggest.autoImports": true,
+  "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+  "typescript.preferences.useAliasesForRenames": false,
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
   "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
@@ -42,11 +52,6 @@
     "**/node_modules": true,
     "**/.git": true
   },
-  "typescript.preferences.exclude": [
-    "**/dist/**",
-    "**/build/**",
-    "**/node_modules/**"
-  ],
   "files.associations": {
     "**/*.d.ts": "typescript",
     "**/*.d.mts": "typescript"

@@ -1,7 +1,7 @@
+import type { NavItem } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { MainNav } from "src/components/main-nav/MainNav";
-import type { NavItem } from "@nubase/core";
 
 // Sample navigation data
 const sampleNavItems: NavItem[] = [

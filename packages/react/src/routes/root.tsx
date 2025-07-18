@@ -2,7 +2,7 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect } from "react";
 import { MainNav } from "../components/main-nav/MainNav";
-import { useNubaseConfig } from "../config";
+import { useNubaseConfig } from "../config/NubaseConfigContext";
 
 function RootComponent() {
   // Set dark mode on mount

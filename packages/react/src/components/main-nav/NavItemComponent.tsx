@@ -1,8 +1,8 @@
-import type { FC } from "react";
 import type { NavItem } from "@nubase/core";
+import type { FC } from "react";
+import { cn } from "../../utils";
 import { SafeLink } from "./SafeLink";
 import { navItemVariants } from "./variants";
-import { cn } from "../../utils";
 
 // NavItem component
 interface NavItemComponentProps {

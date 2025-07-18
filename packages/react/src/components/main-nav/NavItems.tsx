@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import type { NavItem } from "@nubase/core";
+import type { FC } from "react";
 import { NavItemComponent } from "./NavItemComponent";
 
 // Main NavItems component
