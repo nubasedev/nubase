@@ -1,4 +1,4 @@
-import { nu } from "@repo/core";
+import { nu } from "@nubase/core";
 
 const ticketSchema = nu.object({
   name: nu.string().meta({

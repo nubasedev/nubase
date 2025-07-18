@@ -1,4 +1,4 @@
-import { nu } from "@repo/core";
+import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { useComputedMetadata } from "./hooks/useComputedMetadata";

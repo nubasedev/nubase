@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@repo/core": ["../core/src/schema/index.ts"]
+      "@nubase/core": ["../core/src/schema/index.ts"]
     }
   },
   "include": ["src"],

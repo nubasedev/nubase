@@ -1,4 +1,4 @@
-import type { Layout, ObjectSchema, ObjectShape } from "@repo/core";
+import type { Layout, ObjectSchema, ObjectShape } from "@nubase/core";
 import { useMemo } from "react";
 
 /**

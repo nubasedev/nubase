@@ -36,9 +36,9 @@ This is a Turborepo-based monorepo with the following structure:
 
 **Example Applications:**
 - `apps/docs` - Docusaurus documentation site
-- `apps/example-app-frontend` - React frontend example using Vite
-- `apps/example-app-backend` - Node.js backend example
-- `packages/example-app-schema` - Shared schema definitions for example app
+- `example/frontend` - React frontend example using Vite
+- `example/backend` - Node.js backend example
+- `example/schema` - Shared schema definitions for example app
 
 ### Schema System Architecture
 

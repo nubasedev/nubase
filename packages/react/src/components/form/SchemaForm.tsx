@@ -5,7 +5,7 @@ import {
   NumberSchema,
   type ObjectSchema,
   StringSchema,
-} from "@repo/core";
+} from "@nubase/core";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { Button, FormControl, TextInput } from "src/components/form-controls";

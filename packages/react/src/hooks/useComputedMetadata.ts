@@ -3,7 +3,7 @@ import type {
   ObjectSchema,
   ObjectShape,
   SchemaMetadata,
-} from "@repo/core";
+} from "@nubase/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UseComputedMetadataOptions {

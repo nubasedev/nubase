@@ -1,4 +1,4 @@
-import { nu } from "@repo/core";
+import { nu } from "@nubase/core";
 
 // Test the computed metadata functionality
 const testSchema = nu

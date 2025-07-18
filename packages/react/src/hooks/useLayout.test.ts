@@ -1,4 +1,4 @@
-import { nu } from "@repo/core";
+import { nu } from "@nubase/core";
 import { describe, expect, it } from "vitest";
 import { getLayout } from "./useLayout";
 
@@ -21,9 +21,11 @@ describe("getLayout (useLayout logic)", () => {
     expect(firstGroup?.fields).toHaveLength(3);
 
     // All fields should have size 12 (full width)
-    firstGroup?.fields.forEach((field: any) => {
+    if (firstGroup?.fields) {
+      for (const field of firstGroup.fields) {
       expect(field.size).toBe(12);
-    });
+      }
+    }
 
     // Check that all field names are present
     const fieldNames = firstGroup?.fields.map((f: any) => f.name);
