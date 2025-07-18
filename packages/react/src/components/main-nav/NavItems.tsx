@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { NavItemComponent } from "src/components/main-nav/NavItemComponent";
-import type { NavItem } from "src/config";
+import type { NavItem } from "@nubase/core";
 
 // Main NavItems component
 interface NavItemsProps {

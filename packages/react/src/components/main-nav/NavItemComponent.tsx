@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { cn } from "src/utils";
-import type { NavItem } from "../../config/types";
+import type { NavItem } from "@nubase/core";
 import { SafeLink } from "./SafeLink";
 import { navItemVariants } from "./variants";
 
