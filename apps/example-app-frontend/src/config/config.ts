@@ -1,7 +1,7 @@
-import type { NubaseFrontendConfig } from "@nubase/react/config/config";
-import type { NavItem } from "@nubase/react/config/types";
+import type { NubaseFrontendConfig } from "@repo/react/config/config";
+import type { NavItem } from "@repo/react/config/types";
 
-export const config: NubaseFrontendConfig = {
+export const config = {
   appName: "Ticket",
   mainMenu: [
     {
