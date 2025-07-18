@@ -21,7 +21,7 @@
     "build:ts": "tsup",
     "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
     "build:storybook": "storybook build",
-    "build": "npm run build:ts && npm run build:css",
+    "build": "npm run build:ts && npm run build:css && npm run build:storybook",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
