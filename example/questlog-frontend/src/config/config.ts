@@ -1,13 +1,6 @@
-import type { NavItem } from "@nubase/core";
+import { mainMenu } from "./main-menu";
 
 export const config = {
-  appName: "Ticket",
-  mainMenu: [
-    {
-      id: "home",
-      label: "Home",
-      href: "/",
-      children: [],
-    } satisfies NavItem,
-  ],
+  appName: "Questlog",
+  mainMenu: mainMenu,
 };
