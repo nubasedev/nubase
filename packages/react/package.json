@@ -2,9 +2,19 @@
   "name": "@nubase/react",
   "version": "0.1.0",
   "description": "React components and utilities for nubase",
-  "keywords": ["react", "components", "forms", "table", "ui"],
-  "sideEffects": ["**/*.css"],
-  "files": ["dist"],
+  "keywords": [
+    "react",
+    "components",
+    "forms",
+    "table",
+    "ui"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -54,6 +64,7 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
     "@nubase/core": "*",
     "@tailwindcss/cli": "^4.1.3",
     "@tailwindcss/postcss": "^4.1.3",
