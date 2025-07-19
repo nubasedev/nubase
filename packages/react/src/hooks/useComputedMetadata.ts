@@ -133,7 +133,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [formDataKey, computeMetadata, debounceMs, schema]);
+  }, [formData, computeMetadata, debounceMs, schema]);
 
   return {
     metadata,

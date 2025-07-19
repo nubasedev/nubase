@@ -45,9 +45,11 @@ describe("getLayout (useLayout logic)", () => {
     expect(firstGroup?.fields).toHaveLength(3);
 
     // All fields should have size 12 (full width)
-    firstGroup?.fields.forEach((field: any) => {
-      expect(field.size).toBe(12);
-    });
+    if (firstGroup?.fields) {
+      for (const field of firstGroup.fields) {
+        expect((field as any).size).toBe(12);
+      }
+    }
   });
 
   it("should return the specified layout when it exists in the schema", () => {
