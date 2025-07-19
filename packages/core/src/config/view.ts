@@ -1,3 +1,4 @@
+import type { HttpClient } from "../http/http-client";
 import type { ObjectSchema } from "../schema/schema";
 
 export type ViewType = "object";
@@ -10,6 +11,7 @@ export type ViewBase = {
 export type CreateView = ViewBase & {
   type: "create";
   schema: ObjectSchema<any>;
+  onSubmit: ({ data, http }: { data: any; http: HttpClient }) => Promise<void>;
 };
 
 export type ViewView = ViewBase & {

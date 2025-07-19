@@ -6,3 +6,6 @@ export * from "./schema/nu";
 export * from "./config/nubase-frontend-config";
 export * from "./config/nav-item";
 export * from "./config/view";
+
+// HTTP
+export * from "./http/http-client";
