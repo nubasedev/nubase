@@ -10,7 +10,7 @@ import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { useComputedMetadata } from "../../hooks/useComputedMetadata";
 import { useLayout } from "../../hooks/useLayout";
-import { Button } from "../form-controls/Button/Button";
+import { Button } from "../buttons/Button/Button";
 import { FormControl } from "../form-controls/FormControl/FormControl";
 import { TextInput } from "../form-controls/TextInput/TextInput";
 

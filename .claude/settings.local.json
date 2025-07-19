@@ -10,7 +10,8 @@
       "Bash(find:*)",
       "Bash(npm install:*)",
       "Bash(npx biome check:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

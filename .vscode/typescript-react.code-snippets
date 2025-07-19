@@ -16,7 +16,7 @@
       "    </div>",
       "  );",
       "};",
-      "",
+      ""
     ],
     "description": "Create a React functional component with TypeScript using React 19 standards"
   },
