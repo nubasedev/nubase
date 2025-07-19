@@ -2,72 +2,69 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
-  /* Tailwind Internal Variables */
-  --tw-border-style: solid;
-  
-  /* Semantic colors that will use CSS custom properties */
-  --color-border: var(--color-border);
-  --color-border-focus: var(--color-border-focus);
-  --color-border-error: var(--color-border-error);
-  --color-primary: var(--color-primary);
-  --color-secondary: var(--color-secondary);
-  --color-error: var(--color-error);
-  --color-text: var(--color-text);
-  --color-text-muted: var(--color-text-muted);
-  --color-text-placeholder: var(--color-text-placeholder);
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-surface-hover: var(--color-surface-hover);
+  /* Semantic colors that reference theme-specific variables */
+  --color-border: var(--theme-border);
+  --color-border-focus: var(--theme-border-focus);
+  --color-border-error: var(--theme-border-error);
+  --color-primary: var(--theme-primary);
+  --color-secondary: var(--theme-secondary);
+  --color-error: var(--theme-error);
+  --color-text: var(--theme-text);
+  --color-text-muted: var(--theme-text-muted);
+  --color-text-placeholder: var(--theme-text-placeholder);
+  --color-background: var(--theme-background);
+  --color-surface: var(--theme-surface);
+  --color-surface-hover: var(--theme-surface-hover);
 }
 
 @layer base {
   [data-theme="light"] {
-    --color-primary: oklch(53.73% 0.192 264);
-    --color-secondary: oklch(54.16% 0.161 142);
-    --color-error: oklch(63% 0.24 27);
+    --theme-primary: oklch(53.73% 0.192 264);
+    --theme-secondary: oklch(54.16% 0.161 142);
+    --theme-error: oklch(63% 0.24 27);
 
-    --color-text: oklch(27% 0.012 286);
-    --color-text-muted: oklch(44% 0.012 286);
-    --color-text-placeholder: oklch(71% 0.007 286);
+    --theme-text: oklch(27% 0.012 286);
+    --theme-text-muted: oklch(44% 0.012 286);
+    --theme-text-placeholder: oklch(71% 0.007 286);
 
-    --color-background: oklch(98% 0 0);
-    --color-surface: oklch(100% 0 0);
-    --color-surface-hover: oklch(96% 0.001 286);
+    --theme-background: oklch(98% 0 0);
+    --theme-surface: oklch(100% 0 0);
+    --theme-surface-hover: oklch(96% 0.001 286);
 
-    --color-border: oklch(87% 0.005 286);
-    --color-border-focus: oklch(53.73% 0.192 264);
-    --color-border-error: oklch(63% 0.24 27);
+    --theme-border: oklch(87% 0.005 286);
+    --theme-border-focus: oklch(53.73% 0.192 264);
+    --theme-border-error: oklch(63% 0.24 27);
   }
 
   [data-theme="dark"] {
-    --color-primary: oklch(61.26% 0.165 264);
-    --color-secondary: oklch(61.44% 0.199 142);
-    --color-error: oklch(63% 0.24 27);
+    --theme-primary: oklch(61.26% 0.165 264);
+    --theme-secondary: oklch(61.44% 0.199 142);
+    --theme-error: oklch(63% 0.24 27);
 
-    --color-text: oklch(98% 0 0);
-    --color-text-muted: oklch(71% 0.007 286);
-    --color-text-placeholder: oklch(53% 0.011 286);
+    --theme-text: oklch(98% 0 0);
+    --theme-text-muted: oklch(71% 0.007 286);
+    --theme-text-placeholder: oklch(53% 0.011 286);
 
-    --color-background: oklch(9% 0.012 286);
-    --color-surface: oklch(17% 0.012 286);
-    --color-surface-hover: oklch(27% 0.012 286);
+    --theme-background: oklch(9% 0.012 286);
+    --theme-surface: oklch(17% 0.012 286);
+    --theme-surface-hover: oklch(27% 0.012 286);
 
-    --color-border: oklch(35% 0.012 286);
-    --color-border-focus: oklch(61.26% 0.165 264);
-    --color-border-error: oklch(63% 0.24 27);
+    --theme-border: oklch(35% 0.012 286);
+    --theme-border-focus: oklch(61.26% 0.165 264);
+    --theme-border-error: oklch(63% 0.24 27);
   }
 }
 
 @layer components {
   body {
-    color: var(--color-text);
-    background: var(--color-background);
+    color: var(--theme-text);
+    background: var(--theme-background);
   }
 
   h1 {
     font-size: var(--text-3xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-text);
+    color: var(--theme-text);
 
     @media (min-width: 768px) {
       font-size: var(--text-4xl);
