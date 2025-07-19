@@ -10,7 +10,7 @@ const meta: Meta = {
   decorators: [
     (Story) => (
       <ToastProvider>
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen p-8">
           <Story />
           <ToastContainer />
         </div>
@@ -25,7 +25,7 @@ type Story = StoryObj;
 export const Default: Story = {
   render: () => (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Toast Examples</h1>
+      <h1 className="text-2xl font-bold text-text">Toast Examples</h1>
 
       <div className="grid grid-cols-2 gap-4 max-w-2xl">
         <Button onClick={() => toast("This is a default toast message")}>
@@ -67,7 +67,7 @@ export const Default: Story = {
 export const MultipleToasts: Story = {
   render: () => (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Multiple Toasts</h1>
+      <h1 className="text-2xl font-bold text-text">Multiple Toasts</h1>
 
       <div className="space-x-4">
         <Button
@@ -99,7 +99,7 @@ export const MultipleToasts: Story = {
 export const PromiseToasts: Story = {
   render: () => (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Promise Toasts</h1>
+      <h1 className="text-2xl font-bold text-text">Promise Toasts</h1>
 
       <div className="space-x-4">
         <Button
@@ -157,7 +157,7 @@ export const PromiseToasts: Story = {
 export const CustomContent: Story = {
   render: () => (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Custom Content</h1>
+      <h1 className="text-2xl font-bold text-text">Custom Content</h1>
 
       <div className="space-x-4">
         <Button
@@ -196,7 +196,7 @@ export const CustomContent: Story = {
 export const LongDuration: Story = {
   render: () => (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Duration Examples</h1>
+      <h1 className="text-2xl font-bold text-text">Duration Examples</h1>
 
       <div className="space-x-4">
         <Button onClick={() => toast("Quick toast (1s)", { duration: 1000 })}>
@@ -212,6 +212,65 @@ export const LongDuration: Story = {
 
         <Button onClick={() => toast("Long toast (10s)", { duration: 10000 })}>
           10 Seconds
+        </Button>
+      </div>
+    </div>
+  ),
+};
+
+export const DarkModeDemo: Story = {
+  render: () => (
+    <div className="space-y-6" data-theme="dark">
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-text">
+          Dark Mode Toast Examples
+        </h1>
+        <p className="text-text-muted">
+          This demo shows how toasts look in dark mode with proper theming.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 max-w-2xl">
+        <Button onClick={() => toast("Default toast in dark mode")}>
+          Default Toast
+        </Button>
+
+        <Button
+          onClick={() => toast.success("Success in dark mode!")}
+          variant="secondary"
+        >
+          Success Toast
+        </Button>
+
+        <Button
+          onClick={() => toast.error("Error in dark mode")}
+          variant="danger"
+        >
+          Error Toast
+        </Button>
+
+        <Button onClick={() => toast.warning("Warning in dark mode")}>
+          Warning Toast
+        </Button>
+
+        <Button onClick={() => toast.info("Info in dark mode")}>
+          Info Toast
+        </Button>
+
+        <Button
+          onClick={() => {
+            const promise = new Promise((resolve) => {
+              setTimeout(resolve, 2000);
+            });
+
+            toast.promise(promise, {
+              loading: "Processing in dark mode...",
+              success: "Done in dark mode!",
+              error: "Failed in dark mode",
+            });
+          }}
+        >
+          Promise Toast
         </Button>
       </div>
     </div>

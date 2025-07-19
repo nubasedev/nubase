@@ -6,6 +6,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import type { FC } from "react";
+import { cn } from "../../../utils";
 import { Button } from "../../buttons/Button/Button";
 import type { ToastData } from "./types";
 
@@ -17,27 +18,31 @@ export interface ToastProps {
 const typeConfig = {
   default: {
     icon: null,
-    className: "bg-white border-gray-200 text-gray-900",
+    className: "bg-surface border-border text-text",
   },
   success: {
     icon: IconCheck,
-    className: "bg-green-50 border-green-200 text-green-800",
+    className:
+      "bg-secondary/10 border-secondary/20 text-secondary dark:bg-secondary/20 dark:border-secondary/30 dark:text-secondary",
   },
   error: {
     icon: IconX,
-    className: "bg-red-50 border-red-200 text-red-800",
+    className:
+      "bg-error/10 border-error/20 text-error dark:bg-error/20 dark:border-error/30 dark:text-error",
   },
   warning: {
     icon: IconAlertTriangle,
-    className: "bg-yellow-50 border-yellow-200 text-yellow-800",
+    className:
+      "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
   },
   info: {
     icon: IconInfoCircle,
-    className: "bg-blue-50 border-blue-200 text-blue-800",
+    className:
+      "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
   },
   promise: {
     icon: IconLoader2,
-    className: "bg-gray-50 border-gray-200 text-gray-800",
+    className: "bg-surface border-border text-text",
   },
 };
 
@@ -47,17 +52,18 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
 
   return (
     <div
-      className={`
-        flex items-start gap-3 p-4 rounded-lg border shadow-lg min-w-80 max-w-md
-        transform transition-all duration-300 ease-out
-        ${config.className}
-      `}
+      className={cn(
+        "flex items-start gap-3 p-4 rounded-lg border shadow-lg min-w-80 max-w-md",
+        "transform transition-all duration-300 ease-out",
+        config.className,
+      )}
     >
       {Icon && (
         <Icon
-          className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
-            toast.type === "promise" ? "animate-spin" : ""
-          }`}
+          className={cn(
+            "h-5 w-5 mt-0.5 flex-shrink-0",
+            toast.type === "promise" && "animate-spin",
+          )}
         />
       )}
 
@@ -72,7 +78,7 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
           variant="secondary"
           size="icon"
           onClick={onClose}
-          className="h-6 w-6 p-0 hover:bg-black/10"
+          className={cn("h-6 w-6 p-0", "hover:bg-surface-hover")}
         >
           <IconX className="h-4 w-4" />
         </Button>
