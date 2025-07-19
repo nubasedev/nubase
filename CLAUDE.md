@@ -52,21 +52,52 @@ The core package implements a schema system with these key concepts:
 
 ### React Component Architecture
 
-The React package provides:
+The React package provides a comprehensive component library organized into these categories:
 
-1. **Form System** - SchemaForm component with TanStack Form integration
-2. **Form Controls** - TextInput, Button, Label, FormControl components
-3. **Hooks** - useComputedMetadata, useLayout for schema-driven UI
-4. **Routing** - TanStack Router integration for navigation
-5. **Styling** - Tailwind CSS with theme support
+#### Component Categories
+1. **Button System** - Button (5 variants, 4 sizes), ButtonBar (flexible alignment)
+2. **Form Controls** - FormControl (TanStack Form integration), TextInput (multiple types), Label (required indicators)
+3. **Form System** - SchemaForm (schema-driven forms with computed metadata and layouts)
+4. **Floating UI** - Dialog (confirmations), Modal (multi-size), Toast (6 types including promise toasts)
+5. **Navigation** - MainNav (hierarchical navigation with search and badges)
+6. **Application Shell** - NubaseApp (router integration and app bootstrap)
+
+#### Design Patterns
+- **Class Variance Authority (CVA)** - Type-safe variant-based styling across all components
+- **Compound Components** - FormControl enhances child form elements with labels, hints, and error states
+- **Hook-based APIs** - Custom hooks (useDialog, useModal, useToast) for programmatic control
+- **Provider Pattern** - Context-based state management for floating UI components
+- **Schema Integration** - Automatic form generation from @nubase/core ObjectSchema definitions
+
+#### Key Features
+- **Type Safety** - Full TypeScript support with generics preserving schema types
+- **Accessibility** - ARIA attributes, screen reader support, keyboard navigation, focus management
+- **Theme Support** - Dark mode via data-theme attributes, consistent design tokens
+- **Performance** - Debounced form updates (200ms), memoized filtering, efficient re-rendering
+- **Storybook Integration** - Comprehensive documentation with interactive examples and variant showcases
 
 ### Key Files to Understand
 
+#### Core Package
 - `packages/core/src/schema/schema.ts` - Core schema definitions and types
 - `packages/core/src/schema/nu.ts` - Schema builder utilities
-- `packages/react/src/form/SchemaForm.tsx` - Main form component
-- `packages/react/src/hooks/useComputedMetadata.ts` - Computed metadata hook
-- `packages/react/src/hooks/useLayout.ts` - Layout management hook
+
+#### React Package - Components
+- `packages/react/src/components/form/SchemaForm.tsx` - Main schema-driven form component
+- `packages/react/src/components/form-controls/FormControl/` - Form control wrapper with validation
+- `packages/react/src/components/buttons/Button/` - Primary button component with CVA variants
+- `packages/react/src/components/floating/dialog/` - Confirmation dialog system
+- `packages/react/src/components/floating/modal/` - Modal system with backdrop and stacking
+- `packages/react/src/components/floating/toast/` - Toast notification system
+- `packages/react/src/components/main-nav/` - Hierarchical navigation component
+- `packages/react/src/components/nubase-app/` - Application shell and router integration
+
+#### React Package - Hooks & Utilities
+- `packages/react/src/hooks/useComputedMetadata.ts` - Computed metadata hook with debouncing
+- `packages/react/src/hooks/useLayout.ts` - Layout management hook for schema forms
+- `packages/react/src/hooks/useDialog.ts` - Programmatic dialog control
+- `packages/react/src/hooks/useModal.ts` - Programmatic modal control
+- `packages/react/src/hooks/useToast.ts` - Toast notification management
 
 ## Development Notes
 
