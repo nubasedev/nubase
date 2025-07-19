@@ -2,9 +2,19 @@
   "name": "@nubase/react",
   "version": "0.1.0",
   "description": "React components and utilities for nubase",
-  "keywords": ["react", "components", "forms", "table", "ui"],
-  "sideEffects": ["**/*.css"],
-  "files": ["dist"],
+  "keywords": [
+    "react",
+    "components",
+    "forms",
+    "table",
+    "ui"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -39,6 +49,7 @@
     "@repo/typescript-config": "*",
     "@storybook/addon-docs": "^9.0.10",
     "@storybook/addon-onboarding": "^9.0.10",
+    "@storybook/addon-themes": "^9.0.17",
     "@storybook/react-vite": "^9.0.10",
     "@tailwindcss/cli": "^4.0.12",
     "@tailwindcss/postcss": "^4.0.12",
