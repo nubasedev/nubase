@@ -1,7 +1,7 @@
-import { createRoot } from "react-dom/client";
-import "@nubase/react/styles.css";
 import { NubaseApp } from "@nubase/react";
+import { createRoot } from "react-dom/client";
 import { config } from "./config/config";
+import "./styles/theme-example.css";
 
 const root = document.getElementById("root");
 if (!root) {

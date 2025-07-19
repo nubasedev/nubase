@@ -1,0 +1,20 @@
+/* Theme-specific CSS variables example for questlog-frontend */
+@import "@nubase/react/styles.css";
+
+@layer base {
+  /* Light theme overrides */
+  [data-theme="light"] {
+    /* --theme-background: oklch(96% 0.005 120); */
+    /* --app-header-background: oklch(100% 0 0); */
+    /* --app-sidebar-background: oklch(98% 0.002 120); */
+    /* --app-card-background: oklch(100% 0 0); */
+  }
+
+  /* Dark theme overrides */
+  [data-theme="dark"] {
+    /* --theme-background: oklch(12% 0.015 240);  */
+    /* --app-header-background: oklch(15% 0.015 240); */
+    /* --app-sidebar-background: oklch(10% 0.015 240); */
+    /* --app-card-background: oklch(18% 0.015 240); */
+  }
+}

@@ -54,9 +54,9 @@ export const Dialog: FC<DialogProps> = ({
       zIndex={zIndex}
     >
       {(title || showCloseButton) && (
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
           {title && (
-            <DialogTitle className="text-lg font-semibold text-gray-900">
+            <DialogTitle className="text-lg font-semibold text-text">
               {title}
             </DialogTitle>
           )}
@@ -71,7 +71,7 @@ export const Dialog: FC<DialogProps> = ({
       <div className="px-6 py-4">{children}</div>
 
       {onConfirm && (
-        <div className="border-t border-gray-200 px-6 py-4">
+        <div className="border-t border-border px-6 py-4">
           <ButtonBar>
             <Button variant="secondary" onClick={onClose}>
               {cancelText}

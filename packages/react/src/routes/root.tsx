@@ -1,14 +1,24 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { AppNavigator } from "../components/floating/app-navigator";
 import { MainNav } from "../components/main-nav/MainNav";
 import { useNubaseConfig } from "../config/NubaseConfigContext";
 
 function RootComponent() {
+  const [isAppNavigatorOpen, setIsAppNavigatorOpen] = useState(false);
+
   // Set dark mode on mount
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", "dark");
   }, []);
+
+  // App Navigator hotkey
+  useHotkeys("meta+k, ctrl+k", (event) => {
+    event.preventDefault();
+    setIsAppNavigatorOpen(true);
+  });
 
   const config = useNubaseConfig();
 
@@ -32,6 +42,12 @@ function RootComponent() {
 
       {/* Development Tools - Top Right */}
       <TanStackRouterDevtools position="top-right" />
+
+      {/* App Navigator */}
+      <AppNavigator
+        open={isAppNavigatorOpen}
+        onClose={() => setIsAppNavigatorOpen(false)}
+      />
     </div>
   );
 }

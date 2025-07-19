@@ -1,6 +1,6 @@
 import { IconMoon, IconSun } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { Button } from "../../buttons/Button/Button";
+import { Button } from "../buttons/Button/Button";
 
 export interface ThemeToggleProps {
   className?: string;

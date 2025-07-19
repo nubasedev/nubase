@@ -59,7 +59,7 @@ export const Modal: FC<ModalProps> = ({
 
       <div className={`fixed inset-0 flex p-4 ${alignmentClasses[alignment]}`}>
         <DialogPanel
-          className={`w-full ${sizeClasses[size]} rounded-lg bg-white shadow-xl ring-1 ring-black/5 transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 ${className}`}
+          className={`w-full ${sizeClasses[size]} rounded-lg bg-surface shadow-xl ring-1 ring-border/20 transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 ${className}`}
         >
           {showCloseButton && (
             <div className="flex justify-end p-2">

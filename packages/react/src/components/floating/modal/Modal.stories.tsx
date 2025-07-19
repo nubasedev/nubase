@@ -63,8 +63,8 @@ export const Default: Story = {
   args: {
     children: (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Default Modal</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-text">Default Modal</h3>
+        <p className="text-text-muted">
           This is a basic modal centered on the screen with a backdrop.
         </p>
         <ButtonBar>
@@ -82,10 +82,8 @@ export const TopAligned: Story = {
     alignment: "top",
     children: (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Top Aligned Modal
-        </h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-text">Top Aligned Modal</h3>
+        <p className="text-text-muted">
           This modal appears at the top of the screen, similar to VS Code's
           command palette.
         </p>
@@ -101,8 +99,8 @@ export const NoBackdrop: Story = {
     showCloseButton: true,
     children: (
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">No Backdrop</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-text">No Backdrop</h3>
+        <p className="text-text-muted">
           This modal has no backdrop, allowing interaction with content behind
           it.
         </p>
@@ -117,12 +115,12 @@ const StackingModalExample = () => {
   const openFirstModal = () => {
     openModal(
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">First Modal</h3>
-        <p className="text-gray-600">This is the first modal in the stack.</p>
+        <h3 className="text-lg font-semibold text-text">First Modal</h3>
+        <p className="text-text-muted">This is the first modal in the stack.</p>
         <Button variant="secondary" onClick={openSecondModal}>
           Open Second Modal
         </Button>
-        <div className="text-sm text-gray-500">Modal count: {modalCount}</div>
+        <div className="text-sm text-text-muted">Modal count: {modalCount}</div>
       </div>,
     );
   };
@@ -130,14 +128,14 @@ const StackingModalExample = () => {
   const openSecondModal = () => {
     openModal(
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Second Modal</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-text">Second Modal</h3>
+        <p className="text-text-muted">
           This is the second modal, stacked on top.
         </p>
         <Button variant="secondary" onClick={openThirdModal}>
           Open Third Modal
         </Button>
-        <div className="text-sm text-gray-500">Modal count: {modalCount}</div>
+        <div className="text-sm text-text-muted">Modal count: {modalCount}</div>
       </div>,
     );
   };
@@ -145,12 +143,12 @@ const StackingModalExample = () => {
   const openThirdModal = () => {
     openModal(
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Third Modal</h3>
-        <p className="text-gray-600">
+        <h3 className="text-lg font-semibold text-text">Third Modal</h3>
+        <p className="text-text-muted">
           This is the third modal. Click outside any modal to close them one by
           one.
         </p>
-        <div className="text-sm text-gray-500">Modal count: {modalCount}</div>
+        <div className="text-sm text-text-muted">Modal count: {modalCount}</div>
       </div>,
     );
   };
@@ -158,7 +156,7 @@ const StackingModalExample = () => {
   return (
     <div className="space-y-4">
       <Button onClick={openFirstModal}>Open Stacking Modal</Button>
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-text-muted">
         Click the button to open a modal, then click buttons inside to stack
         more modals. Click outside any modal to close them one by one.
       </p>
@@ -223,13 +221,13 @@ const VSCodeCommandPaletteExample = () => {
         <Button
           variant="secondary"
           onClick={() => setIsOpen(true)}
-          className="bg-gray-800 text-white hover:bg-gray-700"
+          className="bg-surface-hover text-text hover:bg-surface"
         >
           <IconCommand className="h-4 w-4" />
           Open Command Palette
-          <span className="text-xs text-gray-400">Cmd+P</span>
+          <span className="text-xs text-text-muted">Cmd+P</span>
         </Button>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-text-muted">
           Click to open a VS Code-style command palette modal at the top of the
           screen.
         </p>
@@ -244,13 +242,13 @@ const VSCodeCommandPaletteExample = () => {
       >
         <div className="space-y-3">
           <div className="relative">
-            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-placeholder" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Type a command or search..."
-              className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border border-border py-2 pl-10 pr-4 text-sm text-text bg-surface focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-primary/20"
             />
           </div>
 
@@ -261,31 +259,33 @@ const VSCodeCommandPaletteExample = () => {
                   <button
                     key={index}
                     type="button"
-                    className="flex items-center space-x-3 rounded-md px-3 py-2 hover:bg-gray-100 cursor-pointer w-full text-left"
+                    className="flex items-center space-x-3 rounded-md px-3 py-2 hover:bg-surface-hover cursor-pointer w-full text-left"
                     onClick={() => setIsOpen(false)}
                   >
-                    <cmd.icon className="h-4 w-4 text-gray-500" />
+                    <cmd.icon className="h-4 w-4 text-text-muted" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-text">
                         {cmd.name}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-text-muted">
                         {cmd.description}
                       </div>
                     </div>
-                    <div className="text-xs text-gray-400">{cmd.shortcut}</div>
+                    <div className="text-xs text-text-muted">
+                      {cmd.shortcut}
+                    </div>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="py-8 text-center text-sm text-gray-500">
+              <div className="py-8 text-center text-sm text-text-muted">
                 No commands found for "{searchTerm}"
               </div>
             )}
           </div>
 
-          <div className="border-t border-gray-200 pt-2 text-xs text-gray-500">
-            Press <kbd className="rounded border border-gray-300 px-1">Esc</kbd>{" "}
+          <div className="border-t border-border pt-2 text-xs text-text-muted">
+            Press <kbd className="rounded border border-border px-1">Esc</kbd>{" "}
             to close
           </div>
         </div>

@@ -69,7 +69,7 @@ export const Default: Story = {
     title: "Confirm Action",
     children: (
       <div className="space-y-4">
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           Are you sure you want to proceed with this action? This cannot be
           undone.
         </p>
@@ -93,7 +93,7 @@ export const DangerAction: Story = {
     confirmVariant: "danger",
     children: (
       <div className="space-y-4">
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           This will permanently delete the selected item. This action cannot be
           undone.
         </p>
@@ -117,7 +117,7 @@ export const CustomButtons: Story = {
     cancelText: "Discard",
     children: (
       <div className="space-y-4">
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           You have unsaved changes. Do you want to save them before leaving?
         </p>
       </div>
@@ -145,7 +145,7 @@ export const NoConfirmAction: Story = {
           title="Information"
         >
           <div className="space-y-4">
-            <p className="text-gray-600">
+            <p className="text-text-muted">
               This is an informational dialog without confirmation buttons. It
               only has the close button.
             </p>
@@ -173,7 +173,7 @@ const UseDialogExample = () => {
     confirmDialog.show({
       title: "Save Document",
       content: (
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           Do you want to save your changes to the document?
         </p>
       ),
@@ -191,7 +191,7 @@ const UseDialogExample = () => {
       title: "Delete Item",
       content: (
         <div className="space-y-2">
-          <p className="text-gray-600">
+          <p className="text-text-muted">
             This will permanently delete the selected item.
           </p>
           <p className="text-sm font-medium text-red-600">
@@ -212,7 +212,7 @@ const UseDialogExample = () => {
     infoDialog.show({
       title: "Information",
       content: (
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           This is an informational dialog created with useDialog hook.
         </p>
       ),
@@ -232,7 +232,7 @@ const UseDialogExample = () => {
         </Button>
       </div>
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-text-muted">
         Click the buttons to see different dialog types using the useDialog
         hook. Check the browser console for confirmation actions.
       </p>
@@ -270,7 +270,7 @@ const StackedDialogsExample = () => {
       title: "First Dialog",
       content: (
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-text-muted">
             This is the first dialog in the stack.
           </p>
           <Button variant="secondary" onClick={openSecondDialog}>
@@ -288,7 +288,7 @@ const StackedDialogsExample = () => {
       title: "Second Dialog",
       content: (
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-text-muted">
             This is the second dialog, stacked on top.
           </p>
           <Button variant="secondary" onClick={openThirdDialog}>
@@ -305,7 +305,7 @@ const StackedDialogsExample = () => {
     dialog3.show({
       title: "Third Dialog",
       content: (
-        <p className="text-gray-600">
+        <p className="text-text-muted">
           This is the third dialog. Dialogs stack properly on top of each other.
         </p>
       ),
@@ -319,7 +319,7 @@ const StackedDialogsExample = () => {
     <div className="space-y-4">
       <Button onClick={openFirstDialog}>Open Stacking Dialog</Button>
 
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-text-muted">
         Click to open dialogs that can stack on top of each other. Each dialog
         can open another dialog while remaining open itself.
       </p>
