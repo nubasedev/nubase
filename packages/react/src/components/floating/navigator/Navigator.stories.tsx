@@ -1,26 +1,32 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { Button } from "../../buttons/Button/Button";
-import { AppNavigator } from "./AppNavigator";
+import { ModalNavigator } from "./ModalNavigator";
+import { Navigator } from "./Navigator";
 
-const meta: Meta<typeof AppNavigator> = {
-  title: "Floating/AppNavigator",
-  component: AppNavigator,
+const meta: Meta<typeof Navigator> = {
+  title: "Floating/Navigator",
+  component: Navigator,
   parameters: {
     layout: "centered",
   },
   tags: ["autodocs"],
-  argTypes: {
-    open: {
-      control: "boolean",
-    },
-  },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  render: () => {
+    return (
+      <div className="max-w-lg">
+        <Navigator />
+      </div>
+    );
+  },
+};
+
+export const WithModal: Story = {
   render: () => {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -30,15 +36,8 @@ export const Default: Story = {
         <p className="text-sm text-text-muted">
           Press Cmd+K (Mac) or Ctrl+K (Windows/Linux) to open the app navigator
         </p>
-        <AppNavigator open={isOpen} onClose={() => setIsOpen(false)} />
+        <ModalNavigator open={isOpen} onClose={() => setIsOpen(false)} />
       </div>
     );
-  },
-};
-
-export const Open: Story = {
-  args: {
-    open: true,
-    onClose: () => {},
   },
 };

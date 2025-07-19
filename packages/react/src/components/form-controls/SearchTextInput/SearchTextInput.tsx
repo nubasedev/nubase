@@ -1,3 +1,4 @@
+import { IconSearch } from "@tabler/icons-react";
 import { type VariantProps, cva } from "class-variance-authority";
 import type React from "react";
 import { forwardRef } from "react";
@@ -40,24 +41,13 @@ const SearchTextInput = forwardRef<HTMLInputElement, SearchTextInputProps>(
           className={cn(searchInputVariants({ size, hasError }), className)}
           {...props}
         />
-        <div className={cn(
-          "absolute top-1/2 transform -translate-y-1/2 text-text-placeholder pointer-events-none",
-          size === "sm" ? "left-2" : size === "lg" ? "left-4" : "left-3"
-        )}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-label="Search"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+        <div
+          className={cn(
+            "absolute top-1/2 transform -translate-y-1/2 text-text-placeholder pointer-events-none",
+            size === "sm" ? "left-2" : size === "lg" ? "left-4" : "left-3",
+          )}
+        >
+          <IconSearch className="h-4 w-4" />
         </div>
       </div>
     );

@@ -73,7 +73,11 @@ export const States: Story = {
       <SearchTextInput placeholder="Normal state" />
       <SearchTextInput placeholder="Error state" hasError={true} />
       <SearchTextInput placeholder="Disabled state" disabled />
-      <SearchTextInput placeholder="Read only" readOnly value="Read only search" />
+      <SearchTextInput
+        placeholder="Read only"
+        readOnly
+        value="Read only search"
+      />
     </div>
   ),
 };

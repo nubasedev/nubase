@@ -2,7 +2,7 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { AppNavigator } from "../components/floating/app-navigator";
+import { ModalNavigator } from "../components/floating/navigator";
 import { MainNav } from "../components/main-nav/MainNav";
 import { useNubaseConfig } from "../config/NubaseConfigContext";
 
@@ -44,7 +44,7 @@ function RootComponent() {
       <TanStackRouterDevtools position="top-right" />
 
       {/* App Navigator */}
-      <AppNavigator
+      <ModalNavigator
         open={isAppNavigatorOpen}
         onClose={() => setIsAppNavigatorOpen(false)}
       />

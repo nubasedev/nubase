@@ -19,6 +19,7 @@ export type ModalProps = {
   className?: string;
   size?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
   zIndex?: number;
+  initialFocus?: React.RefObject<HTMLElement | null>;
 };
 
 const sizeClasses = {
@@ -45,6 +46,7 @@ export const Modal: FC<ModalProps> = ({
   className = "",
   size = "md",
   zIndex = 50,
+  initialFocus,
 }) => {
   return (
     <HeadlessDialog
@@ -52,9 +54,10 @@ export const Modal: FC<ModalProps> = ({
       onClose={onClose}
       className="relative"
       style={{ zIndex }}
+      initialFocus={initialFocus}
     >
       {showBackdrop && (
-        <DialogBackdrop className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
+        <DialogBackdrop className="fixed inset-0 bg-black/30 backdrop-blur-xxs transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
       )}
 
       <div className={`fixed inset-0 flex p-4 ${alignmentClasses[alignment]}`}>
