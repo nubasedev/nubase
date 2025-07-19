@@ -25,7 +25,7 @@ export const NubaseConfigProvider = ({
   );
 };
 
-export const useNubaseConfig = () => {
+export function useNubaseConfig(): NubaseFrontendConfig {
   const context = useContext(NubaseConfigContext);
   if (context === undefined) {
     throw new Error(
@@ -33,4 +33,4 @@ export const useNubaseConfig = () => {
     );
   }
   return context.config;
-};
+}

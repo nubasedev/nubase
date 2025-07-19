@@ -4,11 +4,17 @@ export type ViewType = "object";
 
 export type ViewBase = {
   title: string;
+  id: string;
 };
 
-export type ObjectView = ViewBase & {
-  type: "object";
+export type CreateView = ViewBase & {
+  type: "create";
   schema: ObjectSchema<any>;
 };
 
-export type View = ObjectView;
+export type ViewView = ViewBase & {
+  type: "view";
+  schema: ObjectSchema<any>;
+};
+
+export type View = CreateView | ViewView;

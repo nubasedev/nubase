@@ -1,13 +1,5 @@
 import { useParams, useSearch } from "@tanstack/react-router";
 
-interface ResourceParams {
-  resource: string;
-}
-
-interface ResourceSearch {
-  id?: string;
-}
-
 export default function ResourceScreen() {
   const { resource } = useParams({ from: "/r/$resource" });
   const { id } = useSearch({ from: "/r/$resource" });

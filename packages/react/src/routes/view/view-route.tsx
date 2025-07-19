@@ -1,12 +1,12 @@
 import { createRoute } from "@tanstack/react-router";
-import ResourceScreen from "../screens/Resource";
-import { rootRoute } from "./root";
+import { rootRoute } from "../root";
+import ViewScreen from "./view-screen";
 
-export const resourceRoute = createRoute({
+export const viewRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/r/$resource",
+  path: "/v/$view",
   validateSearch: (search: Record<string, unknown>) => ({
     id: search.id as string | undefined,
   }),
-  component: ResourceScreen,
+  component: ViewScreen,
 });

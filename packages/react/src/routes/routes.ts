@@ -1,10 +1,4 @@
-import { aboutRoute } from "./about";
-import { homeRoute } from "./home";
-import { resourceRoute } from "./resource";
 import { rootRoute } from "./root";
+import { viewRoute } from "./view/view-route";
 
-export const routeTree = rootRoute.addChildren([
-  homeRoute,
-  aboutRoute,
-  resourceRoute,
-]);
+export const routeTree = rootRoute.addChildren([viewRoute]);

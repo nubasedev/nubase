@@ -6,6 +6,6 @@ export const config: NubaseFrontendConfig = {
   appName: "Questlog",
   mainMenu: mainMenu,
   views: {
-    createTicketView: createTicketView,
+    [createTicketView.id]: createTicketView,
   },
 };
