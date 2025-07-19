@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { Button } from "../../buttons/Button/Button";
 import { ModalNavigator } from "./ModalNavigator";
-import { Navigator } from "./Navigator";
+import { ModalNavigatorContent } from "./Navigator";
 
-const meta: Meta<typeof Navigator> = {
-  title: "Floating/Navigator",
-  component: Navigator,
+const meta: Meta<typeof ModalNavigator> = {
+  title: "Navigation/ModalNavigator",
+  component: ModalNavigator,
   parameters: {
     layout: "centered",
   },
@@ -20,7 +20,7 @@ export const Default: Story = {
   render: () => {
     return (
       <div className="max-w-lg">
-        <Navigator />
+        <ModalNavigatorContent />
       </div>
     );
   },

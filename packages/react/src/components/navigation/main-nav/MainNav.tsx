@@ -1,9 +1,9 @@
 import type { NavItem } from "@nubase/core";
 import type { VariantProps } from "class-variance-authority";
 import { forwardRef, useEffect, useMemo, useState } from "react";
-import { cn } from "../../utils";
-import { ThemeToggle } from "../floating";
-import { SearchTextInput } from "../form-controls";
+import { cn } from "../../../utils";
+import { ThemeToggle } from "../../floating";
+import { SearchTextInput } from "../../form-controls";
 import { NavItems } from "./NavItems";
 import { filterNavItems, flattenNavItems } from "./types";
 import { mainNavVariants } from "./variants";

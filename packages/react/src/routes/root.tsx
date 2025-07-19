@@ -2,8 +2,8 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { ModalNavigator } from "../components/floating/navigator";
-import { MainNav } from "../components/main-nav/MainNav";
+import { MainNav } from "../components/navigation/main-nav/MainNav";
+import { ModalNavigator } from "../components/navigation/modal-navigator";
 import { useNubaseConfig } from "../config/NubaseConfigContext";
 
 function RootComponent() {

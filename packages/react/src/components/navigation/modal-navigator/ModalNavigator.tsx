@@ -1,12 +1,15 @@
 import type { FC } from "react";
 import { useRef } from "react";
-import { Modal } from "../modal/Modal";
-import { Navigator, type NavigatorProps } from "./Navigator";
+import { Modal } from "../../floating/modal/Modal";
+import {
+  ModalNavigatorContent,
+  type ModalNavigatorContentProps,
+} from "./Navigator";
 
 export type ModalNavigatorProps = {
   open: boolean;
   onClose: () => void;
-} & Omit<NavigatorProps, "onClose">;
+} & Omit<ModalNavigatorContentProps, "onClose">;
 
 export const ModalNavigator: FC<ModalNavigatorProps> = ({
   open,
@@ -26,7 +29,11 @@ export const ModalNavigator: FC<ModalNavigatorProps> = ({
       className="max-h-96"
       initialFocus={inputRef}
     >
-      <Navigator ref={inputRef} onClose={onClose} {...navigatorProps} />
+      <ModalNavigatorContent
+        ref={inputRef}
+        onClose={onClose}
+        {...navigatorProps}
+      />
     </Modal>
   );
 };

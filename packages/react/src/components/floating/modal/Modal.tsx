@@ -72,7 +72,7 @@ export const Modal: FC<ModalProps> = ({
             </div>
           )}
 
-          <div className={showCloseButton ? "px-6 pb-6" : "p-6"}>
+          <div className={showCloseButton ? "px-4 pb-4" : "p-4"}>
             {children}
           </div>
         </DialogPanel>

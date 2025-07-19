@@ -1,38 +1,60 @@
 import type { NavItem } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { MainNav } from "src/components/main-nav/MainNav";
+import { MainNav } from "./MainNav";
+
+const meta: Meta<typeof MainNav> = {
+  title: "Navigation/MainNav",
+  component: MainNav,
+  parameters: {
+    layout: "fullscreen",
+  },
+  tags: ["autodocs"],
+  argTypes: {
+    width: {
+      control: { type: "select" },
+      options: ["sm", "md", "lg"],
+    },
+    items: {
+      control: { type: "object" },
+    },
+    searchPlaceholder: {
+      control: { type: "text" },
+    },
+    activeItemId: {
+      control: { type: "text" },
+    },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 // Sample navigation data
 const sampleNavItems: NavItem[] = [
   {
     id: "dashboard",
     label: "Dashboard",
-    icon: "📊",
     href: "/dashboard",
   },
   {
     id: "projects",
     label: "Projects",
-    icon: "📁",
     children: [
       {
         id: "project-1",
         label: "Project Alpha",
-        icon: "🚀",
         href: "/projects/alpha",
       },
       {
         id: "project-2",
         label: "Project Beta",
-        icon: "⚡",
         href: "/projects/beta",
         badge: "3",
       },
       {
         id: "project-3",
         label: "Project Gamma",
-        icon: "🎯",
         href: "/projects/gamma",
         disabled: true,
       },
@@ -41,42 +63,35 @@ const sampleNavItems: NavItem[] = [
   {
     id: "team",
     label: "Team",
-    icon: "👥",
     children: [
       {
         id: "members",
         label: "Members",
-        icon: "👤",
         href: "/team/members",
         badge: "12",
       },
       {
         id: "roles",
         label: "Roles & Permissions",
-        icon: "🔐",
         href: "/team/roles",
       },
       {
         id: "departments",
         label: "Departments",
-        icon: "🏢",
         children: [
           {
             id: "engineering",
             label: "Engineering",
-            icon: "⚙️",
             href: "/team/departments/engineering",
           },
           {
             id: "design",
             label: "Design",
-            icon: "🎨",
             href: "/team/departments/design",
           },
           {
             id: "product",
             label: "Product",
-            icon: "📱",
             href: "/team/departments/product",
           },
         ],
@@ -86,18 +101,15 @@ const sampleNavItems: NavItem[] = [
   {
     id: "analytics",
     label: "Analytics",
-    icon: "📈",
     children: [
       {
         id: "reports",
         label: "Reports",
-        icon: "📋",
         href: "/analytics/reports",
       },
       {
         id: "insights",
         label: "Insights",
-        icon: "💡",
         href: "/analytics/insights",
       },
     ],
@@ -105,25 +117,21 @@ const sampleNavItems: NavItem[] = [
   {
     id: "settings",
     label: "Settings",
-    icon: "⚙️",
     children: [
       {
         id: "general",
         label: "General",
-        icon: "🔧",
         href: "/settings/general",
       },
       {
         id: "integrations",
         label: "Integrations",
-        icon: "🔗",
         href: "/settings/integrations",
         badge: "NEW",
       },
       {
         id: "billing",
         label: "Billing",
-        icon: "💳",
         href: "/settings/billing",
       },
     ],
@@ -173,33 +181,6 @@ const deepNavItems: NavItem[] = [
     ],
   },
 ];
-
-const meta: Meta<typeof MainNav> = {
-  title: "Components/MainNav",
-  component: MainNav,
-  parameters: {
-    layout: "fullscreen",
-  },
-  tags: ["autodocs"],
-  argTypes: {
-    width: {
-      control: { type: "select" },
-      options: ["sm", "md", "lg"],
-    },
-    items: {
-      control: { type: "object" },
-    },
-    searchPlaceholder: {
-      control: { type: "text" },
-    },
-    activeItemId: {
-      control: { type: "text" },
-    },
-  },
-};
-
-export default meta;
-type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
@@ -391,24 +372,20 @@ export const WithClickHandlers: Story = {
       {
         id: "dashboard",
         label: "Dashboard",
-        icon: "📊",
         onClick: () => alert("Dashboard clicked!"),
       },
       {
         id: "tools",
         label: "Tools",
-        icon: "🔧",
         children: [
           {
             id: "calculator",
             label: "Calculator",
-            icon: "🧮",
             onClick: () => alert("Calculator clicked!"),
           },
           {
             id: "editor",
             label: "Text Editor",
-            icon: "📝",
             onClick: () => alert("Text Editor clicked!"),
           },
         ],

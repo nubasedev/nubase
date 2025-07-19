@@ -1,5 +1,5 @@
 export * from "./form";
 export * from "./form-controls";
 export * from "./floating";
-export * from "./main-nav";
+export * from "./navigation/main-nav";
 export * from "./nubase-app";
