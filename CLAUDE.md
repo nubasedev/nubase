@@ -102,8 +102,8 @@ The React package provides a comprehensive component library organized into thes
 ## Development Notes
 
 - Uses Biome for code formatting and linting (configured in biome.json)
-- TypeScript configuration shared via @repo/typescript-config
 - Tailwind CSS v4 for styling
+- Icons from https://tabler.io/icons (SVG icons inline in components)
 - Storybook for component development
 - Vitest for testing
 - All packages are published to npm under @nubase scope

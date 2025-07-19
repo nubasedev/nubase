@@ -30,8 +30,8 @@ function RootComponent() {
         </div>
       </div>
 
-      {/* Development Tools */}
-      <TanStackRouterDevtools />
+      {/* Development Tools - Top Right */}
+      <TanStackRouterDevtools position="top-right" />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { NavItem } from "@nubase/core";
 import type { VariantProps } from "class-variance-authority";
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { cn } from "../../utils";
+import { ThemeToggle } from "../floating";
 import { NavItems } from "./NavItems";
 import { filterNavItems, flattenNavItems } from "./types";
 import { mainNavVariants, searchVariants } from "./variants";
@@ -138,6 +139,11 @@ export const MainNav = forwardRef<HTMLDivElement, MainNavProps>(
             onToggle={handleToggle}
             onItemClick={handleItemClick}
           />
+        </div>
+
+        {/* Bottom Section */}
+        <div className="p-1 border-t border-border">
+          <ThemeToggle />
         </div>
       </div>
     );
