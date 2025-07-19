@@ -28,7 +28,7 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
 
   return (
     <Button
-      variant="ghost"
+      variant="secondary"
       size="icon"
       onClick={toggleTheme}
       className={className}

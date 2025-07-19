@@ -41,7 +41,7 @@ export const Default: Story = {
 
         <Button
           onClick={() => toast.error("Something went wrong")}
-          variant="destructive"
+          variant="danger"
         >
           Error Toast
         </Button>
@@ -130,7 +130,7 @@ export const PromiseToasts: Story = {
               error: "Request failed",
             });
           }}
-          variant="destructive"
+          variant="danger"
         >
           Promise Error
         </Button>

@@ -6,7 +6,7 @@ export type HomeScreenProps = {};
 const HomeScreen: FC<HomeScreenProps> = (props) => {
   return (
     <div>
-      <Button variant="default">Click me</Button>
+      <Button variant="primary">Click me</Button>
     </div>
   );
 };

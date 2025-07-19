@@ -92,7 +92,7 @@ export const DangerAction: Story = {
   args: {
     title: "Delete Item",
     confirmText: "Delete",
-    confirmVariant: "destructive",
+    confirmVariant: "danger",
     children: (
       <div className="space-y-4">
         <p className="text-gray-600">
@@ -204,7 +204,7 @@ const UseDialogExample = () => {
         </div>
       ),
       confirmText: "Delete",
-      confirmVariant: "destructive",
+      confirmVariant: "danger",
       onConfirm: () => {
         console.log("Item deleted!");
         // Simulate delete action
@@ -231,7 +231,7 @@ const UseDialogExample = () => {
           Save Document
         </Button>
         <Button
-          variant="destructive"
+          variant="danger"
           onClick={handleDeleteItem}
         >
           Delete Item
@@ -328,7 +328,7 @@ const StackedDialogsExample = () => {
         </p>
       ),
       confirmText: "Close Third",
-      confirmVariant: "destructive",
+      confirmVariant: "danger",
       onConfirm: () => console.log("Third dialog confirmed"),
     });
   };

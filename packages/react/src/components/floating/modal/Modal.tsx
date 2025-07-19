@@ -64,7 +64,7 @@ export const Modal: FC<ModalProps> = ({
           {showCloseButton && (
             <div className="flex justify-end p-2">
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="icon"
                 onClick={onClose}
               >

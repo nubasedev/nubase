@@ -61,7 +61,7 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
 
       {toast.closable && (
         <Button
-          variant="ghost"
+          variant="secondary"
           size="icon"
           onClick={onClose}
           className="h-6 w-6 p-0 hover:bg-black/10"

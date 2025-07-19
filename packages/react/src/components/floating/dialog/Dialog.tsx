@@ -17,7 +17,7 @@ export type DialogProps = {
   alignment?: ModalAlignment;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: "default" | "destructive";
+  confirmVariant?: "primary" | "danger";
   showBackdrop?: boolean;
   zIndex?: number;
 };
@@ -35,7 +35,7 @@ export const Dialog: FC<DialogProps> = ({
   alignment = "center",
   confirmText = "Confirm",
   cancelText = "Cancel",
-  confirmVariant = "default",
+  confirmVariant = "primary",
   showBackdrop = true,
   zIndex,
 }) => {
@@ -63,7 +63,7 @@ export const Dialog: FC<DialogProps> = ({
           )}
           {showCloseButton && (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
               onClick={onClose}
             >

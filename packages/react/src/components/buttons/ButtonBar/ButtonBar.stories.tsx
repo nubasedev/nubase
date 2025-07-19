@@ -63,9 +63,9 @@ export const MultipleButtons: Story = {
   render: () => (
     <div className="w-96 space-y-4">
       <ButtonBar>
-        <Button variant="ghost">Back</Button>
+        <Button variant="secondary">Back</Button>
         <Button variant="secondary">Cancel</Button>
-        <Button variant="outline">Save Draft</Button>
+        <Button variant="secondary">Save Draft</Button>
         <Button>Publish</Button>
       </ButtonBar>
     </div>
@@ -87,7 +87,7 @@ export const DestructiveActions: Story = {
     <div className="w-96 space-y-4">
       <ButtonBar>
         <Button variant="secondary">Cancel</Button>
-        <Button variant="destructive">Delete</Button>
+        <Button variant="danger">Delete</Button>
       </ButtonBar>
     </div>
   ),

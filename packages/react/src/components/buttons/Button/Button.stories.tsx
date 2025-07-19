@@ -1,4 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import {
+  IconFolder,
+  IconMail,
+  IconRocket,
+  IconSettings,
+} from "@tabler/icons-react";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
@@ -11,7 +17,7 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: { type: "select" },
-      options: ["default", "secondary", "outline", "ghost", "destructive"],
+      options: ["primary", "secondary", "danger"],
     },
     size: {
       control: { type: "select" },
@@ -32,11 +38,9 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
-      <Button variant="default">Default</Button>
+      <Button variant="primary">Primary</Button>
       <Button variant="secondary">Secondary</Button>
-      <Button variant="outline">Outline</Button>
-      <Button variant="ghost">Ghost</Button>
-      <Button variant="destructive">Destructive</Button>
+      <Button variant="danger">Danger</Button>
     </div>
   ),
 };
@@ -47,7 +51,9 @@ export const Sizes: Story = {
       <Button size="sm">Small</Button>
       <Button size="md">Medium</Button>
       <Button size="lg">Large</Button>
-      <Button size="icon">🚀</Button>
+      <Button size="icon">
+        <IconRocket size={16} />
+      </Button>
     </div>
   ),
 };
@@ -65,36 +71,17 @@ export const WithIcons: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
       <Button>
-        <span>📧</span>
+        <IconMail size={16} />
         Send Email
       </Button>
-      <Button variant="outline">
-        <span>📁</span>
+      <Button variant="secondary">
+        <IconFolder size={16} />
         Save File
       </Button>
-      <Button variant="ghost">
-        <span>⚙️</span>
+      <Button variant="danger">
+        <IconSettings size={16} />
         Settings
       </Button>
     </div>
   ),
-};
-
-export const DarkMode: Story = {
-  args: {
-    children: "Dark Mode Button",
-  },
-  decorators: [
-    (Story) => (
-      <div data-theme="dark" className="p-8 bg-background">
-        <div className="flex gap-4 flex-wrap">
-          <Button variant="default">Default</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="destructive">Destructive</Button>
-        </div>
-      </div>
-    ),
-  ],
 };

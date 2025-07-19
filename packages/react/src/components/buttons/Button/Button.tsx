@@ -8,15 +8,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
+        primary:
           "bg-primary text-white hover:bg-primary/90 focus:ring-primary/20 shadow-sm hover:-translate-y-0.5 active:translate-y-0",
         secondary:
           "bg-surface text-text border border-border hover:bg-surface-hover hover:border-border/80 focus:ring-border/20 shadow-sm",
-        outline:
-          "border border-primary bg-transparent text-primary hover:bg-primary/10 focus:ring-primary/20",
-        ghost:
-          "bg-transparent text-text hover:bg-surface-hover focus:ring-text/10",
-        destructive:
+        danger:
           "bg-error text-white hover:bg-error/90 focus:ring-error/20 shadow-sm hover:-translate-y-0.5 active:translate-y-0",
       },
       size: {
@@ -27,7 +23,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "md",
     },
   },
