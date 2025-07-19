@@ -49,9 +49,7 @@ const DialogWithState = (args: any) => {
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>
-        Open Dialog
-      </Button>
+      <Button onClick={() => setIsOpen(true)}>Open Dialog</Button>
       <Dialog
         {...args}
         open={isOpen}
@@ -140,9 +138,7 @@ export const NoConfirmAction: Story = {
 
     return (
       <>
-        <Button onClick={() => setIsOpen(true)}>
-          Open Info Dialog
-        </Button>
+        <Button onClick={() => setIsOpen(true)}>Open Info Dialog</Button>
         <Dialog
           open={isOpen}
           onClose={() => setIsOpen(false)}
@@ -227,19 +223,11 @@ const UseDialogExample = () => {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
-        <Button onClick={handleSaveDocument}>
-          Save Document
-        </Button>
-        <Button
-          variant="danger"
-          onClick={handleDeleteItem}
-        >
+        <Button onClick={handleSaveDocument}>Save Document</Button>
+        <Button variant="danger" onClick={handleDeleteItem}>
           Delete Item
         </Button>
-        <Button
-          variant="secondary"
-          onClick={showInfo}
-        >
+        <Button variant="secondary" onClick={showInfo}>
           Show Info
         </Button>
       </div>
@@ -285,10 +273,7 @@ const StackedDialogsExample = () => {
           <p className="text-gray-600">
             This is the first dialog in the stack.
           </p>
-          <Button
-            variant="secondary"
-            onClick={openSecondDialog}
-          >
+          <Button variant="secondary" onClick={openSecondDialog}>
             Open Second Dialog
           </Button>
         </div>
@@ -306,10 +291,7 @@ const StackedDialogsExample = () => {
           <p className="text-gray-600">
             This is the second dialog, stacked on top.
           </p>
-          <Button
-            variant="secondary"
-            onClick={openThirdDialog}
-          >
+          <Button variant="secondary" onClick={openThirdDialog}>
             Open Third Dialog
           </Button>
         </div>
@@ -335,9 +317,7 @@ const StackedDialogsExample = () => {
 
   return (
     <div className="space-y-4">
-      <Button onClick={openFirstDialog}>
-        Open Stacking Dialog
-      </Button>
+      <Button onClick={openFirstDialog}>Open Stacking Dialog</Button>
 
       <p className="text-sm text-gray-600">
         Click to open dialogs that can stack on top of each other. Each dialog

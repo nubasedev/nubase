@@ -3,7 +3,7 @@ import { IconX } from "@tabler/icons-react";
 import type { FC, ReactNode } from "react";
 import { Button } from "../../buttons/Button/Button";
 import { ButtonBar } from "../../buttons/ButtonBar/ButtonBar";
-import { Modal, type ModalAlignment, type ModalProps } from "../modal/Modal";
+import { Modal, type ModalAlignment } from "../modal/Modal";
 
 export type DialogProps = {
   open: boolean;
@@ -21,7 +21,6 @@ export type DialogProps = {
   showBackdrop?: boolean;
   zIndex?: number;
 };
-
 
 export const Dialog: FC<DialogProps> = ({
   open,
@@ -62,11 +61,7 @@ export const Dialog: FC<DialogProps> = ({
             </DialogTitle>
           )}
           {showCloseButton && (
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={onClose}
-            >
+            <Button variant="secondary" size="icon" onClick={onClose}>
               <IconX className="h-5 w-5" />
             </Button>
           )}
@@ -78,16 +73,10 @@ export const Dialog: FC<DialogProps> = ({
       {onConfirm && (
         <div className="border-t border-gray-200 px-6 py-4">
           <ButtonBar>
-            <Button
-              variant="secondary"
-              onClick={onClose}
-            >
+            <Button variant="secondary" onClick={onClose}>
               {cancelText}
             </Button>
-            <Button
-              variant={confirmVariant}
-              onClick={handleConfirm}
-            >
+            <Button variant={confirmVariant} onClick={handleConfirm}>
               {confirmText}
             </Button>
           </ButtonBar>

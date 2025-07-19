@@ -23,10 +23,7 @@ export const ToastContainer: FC<ToastContainerProps> = ({ className = "" }) => {
           key={toast.id}
           className="animate-in slide-in-from-right-full fade-in duration-300"
         >
-          <Toast
-            toast={toast}
-            onClose={() => removeToast(toast.id)}
-          />
+          <Toast toast={toast} onClose={() => removeToast(toast.id)} />
         </div>
       ))}
     </div>

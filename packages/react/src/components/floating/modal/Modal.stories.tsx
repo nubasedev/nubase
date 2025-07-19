@@ -52,9 +52,7 @@ const BasicModalExample = (args: any) => {
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>
-        Open Modal
-      </Button>
+      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
       <Modal {...args} open={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );
@@ -70,12 +68,8 @@ export const Default: Story = {
           This is a basic modal centered on the screen with a backdrop.
         </p>
         <ButtonBar>
-          <Button variant="secondary">
-            Cancel
-          </Button>
-          <Button>
-            Confirm
-          </Button>
+          <Button variant="secondary">Cancel</Button>
+          <Button>Confirm</Button>
         </ButtonBar>
       </div>
     ),
@@ -125,10 +119,7 @@ const StackingModalExample = () => {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">First Modal</h3>
         <p className="text-gray-600">This is the first modal in the stack.</p>
-        <Button
-          variant="secondary"
-          onClick={openSecondModal}
-        >
+        <Button variant="secondary" onClick={openSecondModal}>
           Open Second Modal
         </Button>
         <div className="text-sm text-gray-500">Modal count: {modalCount}</div>
@@ -143,10 +134,7 @@ const StackingModalExample = () => {
         <p className="text-gray-600">
           This is the second modal, stacked on top.
         </p>
-        <Button
-          variant="secondary"
-          onClick={openThirdModal}
-        >
+        <Button variant="secondary" onClick={openThirdModal}>
           Open Third Modal
         </Button>
         <div className="text-sm text-gray-500">Modal count: {modalCount}</div>
@@ -169,9 +157,7 @@ const StackingModalExample = () => {
 
   return (
     <div className="space-y-4">
-      <Button onClick={openFirstModal}>
-        Open Stacking Modal
-      </Button>
+      <Button onClick={openFirstModal}>Open Stacking Modal</Button>
       <p className="text-sm text-gray-600">
         Click the button to open a modal, then click buttons inside to stack
         more modals. Click outside any modal to close them one by one.

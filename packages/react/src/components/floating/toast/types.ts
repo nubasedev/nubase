@@ -1,8 +1,18 @@
 import type { ReactNode } from "react";
 
-export type ToastType = "default" | "success" | "error" | "warning" | "info" | "promise";
+export type ToastType =
+  | "default"
+  | "success"
+  | "error"
+  | "warning"
+  | "info"
+  | "promise";
 
-export type ToastPosition = "bottom-right" | "bottom-left" | "top-right" | "top-left";
+export type ToastPosition =
+  | "bottom-right"
+  | "bottom-left"
+  | "top-right"
+  | "top-left";
 
 export interface ToastData {
   id: string;

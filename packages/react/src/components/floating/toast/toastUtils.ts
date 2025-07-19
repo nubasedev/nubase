@@ -2,9 +2,13 @@ import type { ReactNode } from "react";
 import type { ToastOptions } from "./types";
 
 // Global toast function - will be initialized by ToastProvider
-let globalToast: ((message: ReactNode, options?: ToastOptions) => string) | null = null;
+let globalToast:
+  | ((message: ReactNode, options?: ToastOptions) => string)
+  | null = null;
 
-export const setGlobalToast = (toastFn: (message: ReactNode, options?: ToastOptions) => string) => {
+export const setGlobalToast = (
+  toastFn: (message: ReactNode, options?: ToastOptions) => string,
+) => {
   globalToast = toastFn;
 };
 
@@ -41,7 +45,10 @@ toast.promise = <T>(
     success: ReactNode;
     error: ReactNode;
   },
-  options?: Omit<ToastOptions, "type" | "promise" | "loadingText" | "successText" | "errorText">
+  options?: Omit<
+    ToastOptions,
+    "type" | "promise" | "loadingText" | "successText" | "errorText"
+  >,
 ) => {
   return toast(messages.loading, {
     ...options,

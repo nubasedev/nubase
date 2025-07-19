@@ -1,4 +1,10 @@
-import { IconCheck, IconX, IconAlertTriangle, IconInfoCircle, IconLoader2 } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconInfoCircle,
+  IconLoader2,
+  IconX,
+} from "@tabler/icons-react";
 import type { FC } from "react";
 import { Button } from "../../buttons/Button/Button";
 import type { ToastData } from "./types";
@@ -48,15 +54,17 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
       `}
     >
       {Icon && (
-        <Icon 
+        <Icon
           className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
             toast.type === "promise" ? "animate-spin" : ""
-          }`} 
+          }`}
         />
       )}
-      
+
       <div className="flex-1 text-sm">
-        {toast.type === "promise" && toast.loadingText ? toast.loadingText : toast.message}
+        {toast.type === "promise" && toast.loadingText
+          ? toast.loadingText
+          : toast.message}
       </div>
 
       {toast.closable && (
