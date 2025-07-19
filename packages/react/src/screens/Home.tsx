@@ -1,9 +1,14 @@
 import type { FC } from "react";
+import { Button } from "../components";
 
 export type HomeScreenProps = {};
 
 const HomeScreen: FC<HomeScreenProps> = (props) => {
-  return <div>This the home page 10</div>;
+  return (
+    <div>
+      <Button variant="default">Click me</Button>
+    </div>
+  );
 };
 
 export default HomeScreen;
