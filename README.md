@@ -1,5 +1,11 @@
 # Nubase
 
+[![Build Status](https://github.com/nubasedev/nubase/workflows/CI/badge.svg)](https://github.com/nubasedev/nubase/actions)
+[![Docs](https://img.shields.io/badge/docs-deployed-brightgreen?logo=vercel)](https://www.nubase.dev)
+[![Storybook](https://img.shields.io/badge/storybook-deployed-brightgreen?logo=vercel)](https://storybook.nubase.dev)
+[![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A highly-opinionated, batteries-included, meta-framework for building business applications and internal tools with TypeScript.
 
 ## What is Nubase?
