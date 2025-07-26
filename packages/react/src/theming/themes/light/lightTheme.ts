@@ -5,42 +5,42 @@ export const lightTheme: NubaseTheme = {
   type: "light",
   id: "light",
   colors: {
-    // Primary colors
-    primary: "#6750A4",
+    // Primary colors - Modern vibrant blue-purple
+    primary: "#6366F1",
     onPrimary: "#FFFFFF",
-    primaryContainer: "#EADDFF",
-    onPrimaryContainer: "#21005D",
+    primaryContainer: "#E0E7FF",
+    onPrimaryContainer: "#1E1B4B",
 
-    // Secondary colors
-    secondary: "#625B71",
+    // Secondary colors - Sophisticated slate
+    secondary: "#64748B",
     onSecondary: "#FFFFFF",
-    secondaryContainer: "#E8DEF8",
-    onSecondaryContainer: "#1D192B",
+    secondaryContainer: "#E2E8F0",
+    onSecondaryContainer: "#0F172A",
 
-    // Tertiary colors
-    tertiary: "#7D5260",
+    // Tertiary colors - Warm emerald accent
+    tertiary: "#059669",
     onTertiary: "#FFFFFF",
-    tertiaryContainer: "#FFD8E4",
-    onTertiaryContainer: "#31111D",
+    tertiaryContainer: "#D1FAE5",
+    onTertiaryContainer: "#064E3B",
 
-    // Error colors
-    error: "#BA1A1A",
+    // Error colors - Modern red
+    error: "#DC2626",
     onError: "#FFFFFF",
-    errorContainer: "#FFDAD6",
-    onErrorContainer: "#410002",
+    errorContainer: "#FEE2E2",
+    onErrorContainer: "#7F1D1D",
 
-    // Surface colors
-    surface: "#FEF7FF",
-    onSurface: "#1C1B1F",
-    surfaceVariant: "#E7E0EC",
-    onSurfaceVariant: "#49454F",
+    // Surface colors - Clean neutral base
+    surface: "#FFFFFF",
+    onSurface: "#0F172A",
+    surfaceVariant: "#F8FAFC",
+    onSurfaceVariant: "#475569",
 
     // Other colors
-    outline: "#79747E",
-    outlineVariant: "#918B95",
+    outline: "#CBD5E1",
+    outlineVariant: "#E2E8F0",
     shadow: "#000000",
     scrim: "#000000",
-    inverseSurface: "#313033",
-    onInverseSurface: "#F4EFF4",
+    inverseSurface: "#0F172A",
+    onInverseSurface: "#F8FAFC",
   },
 };

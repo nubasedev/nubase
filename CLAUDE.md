@@ -98,7 +98,8 @@ The React package provides a comprehensive component library organized into thes
 - `packages/react/src/theming/theme.ts` - Material Design 3 theme interface and color type definitions
 - `packages/react/src/theming/themes/light/lightTheme.ts` - Standard MD3 light theme
 - `packages/react/src/theming/themes/dark/darkTheme.ts` - Standard MD3 dark theme
-- `packages/react/src/theming/themes/dracula/draculaTheme.ts` - Dracula-inspired MD3 theme
+- `packages/react/src/theming/themes/darkhc/darkHighContrastTheme.ts` - Dark high contrast MD3 theme
+- `packages/react/src/theming/themes/lighthc/lightHighContrastTheme.ts` - Light high contrast MD3 theme
 - `packages/react/src/theming/runtime-theme-generator.ts` - Runtime CSS variable generation and theme switching
 - `packages/react/src/theme/theme.css` - Tailwind v4 theme configuration with MD3 color mappings
 
@@ -160,7 +161,8 @@ Each theme (`NubaseTheme`) contains:
 
 1. **Light Theme** (`lightTheme`) - Standard Material Design 3 light color scheme
 2. **Dark Theme** (`darkTheme`) - Standard Material Design 3 dark color scheme  
-3. **Dracula Theme** (`draculaTheme`) - Popular dark theme adapted to MD3 structure
+3. **Dark High Contrast Theme** (`darkHighContrastTheme`) - High contrast dark theme for accessibility
+4. **Light High Contrast Theme** (`lightHighContrastTheme`) - High contrast light theme for accessibility
 
 #### Runtime Theme System
 

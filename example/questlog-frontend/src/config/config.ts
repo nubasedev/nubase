@@ -9,6 +9,6 @@ export const config: NubaseFrontendConfig = {
     [createTicketView.id]: createTicketView,
   },
   apiBaseUrl: "http://localhost:3001",
-  themeIds: ["light", "dark", "dracula"],
+  themeIds: ["light", "dark", "darkhc", "lighthc"],
   defaultThemeId: "dark",
 };

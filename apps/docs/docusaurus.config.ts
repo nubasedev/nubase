@@ -7,7 +7,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 const config: Config = {
   title: "Nubase",
   tagline:
-    "Build business applications and internal tools at the speed of thought",
+    "Build business applications and internal tools at the speed of light",
   favicon: "img/favicon.ico",
 
   // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
