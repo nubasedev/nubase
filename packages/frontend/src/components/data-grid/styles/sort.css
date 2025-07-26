@@ -1,0 +1,23 @@
+@layer rdg.SortIcon {
+  .rdg-sort-arrow {
+    fill: currentColor;
+  }
+
+  .rdg-sort-arrow > path {
+    transition: d 0.1s;
+  }
+}
+
+@layer rdg.SortableHeaderCell {
+  .rdg-header-sort-cell {
+    display: flex;
+  }
+}
+
+@layer rdg.SortableHeaderCellName {
+  .rdg-header-sort-name {
+    flex-grow: 1;
+    overflow: clip;
+    text-overflow: ellipsis;
+  }
+}

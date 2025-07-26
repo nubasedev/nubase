@@ -1,0 +1,4 @@
+/* Theme-specific CSS variables example for questlog-frontend */
+@import "@nubase/frontend/styles.css";
+
+/** Override styles here */

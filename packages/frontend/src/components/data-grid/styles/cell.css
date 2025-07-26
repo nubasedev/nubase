@@ -1,0 +1,140 @@
+@layer rdg.Cell {
+  .rdg-cell {
+    /* max-content does not work with size containment
+     * dynamically switching between different containment styles incurs a heavy relayout penalty
+     * Chromium bug: at odd zoom levels or subpixel positioning,
+     * layout/paint/style containment can make cell borders disappear
+     *   https://issues.chromium.org/issues/40840864
+     */
+    position: relative; /* needed for absolute positioning to work */
+    padding-block: 0;
+    padding-inline: 8px;
+    border-inline-end: var(--rdg-border-width) solid var(--rdg-border-color);
+    border-block-end: var(--rdg-border-width) solid var(--rdg-border-color);
+    grid-row-start: var(--rdg-grid-row-start);
+    align-content: center;
+    background-color: inherit;
+
+    white-space: nowrap;
+    overflow: clip;
+    text-overflow: ellipsis;
+    outline: none;
+  }
+
+  .rdg-cell[aria-selected="true"] {
+    outline: var(--rdg-selection-width) solid var(--rdg-selection-color);
+    outline-offset: calc(var(--rdg-selection-width) * -1);
+  }
+}
+
+@layer rdg.Cell {
+  .rdg-cell-frozen {
+    position: sticky;
+    /* Should have a higher value than 0 to show up above unfrozen cells */
+    z-index: 1;
+  }
+
+  /* Add box-shadow on the last frozen cell */
+  .rdg-cell-frozen:nth-last-child(1 of .rdg-cell-frozen) {
+    box-shadow: var(--rdg-cell-frozen-box-shadow);
+  }
+}
+
+@layer rdg.DragHandle {
+  .rdg-cell-drag-handle {
+    --rdg-drag-handle-size: 8px;
+    z-index: 0;
+    cursor: move;
+    inline-size: var(--rdg-drag-handle-size);
+    block-size: var(--rdg-drag-handle-size);
+    background-color: var(--rdg-selection-color);
+    place-self: end;
+  }
+
+  .rdg-cell-drag-handle:hover {
+    --rdg-drag-handle-size: 16px;
+    border: 2px solid var(--rdg-selection-color);
+    background-color: var(--rdg-background-color);
+  }
+}
+
+@layer rdg.DragHandle {
+  .rdg-cell-drag-handle-frozen {
+    z-index: 1;
+    position: sticky;
+  }
+}
+
+@layer rdg.Cell {
+  .rdg-cell-dragged-over {
+    background-color: var(--accent);
+  }
+}
+
+@layer rdg.EditCell {
+  .rdg-cell-editing {
+    padding: 0;
+  }
+}
+
+@layer rdg.HeaderCell {
+  .rdg-cell-sortable {
+    cursor: pointer;
+  }
+
+  .rdg-cell-resizable {
+    touch-action: none;
+  }
+
+  .rdg-resize-handle {
+    cursor: col-resize;
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    inline-size: 10px;
+  }
+
+  .rdg-cell-dragging {
+    background-color: var(--rdg-header-draggable-background-color);
+  }
+
+  .rdg-cell-over {
+    background-color: var(--rdg-header-draggable-background-color);
+  }
+}
+
+@layer rdg.SummaryCell {
+  .rdg-summary-cell {
+    inset-block-start: var(--rdg-summary-row-top);
+    inset-block-end: var(--rdg-summary-row-bottom);
+  }
+}
+
+@layer rdg.MeasuringCell {
+  .rdg-measuring-cell {
+    contain: strict;
+    grid-row: 1;
+    visibility: hidden;
+  }
+}
+
+@layer rdg.TextEditor {
+  .rdg-text-editor {
+    appearance: none;
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 100%;
+    padding-block: 0;
+    padding-inline: 6px;
+    border: 2px solid var(--input);
+    vertical-align: top;
+    color: var(--rdg-color);
+    background-color: var(--rdg-background-color);
+  }
+
+  .rdg-text-editor:focus {
+    border-color: var(--rdg-selection-color);
+    outline: none;
+  }
+}

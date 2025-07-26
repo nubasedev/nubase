@@ -1,0 +1,57 @@
+{
+  "name": "with-tailwind",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "build:docs": "cd apps/docs && npm run build",
+    "build:storybook": "cd packages/frontend && npm run build:storybook",
+    "dev": "turbo run dev",
+    "dev:test": "turbo run dev:test",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "check-types": "turbo run check-types",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "storybook": "turbo run storybook",
+    "build:core": "cd packages/core && npm run build",
+    "build:frontend": "cd packages/frontend && npm run build",
+    "build:backend": "cd packages/backend && npm run build",
+    "build:questlog-backend": "cd example/questlog-backend && npm run build",
+    "build:questlog-frontend": "cd example/questlog-frontend && npm run build",
+    "build:frontend:storybook": "cd packages/frontend && npm run build:storybook",
+    "db:dev:up": "cd example/questlog-backend && npm run db:dev:up",
+    "db:dev:down": "cd example/questlog-backend && npm run db:dev:down",
+    "db:dev:kill": "cd example/questlog-backend && npm run db:dev:kill",
+    "db:dev:seed": "cd example/questlog-backend && npm run db:dev:seed",
+    "db:test:up": "cd example/questlog-backend && npm run db:test:up",
+    "db:test:down": "cd example/questlog-backend && npm run db:test:down",
+    "db:test:kill": "cd example/questlog-backend && npm run db:test:kill",
+    "e2e": "turbo run e2e",
+    "e2e:ui": "cd example/questlog-frontend && npm run e2e:ui",
+    "e2e:headed": "cd example/questlog-frontend && npm run e2e:headed",
+    "e2e:debug": "cd example/questlog-frontend && npm run e2e:debug",
+    "e2e:report": "cd example/questlog-frontend && npm run e2e:report",
+    "e2e:install": "cd example/questlog-frontend && npm run e2e:install",
+    "publish:core": "turbo run publish --filter=@nubase/core",
+    "publish:frontend": "turbo run publish --filter=@nubase/frontend",
+    "publish:backend": "turbo run publish --filter=@nubase/backend",
+    "publish:all": "turbo run publish --filter=\"@nubase/*\""
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "turbo": "^2.5.6",
+    "vitest": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18",
+    "npm": ">=10.9.2"
+  },
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "example/*"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@nubase/backend",
+  "version": "0.1.1",
+  "description": "Backend utilities and typed handlers for nubase",
+  "keywords": [
+    "backend",
+    "handlers",
+    "api",
+    "typescript"
+  ],
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --reporter=verbose --passWithNoTests",
+    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
+    "prepublishOnly": "npm run build",
+    "publish": "npm publish",
+    "watch": "tsup --watch",
+    "dev": "tsup --watch"
+  },
+  "peerDependencies": {
+    "hono": "^4"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "5.8.2",
+    "vitest": "^3.1.4"
+  },
+  "dependencies": {
+    "@nubase/core": "*"
+  }
+}

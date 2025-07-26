@@ -1,0 +1,52 @@
+{
+  "name": "questlog-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:test": "vite --mode test --port 4000",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:debug": "playwright test --debug",
+    "e2e:headed": "playwright test --headed",
+    "e2e:install": "playwright install",
+    "e2e:report": "playwright show-report",
+    "db:test:up": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml up -d",
+    "db:test:down": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml down",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe"
+  },
+  "dependencies": {
+    "@nubase/frontend": "*",
+    "@tailwindcss/vite": "4.1.4",
+    "@tanstack/react-router": "^1.121.2",
+    "@tanstack/react-router-devtools": "^1.121.12",
+    "questlog-schema": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwindcss": "4.1.4",
+    "vitest": "^3.1.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@tailwindcss/postcss": "^4.1.3",
+    "@types/node": "^20.11.17",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "globals": "^15.15.0",
+    "jsdom": "^26.1.0",
+    "node-fetch": "^2.7.0",
+    "postcss": "8.5.3",
+    "tailwindcss": "^4.1.3",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0"
+  }
+}

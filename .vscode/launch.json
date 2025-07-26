@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "npm run dev",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}"
+    },
+  {
+      "name": "npm run dev:test",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:test",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "npm run storybook",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run storybook",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

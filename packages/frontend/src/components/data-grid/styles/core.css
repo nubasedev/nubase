@@ -1,0 +1,91 @@
+@layer rdg.Defaults {
+  .rdg *,
+  .rdg *::before,
+  .rdg *::after {
+    box-sizing: inherit;
+  }
+}
+
+@layer rdg.Root {
+  .rdg {
+    --rdg-selection-width: 2px;
+    --rdg-selection-color: var(--primary);
+    --rdg-font-size: var(--text-sm);
+    --rdg-cell-frozen-box-shadow: 2px 0 5px -2px var(--border);
+    --rdg-border-width: 1px;
+    --rdg-summary-border-width: calc(var(--rdg-border-width) * 2);
+    --rdg-color: var(--foreground);
+    --rdg-border-color: var(--border);
+    --rdg-summary-border-color: var(--border);
+    --rdg-background-color: var(--background);
+    --rdg-header-background-color: var(--muted);
+    --rdg-header-draggable-background-color: var(--accent);
+    --rdg-row-hover-background-color: var(--muted);
+    --rdg-row-selected-background-color: var(--accent);
+    --rdg-row-selected-hover-background-color: var(--accent);
+
+    display: grid;
+
+    accent-color: var(--primary);
+
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context */
+    /* We set a stacking context so internal elements don't render on top of external elements. */
+    /* size containment is not used as it could break "width: min-content" for example, and the grid would infinitely resize on Chromium browsers */
+    contain: content;
+    content-visibility: auto;
+    border: 1px solid var(--rdg-border-color);
+    border-radius: var(--radius-md);
+    box-sizing: border-box;
+    overflow: auto;
+    background-color: var(--rdg-background-color);
+    color: var(--rdg-color);
+    font-size: var(--rdg-font-size);
+  }
+
+  .rdg:dir(rtl) {
+    --rdg-cell-frozen-box-shadow: -2px 0 5px -2px rgba(136, 136, 136, 0.3);
+  }
+
+  /* needed on Firefox to fix scrollbars */
+  .rdg::before {
+    content: "";
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+  }
+
+  .rdg > :nth-last-child(1 of .rdg-top-summary-row) > .rdg-cell {
+    border-block-end: var(--rdg-summary-border-width) solid
+      var(--rdg-summary-border-color);
+  }
+
+  .rdg > :nth-child(1 of .rdg-bottom-summary-row) > .rdg-cell {
+    border-block-start: var(--rdg-summary-border-width) solid
+      var(--rdg-summary-border-color);
+  }
+}
+
+@layer rdg.Root {
+  .rdg-viewport-dragging {
+    user-select: none;
+  }
+
+  .rdg-viewport-dragging .rdg-row {
+    cursor: move;
+  }
+}
+
+@layer rdg.FocusSink {
+  .rdg-focus-sink {
+    grid-column: 1 / -1;
+    pointer-events: none;
+    /* Should have a higher value than 1 to show up above regular frozen cells */
+    z-index: 1;
+  }
+}
+
+@layer rdg.FocusSink {
+  .rdg-focus-sink-header-and-summary {
+    /* Should have a higher value than 3 to show up above header and summary rows */
+    z-index: 3;
+  }
+}

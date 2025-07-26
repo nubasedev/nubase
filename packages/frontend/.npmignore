@@ -1,0 +1,8 @@
+*.stories.*
+*.test.*
+*.spec.*
+.storybook/
+storybook-static/
+node_modules/
+src/
+!dist/

@@ -1,0 +1,53 @@
+{
+  "name": "questlog-backend",
+  "type": "module",
+  "scripts": {
+    "build:cli": "tsup --config tsup.config.cli.js",
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "dev:test": "PORT=4001 DB_PORT=5435 NODE_ENV=test tsx watch src/index.ts",
+    "dev:cli": "npm run build:cli && node dist-cli/index.cjs",
+    "cli": "node dist-cli/index.cjs",
+    "start": "node dist/index.js",
+    "start:test": "PORT=4001 DB_PORT=5435 NODE_ENV=test node dist/index.js",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude='**/*.integration.test.ts'",
+    "test:integration": "vitest run '**/*.integration.test.ts'",
+    "test:watch": "vitest",
+    "test:integration:docker": "npm run db:test:up && npm run test:integration && npm run db:test:down",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
+    "db:dev:up": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml up -d",
+    "db:dev:down": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml down",
+    "db:dev:kill": "rm -rf docker/dev/postgresql-data",
+    "db:dev:seed": "NODE_ENV=development tsx src/db/seed.ts",
+    "db:test:up": "docker compose -p nubase-test -f docker/test/docker-compose.yml up -d",
+    "db:test:down": "docker compose -p nubase-test -f docker/test/docker-compose.yml down",
+    "db:test:kill": "rm -rf docker/test/postgresql-data",
+    "db:pg-dump": "npm run dev:cli -- pg-dump",
+    "db:pg-dump-data": "npm run dev:cli -- pg-dump-data"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@hono/node-server": "^1.14.1",
+    "@nubase/backend": "*",
+    "commander": "^11.0.0",
+    "dotenv": "^17.2.0",
+    "drizzle-orm": "^0.31.4",
+    "esbuild": "^0.25.8",
+    "hono": "^4.7.8",
+    "pg": "^8.15.4",
+    "questlog-schema": "*",
+    "shelljs": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@types/pg": "^8.15.4",
+    "@types/shelljs": "^0.8.17",
+    "drizzle-kit": "^0.31.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

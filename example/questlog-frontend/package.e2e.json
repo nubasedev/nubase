@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:debug": "playwright test --debug",
+    "e2e:headed": "playwright test --headed",
+    "e2e:install": "playwright install",
+    "e2e:report": "playwright show-report",
+    "db:test:up": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml up -d",
+    "db:test:down": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml down"
+  }
+}

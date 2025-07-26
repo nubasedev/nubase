@@ -1,0 +1,13 @@
+services:
+  postgresql:
+    container_name: nubase-db-test
+    image: "postgres:17.5"
+    volumes:
+      - ./postgresql-data:/var/lib/postgresql/data
+      - ./postgresql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=questlog
+      - POSTGRES_USER=questlog
+      - POSTGRES_PASSWORD=questlog
