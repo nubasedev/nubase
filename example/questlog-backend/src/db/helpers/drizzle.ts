@@ -1,4 +1,5 @@
 import { type NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
+import { Client } from "pg";
 
 declare global {
   // allow global `var` declarations
@@ -14,7 +15,8 @@ export function getDb() {
       );
     }
     const databaseUrl = process.env.DATABASE_URL;
-    global.db = drizzle(databaseUrl);
+    const client = new Client({ connectionString: databaseUrl });
+    global.db = drizzle(client);
   }
 
   return global.db;

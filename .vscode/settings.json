@@ -1,5 +1,4 @@
 {
-  "typescript.preferences.includePackageJsonAutoImports": "auto",
   "typescript.preferences.importModuleSpecifier": "shortest",
   "typescript.preferences.importModuleSpecifierEnding": "minimal",
   "typescript.suggest.autoImports": true,
@@ -47,9 +46,7 @@
   },
   "files.watcherExclude": {
     "**/dist": true,
-    "**/dist/**": true,
     "**/build": true,
-    "**/build/**": true,
     "**/node_modules": true,
     "**/.git": true,
     "**/*.d.ts": true,
@@ -62,9 +59,7 @@
   },
   "search.exclude": {
     "**/dist": true,
-    "**/dist/**": true,
     "**/build": true,
-    "**/build/**": true,
     "**/node_modules": true,
     "**/.git": true,
     "**/*.d.ts": true,

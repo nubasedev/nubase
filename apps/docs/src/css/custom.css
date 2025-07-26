@@ -28,3 +28,25 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Global pitch black background */
+html {
+  --ifm-background-color: #000000;
+  --ifm-background-surface-color: #000000;
+  --ifm-navbar-background-color: #000000;
+  --ifm-footer-background-color: #000000;
+  --ifm-hero-background-color: #000000;
+}
+
+/* Force pitch black background on all major elements */
+body,
+.main-wrapper,
+.navbar,
+.footer,
+.hero,
+.docs-wrapper,
+.theme-doc-sidebar-container,
+.theme-doc-toc-desktop,
+.pagination-nav {
+  background-color: #000000 !important;
+}

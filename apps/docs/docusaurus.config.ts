@@ -152,6 +152,7 @@ const config: Config = {
     },
     colorMode: {
       defaultMode: "dark",
+      disableSwitch: true,
       respectPrefersColorScheme: false,
     },
   } satisfies Preset.ThemeConfig,

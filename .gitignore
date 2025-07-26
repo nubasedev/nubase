@@ -40,3 +40,6 @@ dist/
 
 # scratch
 .scratch
+
+# Affinity Design lock files
+*.afdesign~lock~
