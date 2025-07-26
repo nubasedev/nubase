@@ -2,6 +2,7 @@ import {
   type BaseSchema,
   BooleanSchema,
   type Infer,
+  type LayoutField,
   NumberSchema,
   type ObjectSchema,
   StringSchema,
@@ -12,8 +13,8 @@ import { useState } from "react";
 import { useComputedMetadata } from "../../hooks/useComputedMetadata";
 import { useLayout } from "../../hooks/useLayout";
 import { Button } from "../buttons/Button/Button";
-import { FormControl } from "../form-controls/FormControl/FormControl";
 import { FormFieldRenderer } from "./FormFieldRenderer";
+import { SchemaFormLayout } from "./SchemaFormLayout";
 
 export type SchemaFormProps<
   TSchema extends ObjectSchema<any>,
@@ -160,186 +161,67 @@ export const SchemaForm = <TSchema extends ObjectSchema<any>>({
         }}
         className="space-y-4"
       >
-        {/* Always render using layout configuration */}
-        <div className={`layout-${layout.type} ${layout.className || ""}`}>
-          {layout.groups.map((group, groupIndex) => (
-            <div
-              key={groupIndex}
-              className={`form-group ${group.className || ""} mb-6`}
-            >
-              {group.label && (
-                <h3 className="text-lg font-medium mb-3 text-onSurface">
-                  {group.label}
-                </h3>
-              )}
-              {group.description && (
-                <p className="text-sm text-onSurfaceVariant mb-3">
-                  {group.description}
-                </p>
-              )}
-              <div className="space-y-4">
-                {(() => {
-                  // Group fields into rows based on their sizes
-                  const rows: Array<typeof group.fields> = [];
-                  let currentRow: typeof group.fields = [];
-                  let currentRowWidth = 0;
+        <SchemaFormLayout
+          layout={layout}
+          renderField={(field: LayoutField<any>) => {
+            const fieldName = field.name as string;
+            const currentSchema = schema._shape[fieldName] as BaseSchema<any>;
+            const fieldMetadata =
+              mergedMetadata[fieldName] ?? currentSchema._meta;
 
-                  for (const field of group.fields) {
-                    if (field.hidden) continue;
+            // Validation function for submit - includes required field check
+            const validateFieldOnSubmit = ({ value }: { value: any }) => {
+              // Check if field is required and empty
+              if (fieldMetadata.required) {
+                if (value === undefined || value === null || value === "") {
+                  return "This field is required";
+                }
+              }
 
-                    const fieldSize = field.size || 12;
+              try {
+                currentSchema.parse(value);
+                return undefined;
+              } catch (error) {
+                return error instanceof Error ? error.message : "Invalid value";
+              }
+            };
 
-                    // If adding this field would exceed 12, start a new row
-                    if (
-                      currentRowWidth + fieldSize > 12 &&
-                      currentRow.length > 0
-                    ) {
-                      rows.push([...currentRow]);
-                      currentRow = [field];
-                      currentRowWidth = fieldSize;
-                    } else {
-                      currentRow.push(field);
-                      currentRowWidth += fieldSize;
-                    }
+            // Validation function for blur - only schema validation, no required check
+            const validateFieldOnBlur = ({ value }: { value: any }) => {
+              // Skip validation if field is empty (let submit handle required validation)
+              if (value === undefined || value === null || value === "") {
+                return undefined;
+              }
 
-                    // If this field exactly fills the row, start a new row
-                    if (currentRowWidth === 12) {
-                      rows.push([...currentRow]);
-                      currentRow = [];
-                      currentRowWidth = 0;
-                    }
-                  }
+              try {
+                currentSchema.parse(value);
+                return undefined;
+              } catch (error) {
+                return error instanceof Error ? error.message : "Invalid value";
+              }
+            };
 
-                  // Add any remaining fields in the last row
-                  if (currentRow.length > 0) {
-                    rows.push([...currentRow]);
-                  }
-
-                  return rows.map((row, rowIndex) => (
-                    <div
-                      key={rowIndex}
-                      className="grid grid-cols-12 gap-4 w-full"
-                    >
-                      {row.map((field) => {
-                        const fieldName = field.name as string;
-                        const currentSchema = schema._shape[
-                          fieldName
-                        ] as BaseSchema<any>;
-                        const fieldMetadata =
-                          mergedMetadata[fieldName] || currentSchema._meta;
-                        const fieldSize = field.size || 12;
-
-                        // Generate the correct col-span class based on size
-                        const getColSpanClass = (size: number) => {
-                          const colSpanMap: Record<number, string> = {
-                            1: "col-span-1",
-                            2: "col-span-2",
-                            3: "col-span-3",
-                            4: "col-span-4",
-                            5: "col-span-5",
-                            6: "col-span-6",
-                            7: "col-span-7",
-                            8: "col-span-8",
-                            9: "col-span-9",
-                            10: "col-span-10",
-                            11: "col-span-11",
-                            12: "col-span-12",
-                          };
-                          return colSpanMap[size] || "col-span-12";
-                        };
-
-                        // Validation function for submit - includes required field check
-                        const validateFieldOnSubmit = ({
-                          value,
-                        }: { value: any }) => {
-                          // Check if field is required and empty
-                          if (fieldMetadata.required) {
-                            if (
-                              value === undefined ||
-                              value === null ||
-                              value === ""
-                            ) {
-                              return "This field is required";
-                            }
-                          }
-
-                          try {
-                            currentSchema.parse(value);
-                            return undefined;
-                          } catch (error) {
-                            return error instanceof Error
-                              ? error.message
-                              : "Invalid value";
-                          }
-                        };
-
-                        // Validation function for blur - only schema validation, no required check
-                        const validateFieldOnBlur = ({
-                          value,
-                        }: { value: any }) => {
-                          // Skip validation if field is empty (let submit handle required validation)
-                          if (
-                            value === undefined ||
-                            value === null ||
-                            value === ""
-                          ) {
-                            return undefined;
-                          }
-
-                          try {
-                            currentSchema.parse(value);
-                            return undefined;
-                          } catch (error) {
-                            return error instanceof Error
-                              ? error.message
-                              : "Invalid value";
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={fieldName}
-                            className={`${getColSpanClass(fieldSize)} ${field.className || ""}`}
-                          >
-                            <form.Field
-                              name={fieldName}
-                              validators={{
-                                // Validate format on blur, but allow empty values
-                                onBlur: validateFieldOnBlur,
-                                // Full validation (including required) only on submit
-                                onSubmit: validateFieldOnSubmit,
-                              }}
-                            >
-                              {(fieldState) => (
-                                <FormControl
-                                  label={fieldMetadata.label || fieldName}
-                                  hint={fieldMetadata.description}
-                                  field={fieldState}
-                                  required={fieldMetadata.required || false}
-                                >
-                                  <FormFieldRenderer
-                                    fieldName={fieldName}
-                                    schema={currentSchema}
-                                    field={fieldState}
-                                    metadata={fieldMetadata}
-                                    hasError={
-                                      fieldState.state.meta.isTouched &&
-                                      !fieldState.state.meta.isValid
-                                    }
-                                  />
-                                </FormControl>
-                              )}
-                            </form.Field>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ));
-                })()}
-              </div>
-            </div>
-          ))}
-        </div>
+            return (
+              <form.Field
+                name={fieldName}
+                validators={{
+                  // Validate format on blur, but allow empty values
+                  onBlur: validateFieldOnBlur,
+                  // Full validation (including required) only on submit
+                  onSubmit: validateFieldOnSubmit,
+                }}
+              >
+                {(fieldState) => (
+                  <FormFieldRenderer
+                    schema={currentSchema}
+                    fieldState={fieldState}
+                    metadata={fieldMetadata}
+                  />
+                )}
+              </form.Field>
+            );
+          }}
+        />
 
         <form.Subscribe
           selector={(state) => [state.canSubmit, state.isSubmitting]}

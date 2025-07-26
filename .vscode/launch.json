@@ -20,6 +20,17 @@
       },
       "skipFiles": ["<node_internals>/**"],
       "preLaunchTask": "build:cli"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "typecheck",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "typecheck"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

@@ -1,87 +1,70 @@
-import {
-  type BaseSchema,
-  BooleanSchema,
-  NumberSchema,
-  StringSchema,
-} from "@nubase/core";
+import type { BaseSchema } from "@nubase/core";
 import type React from "react";
+import { FormControl } from "../form-controls/FormControl/FormControl";
 import { TextInput } from "../form-controls/TextInput/TextInput";
 
 export interface FormFieldRendererProps {
-  fieldName: string;
   schema: BaseSchema<any>;
-  field: any;
-  metadata?: any;
-  hasError?: boolean;
+  fieldState: any;
+  metadata: any;
 }
 
+type FieldRendererProps = {
+  schema: BaseSchema<any>;
+  fieldState: any;
+  hasError: boolean;
+  metadata: any;
+};
+
 type FieldRenderer = (
-  fieldName: string,
-  schema: BaseSchema<any>,
-  field: any,
-  metadata?: any,
-  hasError?: boolean,
-) => React.ReactElement;
+  props: FieldRendererProps,
+) => React.ReactElement<{ id?: string; hasError?: boolean }>;
 
 const fieldRenderers: Record<string, FieldRenderer> = {
-  string: (fieldName, schema, field, metadata, hasError) => {
-    const fieldMetadata = metadata || schema._meta;
-    const baseProps = {
-      id: field.name,
-      name: field.name,
-      onBlur: field.handleBlur,
-    };
-
+  string: ({ fieldState, hasError, metadata }) => {
     return (
       <TextInput
-        {...baseProps}
+        id={fieldState.name}
+        name={fieldState.name}
+        onBlur={fieldState.handleBlur}
         type="text"
-        value={field.state.value || ""}
+        value={fieldState.state.value || ""}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          field.handleChange(e.target.value)
+          fieldState.handleChange(e.target.value)
         }
-        placeholder={fieldMetadata.description}
+        placeholder={metadata.description}
         hasError={hasError}
       />
     );
   },
 
-  number: (fieldName, schema, field, metadata, hasError) => {
-    const fieldMetadata = metadata || schema._meta;
-    const baseProps = {
-      id: field.name,
-      name: field.name,
-      onBlur: field.handleBlur,
-    };
-
+  number: ({ fieldState, hasError, metadata }) => {
     return (
       <TextInput
-        {...baseProps}
+        id={fieldState.name}
+        name={fieldState.name}
+        onBlur={fieldState.handleBlur}
         type="number"
-        value={field.state.value || 0}
+        value={fieldState.state.value || 0}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          field.handleChange(Number(e.target.value))
+          fieldState.handleChange(Number(e.target.value))
         }
-        placeholder={fieldMetadata.description}
+        placeholder={metadata.description}
         hasError={hasError}
       />
     );
   },
 
-  boolean: (fieldName, schema, field, metadata, hasError) => {
-    const baseProps = {
-      id: field.name,
-      name: field.name,
-      onBlur: field.handleBlur,
-    };
-
+  boolean: ({ fieldState, hasError }) => {
     return (
       <input
-        {...baseProps}
+        id={fieldState.name}
+        name={fieldState.name}
+        onBlur={fieldState.handleBlur}
         type="checkbox"
-        checked={field.state.value || false}
+        checked={fieldState.state.value || false}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          field.handleChange(e.target.checked)
+          fieldState.handleChange(e.target.checked)
         }
         className={`w-4 h-4 rounded focus:ring-2 ${
           hasError
@@ -93,27 +76,16 @@ const fieldRenderers: Record<string, FieldRenderer> = {
   },
 };
 
-const defaultRenderer: FieldRenderer = (
-  fieldName,
-  schema,
-  field,
-  metadata,
-  hasError,
-) => {
-  const fieldMetadata = metadata || schema._meta;
-  const baseProps = {
-    id: field.name,
-    name: field.name,
-    onBlur: field.handleBlur,
-  };
-
+const defaultRenderer: FieldRenderer = ({ fieldState, hasError }) => {
   return (
     <TextInput
-      {...baseProps}
+      id={fieldState.name}
+      name={fieldState.name}
+      onBlur={fieldState.handleBlur}
       type="text"
-      value={String(field.state.value || "")}
+      value={String(fieldState.state.value || "")}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        field.handleChange(e.target.value)
+        fieldState.handleChange(e.target.value)
       }
       placeholder="Unsupported field type"
       hasError={hasError}
@@ -122,12 +94,30 @@ const defaultRenderer: FieldRenderer = (
 };
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
-  fieldName,
   schema,
-  field,
+  fieldState,
   metadata,
-  hasError,
 }) => {
+  // Calculate hasError from field state
+  const hasError =
+    fieldState.state.meta.isTouched && !fieldState.state.meta.isValid;
+
   const renderer = fieldRenderers[schema.type] || defaultRenderer;
-  return renderer(fieldName, schema, field, metadata, hasError);
+  const fieldElement = renderer({
+    schema,
+    fieldState,
+    hasError,
+    metadata,
+  });
+
+  return (
+    <FormControl
+      label={metadata.label}
+      hint={metadata.description}
+      field={fieldState}
+      required={metadata.required || false}
+    >
+      {fieldElement}
+    </FormControl>
+  );
 };
