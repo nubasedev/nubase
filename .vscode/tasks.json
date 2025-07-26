@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build:cli",
+      "type": "shell",
+      "command": "npm run build:cli",
+      "options": {
+        "cwd": "${workspaceFolder}/example/questlog-backend"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    }
+  ]
+}

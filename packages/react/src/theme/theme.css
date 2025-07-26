@@ -1,0 +1,54 @@
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@theme {
+  /* Material Design 3 color roles */
+  /* Primary colors */
+  --color-primary: var(--theme-color-primary);
+  --color-onPrimary: var(--theme-color-onPrimary);
+  --color-primaryContainer: var(--theme-color-primaryContainer);
+  --color-onPrimaryContainer: var(--theme-color-onPrimaryContainer);
+
+  /* Secondary colors */
+  --color-secondary: var(--theme-color-secondary);
+  --color-onSecondary: var(--theme-color-onSecondary);
+  --color-secondaryContainer: var(--theme-color-secondaryContainer);
+  --color-onSecondaryContainer: var(--theme-color-onSecondaryContainer);
+
+  /* Tertiary colors */
+  --color-tertiary: var(--theme-color-tertiary);
+  --color-onTertiary: var(--theme-color-onTertiary);
+  --color-tertiaryContainer: var(--theme-color-tertiaryContainer);
+  --color-onTertiaryContainer: var(--theme-color-onTertiaryContainer);
+
+  /* Error colors */
+  --color-error: var(--theme-color-error);
+  --color-onError: var(--theme-color-onError);
+  --color-errorContainer: var(--theme-color-errorContainer);
+  --color-onErrorContainer: var(--theme-color-onErrorContainer);
+
+  /* Surface colors */
+  --color-surface: var(--theme-color-surface);
+  --color-onSurface: var(--theme-color-onSurface);
+  --color-surfaceVariant: var(--theme-color-surfaceVariant);
+  --color-onSurfaceVariant: var(--theme-color-onSurfaceVariant);
+
+  /* Other colors */
+  --color-outline: var(--theme-color-outline);
+  --color-outlineVariant: var(--theme-color-outlineVariant);
+  --color-shadow: var(--theme-color-shadow);
+  --color-scrim: var(--theme-color-scrim);
+  --color-inverseSurface: var(--theme-color-inverseSurface);
+  --color-onInverseSurface: var(--theme-color-onInverseSurface);
+}
+
+@layer components {
+  body {
+    color: var(--color-onSurface);
+    background: var(--color-surface);
+  }
+
+  * {
+    scrollbar-color: var(--color-outline) transparent;
+  }
+}

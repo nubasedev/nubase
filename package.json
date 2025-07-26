@@ -1,0 +1,36 @@
+{
+  "name": "with-tailwind",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "build:docs": "cd apps/docs && npm run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "check-types": "turbo run check-types",
+    "typecheck": "turbo run typecheck",
+    "format-and-lint": "biome check .",
+    "format-and-lint:fix": "biome check . --write",
+    "storybook": "turbo run storybook",
+    "build:core": "cd packages/core && npm run build",
+    "build:react": "cd packages/react && npm run build",
+    "build:questlog-schema": "cd example/questlog-schema && npm run build",
+    "build:questlog-backend": "cd example/questlog-backend && npm run build",
+    "build:questlog-frontend": "cd example/questlog-frontend && npm run build",
+    "build:react:storybook": "cd packages/react && npm run build:storybook",
+    "publish:core": "cd packages/core && npm run build && npm publish",
+    "publish:react": "cd packages/react && npm run build && npm publish",
+    "publish:all": "npm run publish:core && npm run publish:react"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "turbo": "^2.5.1",
+    "vitest": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18",
+    "npm": ">=10.9.2"
+  },
+  "packageManager": "npm@10.9.2",
+  "workspaces": ["apps/*", "packages/*", "example/*"]
+}

@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "questlog-backend:db:pg-dump",
+      "program": "${workspaceFolder}/example/questlog-backend/dist-cli/index.cjs",
+      "args": ["pg-dump"],
+      "outFiles": [
+        "${workspaceFolder}/example/questlog-backend/dist-cli/**/*.js"
+      ],
+      "sourceMaps": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "cwd": "${workspaceFolder}/example/questlog-backend",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"],
+      "preLaunchTask": "build:cli"
+    }
+  ]
+}
