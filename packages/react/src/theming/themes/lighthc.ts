@@ -1,6 +1,6 @@
-import type { NubaseTheme } from "../../theme";
+import type { NubaseTheme } from "../theme";
 
-export const lightHighContrastTheme: NubaseTheme = {
+export const lighthc: NubaseTheme = {
   name: "Light High Contrast",
   type: "light",
   id: "lighthc",

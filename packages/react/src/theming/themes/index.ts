@@ -1,13 +1,13 @@
-import { darkTheme } from "./dark/darkTheme";
-import { darkHighContrastTheme } from "./darkhc/darkHighContrastTheme";
-import { lightTheme } from "./light/lightTheme";
-import { lightHighContrastTheme } from "./lighthc/lightHighContrastTheme";
+import { dark } from "./dark";
+import { darkhc } from "./darkhc";
+import { light } from "./light";
+import { lighthc } from "./lighthc";
 
 export const themeMap = {
-  light: lightTheme,
-  dark: darkTheme,
-  darkhc: darkHighContrastTheme,
-  lighthc: lightHighContrastTheme,
+  light: light,
+  dark: dark,
+  darkhc: darkhc,
+  lighthc: lighthc,
 } as const;
 
 export type AvailableThemeId = keyof typeof themeMap;
