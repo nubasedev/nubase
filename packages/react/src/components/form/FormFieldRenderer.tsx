@@ -1,19 +1,35 @@
-import type { BaseSchema } from "@nubase/core";
+import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type React from "react";
 import { FormControl } from "../form-controls/FormControl/FormControl";
 import { TextInput } from "../form-controls/TextInput/TextInput";
 
+// Field interface that defines exactly what our component needs
+export interface FieldApi {
+  name: string;
+  state: {
+    value: any;
+    meta: {
+      isValidating: boolean;
+      isTouched: boolean;
+      isValid: boolean;
+      errors: (string | undefined)[];
+    };
+  };
+  handleChange: (value: any) => void;
+  handleBlur: () => void;
+}
+
 export interface FormFieldRendererProps {
   schema: BaseSchema<any>;
-  fieldState: any;
-  metadata: any;
+  fieldState: FieldApi;
+  metadata: SchemaMetadata<any>;
 }
 
 type FieldRendererProps = {
   schema: BaseSchema<any>;
-  fieldState: any;
+  fieldState: FieldApi;
   hasError: boolean;
-  metadata: any;
+  metadata: SchemaMetadata<any>;
 };
 
 type FieldRenderer = (

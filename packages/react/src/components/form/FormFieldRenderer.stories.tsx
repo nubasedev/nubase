@@ -1,23 +1,7 @@
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { FormFieldRenderer } from "./FormFieldRenderer";
-
-// Mock field type for stories - simplified version of TanStack Form's FieldApi
-type MockFieldApi = {
-  name: string;
-  state: {
-    value: any;
-    meta: {
-      isValidating: boolean;
-      isTouched: boolean;
-      isValid: boolean;
-      errors: string[];
-    };
-  };
-  handleChange: (value: any) => void;
-  handleBlur: () => void;
-};
+import { type FieldApi, FormFieldRenderer } from "./FormFieldRenderer";
 
 const meta: Meta<typeof FormFieldRenderer> = {
   title: "Form/FormFieldRenderer",
@@ -63,7 +47,7 @@ export const StringField: Story = {
         setHasError(newValue.length > 10);
       },
       handleBlur: () => console.log("String field blurred"),
-    } satisfies MockFieldApi;
+    } satisfies FieldApi;
 
     return (
       <div className="w-80">
@@ -115,7 +99,7 @@ export const NumberField: Story = {
         setHasError(newValue < 0);
       },
       handleBlur: () => console.log("Number field blurred"),
-    } satisfies MockFieldApi;
+    } satisfies FieldApi;
 
     return (
       <div className="w-80">
@@ -163,7 +147,7 @@ export const BooleanField: Story = {
       },
       handleChange: (newValue: boolean) => setValue(newValue),
       handleBlur: () => console.log("Boolean field blurred"),
-    } satisfies MockFieldApi;
+    } satisfies FieldApi;
 
     return (
       <div className="w-80">
@@ -216,7 +200,7 @@ export const DefaultField: Story = {
       },
       handleChange: (newValue: string) => setValue(newValue),
       handleBlur: () => console.log("Unsupported field blurred"),
-    } satisfies MockFieldApi;
+    } satisfies FieldApi;
 
     return (
       <div className="w-80">
