@@ -34,14 +34,7 @@ function HomepageHero() {
           </p>
           <div className={styles.heroActions}>
             <Link className="button button--primary button--lg" to="/intro">
-              Read the docs
-            </Link>
-            <Link
-              className="button button--secondary button--lg"
-              href="https://storybook.nubase.dev/"
-              target="_blank"
-            >
-              Storybook
+              Get started
             </Link>
             <InstallationBox />
           </div>

@@ -37,10 +37,16 @@
 .heroActions {
   margin-bottom: 3rem;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.heroActions .button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .installationBox {
@@ -51,7 +57,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  height: 52px; /* Match button height */
 }
 
 .codeBlock {

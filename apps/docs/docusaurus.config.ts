@@ -87,6 +87,11 @@ const config: Config = {
         },
         { to: "/blog", label: "Blog", position: "left" },
         {
+          href: "https://storybook.nubase.dev/",
+          label: "Storybook",
+          position: "right",
+        },
+        {
           href: "https://github.com/nubasedev/nubase",
           label: "GitHub",
           position: "right",
@@ -144,7 +149,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Nubase. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Nubase.`,
     },
     prism: {
       theme: prismThemes.github,
@@ -152,7 +157,7 @@ const config: Config = {
     },
     colorMode: {
       defaultMode: "dark",
-      disableSwitch: true,
+      disableSwitch: false,
       respectPrefersColorScheme: false,
     },
   } satisfies Preset.ThemeConfig,
