@@ -108,10 +108,6 @@ const config: Config = {
               label: "Getting Started",
               to: "/intro",
             },
-            {
-              label: "Resources",
-              to: "/resources",
-            },
           ],
         },
         {

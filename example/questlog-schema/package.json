@@ -13,6 +13,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "test": "echo \"No tests configured for schema package\"",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe"

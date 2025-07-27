@@ -95,9 +95,12 @@
     gap: 1rem;
   }
 
+  .heroActions .button {
+    flex: 1;
+  }
+
   .installationBox {
-    width: 100%;
-    max-width: 300px;
+    flex: 1;
   }
 }
 

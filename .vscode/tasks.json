@@ -34,6 +34,22 @@
       "problemMatcher": "$tsc"
     },
     {
+      "label": "test",
+      "type": "shell",
+      "command": "npm run test",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
       "label": "questlog-backend:db:pg-dump",
       "type": "shell",
       "command": "node",

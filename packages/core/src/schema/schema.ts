@@ -502,7 +502,7 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
   }
 }
 
-export class ObjectSchema<TShape extends ObjectShape> extends BaseSchema<
+export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
   ObjectOutput<TShape>
 > {
   readonly type = "object" as const;

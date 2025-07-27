@@ -10,6 +10,7 @@
     "lint:fix": "turbo run lint:fix",
     "check-types": "turbo run check-types",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
     "storybook": "turbo run storybook",
