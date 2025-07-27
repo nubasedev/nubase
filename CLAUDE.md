@@ -256,3 +256,10 @@ All MD3 colors are available as Tailwind classes:
 - Core package: `cd packages/core && npm run test`
 - Tests use Vitest framework
 - Test files follow `.test.ts` naming convention
+
+## Development Guidelines
+
+- **ALWAYS run `npm run lint:fix` at the end of every task** to ensure code style compliance
+- **ALWAYS run `npm run typecheck` at the end of every task** to ensure TypeScript compliance
+- Fix any remaining type errors or linting issues before considering a task complete
+- Use proper TypeScript types for all APIs and components

@@ -1,7 +1,10 @@
+import { faker } from "@faker-js/faker";
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useRef } from "react";
+import { Button } from "../buttons/Button/Button";
 import { showPromiseToast, showToast } from "../floating/toast";
-import { SchemaForm } from "./SchemaForm";
+import { SchemaForm, type SchemaFormRef } from "./SchemaForm";
 
 const meta = {
   title: "Form/SchemaForm",
@@ -352,6 +355,87 @@ export const ValidationErrors: Story = {
       description: {
         story:
           "Demonstrates form validation. Try submitting with empty required fields to see validation errors, then fill them out to see success toast.",
+      },
+    },
+  },
+};
+
+export const ImperativeValueSetting: Story = {
+  render: (args) => {
+    const formRef = useRef<SchemaFormRef<typeof ContactSchema>>(null);
+
+    const setRandomValues = () => {
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      const email = faker.internet.email();
+      const phone = faker.phone.number();
+
+      if (formRef.current) {
+        formRef.current.setFieldValue("firstName", firstName);
+        formRef.current.setFieldValue("lastName", lastName);
+        formRef.current.setFieldValue("email", email);
+        formRef.current.setFieldValue("phone", phone);
+        showToast("Random values set successfully!", "success");
+      }
+    };
+
+    const clearForm = () => {
+      if (formRef.current) {
+        formRef.current.setFieldValue("firstName", "");
+        formRef.current.setFieldValue("lastName", "");
+        formRef.current.setFieldValue("email", "");
+        formRef.current.setFieldValue("phone", "");
+        showToast("Form cleared!", "info");
+      }
+    };
+
+    const resetToDefaults = () => {
+      if (formRef.current) {
+        formRef.current.reset();
+        showToast("Form reset to defaults!", "info");
+      }
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="secondary" onClick={setRandomValues}>
+            Set Random Values
+          </Button>
+          <Button variant="secondary" onClick={clearForm}>
+            Clear Form
+          </Button>
+          <Button variant="secondary" onClick={resetToDefaults}>
+            Reset to Defaults
+          </Button>
+        </div>
+        <SchemaForm ref={formRef} {...args} />
+      </div>
+    );
+  },
+  args: {
+    schema: ContactSchema,
+    submitText: "Submit Contact",
+    className: "w-96",
+    onSubmit: async (data) => {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        console.log("Form submitted:", data);
+        showToast("Contact information submitted successfully!", "success");
+      } catch (error) {
+        console.error("Form submission error:", error);
+        showToast(
+          "Failed to submit contact information. Please try again.",
+          "error",
+        );
+      }
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Demonstrates imperative form value setting using buttons. Click 'Set Random Values' to populate the form with random data, 'Clear Form' to empty all fields, or 'Reset to Defaults' to restore default values using the form API.",
       },
     },
   },

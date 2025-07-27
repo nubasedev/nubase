@@ -7,9 +7,9 @@ import {
   type ObjectSchema,
   StringSchema,
 } from "@nubase/core";
-import { useForm } from "@tanstack/react-form";
+import { type ReactFormExtendedApi, useForm } from "@tanstack/react-form";
 import type React from "react";
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { useComputedMetadata } from "../../hooks/useComputedMetadata";
 import { useLayout } from "../../hooks/useLayout";
 import { Button } from "../buttons/Button/Button";
@@ -32,6 +32,20 @@ export type SchemaFormProps<
     debounceMs?: number;
   };
 };
+
+export type SchemaFormRef<TSchema extends ObjectSchema<any>> =
+  ReactFormExtendedApi<
+    Infer<TSchema>,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any
+  >;
 
 // Helper function to get the default value for a schema
 function getDefaultValue(schema: BaseSchema<any>): any {
@@ -94,149 +108,163 @@ function processFormData(
   return processedValues;
 }
 
-export const SchemaForm = <TSchema extends ObjectSchema<any>>({
-  schema,
-  onSubmit,
-  submitText = "Submit",
-  className = "",
-  layoutName,
-  computedMetadata,
-}: SchemaFormProps<TSchema>) => {
-  // Create default values from schema
-  const defaultValues = Object.entries(schema._shape).reduce(
-    (acc, [key, fieldSchema]) => {
-      acc[key] = getDefaultValue(fieldSchema as BaseSchema<any>);
-      return acc;
-    },
-    {} as any,
-  );
-
-  // Initialize form state that will be updated when the form changes
-  const [formState, setFormState] = useState(defaultValues);
-
-  const form = useForm({
-    defaultValues,
-    listeners: {
-      onChange: (formStateEvent) => {
-        setFormState(formStateEvent.formApi.state.values);
+export const SchemaForm = forwardRef(
+  <TSchema extends ObjectSchema<any>>(
+    {
+      schema,
+      onSubmit,
+      submitText = "Submit",
+      className = "",
+      layoutName,
+      computedMetadata,
+    }: SchemaFormProps<TSchema>,
+    ref: React.Ref<SchemaFormRef<TSchema>>,
+  ) => {
+    // Create default values from schema
+    const defaultValues = Object.entries(schema._shape).reduce(
+      (acc, [key, fieldSchema]) => {
+        acc[key] = getDefaultValue(fieldSchema as BaseSchema<any>);
+        return acc;
       },
-      onChangeDebounceMs: 200,
-    },
-    onSubmit: async ({ value }) => {
-      try {
-        // Process form data (validate and transform empty values to null, etc.)
-        const processedData = processFormData(value, schema);
-        await onSubmit(processedData);
-      } catch (error) {
-        console.error("Form validation error:", error);
-        // In a real app, you might want to handle this error differently
-        throw error;
-      }
-    },
-  });
+      {} as any,
+    );
 
-  // Use computed metadata hook to get merged metadata
-  const {
-    metadata: mergedMetadata,
-    isComputing,
-    error: metadataError,
-  } = useComputedMetadata(schema, formState, computedMetadata);
+    // Initialize form state that will be updated when the form changes
+    const [formState, setFormState] = useState(defaultValues);
 
-  // Use layout hook to get the layout (either specified or default)
-  const layout = useLayout(schema, layoutName);
+    const form = useForm({
+      defaultValues,
+      listeners: {
+        onChange: (formStateEvent) => {
+          setFormState(formStateEvent.formApi.state.values);
+        },
+        onChangeDebounceMs: 200,
+      },
+      onSubmit: async ({ value }) => {
+        try {
+          // Process form data (validate and transform empty values to null, etc.)
+          const processedData = processFormData(value, schema);
+          await onSubmit(processedData);
+        } catch (error) {
+          console.error("Form validation error:", error);
+          // In a real app, you might want to handle this error differently
+          throw error;
+        }
+      },
+    });
 
-  return (
-    <div className={className}>
-      {metadataError && (
-        <div className="mb-4 p-3 bg-errorContainer border border-error rounded-md text-onErrorContainer text-sm">
-          <strong>Metadata Error:</strong> {metadataError.message}
-        </div>
-      )}
+    // Use computed metadata hook to get merged metadata
+    const {
+      metadata: mergedMetadata,
+      isComputing,
+      error: metadataError,
+    } = useComputedMetadata(schema, formState, computedMetadata);
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
-      >
-        <SchemaFormLayout
-          layout={layout}
-          renderField={(field: LayoutField<any>) => {
-            const fieldName = field.name as string;
-            const currentSchema = schema._shape[fieldName] as BaseSchema<any>;
-            const fieldMetadata =
-              mergedMetadata[fieldName] ?? currentSchema._meta;
+    // Use layout hook to get the layout (either specified or default)
+    const layout = useLayout(schema, layoutName);
 
-            // Validation function for submit - includes required field check
-            const validateFieldOnSubmit = ({ value }: { value: any }) => {
-              // Check if field is required and empty
-              if (fieldMetadata.required) {
-                if (value === undefined || value === null || value === "") {
-                  return "This field is required";
-                }
-              }
+    // Expose form API through ref
+    useImperativeHandle(ref, () => form, [form]);
 
-              try {
-                currentSchema.parse(value);
-                return undefined;
-              } catch (error) {
-                return error instanceof Error ? error.message : "Invalid value";
-              }
-            };
+    return (
+      <div className={className}>
+        {metadataError && (
+          <div className="mb-4 p-3 bg-errorContainer border border-error rounded-md text-onErrorContainer text-sm">
+            <strong>Metadata Error:</strong> {metadataError.message}
+          </div>
+        )}
 
-            // Validation function for blur - only schema validation, no required check
-            const validateFieldOnBlur = ({ value }: { value: any }) => {
-              // Skip validation if field is empty (let submit handle required validation)
-              if (value === undefined || value === null || value === "") {
-                return undefined;
-              }
-
-              try {
-                currentSchema.parse(value);
-                return undefined;
-              } catch (error) {
-                return error instanceof Error ? error.message : "Invalid value";
-              }
-            };
-
-            return (
-              <form.Field
-                name={fieldName}
-                validators={{
-                  // Validate format on blur, but allow empty values
-                  onBlur: validateFieldOnBlur,
-                  // Full validation (including required) only on submit
-                  onSubmit: validateFieldOnSubmit,
-                }}
-              >
-                {(fieldState) => (
-                  <FormFieldRenderer
-                    schema={currentSchema}
-                    fieldState={fieldState}
-                    metadata={fieldMetadata}
-                  />
-                )}
-              </form.Field>
-            );
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
           }}
-        />
-
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          className="space-y-4"
         >
-          {([canSubmit, isSubmitting]) => (
-            <Button type="submit" disabled={!canSubmit || isComputing}>
-              {isSubmitting
-                ? "Submitting..."
-                : isComputing
-                  ? "Computing..."
-                  : submitText}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-    </div>
-  );
-};
+          <SchemaFormLayout
+            layout={layout}
+            renderField={(field: LayoutField<any>) => {
+              const fieldName = field.name as string;
+              const currentSchema = schema._shape[fieldName] as BaseSchema<any>;
+              const fieldMetadata =
+                mergedMetadata[fieldName] ?? currentSchema._meta;
+
+              // Validation function for submit - includes required field check
+              const validateFieldOnSubmit = ({ value }: { value: any }) => {
+                // Check if field is required and empty
+                if (fieldMetadata.required) {
+                  if (value === undefined || value === null || value === "") {
+                    return "This field is required";
+                  }
+                }
+
+                try {
+                  currentSchema.parse(value);
+                  return undefined;
+                } catch (error) {
+                  return error instanceof Error
+                    ? error.message
+                    : "Invalid value";
+                }
+              };
+
+              // Validation function for blur - only schema validation, no required check
+              const validateFieldOnBlur = ({ value }: { value: any }) => {
+                // Skip validation if field is empty (let submit handle required validation)
+                if (value === undefined || value === null || value === "") {
+                  return undefined;
+                }
+
+                try {
+                  currentSchema.parse(value);
+                  return undefined;
+                } catch (error) {
+                  return error instanceof Error
+                    ? error.message
+                    : "Invalid value";
+                }
+              };
+
+              return (
+                <form.Field
+                  name={fieldName}
+                  validators={{
+                    // Validate format on blur, but allow empty values
+                    onBlur: validateFieldOnBlur,
+                    // Full validation (including required) only on submit
+                    onSubmit: validateFieldOnSubmit,
+                  }}
+                >
+                  {(fieldState) => (
+                    <FormFieldRenderer
+                      schema={currentSchema}
+                      fieldState={fieldState}
+                      metadata={fieldMetadata}
+                    />
+                  )}
+                </form.Field>
+              );
+            }}
+          />
+
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+          >
+            {([canSubmit, isSubmitting]) => (
+              <Button type="submit" disabled={!canSubmit || isComputing}>
+                {isSubmitting
+                  ? "Submitting..."
+                  : isComputing
+                    ? "Computing..."
+                    : submitText}
+              </Button>
+            )}
+          </form.Subscribe>
+        </form>
+      </div>
+    );
+  },
+) as <TSchema extends ObjectSchema<any>>(
+  props: SchemaFormProps<TSchema> & { ref?: React.Ref<SchemaFormRef<TSchema>> },
+) => React.ReactElement;
