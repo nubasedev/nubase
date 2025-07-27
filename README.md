@@ -97,11 +97,14 @@ npm run build:react
 ## Key Features
 
 ### Schema System
-- **BaseSchema** - Abstract base class for all schemas with metadata support
+- **Type-safe by default** - Fields are required unless explicitly made optional with `.optional()`
+- **BaseSchema** - Abstract base class with `.optional()` method for type-safe optional fields  
 - **Primitive Schemas** - StringSchema, NumberSchema, BooleanSchema for basic types
-- **Complex Schemas** - ObjectSchema for object validation with computed metadata and layout support
+- **Complex Schemas** - ObjectSchema with proper TypeScript inference for required/optional fields
+- **Schema Composition** - extend, omit, and partial operations with type safety
 - **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
 - **Computed Metadata** - Async functions that compute metadata based on form data
+- **Zod Integration** - Convert schemas to Zod with `toZod()` function
 
 ### React Components
 - **Form System** - SchemaForm component with TanStack Form integration

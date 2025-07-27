@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "lint",
+      "label": "lint:fix",
       "type": "shell",
-      "command": "npm run lint",
+      "command": "npm run lint:fix",
       "options": {
         "cwd": "${workspaceFolder}"
       },

@@ -7,6 +7,7 @@ import {
   type ObjectSchema,
   StringSchema,
 } from "@nubase/core";
+import { OptionalSchema } from "@nubase/core";
 import { type ReactFormExtendedApi, useForm } from "@tanstack/react-form";
 import type React from "react";
 import { forwardRef, useImperativeHandle, useState } from "react";
@@ -74,7 +75,7 @@ function transformEmptyToNull(
 
   for (const [key, value] of Object.entries(transformed)) {
     const fieldSchema = schema._shape[key];
-    const isRequired = fieldSchema?._meta?.required;
+    const isRequired = fieldSchema && !(fieldSchema instanceof OptionalSchema);
 
     // Convert empty values to null for consistency, but only for non-required fields
     if (!isRequired) {
@@ -193,7 +194,9 @@ export const SchemaForm = forwardRef(
               // Validation function for submit - includes required field check
               const validateFieldOnSubmit = ({ value }: { value: any }) => {
                 // Check if field is required and empty
-                if (fieldMetadata.required) {
+                const isFieldRequired =
+                  currentSchema && !(currentSchema instanceof OptionalSchema);
+                if (isFieldRequired) {
                   if (value === undefined || value === null || value === "") {
                     return "This field is required";
                   }

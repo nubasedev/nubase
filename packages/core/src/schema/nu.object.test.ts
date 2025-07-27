@@ -1,28 +1,42 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import { nu } from "./nu";
+import type { Infer } from "./schema";
 import { toZod } from "./toZod";
 
-describe("nubase Schema Library (nu) - Basic Functionality", () => {
+describe("nubase Schema Library (nu) - Object Types", () => {
+  it("required and optional fields", () => {
+    const userSchema = nu.object({
+      id: nu.number(), // required by default
+      name: nu.string(), // required by default
+      isActive: nu.boolean().optional(), // explicitly optional
+    });
+
+    type User = Infer<typeof userSchema>;
+    const user: User = {
+      id: 1,
+      name: "Andre Pena",
+      // isActive is optional, so can be omitted
+    };
+
+    // Test parsing with optional field
+    const parsed = userSchema.parse({ id: 1, name: "Andre Pena" });
+    expect(parsed).toEqual({ id: 1, name: "Andre Pena" });
+
+    // Test parsing with optional field provided
+    const parsedWithOptional = userSchema.parse({
+      id: 1,
+      name: "Andre Pena",
+      isActive: true,
+    });
+    expect(parsedWithOptional).toEqual({
+      id: 1,
+      name: "Andre Pena",
+      isActive: true,
+    });
+  });
+
   // --- Basic Schema Creation and Metadata ---
-  it("should create a string schema with metadata", () => {
-    const stringSchema = nu.string().withMeta({
-      label: "Username",
-      description: "The user's login name",
-    });
-    expect(stringSchema).toBeDefined();
-    expect(stringSchema._meta.label).toBe("Username");
-    expect(stringSchema._meta.description).toBe("The user's login name");
-  });
-
-  it("should create a number schema with metadata", () => {
-    const numberSchema = nu.number().withMeta({
-      label: "Age",
-    });
-    expect(numberSchema).toBeDefined();
-    expect(numberSchema._meta.label).toBe("Age");
-  });
-
   it("should create an object schema with nested schemas and metadata", () => {
     const objectSchema = nu
       .object({
@@ -52,56 +66,13 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
     expect(objectSchema._meta.description).toBe("User Profile");
   });
 
-  it("should create an array schema with an element schema", () => {
-    const arraySchema = nu
-      .array(nu.string().withMeta({ label: "Item" }))
-      .withMeta({ label: "List of Items" });
-    expect(arraySchema).toBeDefined();
-    expect(arraySchema._element).toBeDefined();
-    expect(arraySchema._element._meta.label).toBe("Item");
-    expect(arraySchema._meta.label).toBe("List of Items");
-  });
-
   // --- Parse/Validation Tests ---
-  it("should parse valid string data", () => {
-    const stringSchema = nu.string();
-    expect(stringSchema.parse("hello")).toBe("hello");
-  });
-
-  it("should throw error for invalid string data", () => {
-    const stringSchema = nu.string();
-    expect(() => stringSchema.parse(123)).toThrow(
-      "Expected string, received number",
-    );
-  });
-
-  it("should parse valid number data", () => {
-    const numberSchema = nu.number();
-    expect(numberSchema.parse(123)).toBe(123);
-    expect(numberSchema.parse(123.45)).toBe(123.45);
-  });
-
-  it("should throw error for invalid number data", () => {
-    const numberSchema = nu.number();
-    expect(() => numberSchema.parse("abc")).toThrow(
-      "Expected number, received string",
-    );
-    expect(() => numberSchema.parse(Number.NaN)).toThrow(
-      "Expected number, received number",
-    ); // NaN is typeof number but not finite
-    expect(() => numberSchema.parse(Number.POSITIVE_INFINITY)).toThrow(
-      "Expected number, received number",
-    );
-  });
-
   it("should parse valid object data", () => {
     const userSchema = nu.object({
       id: nu.number(),
       name: nu.string(),
-      isActive: nu.boolean().withMeta({ label: "Active", defaultValue: true }), // Only supported keys
+      isActive: nu.boolean(),
     });
-    // Note: Literal/boolean schemas aren't implemented, using parse here as a placeholder for demo.
-    // A real implementation would have nu.boolean() and potentially nu.literal()
 
     const validData = { id: 1, name: "Alice", isActive: true };
     expect(userSchema.parse(validData)).toEqual(validData);
@@ -133,51 +104,12 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
     expect(parsedData).toEqual({ id: 1, name: "Alice" }); // Extra 'age' is ignored
   });
 
-  it("should parse valid array data", () => {
-    const stringArraySchema = nu.array(nu.string());
-    const validData = ["a", "b", "c"];
-    expect(stringArraySchema.parse(validData)).toEqual(validData);
-  });
-
-  it("should throw error for invalid array data (wrong type)", () => {
-    const stringArraySchema = nu.array(nu.string());
-    expect(() => stringArraySchema.parse("not an array")).toThrow(
-      "Expected array, received string",
-    );
-  });
-
-  it("should throw error for invalid array data (invalid element)", () => {
-    const stringArraySchema = nu.array(nu.string());
-    const invalidData = ["a", 123, "c"];
-    expect(() => stringArraySchema.parse(invalidData)).toThrow(
-      /Array validation failed:\nElement at index 1: Expected string, received number/,
-    );
-  });
-
   // --- toZod Conversion Tests ---
-
-  it("should convert a string schema to a Zod string schema", () => {
-    const nuString = nu.string();
-    const zodString = toZod(nuString);
-    expect(zodString instanceof z.ZodString).toBe(true);
-    // Test Zod validation
-    expect(zodString.parse("test")).toBe("test");
-    expect(() => zodString.parse(123)).toThrow();
-  });
-
-  it("should convert a number schema to a Zod number schema", () => {
-    const nuNumber = nu.number();
-    const zodNumber = toZod(nuNumber);
-    expect(zodNumber instanceof z.ZodNumber).toBe(true);
-    // Test Zod validation
-    expect(zodNumber.parse(123)).toBe(123);
-    expect(() => zodNumber.parse("test")).toThrow();
-  });
 
   it("should convert an object schema to a Zod object schema", () => {
     const nuObject = nu.object({
       name: nu.string(),
-      age: nu.number().withMeta({ label: "User Age" }),
+      age: nu.number(),
     });
 
     const zodObject = toZod(nuObject);
@@ -192,18 +124,6 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
     const validData = { name: "Bob", age: 42 };
     expect(zodObject.parse(validData)).toEqual(validData);
     expect(() => zodObject.parse({ name: "Bob", age: "old" })).toThrow();
-  });
-
-  it("should convert an array schema to a Zod array schema", () => {
-    const nuArray = nu.array(nu.number());
-    const zodArray = toZod(nuArray);
-    expect(zodArray instanceof z.ZodArray).toBe(true);
-    expect(zodArray.element instanceof z.ZodNumber).toBe(true);
-
-    // Test Zod validation
-    const validData = [1, 2, 3];
-    expect(zodArray.parse(validData)).toEqual(validData);
-    expect(() => zodArray.parse([1, "two", 3])).toThrow();
   });
 
   it("should handle nested structures in toZod conversion", () => {
@@ -265,22 +185,13 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
 
   // --- TypeScript Type Inference Tests ---
 
-  it("should infer correct type for primitive schemas", () => {
-    const s = nu.string();
-    const n = nu.number();
-
-    // Check inferred output type
-    expectTypeOf(s).toHaveProperty("_outputType").toBeString();
-    expectTypeOf(n).toHaveProperty("_outputType").toBeNumber();
-  });
-
   it("should infer correct type for object schema", () => {
     const userSchema = nu.object({
-      id: nu.number().withMeta({ label: "User ID" }),
+      id: nu.number(),
       name: nu.string(),
       settings: nu.object({
         theme: nu.string(),
-        darkMode: nu.boolean().withMeta({ label: "Switch" }), // Only supported keys
+        darkMode: nu.boolean(),
       }),
     });
 
@@ -311,36 +222,7 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
     // const badParsedUser: string = userSchema.parse(userData); // TS error expected
   });
 
-  it("should infer correct type for array schema", () => {
-    const numberArraySchema = nu.array(nu.number()); // Removed unsupported minValue metadata
-    const stringArraySchema = nu.array(
-      nu.string().withMeta({ label: "Entry" }),
-    );
-    const arrayOfObjectsSchema = nu.array(
-      nu.object({ id: nu.number(), value: nu.string() }),
-    );
-
-    // Check inferred output types
-    expectTypeOf(numberArraySchema).toHaveProperty("_outputType").toBeArray();
-    expectTypeOf(stringArraySchema).toHaveProperty("_outputType").toBeArray();
-    expectTypeOf(arrayOfObjectsSchema)
-      .toHaveProperty("_outputType")
-      .toBeArray();
-
-    // Test that assigning parsed data is type-safe
-    const numberArrayData = [1, 2, 3];
-    const parsedNumberArray = numberArraySchema.parse(numberArrayData);
-    expectTypeOf(parsedNumberArray).toBeArray();
-    // This would be a TS error:
-    // const badParsedNumberArray: string[] = parsedNumberArray; // TS error expected
-  });
-
   it("should infer correct Zod schema type after toZod conversion", () => {
-    const nuString = nu.string().withMeta({ label: "ID" });
-    const zodString = toZod(nuString);
-    expectTypeOf(zodString).toMatchTypeOf<z.ZodString>(); // Should be a ZodString
-    expectTypeOf(zodString._output).toBeString(); // Should infer string output
-
     const nuObject = nu.object({
       name: nu.string(),
       age: nu.number(),
@@ -351,10 +233,6 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
       name: string;
       age: number;
     }>(); // Should infer the object type
-
-    const nuArray = nu.array(nu.string());
-    const zodArray = toZod(nuArray);
-    expectTypeOf(zodArray).toMatchTypeOf<z.ZodArray<z.ZodString>>(); // Should be ZodArray of ZodString
 
     const nuNested = nu.object({
       items: nu.array(
@@ -367,5 +245,38 @@ describe("nubase Schema Library (nu) - Basic Functionality", () => {
     expectTypeOf(zodNested._output).toMatchTypeOf<{
       items: Array<{ id: number }>;
     }>(); // Should infer nested type
+  });
+
+  it("should handle optional fields in toZod conversion", () => {
+    const nuSchemaWithOptional = nu.object({
+      required: nu.string(),
+      optional: nu.number().optional(),
+    });
+
+    const zodSchema = toZod(nuSchemaWithOptional);
+
+    // Test that required field is required in Zod
+    expect(() => zodSchema.parse({ optional: 42 })).toThrow();
+
+    // Test that optional field can be omitted
+    const resultWithoutOptional = zodSchema.parse({ required: "test" });
+    expect(resultWithoutOptional).toEqual({ required: "test" });
+
+    // Test that optional field can be provided
+    const resultWithOptional = zodSchema.parse({
+      required: "test",
+      optional: 42,
+    });
+    expect(resultWithOptional).toEqual({ required: "test", optional: 42 });
+
+    // Test that optional field can be explicitly undefined
+    const resultWithUndefined = zodSchema.parse({
+      required: "test",
+      optional: undefined,
+    });
+    expect(resultWithUndefined).toEqual({
+      required: "test",
+      optional: undefined,
+    });
   });
 });

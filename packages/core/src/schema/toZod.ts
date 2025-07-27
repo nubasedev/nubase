@@ -8,6 +8,7 @@ import {
   NumberSchema,
   type ObjectOutput, // Type utility to get object output type
   ObjectSchema,
+  OptionalSchema,
   PartialObjectSchema,
   StringSchema,
 } from "./schema";
@@ -23,31 +24,33 @@ export type NuSchemaToZodSchema<S extends NuSchema> = S extends StringSchema
     ? z.ZodNumber
     : S extends BooleanSchema
       ? z.ZodBoolean
-      : S extends ObjectSchema<infer TShape>
-        ? z.ZodObject<
-            {
-              [K in keyof TShape]: NuSchemaToZodSchema<TShape[K] & NuSchema>;
-            },
-            any,
-            z.ZodTypeAny,
-            ObjectOutput<TShape>
-          >
-        : S extends PartialObjectSchema<infer TShape>
+      : S extends OptionalSchema<infer TWrapped>
+        ? z.ZodOptional<NuSchemaToZodSchema<TWrapped & NuSchema>>
+        : S extends ObjectSchema<infer TShape>
           ? z.ZodObject<
               {
-                [K in keyof TShape]: z.ZodOptional<
-                  NuSchemaToZodSchema<TShape[K] & NuSchema>
-                >;
+                [K in keyof TShape]: NuSchemaToZodSchema<TShape[K] & NuSchema>;
               },
               any,
               z.ZodTypeAny,
-              Partial<ObjectOutput<TShape>>
+              ObjectOutput<TShape>
             >
-          : // Recursive mapping for object shape
-            S extends ArraySchema<infer TElementSchema>
-            ? z.ZodArray<NuSchemaToZodSchema<TElementSchema & NuSchema>>
-            : // Recursive mapping for array element
-              z.ZodSchema<any>; // Fallback for unknown types
+          : S extends PartialObjectSchema<infer TShape>
+            ? z.ZodObject<
+                {
+                  [K in keyof TShape]: z.ZodOptional<
+                    NuSchemaToZodSchema<TShape[K] & NuSchema>
+                  >;
+                },
+                any,
+                z.ZodTypeAny,
+                Partial<ObjectOutput<TShape>>
+              >
+            : // Recursive mapping for object shape
+              S extends ArraySchema<infer TElementSchema>
+              ? z.ZodArray<NuSchemaToZodSchema<TElementSchema & NuSchema>>
+              : // Recursive mapping for array element
+                z.ZodSchema<any>; // Fallback for unknown types
 
 /**
  * Converts a nubase schema to a Zod schema.
@@ -74,6 +77,12 @@ export function toZod<S extends NuSchema>(schema: S): NuSchemaToZodSchema<S> {
 
   if (schema instanceof BooleanSchema) {
     return z.boolean() as NuSchemaToZodSchema<S>;
+  }
+
+  if (schema instanceof OptionalSchema) {
+    // Recursively convert the wrapped schema and make it optional
+    const wrappedZodSchema = toZod(schema._wrapped as NuSchema);
+    return wrappedZodSchema.optional() as NuSchemaToZodSchema<S>;
   }
 
   if (schema instanceof ObjectSchema) {

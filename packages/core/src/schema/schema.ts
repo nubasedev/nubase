@@ -1,7 +1,6 @@
 // Define metadata types
 export interface SchemaMetadata<Output = any> {
   label?: string;
-  required?: boolean;
   description?: string;
   defaultValue?: Output;
 }
@@ -38,6 +37,14 @@ export abstract class BaseSchema<Output = any> {
   withMeta(meta: SchemaMetadata<Output>): this {
     this._meta = meta;
     return this;
+  }
+
+  /**
+   * Makes this schema optional, allowing undefined values.
+   * @returns An OptionalSchema wrapping this schema.
+   */
+  optional(): OptionalSchema<this> {
+    return new OptionalSchema(this);
   }
 
   /**
@@ -89,7 +96,38 @@ export class NumberSchema extends BaseSchema<number> {
   // Add number-specific validation methods here (e.g., min, max)
 }
 
-// Add more primitives like BooleanSchema, NullableSchema, OptionalSchema etc.
+// --- Optional Schema ---
+
+/**
+ * A wrapper schema that makes the wrapped schema optional.
+ * Allows undefined values in addition to the wrapped schema's type.
+ */
+export class OptionalSchema<
+  TWrapped extends BaseSchema<any>,
+> extends BaseSchema<TWrapped["_outputType"] | undefined> {
+  readonly type = "optional" as const;
+  _wrapped: TWrapped;
+
+  constructor(wrapped: TWrapped) {
+    super();
+    this._wrapped = wrapped;
+  }
+
+  parse(data: any): TWrapped["_outputType"] | undefined {
+    if (data === undefined) {
+      return undefined;
+    }
+    return this._wrapped.parse(data);
+  }
+
+  /**
+   * Get the underlying wrapped schema.
+   * @returns The wrapped schema.
+   */
+  unwrap(): TWrapped {
+    return this._wrapped;
+  }
+}
 
 // --- Complex Schemas ---
 
@@ -103,9 +141,17 @@ export type ObjectShape = {
 /**
  * Infers the TypeScript output type from an ObjectShape.
  * Use mapped types to get the output type of each property schema.
+ * Required keys are those that are not OptionalSchema instances.
+ * Optional keys are those that are OptionalSchema instances.
  */
 export type ObjectOutput<TShape extends ObjectShape> = {
-  [K in keyof TShape]: TShape[K]["_outputType"];
+  [K in keyof TShape as TShape[K] extends OptionalSchema<any>
+    ? never
+    : K]: TShape[K]["_outputType"];
+} & {
+  [K in keyof TShape as TShape[K] extends OptionalSchema<any>
+    ? K
+    : never]?: TShape[K]["_outputType"];
 };
 
 /**
@@ -640,8 +686,8 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
           if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
             const schema = this._shape[key];
             if (schema) {
-              if (data[key] !== undefined) {
-                completeData[key] = data[key];
+              if ((data as any)[key] !== undefined) {
+                completeData[key] = (data as any)[key];
               } else if (schema._meta.defaultValue !== undefined) {
                 completeData[key] = schema._meta.defaultValue;
               } else {
@@ -792,9 +838,20 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
       if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
         const schema = this._shape[key];
         const value = (data as any)[key]; // Get value from input data
+
         try {
           if (schema) {
-            result[key] = schema.parse(value); // Recursively parse property
+            // Check if the field is optional
+            if (schema instanceof OptionalSchema) {
+              // For optional fields, only parse if value is provided
+              if (value !== undefined) {
+                result[key] = schema.parse(value);
+              }
+              // If undefined and optional, don't add to result (making it truly optional)
+            } else {
+              // For required fields, always parse (will throw if undefined/missing)
+              result[key] = schema.parse(value);
+            }
           }
         } catch (e: any) {
           errors.push(`Property "${key}": ${e.message}`);
@@ -877,7 +934,7 @@ export type NuSchema =
   | BooleanSchema
   | StringSchema
   | NumberSchema
-  // Add others like BooleanSchema
+  | OptionalSchema<any>
   | ObjectSchema<any>
   | PartialObjectSchema<any>
   | ArraySchema<any>;

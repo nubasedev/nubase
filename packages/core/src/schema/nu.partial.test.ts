@@ -4,13 +4,12 @@ import { nu } from "./nu";
 describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   const baseObjectSchema = nu
     .object({
-      id: nu.number().withMeta({ label: "ID", required: true }),
+      id: nu.number().withMeta({ label: "ID" }),
       name: nu.string().withMeta({
         label: "Full Name",
         description: "Person's full name",
-        required: true,
       }),
-      email: nu.string().withMeta({ label: "Email Address", required: true }),
+      email: nu.string().withMeta({ label: "Email Address" }),
       age: nu.number().withMeta({ label: "Age" }),
       isActive: nu.boolean().withMeta({ label: "Active Status" }),
     })

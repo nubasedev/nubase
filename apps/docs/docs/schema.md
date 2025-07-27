@@ -48,19 +48,71 @@ All schemas support metadata for form generation and documentation:
 const userSchema = nu.object({
   name: nu.string().withMeta({
     label: "Full Name",
-    description: "Enter your complete name",
-    required: true
+    description: "Enter your complete name"
   }),
   email: nu.string().withMeta({
-    label: "Email Address",
+    label: "Email Address", 
     description: "We'll use this to contact you"
   }),
-  age: nu.number().withMeta({
+  age: nu.number().optional().withMeta({
     label: "Age",
+    description: "Optional age field",
     defaultValue: 18
   })
 });
 ```
+
+### Required vs Optional Fields
+
+**Important**: Fields are **required by default** for type-safety reasons. Use `.optional()` to make fields optional:
+
+```typescript
+const userSchema = nu.object({
+  name: nu.string(),              // Required - TypeScript enforces this
+  email: nu.string(),             // Required - TypeScript enforces this
+  phone: nu.string().optional(), // Optional - TypeScript allows undefined
+  bio: nu.string().optional()    // Optional - TypeScript allows undefined
+});
+
+type User = Infer<typeof userSchema>;
+// User = { 
+//   name: string; 
+//   email: string; 
+//   phone?: string | undefined; 
+//   bio?: string | undefined; 
+// }
+
+// Valid - only required fields needed
+userSchema.parse({ name: "John", email: "john@example.com" });
+
+// Also valid - optional fields can be included
+userSchema.parse({ 
+  name: "John", 
+  email: "john@example.com",
+  phone: "555-1234" 
+});
+```
+
+### Why `.optional()` is Not Metadata
+
+Unlike some schema libraries, `optional()` is **not metadata** - it's a schema transformer that affects TypeScript type inference:
+
+```typescript
+// ❌ Wrong - this would not affect TypeScript types
+const badSchema = nu.object({
+  name: nu.string().withMeta({ required: false }) // This doesn't work!
+});
+
+// ✅ Correct - this properly affects TypeScript types  
+const goodSchema = nu.object({
+  name: nu.string().optional() // TypeScript knows this is optional
+});
+```
+
+This design ensures that:
+- **Type inference works correctly** - TypeScript automatically knows which fields are optional
+- **Runtime validation matches types** - required/optional behavior is consistent
+- **Form rendering is accurate** - required fields show asterisks (*), optional fields don't
 
 ### Parsing and Validation
 
@@ -151,7 +203,7 @@ const userSchema = nu.object({
 });
 
 // Type inference works automatically
-type User = typeof userSchema._outputType;
+type User = Infer<typeof userSchema>;
 // Inferred as: { id: number; name: string; address: { street: string; city: string; zip: string; } }
 ```
 
@@ -329,14 +381,15 @@ import { toZod } from '@nubase/core';
 
 const userSchema = nu.object({
   name: nu.string(),
-  age: nu.number()
+  age: nu.number().optional()
 });
 
 const zodSchema = toZod(userSchema);
-// Returns: z.ZodObject<{ name: z.ZodString; age: z.ZodNumber; }>
+// Returns: z.ZodObject<{ name: z.ZodString; age: z.ZodOptional<z.ZodNumber>; }>
 
-// Use with existing Zod-based libraries
-zodSchema.parse({ name: "John", age: 30 }); // Works with Zod API
+// Use with existing Zod-based libraries  
+zodSchema.parse({ name: "John" }); // Works - age is optional
+zodSchema.parse({ name: "John", age: 30 }); // Also works
 ```
 
 ## TypeScript Integration
@@ -358,8 +411,8 @@ const userSchema = nu.object({
   tags: nu.array(nu.string())
 });
 
-// Automatic type inference
-type User = typeof userSchema._outputType;
+// Automatic type inference  
+type User = Infer<typeof userSchema>;
 // Inferred as:
 // {
 //   id: number;
@@ -450,17 +503,19 @@ const userSchema = nu.object({
 ### Reusable Metadata
 
 ```typescript
-const requiredField = { required: true };
-const optionalField = { required: false };
+const commonLabelStyle = { 
+  label: "Standard Field",
+  description: "Enter a value"
+};
 
 const userSchema = nu.object({
   name: nu.string().withMeta({ 
-    label: "Full Name", 
-    ...requiredField 
+    ...commonLabelStyle,
+    label: "Full Name"
   }),
-  nickname: nu.string().withMeta({ 
-    label: "Nickname", 
-    ...optionalField 
+  nickname: nu.string().optional().withMeta({ 
+    ...commonLabelStyle,
+    label: "Nickname"
   })
 });
 ```
@@ -554,16 +609,15 @@ const companySchema = nu.object({
 const loginSchema = nu.object({
   email: nu.string().withMeta({
     label: "Email",
-    description: "Enter your email address",
-    required: true
+    description: "Enter your email address"
   }),
   password: nu.string().withMeta({
-    label: "Password",
-    description: "Enter your password",
-    required: true
+    label: "Password", 
+    description: "Enter your password"
   }),
-  rememberMe: nu.boolean().withMeta({
+  rememberMe: nu.boolean().optional().withMeta({
     label: "Remember me",
+    description: "Keep me logged in (optional)",
     defaultValue: false
   })
 });
@@ -575,17 +629,17 @@ const loginSchema = nu.object({
 const settingsSchema = nu.object({
   profile: nu.object({
     displayName: nu.string(),
-    bio: nu.string(),
-    avatar: nu.string()
+    bio: nu.string().optional(),
+    avatar: nu.string().optional()
   }),
   preferences: nu.object({
     theme: nu.string(),
     language: nu.string(),
-    notifications: nu.boolean()
+    notifications: nu.boolean().optional()
   }),
   privacy: nu.object({
     publicProfile: nu.boolean(),
-    searchable: nu.boolean()
+    searchable: nu.boolean().optional()
   })
 });
 ```

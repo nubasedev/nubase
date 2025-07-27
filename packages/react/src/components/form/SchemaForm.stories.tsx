@@ -34,20 +34,17 @@ const ContactSchema = nu.object({
     label: "First Name",
     description: "Enter your first name",
     defaultValue: "John",
-    required: true,
   }),
   lastName: nu.string().withMeta({
     label: "Last Name",
     description: "Enter your last name",
     defaultValue: "Doe",
-    required: true,
   }),
   email: nu.string().withMeta({
     label: "Email",
     description: "Enter your email address",
-    required: true,
   }),
-  phone: nu.string().withMeta({
+  phone: nu.string().optional().withMeta({
     label: "Phone",
     description: "Enter your phone number",
   }),
@@ -60,7 +57,6 @@ const ContactWithComputedSchema = nu
       label: "First Name",
       description: "Enter your first name",
       defaultValue: "Jane",
-      required: true,
     }),
     lastName: nu.string().withMeta({
       label: "Last Name",
@@ -71,7 +67,7 @@ const ContactWithComputedSchema = nu
       label: "Company",
       description: "Enter your company name",
     }),
-    title: nu.string().withMeta({
+    title: nu.string().optional().withMeta({
       label: "Job Title",
       description: "Enter your job title",
     }),
@@ -97,7 +93,7 @@ const ContactWithLayoutSchema = nu
       label: "Message",
       description: "Enter your message",
     }),
-    urgent: nu.boolean().withMeta({
+    urgent: nu.boolean().optional().withMeta({
       label: "Urgent",
       description: "Is this message urgent?",
     }),
@@ -237,12 +233,10 @@ const ErrorDemoSchema = nu.object({
   username: nu.string().withMeta({
     label: "Username",
     description: "Enter a username (use 'error' to trigger failure)",
-    required: true,
   }),
-  email: nu.string().withMeta({
+  email: nu.string().optional().withMeta({
     label: "Email",
     description: "Enter your email address",
-    required: true,
   }),
 });
 

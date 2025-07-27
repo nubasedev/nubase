@@ -1,4 +1,5 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
+import { OptionalSchema } from "@nubase/core";
 import type React from "react";
 import { FormControl } from "../form-controls/FormControl/FormControl";
 import { TextInput } from "../form-controls/TextInput/TextInput";
@@ -118,9 +119,14 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
   const hasError =
     fieldState.state.meta.isTouched && !fieldState.state.meta.isValid;
 
-  const renderer = fieldRenderers[schema.type] || defaultRenderer;
+  const isRequired = !(schema instanceof OptionalSchema);
+
+  // For optional schemas, we need to get the wrapped schema type
+  const schemaToRender =
+    schema instanceof OptionalSchema ? schema.unwrap() : schema;
+  const renderer = fieldRenderers[schemaToRender.type] || defaultRenderer;
   const fieldElement = renderer({
-    schema,
+    schema: schemaToRender,
     fieldState,
     hasError,
     metadata,
@@ -131,7 +137,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       label={metadata.label}
       hint={metadata.description}
       field={fieldState}
-      required={metadata.required || false}
+      required={isRequired}
     >
       {fieldElement}
     </FormControl>
