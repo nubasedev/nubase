@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { SchemaForm } from "./SchemaForm";
 
 const meta: Meta<typeof SchemaForm> = {
-  title: "Form/SchemaForm Validation",
+  title: "Form/SchemaForm - Validation",
   component: SchemaForm,
   parameters: {
     layout: "padded",

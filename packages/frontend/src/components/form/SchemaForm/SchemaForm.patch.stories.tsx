@@ -5,7 +5,7 @@ import { showToast } from "../../floating/toast";
 import { SchemaForm } from "./SchemaForm";
 
 const meta: Meta<typeof SchemaForm> = {
-  title: "Form/SchemaForm/Patch Mode",
+  title: "Form/SchemaForm - Patch Mode",
   component: SchemaForm,
   parameters: {
     layout: "padded",
