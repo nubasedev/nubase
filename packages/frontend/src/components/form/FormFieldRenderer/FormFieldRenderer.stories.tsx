@@ -1,7 +1,37 @@
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { useState } from "react";
-import { type FieldApi, FormFieldRenderer } from "./FormFieldRenderer";
+import { showToast } from "../../floating/toast";
+import { FormFieldRenderer } from "./FormFieldRenderer";
+
+// Mock factory to create field objects that satisfy AnyFieldApi interface
+// Uses 'unknown' conversion to bypass strict type checking for stories
+function createMockField<T>(options: {
+  name: string;
+  value: T;
+  isValid: boolean;
+  isTouched: boolean;
+  errors: string[];
+  handleChange: (value: T) => void;
+  handleBlur: () => void;
+}): AnyFieldApi {
+  return {
+    name: options.name,
+    state: {
+      value: options.value,
+      meta: {
+        isValidating: false,
+        isTouched: options.isTouched,
+        isValid: options.isValid,
+        errors: options.errors,
+        // Only include the minimal metadata that FormFieldRenderer actually uses
+      } as any,
+    },
+    handleChange: options.handleChange,
+    handleBlur: options.handleBlur,
+  } as unknown as AnyFieldApi;
+}
 
 const meta: Meta<typeof FormFieldRenderer> = {
   title: "Form/FormFieldRenderer",
@@ -31,23 +61,18 @@ export const StringField: Story = {
       description: "Enter some text",
     });
 
-    const fieldState = {
+    const fieldState = createMockField({
       name: "textField",
-      state: {
-        value,
-        meta: {
-          isValidating: false,
-          isTouched: true,
-          isValid: !hasError,
-          errors: hasError ? ["Text is too long (max 10 characters)"] : [],
-        },
-      },
+      value,
+      isValid: !hasError,
+      isTouched: true,
+      errors: hasError ? ["Text is too long (max 10 characters)"] : [],
       handleChange: (newValue: string) => {
         setValue(newValue);
         setHasError(newValue.length > 10);
       },
       handleBlur: () => console.log("String field blurred"),
-    } satisfies FieldApi;
+    });
 
     return (
       <div className="w-80">
@@ -83,23 +108,18 @@ export const NumberField: Story = {
       description: "Enter a number",
     });
 
-    const fieldState = {
+    const fieldState = createMockField({
       name: "numberField",
-      state: {
-        value,
-        meta: {
-          isValidating: false,
-          isTouched: true,
-          isValid: !hasError,
-          errors: hasError ? ["Value must be positive"] : [],
-        },
-      },
+      value,
+      isValid: !hasError,
+      isTouched: true,
+      errors: hasError ? ["Value must be positive"] : [],
       handleChange: (newValue: number) => {
         setValue(newValue);
         setHasError(newValue < 0);
       },
       handleBlur: () => console.log("Number field blurred"),
-    } satisfies FieldApi;
+    });
 
     return (
       <div className="w-80">
@@ -134,20 +154,15 @@ export const BooleanField: Story = {
       description: "Toggle this option",
     });
 
-    const fieldState = {
+    const fieldState = createMockField({
       name: "booleanField",
-      state: {
-        value,
-        meta: {
-          isValidating: false,
-          isTouched: false,
-          isValid: true,
-          errors: [],
-        },
-      },
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
       handleChange: (newValue: boolean) => setValue(newValue),
       handleBlur: () => console.log("Boolean field blurred"),
-    } satisfies FieldApi;
+    });
 
     return (
       <div className="w-80">
@@ -187,20 +202,15 @@ export const DefaultField: Story = {
       parse: (data: any) => data,
     };
 
-    const fieldState = {
+    const fieldState = createMockField({
       name: "unsupportedField",
-      state: {
-        value,
-        meta: {
-          isValidating: false,
-          isTouched: false,
-          isValid: true,
-          errors: [],
-        },
-      },
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
       handleChange: (newValue: string) => setValue(newValue),
       handleBlur: () => console.log("Unsupported field blurred"),
-    } satisfies FieldApi;
+    });
 
     return (
       <div className="w-80">
@@ -221,6 +231,60 @@ export const DefaultField: Story = {
       description: {
         story:
           "Default field renderer for unsupported schema types. Falls back to a text input with placeholder indicating unsupported type.",
+      },
+    },
+  },
+};
+
+export const PatchModeWithFocus: Story = {
+  render: () => {
+    const [value, setValue] = useState(
+      "Click me to edit with focus and select!",
+    );
+
+    const schema = nu.string().withMeta({
+      label: "Patch Mode Text Field",
+      description: "Click the text to edit it",
+    });
+
+    const fieldState = createMockField({
+      name: "patchField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: (newValue: string) => setValue(newValue),
+      handleBlur: () => console.log("Patch field blurred"),
+    });
+
+    const handlePatch = async (fieldName: string, newValue: any) => {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      showToast(`Updated ${fieldName} to: ${newValue}`, "success");
+    };
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Patch mode field - click the text to edit. Notice how the text input
+          gets focus and all text is selected when you enter edit mode.
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="patch"
+          onPatch={handlePatch}
+        />
+        <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Patch mode field that demonstrates the new edit field lifecycle. When you click to edit, the text input will automatically receive focus and all text will be selected for easy editing.",
       },
     },
   },

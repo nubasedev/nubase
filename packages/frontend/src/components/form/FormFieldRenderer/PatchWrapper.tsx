@@ -1,6 +1,7 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../buttons/Button/Button";
+import type { EditFieldLifecycle } from "./renderer-factory";
 
 interface PatchWrapperProps {
   children: React.ReactNode;
@@ -9,6 +10,8 @@ interface PatchWrapperProps {
   onApply: () => Promise<void>;
   onCancel: () => void;
   editComponent: React.ReactNode;
+  editFieldLifecycle?: EditFieldLifecycle;
+  id?: string;
 }
 
 export const PatchWrapper: React.FC<PatchWrapperProps> = ({
@@ -18,8 +21,17 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   onApply,
   onCancel,
   editComponent,
+  editFieldLifecycle,
+  id,
 }) => {
   const [isApplying, setIsApplying] = useState(false);
+
+  // Trigger onEnterEdit lifecycle callback when entering edit mode
+  useEffect(() => {
+    if (isEditing && editFieldLifecycle?.onEnterEdit) {
+      editFieldLifecycle.onEnterEdit();
+    }
+  }, [isEditing, editFieldLifecycle]);
 
   const handleApply = async () => {
     setIsApplying(true);
@@ -32,7 +44,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 
   if (isEditing) {
     return (
-      <div className="relative">
+      <div className="relative" id={id}>
         {editComponent}
         <div className="absolute top-full left-0 z-50 flex gap-2 mt-2 p-2 bg-surface border border-outline rounded-lg shadow-xl">
           <Button variant="primary" onClick={handleApply} disabled={isApplying}>
@@ -80,6 +92,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
       className="w-full text-left cursor-pointer rounded hover:bg-surfaceVariant transition-colors duration-200 border-none bg-transparent p-0"
       onClick={onStartEdit}
       aria-label="Click to edit"
+      id={id}
     >
       {children}
     </button>

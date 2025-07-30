@@ -1,7 +1,7 @@
 import type { Layout, LayoutField, ObjectShape } from "@nubase/core";
 import type React from "react";
 
-export interface SchemaFormLayoutProps<TShape extends ObjectShape = any> {
+export interface DefaultLayoutRendererProps<TShape extends ObjectShape = any> {
   layout: Layout<TShape>;
   renderField: (field: LayoutField<TShape>) => React.ReactNode;
 }
@@ -64,10 +64,10 @@ const groupFieldsIntoRows = <TShape extends ObjectShape>(
   return rows;
 };
 
-export const SchemaFormLayout = <TShape extends ObjectShape = any>({
+export const DefaultLayoutRenderer = <TShape extends ObjectShape = any>({
   layout,
   renderField,
-}: SchemaFormLayoutProps<TShape>) => {
+}: DefaultLayoutRendererProps<TShape>) => {
   return (
     <div className={`layout-${layout.type} ${layout.className || ""}`}>
       {layout.groups.map((group, groupIndex) => (

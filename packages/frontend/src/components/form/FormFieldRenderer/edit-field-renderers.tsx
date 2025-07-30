@@ -1,24 +1,44 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
+import { useRef } from "react";
 import { Checkbox } from "../../form-controls/controls/Checkbox/Checkbox";
 import { TextInput } from "../../form-controls/controls/TextInput/TextInput";
-import type { FieldApi } from "./FormFieldRenderer";
+import type { EditFieldLifecycle } from "./renderer-factory";
 
 type FieldRendererProps = {
   schema: BaseSchema<any>;
-  fieldState: FieldApi;
+  fieldState: AnyFieldApi;
   hasError: boolean;
   metadata: SchemaMetadata<any>;
 };
 
-type FieldRenderer = (
-  props: FieldRendererProps,
-) => React.ReactElement<{ id?: string; hasError?: boolean }>;
+type FieldRendererResult = {
+  element: React.ReactElement<{ id?: string; hasError?: boolean }>;
+  lifecycle?: EditFieldLifecycle;
+};
+
+type FieldRenderer = (props: FieldRendererProps) => FieldRendererResult;
 
 export const editFieldRenderers: Record<string, FieldRenderer> = {
   string: ({ fieldState, hasError, metadata }) => {
-    return (
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const lifecycle: EditFieldLifecycle = {
+      onEnterEdit: () => {
+        // Use setTimeout to ensure the input is rendered before focusing
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+          }
+        }, 0);
+      },
+    };
+
+    const element = (
       <TextInput
+        ref={inputRef}
         id={fieldState.name}
         name={fieldState.name}
         onBlur={fieldState.handleBlur}
@@ -31,10 +51,12 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         hasError={hasError}
       />
     );
+
+    return { element, lifecycle };
   },
 
   number: ({ fieldState, hasError, metadata }) => {
-    return (
+    const element = (
       <TextInput
         id={fieldState.name}
         name={fieldState.name}
@@ -48,10 +70,12 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         hasError={hasError}
       />
     );
+
+    return { element };
   },
 
   boolean: ({ fieldState, hasError }) => {
-    return (
+    const element = (
       <Checkbox
         id={fieldState.name}
         name={fieldState.name}
@@ -63,11 +87,13 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         hasError={hasError}
       />
     );
+
+    return { element };
   },
 };
 
 export const defaultRenderer: FieldRenderer = ({ fieldState, hasError }) => {
-  return (
+  const element = (
     <TextInput
       id={fieldState.name}
       name={fieldState.name}
@@ -81,4 +107,6 @@ export const defaultRenderer: FieldRenderer = ({ fieldState, hasError }) => {
       hasError={hasError}
     />
   );
+
+  return { element };
 };

@@ -9,11 +9,15 @@ import {
 export interface TreeNavigatorProps {
   items: TreeNavigatorItem[];
   searchInputRef?: RefObject<HTMLInputElement>;
+  selectedItemId?: string;
+  onSelectionChange?: (itemId: string) => void;
 }
 
 const TreeNavigatorComponent = ({
   items,
   searchInputRef,
+  selectedItemId,
+  onSelectionChange,
 }: TreeNavigatorProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());

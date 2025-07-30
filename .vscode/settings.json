@@ -33,16 +33,8 @@
     "editor.formatOnSave": true
   },
   "files.exclude": {
-    "**/dist": true,
-    "**/dist/**": true,
-    "**/build": true,
-    "**/build/**": true,
-    "**/node_modules": true,
     "**/.git": true,
-    "**/.DS_Store": true,
-    "**/*.d.ts": true,
-    "**/*.d.mts": true,
-    "**/*.d.cts": true
+    "**/.DS_Store": true
   },
   "files.watcherExclude": {
     "**/dist": true,

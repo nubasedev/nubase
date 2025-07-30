@@ -1,10 +1,10 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
-import type { FieldApi } from "./FormFieldRenderer";
 
 type ViewFieldRendererProps = {
   schema: BaseSchema<any>;
-  fieldState: FieldApi;
+  fieldState: AnyFieldApi;
   metadata: SchemaMetadata<any>;
 };
 

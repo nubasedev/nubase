@@ -2,7 +2,6 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { cva } from "class-variance-authority";
 import React, { forwardRef } from "react";
 import { cn } from "../../../utils";
-import type { FieldApi } from "../../form/FormFieldRenderer/FormFieldRenderer";
 import { Label } from "../Label/Label";
 
 const formControlVariants = cva("flex flex-col gap-1", {
@@ -25,7 +24,7 @@ export interface FormControlProps extends React.HTMLAttributes<HTMLDivElement> {
   required?: boolean;
   spacing?: "sm" | "md" | "lg";
   children: React.ReactElement<{ id?: string; hasError?: boolean }>;
-  field?: AnyFieldApi | FieldApi; // Optional field for TanStack form integration
+  field?: AnyFieldApi; // Optional field for TanStack form integration
 }
 
 const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
@@ -75,6 +74,7 @@ const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
       <div
         ref={ref}
         className={cn(formControlVariants({ spacing }), className)}
+        data-component="FormControl"
         {...props}
       >
         {label && (

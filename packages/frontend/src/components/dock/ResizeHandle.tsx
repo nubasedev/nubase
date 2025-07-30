@@ -3,8 +3,6 @@ import { useState } from "react";
 
 // Constants for resize handle sizing
 const INTERACTION_AREA_SIZE = 2; // px on each side
-const HANDLE_SIZE_NORMAL = 1; // w-1, h-1
-const HANDLE_SIZE_HOVER = 2; // w-5, h-5
 
 interface ResizeHandleProps {
   direction: "horizontal" | "vertical";
@@ -33,8 +31,8 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
       <div
         className={`absolute z-10 transition-all duration-200 ${
           direction === "vertical"
-            ? `cursor-col-resize top-0 bottom-0 left-1/2 -translate-x-1/2 ${isHovering ? `bg-primary/30 w-${HANDLE_SIZE_HOVER}` : `bg-outline/20 w-${HANDLE_SIZE_NORMAL}`}`
-            : `cursor-row-resize left-0 right-0 top-1/2 -translate-y-1/2 ${isHovering ? `bg-primary/30 h-${HANDLE_SIZE_HOVER}` : `bg-outline/20 h-${HANDLE_SIZE_NORMAL}`}`
+            ? `cursor-col-resize top-0 bottom-0 left-1/2 -translate-x-1/2 ${isHovering ? "bg-primary/30 w-2" : "bg-outline/20 w-1"}`
+            : `cursor-row-resize left-0 right-0 top-1/2 -translate-y-1/2 ${isHovering ? "bg-primary/30 h-2" : "bg-outline/20 h-1"}`
         }`}
       />
     </div>
