@@ -11,7 +11,7 @@ function InstallationBox() {
   return (
     <div className={styles.installationBox}>
       <div className={styles.codeBlock}>
-        <code>npm i @nubase/react @nubase/core</code>
+        <code>npm i @nubase/frontend @nubase/core</code>
       </div>
     </div>
   );

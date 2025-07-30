@@ -344,10 +344,10 @@ const groupConfig = {
 
 ## Integration with React Components
 
-When using with @nubase/react, layouts automatically drive form rendering:
+When using with @nubase/frontend, layouts automatically drive form rendering:
 
 ```tsx
-import { SchemaForm } from '@nubase/react';
+import { SchemaForm } from '@nubase/frontend';
 
 function UserForm() {
   return (

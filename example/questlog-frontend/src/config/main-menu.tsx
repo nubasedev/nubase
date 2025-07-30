@@ -1,4 +1,4 @@
-import type { TreeNavigatorItem } from "@nubase/react";
+import type { TreeNavigatorItem } from "@nubase/frontend";
 import { IconHome } from "@tabler/icons-react";
 
 export const mainMenu: TreeNavigatorItem[] = [

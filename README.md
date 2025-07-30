@@ -43,7 +43,7 @@ This is a Turborepo-based monorepo with the following structure:
 ### Core Packages
 
 - **[@nubase/core](./packages/core)** - Core schema system with Zod-based validation, computed metadata, and layout definitions
-- **[@nubase/react](./packages/react)** - React components, form controls, and hooks for building nubase applications
+- **[@nubase/frontend](./packages/frontend)** - React components, form controls, and hooks for building nubase applications
 
 ### Example Applications
 
@@ -91,7 +91,7 @@ npm run build
 
 # Build specific packages
 npm run build:core
-npm run build:react
+npm run build:frontend
 ```
 
 ## Key Features

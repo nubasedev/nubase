@@ -3,7 +3,13 @@ import { config } from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes/index";
-import { getTickets, postTickets } from "./api/routes/tickets";
+import {
+  handleDeleteTicket,
+  handleGetTicketById,
+  handleGetTickets,
+  handlePostTicket,
+  handlePutTicket,
+} from "./api/routes/tickets";
 
 config();
 
@@ -13,9 +19,12 @@ app.use(cors());
 
 app.get("/", getRoot);
 
-// Tickets
-app.get("/tickets", getTickets);
-app.post("/tickets", postTickets);
+// Tickets - RESTful routes with type safety
+app.get("/tickets", handleGetTickets);
+app.get("/tickets/:id", handleGetTicketById);
+app.post("/tickets", handlePostTicket);
+app.put("/tickets/:id", handlePutTicket);
+app.delete("/tickets/:id", handleDeleteTicket);
 
 serve(
   {

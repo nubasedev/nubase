@@ -3,6 +3,10 @@ export interface SchemaMetadata<Output = any> {
   label?: string;
   description?: string;
   defaultValue?: Output;
+  validateOnSubmit?: (value: any) => string | undefined;
+  validateOnSubmitAsync?: (value: any) => Promise<string | undefined>;
+  validateOnBlur?: (value: any) => string | undefined;
+  validateOnBlurAsync?: (value: any) => Promise<string | undefined>;
 }
 
 // ComputedSchemaMetadata should have the same properties as SchemaMetadata but
@@ -36,6 +40,16 @@ export abstract class BaseSchema<Output = any> {
    */
   withMeta(meta: SchemaMetadata<Output>): this {
     this._meta = meta;
+    return this;
+  }
+
+  /**
+   * Add metadata with validation functions to the schema.
+   * @param meta The metadata object with validation functions.
+   * @returns The schema instance for chaining.
+   */
+  withMetadata(meta: SchemaMetadata<Output>): this {
+    this._meta = { ...this._meta, ...meta };
     return this;
   }
 

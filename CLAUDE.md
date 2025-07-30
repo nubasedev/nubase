@@ -12,13 +12,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Package-Specific Commands
 - `cd packages/core && npm run test` - Run Vitest tests for core package
-- `cd packages/react && npm run storybook` - Start Storybook development server
-- `cd packages/react && npm run build:storybook` - Build Storybook for production
+- `cd packages/frontend && npm run storybook` - Start Storybook development server
+- `cd packages/frontend && npm run build:storybook` - Build Storybook for production
 
 ### Publishing
 - `npm run publish:core` - Build and publish @nubase/core package
-- `npm run publish:react` - Build and publish @nubase/react package  
-- `npm run publish:all` - Publish both core and react packages
+- `npm run publish:frontend` - Build and publish @nubase/frontend package  
+- `npm run publish:all` - Publish both core and frontend packages
 
 ## Project Architecture
 
@@ -27,7 +27,7 @@ This is a Turborepo-based monorepo with the following structure:
 
 **Core Packages:**
 - `packages/core` - [@nubase/core] Core schema system with Zod-based validation, computed metadata, and layout definitions
-- `packages/react` - [@nubase/react] React components, form controls, and hooks for building nubase applications
+- `packages/frontend` - [@nubase/frontend] React components, form controls, and hooks for building nubase applications
 
 **Example Applications:**
 - `apps/docs` - Docusaurus documentation site
@@ -45,9 +45,50 @@ The core package implements a schema system with these key concepts:
 4. **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
 5. **Computed Metadata** - Async functions that compute metadata based on form data
 
+### Configuration System Architecture
+
+The frontend package provides a structured configuration system for Nubase applications:
+
+#### NubaseFrontendConfig Interface
+- **Core Settings** - `appName`, `mainMenu` for app identity and navigation structure
+- **Views System** - Map of view IDs to view configurations for UI screens and forms
+- **Resources System** - Map of resource IDs to resource descriptors defining CRUD operations
+- **API Integration** - `apiEndpoints` for type-safe client generation, `apiBaseUrl` for request routing
+- **Theming** - `themeIds` and `defaultThemeId` for theme management and switching
+
+#### Resource System Architecture
+
+Resources define the operations available for entities in your application:
+
+1. **ResourceDescriptor** - Container for all operations available on a resource entity
+2. **ResourceOperation** - Individual operation (create, view, edit, etc.) referencing a view
+3. **Standard Operations** - Common CRUD operations: create, view, edit (extensible for custom operations)
+4. **Type Safety** - Full TypeScript generics preserve operation and view type information
+5. **Extensibility** - Both ResourceDescriptor and ResourceOperation can be extended with additional properties
+
+#### Usage Pattern
+```typescript
+// Define resource with operations (following same pattern as views)
+const ticketResource = createResource({
+  id: "ticket", // Used as URL segment in /r/ticket/operation
+  operations: {
+    create: { view: createTicketView },
+    view: { view: viewTicketView },
+    edit: { view: editTicketView },
+  }
+});
+
+// Register in app config using resource.id as key (same as views)
+const config: NubaseFrontendConfig = {
+  resources: {
+    [ticketResource.id]: ticketResource, // Same pattern as views
+  }
+};
+```
+
 ### React Component Architecture
 
-The React package provides a comprehensive component library organized into these categories:
+The Frontend package provides a comprehensive component library organized into these categories:
 
 #### Component Categories
 1. **Button System** - Button (5 variants, 4 sizes), ButtonBar (flexible alignment)
@@ -77,31 +118,38 @@ The React package provides a comprehensive component library organized into thes
 - `packages/core/src/schema/schema.ts` - Core schema definitions and types
 - `packages/core/src/schema/nu.ts` - Schema builder utilities
 
-#### React Package - Components
-- `packages/react/src/components/form/SchemaForm.tsx` - Main schema-driven form component
-- `packages/react/src/components/form-controls/FormControl/` - Form control wrapper with validation
-- `packages/react/src/components/buttons/Button/` - Primary button component with CVA variants
-- `packages/react/src/components/floating/dialog/` - Confirmation dialog system
-- `packages/react/src/components/floating/modal/` - Modal system with backdrop and stacking
-- `packages/react/src/components/floating/toast/` - Toast notification system
-- `packages/react/src/components/main-nav/` - Hierarchical navigation component
-- `packages/react/src/components/nubase-app/` - Application shell and router integration
+#### Frontend Package - Components
+- `packages/frontend/src/components/form/SchemaForm.tsx` - Main schema-driven form component
+- `packages/frontend/src/components/form-controls/FormControl/` - Form control wrapper with validation
+- `packages/frontend/src/components/buttons/Button/` - Primary button component with CVA variants
+- `packages/frontend/src/components/floating/dialog/` - Confirmation dialog system
+- `packages/frontend/src/components/floating/modal/` - Modal system with backdrop and stacking
+- `packages/frontend/src/components/floating/toast/` - Toast notification system
+- `packages/frontend/src/components/main-nav/` - Hierarchical navigation component
+- `packages/frontend/src/components/nubase-app/` - Application shell and router integration
 
-#### React Package - Hooks & Utilities
-- `packages/react/src/hooks/useComputedMetadata.ts` - Computed metadata hook with debouncing
-- `packages/react/src/hooks/useLayout.ts` - Layout management hook for schema forms
-- `packages/react/src/hooks/useDialog.ts` - Programmatic dialog control
-- `packages/react/src/hooks/useModal.ts` - Programmatic modal control
-- `packages/react/src/hooks/useToast.ts` - Toast notification management
+#### Frontend Package - Hooks & Utilities
+- `packages/frontend/src/hooks/useComputedMetadata.ts` - Computed metadata hook with debouncing
+- `packages/frontend/src/hooks/useLayout.ts` - Layout management hook for schema forms
+- `packages/frontend/src/hooks/useDialog.ts` - Programmatic dialog control
+- `packages/frontend/src/hooks/useModal.ts` - Programmatic modal control
+- `packages/frontend/src/hooks/useToast.ts` - Toast notification management
 
-#### React Package - Theming System
-- `packages/react/src/theming/theme.ts` - Material Design 3 theme interface and color type definitions
-- `packages/react/src/theming/themes/light/lightTheme.ts` - Standard MD3 light theme
-- `packages/react/src/theming/themes/dark/darkTheme.ts` - Standard MD3 dark theme
-- `packages/react/src/theming/themes/darkhc/darkHighContrastTheme.ts` - Dark high contrast MD3 theme
-- `packages/react/src/theming/themes/lighthc/lightHighContrastTheme.ts` - Light high contrast MD3 theme
-- `packages/react/src/theming/runtime-theme-generator.ts` - Runtime CSS variable generation and theme switching
-- `packages/react/src/theme/theme.css` - Tailwind v4 theme configuration with MD3 color mappings
+#### Frontend Package - Configuration & Resources
+- `packages/frontend/src/config/nubase-frontend-config.ts` - Main configuration interface for Nubase applications, defines NubaseFrontendConfig type with app settings, views, resources, API endpoints, and theming options
+- `packages/frontend/src/config/view.ts` - View system types (CreateView, ViewView) for defining UI views with schemas and handlers
+- `packages/frontend/src/config/create-view-factory.ts` - Factory function for creating type-safe view configurations
+- `packages/frontend/src/config/resource.ts` - Resource system types (ResourceOperation, ResourceDescriptor) for defining CRUD operations on entities
+- `packages/frontend/src/config/create-resource-factory.ts` - Factory function for creating type-safe resource configurations with operations
+
+#### Frontend Package - Theming System
+- `packages/frontend/src/theming/theme.ts` - Material Design 3 theme interface and color type definitions
+- `packages/frontend/src/theming/themes/light/lightTheme.ts` - Standard MD3 light theme
+- `packages/frontend/src/theming/themes/dark/darkTheme.ts` - Standard MD3 dark theme
+- `packages/frontend/src/theming/themes/darkhc/darkHighContrastTheme.ts` - Dark high contrast MD3 theme
+- `packages/frontend/src/theming/themes/lighthc/lightHighContrastTheme.ts` - Light high contrast MD3 theme
+- `packages/frontend/src/theming/runtime-theme-generator.ts` - Runtime CSS variable generation and theme switching
+- `packages/frontend/src/theme/theme.css` - Tailwind v4 theme configuration with MD3 color mappings
 
 ## Theming System
 
@@ -172,7 +220,7 @@ Each theme (`NubaseTheme`) contains:
 - Automatically injected into document head when themes change
 
 **Tailwind Integration**
-- `packages/react/src/theme/theme.css` maps MD3 colors to Tailwind classes
+- `packages/frontend/src/theme/theme.css` maps MD3 colors to Tailwind classes
 - Pattern: `--color-primary: var(--theme-color-primary)`
 - Enables classes like `bg-primary`, `text-onPrimary`, `border-outline`
 
@@ -197,7 +245,7 @@ Each theme (`NubaseTheme`) contains:
 
 #### Adding New Themes
 
-1. Create new theme file in `packages/react/src/theming/themes/[name]/`
+1. Create new theme file in `packages/frontend/src/theming/themes/[name]/`
 2. Implement all 26 color roles following MD3 contrast requirements
 3. Export theme with unique `id` and appropriate `type`
 4. Register theme in application theme provider
@@ -256,6 +304,54 @@ All MD3 colors are available as Tailwind classes:
 - Core package: `cd packages/core && npm run test`
 - Tests use Vitest framework
 - Test files follow `.test.ts` naming convention
+
+## Toast Notifications
+
+### Usage in Stories and Components
+
+When you need to show notifications or feedback in Storybook stories or components, use the `showToast` function:
+
+```tsx
+import { showToast } from "../../floating/toast";
+
+// Basic usage
+showToast("Operation completed successfully!", "success");
+showToast("Something went wrong", "error");
+showToast("Processing...", "info");
+showToast("Please review this", "warning");
+```
+
+### Important Notes
+
+- **Use `showToast` directly** - Do NOT use `useToast` hook in stories or standalone examples
+- **Toast infrastructure works out of the box in Storybook** - No additional setup required
+- **Available toast types**: `"success"`, `"error"`, `"info"`, `"warning"`, `"loading"`, `"default"`
+- **Automatic positioning and styling** - Toasts appear in the top-right corner with proper theming
+
+### Examples
+
+```tsx
+// In a story or component
+const handleAction = async () => {
+  showToast("Starting operation...", "loading");
+  
+  try {
+    await someAsyncOperation();
+    showToast("Operation completed!", "success");
+  } catch (error) {
+    showToast("Operation failed", "error");
+  }
+};
+
+// For form operations
+const handlePatch = async (fieldName: string, value: any) => {
+  showToast(`Updating ${fieldName}...`, "info");
+  
+  await updateField(fieldName, value);
+  
+  showToast(`${fieldName} updated successfully`, "success");
+};
+```
 
 ## Development Guidelines
 

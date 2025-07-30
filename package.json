@@ -4,7 +4,7 @@
   "scripts": {
     "build": "turbo run build",
     "build:docs": "cd apps/docs && npm run build",
-    "build:storybook": "cd packages/react && npm run build:storybook",
+    "build:storybook": "cd packages/frontend && npm run build:storybook",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
@@ -15,14 +15,15 @@
     "format-and-lint:fix": "biome check . --write",
     "storybook": "turbo run storybook",
     "build:core": "cd packages/core && npm run build",
-    "build:react": "cd packages/react && npm run build",
-    "build:questlog-schema": "cd example/questlog-schema && npm run build",
+    "build:frontend": "cd packages/frontend && npm run build",
+    "build:backend": "cd packages/backend && npm run build",
     "build:questlog-backend": "cd example/questlog-backend && npm run build",
     "build:questlog-frontend": "cd example/questlog-frontend && npm run build",
-    "build:react:storybook": "cd packages/react && npm run build:storybook",
-    "publish:core": "cd packages/core && npm run build && npm publish",
-    "publish:react": "cd packages/react && npm run build && npm publish",
-    "publish:all": "npm run publish:core && npm run publish:react"
+    "build:frontend:storybook": "cd packages/frontend && npm run build:storybook",
+    "publish:core": "turbo run publish --filter=@nubase/core",
+    "publish:frontend": "turbo run publish --filter=@nubase/frontend",
+    "publish:backend": "turbo run publish --filter=@nubase/backend",
+    "publish:all": "turbo run publish --filter=\"@nubase/*\""
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -34,5 +35,9 @@
     "npm": ">=10.9.2"
   },
   "packageManager": "npm@10.9.2",
-  "workspaces": ["apps/*", "packages/*", "example/*"]
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "example/*"
+  ]
 }

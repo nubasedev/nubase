@@ -48,7 +48,7 @@ const productSchema = nu.object({
 ### 2. Use the Schema in a Form
 
 ```tsx
-import { SchemaForm } from '@nubase/react';
+import { SchemaForm } from '@nubase/frontend';
 
 const ProductForm = () => {
   const handleSubmit = async (data) => {

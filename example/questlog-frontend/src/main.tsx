@@ -1,4 +1,4 @@
-import { NubaseApp } from "@nubase/react";
+import { NubaseApp } from "@nubase/frontend";
 import { createRoot } from "react-dom/client";
 import { config } from "./config/config";
 import "./styles/theme-example.css";

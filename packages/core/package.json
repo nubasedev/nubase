@@ -23,6 +23,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
+    "publish": "npm publish",
     "watch:ts": "tsup --watch",
     "dev": "concurrently \"npm:watch:ts\""
   },

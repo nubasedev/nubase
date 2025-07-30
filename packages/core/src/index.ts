@@ -6,4 +6,4 @@ export * from "./schema/empty-schema";
 export * from "./schema/request-schema";
 
 // HTTP
-export * from "../../react/src/http/http-client";
+export * from "../../frontend/src/http/http-client";

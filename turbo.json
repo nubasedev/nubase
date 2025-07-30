@@ -31,6 +31,10 @@
     },
     "test": {
       "dependsOn": ["^build"]
+    },
+    "publish": {
+      "dependsOn": ["build", "typecheck", "lint"],
+      "cache": false
     }
   }
 }
