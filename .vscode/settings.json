@@ -68,5 +68,5 @@
   },
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.includeCompletionsForModuleExports": false,
-  "explorer.excludeGitIgnore": true
+  "explorer.excludeGitIgnore": false
 }
