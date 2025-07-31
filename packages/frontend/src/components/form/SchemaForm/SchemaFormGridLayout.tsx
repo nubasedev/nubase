@@ -1,29 +1,10 @@
 import type { Layout, LayoutField, ObjectShape } from "@nubase/core";
 import type React from "react";
 
-export interface DefaultLayoutRendererProps<TShape extends ObjectShape = any> {
+export interface SchemaFormGridLayoutProps<TShape extends ObjectShape = any> {
   layout: Layout<TShape>;
   renderField: (field: LayoutField<TShape>) => React.ReactNode;
 }
-
-// Generate the correct col-span class based on size
-const getColSpanClass = (size: number) => {
-  const colSpanMap: Record<number, string> = {
-    1: "col-span-1",
-    2: "col-span-2",
-    3: "col-span-3",
-    4: "col-span-4",
-    5: "col-span-5",
-    6: "col-span-6",
-    7: "col-span-7",
-    8: "col-span-8",
-    9: "col-span-9",
-    10: "col-span-10",
-    11: "col-span-11",
-    12: "col-span-12",
-  };
-  return colSpanMap[size] || "col-span-12";
-};
 
 // Group fields into rows based on their sizes
 const groupFieldsIntoRows = <TShape extends ObjectShape>(
@@ -64,10 +45,10 @@ const groupFieldsIntoRows = <TShape extends ObjectShape>(
   return rows;
 };
 
-export const DefaultLayoutRenderer = <TShape extends ObjectShape = any>({
+export const SchemaFormGridLayout = <TShape extends ObjectShape = any>({
   layout,
   renderField,
-}: DefaultLayoutRendererProps<TShape>) => {
+}: SchemaFormGridLayoutProps<TShape>) => {
   return (
     <div className={`layout-${layout.type} ${layout.className || ""}`}>
       {layout.groups.map((group, groupIndex) => (
@@ -105,4 +86,23 @@ export const DefaultLayoutRenderer = <TShape extends ObjectShape = any>({
       ))}
     </div>
   );
+};
+
+// Generate the correct col-span class based on size
+const getColSpanClass = (size: number) => {
+  const colSpanMap: Record<number, string> = {
+    1: "col-span-1",
+    2: "col-span-2",
+    3: "col-span-3",
+    4: "col-span-4",
+    5: "col-span-5",
+    6: "col-span-6",
+    7: "col-span-7",
+    8: "col-span-8",
+    9: "col-span-9",
+    10: "col-span-10",
+    11: "col-span-11",
+    12: "col-span-12",
+  };
+  return colSpanMap[size] || "col-span-12";
 };

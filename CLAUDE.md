@@ -245,10 +245,11 @@ Each theme (`NubaseTheme`) contains:
 
 #### Adding New Themes
 
-1. Create new theme file in `packages/frontend/src/theming/themes/[name]/`
+1. Create new theme file in `packages/frontend/src/theming/themes/[name].ts`
 2. Implement all 26 color roles following MD3 contrast requirements
 3. Export theme with unique `id` and appropriate `type`
-4. Register theme in application theme provider
+4. Add import and register theme in `packages/frontend/src/theming/themes/index.ts`
+5. **IMPORTANT**: Update `example/questlog-frontend/src/config/config.ts` to include the new theme ID in the `themeIds` array - themes won't be visible in the example application without this step
 
 #### Color Class Reference
 

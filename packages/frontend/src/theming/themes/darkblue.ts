@@ -1,9 +1,9 @@
 import type { NubaseTheme } from "../theme";
 
-export const dark: NubaseTheme = {
-  name: "Dark",
+export const darkBlue: NubaseTheme = {
+  name: "Dark Blue",
   type: "dark",
-  id: "dark",
+  id: "darkblue",
   colors: {
     // Primary colors - Bright modern indigo
     primary: "#818CF8",
@@ -11,11 +11,11 @@ export const dark: NubaseTheme = {
     primaryContainer: "#312E81",
     onPrimaryContainer: "#E0E7FF",
 
-    // Secondary colors - Neutral grays
-    secondary: "#9CA3AF",
-    onSecondary: "#1F2937",
-    secondaryContainer: "#374151",
-    onSecondaryContainer: "#F3F4F6",
+    // Secondary colors - Cool slate tones
+    secondary: "#94A3B8",
+    onSecondary: "#1E293B",
+    secondaryContainer: "#334155",
+    onSecondaryContainer: "#E2E8F0",
 
     // Tertiary colors - Vibrant emerald
     tertiary: "#34D399",
@@ -29,18 +29,18 @@ export const dark: NubaseTheme = {
     errorContainer: "#cd8585",
     onErrorContainer: "#120e0e",
 
-    // Surface colors - VS Code inspired grays
-    surface: "#1e1e1e",
-    onSurface: "#d4d4d4",
-    surfaceVariant: "#252526",
-    onSurfaceVariant: "#cccccc",
+    // Surface colors - Rich dark base
+    surface: "#0F172A",
+    onSurface: "#F8FAFC",
+    surfaceVariant: "#1E293B",
+    onSurfaceVariant: "#CBD5E1",
 
     // Other colors
-    outline: "#6e6e6e",
-    outlineVariant: "#414141",
+    outline: "#475569",
+    outlineVariant: "#64748B",
     shadow: "#000000",
     scrim: "#000000",
-    inverseSurface: "#d4d4d4",
-    onInverseSurface: "#1e1e1e",
+    inverseSurface: "#F8FAFC",
+    onInverseSurface: "#0F172A",
   },
 };

@@ -46,13 +46,25 @@ const meta: Meta<typeof FormFieldRenderer> = {
     },
   },
   tags: ["autodocs"],
+  argTypes: {
+    layout: {
+      control: "select",
+      options: ["vertical", "horizontal"],
+      description: "Layout style for the form control",
+    },
+    mode: {
+      control: "select",
+      options: ["edit", "view", "patch"],
+      description: "Rendering mode for the field",
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const StringField: Story = {
-  render: () => {
+  render: (args) => {
     const [value, setValue] = useState("This text is too long");
     const [hasError, setHasError] = useState(true);
 
@@ -83,23 +95,29 @@ export const StringField: Story = {
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
+          layout={args.layout}
+          mode={args.mode}
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
+  args: {
+    layout: "vertical",
+    mode: "edit",
+  },
   parameters: {
     docs: {
       description: {
         story:
-          "Interactive string field that renders a text input. Shows error state when text exceeds 10 characters.",
+          "Interactive string field that renders a text input. Shows error state when text exceeds 10 characters. Use the controls to change layout and mode.",
       },
     },
   },
 };
 
 export const NumberField: Story = {
-  render: () => {
+  render: (args) => {
     const [value, setValue] = useState(-5);
     const [hasError, setHasError] = useState(true);
 
@@ -130,16 +148,22 @@ export const NumberField: Story = {
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
+          layout={args.layout}
+          mode={args.mode}
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
+  args: {
+    layout: "vertical",
+    mode: "edit",
+  },
   parameters: {
     docs: {
       description: {
         story:
-          "Interactive number field that renders a number input. Shows error state for negative values.",
+          "Interactive number field that renders a number input. Shows error state for negative values. Use the controls to change layout and mode.",
       },
     },
   },

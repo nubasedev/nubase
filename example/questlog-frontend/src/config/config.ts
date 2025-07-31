@@ -15,6 +15,14 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   },
   apiBaseUrl: "http://localhost:3001",
   apiEndpoints: apiEndpoints,
-  themeIds: ["light", "dark", "darkhc", "lighthc"],
+  themeIds: [
+    "dark",
+    "darkhc",
+    "darkblue",
+    "darkterminal",
+    "light",
+    "lightereader",
+    "lighthc",
+  ],
   defaultThemeId: "dark",
 };

@@ -10,7 +10,7 @@ const meta = {
   title: "Form/SchemaForm",
   component: SchemaForm,
   parameters: {
-    layout: "centered",
+    layout: "fullscreen",
     docs: {
       description: {
         component:
@@ -22,6 +22,13 @@ const meta = {
   argTypes: {
     onSubmit: { action: "submitted" },
   },
+  decorators: [
+    (Story) => (
+      <div className="w-full max-w-3xl p-4">
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof SchemaForm<any>>;
 
 export default meta;
@@ -136,7 +143,6 @@ export const Default: Story = {
   args: {
     schema: ContactSchema,
     submitText: "Submit Contact",
-    className: "w-96",
     onSubmit: async (data) => {
       try {
         // Simulate API call
@@ -166,7 +172,6 @@ export const WithComputed: Story = {
   args: {
     schema: ContactWithComputedSchema,
     submitText: "Save Contact",
-    className: "w-96",
     onSubmit: async (data) => {
       try {
         // Simulate API call with computed data
@@ -199,7 +204,6 @@ export const WithLayout: Story = {
   args: {
     schema: ContactWithLayoutSchema,
     submitText: "Send Message",
-    className: "w-full max-w-2xl",
     layoutName: "default",
     onSubmit: async (data) => {
       try {
@@ -244,7 +248,6 @@ export const WithErrorHandling: Story = {
   args: {
     schema: ErrorDemoSchema,
     submitText: "Create Account",
-    className: "w-96",
     onSubmit: async (data) => {
       try {
         // Simulate API call that fails if username is 'error'
@@ -287,7 +290,6 @@ export const WithPromiseToast: Story = {
   args: {
     schema: ContactSchema,
     submitText: "Submit with Promise Toast",
-    className: "w-96",
     onSubmit: async (data) => {
       // Use showPromiseToast for automatic loading/success/error states
       const submitPromise = new Promise((resolve, reject) => {
@@ -329,7 +331,6 @@ export const ValidationErrors: Story = {
   args: {
     schema: ContactSchema,
     submitText: "Test Validation",
-    className: "w-96",
     onSubmit: async (data) => {
       // This story focuses on form validation, so always show success
       try {
@@ -410,7 +411,6 @@ export const ImperativeValueSetting: Story = {
   args: {
     schema: ContactSchema,
     submitText: "Submit Contact",
-    className: "w-96",
     onSubmit: async (data) => {
       try {
         await new Promise((resolve) => setTimeout(resolve, 1000));

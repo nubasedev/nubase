@@ -16,7 +16,7 @@ import { useLayout } from "../../../hooks/useLayout";
 import { Button } from "../../buttons/Button/Button";
 import { Callout } from "../../callout/Callout";
 import { FormFieldRenderer } from "../FormFieldRenderer/FormFieldRenderer";
-import { DefaultLayoutRenderer } from "./DefaultLayoutRenderer";
+import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
 
 export type SchemaFormProps<
   TSchema extends ObjectSchema<any>,
@@ -267,7 +267,7 @@ export const SchemaForm = forwardRef(
           }}
           className="space-y-4"
         >
-          <DefaultLayoutRenderer
+          <SchemaFormVerticalLayout
             layout={layout}
             renderField={(field: LayoutField<any>) => {
               const fieldName = field.name as string;
@@ -397,6 +397,7 @@ export const SchemaForm = forwardRef(
                       metadata={fieldMetadata}
                       mode={mode}
                       onPatch={onPatch}
+                      layout="horizontal"
                     />
                   )}
                 </form.Field>

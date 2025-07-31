@@ -70,7 +70,7 @@ export const Dock: React.FC<DockProps> = ({
     <DockContext.Provider value={true}>
       <div
         ref={containerRef}
-        className={`flex flex-col h-full w-full min-h-0 min-w-0 ${isNested ? "h-auto w-auto border border-outline" : "h-screen w-screen"}`}
+        className={`flex flex-col h-full w-full min-h-0 min-w-0 ${isNested ? "h-auto w-auto" : "h-screen w-screen"}`}
       >
         {top && (
           <div className="bg-surface border-b border-outline flex-shrink-0">
