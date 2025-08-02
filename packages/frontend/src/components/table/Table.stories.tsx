@@ -191,7 +191,7 @@ const userColumns: ColumnDef<User>[] = [
     id: "actions",
     header: "Actions",
     size: 120,
-    cell: ({ row }) => (
+    cell: () => (
       <div className="flex gap-1">
         <Button variant="secondary">Edit</Button>
         <Button variant="danger">Delete</Button>
@@ -337,7 +337,7 @@ export const InteractiveSorting: Story = {
 
 // Complete example with pagination
 export const WithPagination: Story = {
-  render: (args) => {
+  render: (_args) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(3);
     const [sorting, setSorting] = useState<SortingState>([]);

@@ -22,7 +22,10 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
   }`;
 
   return (
-    <div
+    <button
+      type="button"
+      tabIndex={0}
+      aria-label={`Resize ${direction === "vertical" ? "horizontally" : "vertically"}`}
       className={interactionAreaClasses}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -35,6 +38,6 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
             : `cursor-row-resize left-0 right-0 top-1/2 -translate-y-1/2 ${isHovering ? "bg-primary/30 h-2" : "bg-outline/20 h-1"}`
         }`}
       />
-    </div>
+    </button>
   );
 };

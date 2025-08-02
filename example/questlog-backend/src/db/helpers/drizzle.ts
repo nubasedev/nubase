@@ -1,4 +1,4 @@
-import { type NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Client } from "pg";
 
 declare global {

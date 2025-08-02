@@ -225,7 +225,7 @@ export const PromiseToasts: Story = {
 
         <Button
           onClick={() => {
-            const promise = new Promise((resolve, reject) => {
+            const promise = new Promise((resolve, _reject) => {
               // Simulate API that returns success but with an error status
               setTimeout(() => {
                 resolve({ status: "error", message: "Invalid data provided" });

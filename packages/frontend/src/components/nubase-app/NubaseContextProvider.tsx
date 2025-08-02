@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useContext } from "react";
+import { createContext, type ReactNode, useContext } from "react";
 import type { NubaseContextData } from "../../context/types";
 
 const NubaseContext = createContext<NubaseContextData | undefined>(undefined);

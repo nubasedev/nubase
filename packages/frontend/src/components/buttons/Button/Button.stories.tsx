@@ -1,10 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  IconFolder,
-  IconMail,
-  IconRocket,
-  IconSettings,
-} from "@tabler/icons-react";
+import { IconFolder, IconMail, IconSettings } from "@tabler/icons-react";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {

@@ -2,19 +2,22 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { commandRegistry } from "../../commands";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import type { NubaseContextData } from "../../context/types";
-import type { HttpClient } from "../../http/http-client";
-import { createTypedApiClient } from "../../http/typed-api-client";
+import { HttpClient } from "../../http/http-client";
+import {
+  createTypedApiClient,
+  type ErrorListener,
+} from "../../http/typed-api-client";
 import { cleanupKeybindings, registerKeybindings } from "../../keybindings";
 import { router } from "../../routes/router";
-import { useModal } from "../floating/modal/useModal";
+import { useModal } from "../floating/modal";
+import { showToast } from "../floating/toast";
 import {
-  type NubaseInitializationData,
   initializeNubaseApp,
+  type NubaseInitializationData,
 } from "./initializeNubaseApp";
 
 export interface UseNubaseContextOptions {
   config: NubaseFrontendConfig;
-  httpClient: HttpClient;
 }
 
 export interface UseNubaseContextResult {
@@ -30,7 +33,6 @@ export interface UseNubaseContextResult {
  */
 export function useCreateNubaseContext({
   config,
-  httpClient,
 }: UseNubaseContextOptions): UseNubaseContextResult {
   const [initializationData, setInitializationData] =
     useState<NubaseInitializationData | null>(null);
@@ -38,6 +40,13 @@ export function useCreateNubaseContext({
   const [error, setError] = useState<Error | null>(null);
   const [activeThemeId, setActiveThemeId] = useState<string>("");
   const modal = useModal();
+
+  // Create httpClient inside the hook
+  const httpClient = useMemo(() => {
+    return new HttpClient({
+      baseUrl: config.apiBaseUrl,
+    });
+  }, [config.apiBaseUrl]);
 
   const initialize = useCallback(async () => {
     setIsLoading(true);
@@ -71,9 +80,15 @@ export function useCreateNubaseContext({
     let typedApiClient: any = httpClient;
     if (initializationData.config.apiEndpoints) {
       try {
+        const errorListener: ErrorListener = (error) => {
+          console.error("API request failed:", error);
+          showToast(error.message || "An error occurred", "error");
+        };
+
         typedApiClient = createTypedApiClient(
           httpClient,
           initializationData.config.apiEndpoints,
+          errorListener,
         );
       } catch (error) {
         console.warn("Failed to create typed API client:", error);

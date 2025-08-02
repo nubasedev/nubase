@@ -1,4 +1,3 @@
-import type { RequestSchema } from "@nubase/core";
 import type { TreeNavigatorItem } from "../components/navigation/searchable-tree-navigator/TreeNavigatorItem";
 import type { ResourceDescriptor } from "./resource";
 import type { View } from "./view";

@@ -9,7 +9,7 @@
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "npm run storybook", 
+      "name": "npm run storybook",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run storybook",

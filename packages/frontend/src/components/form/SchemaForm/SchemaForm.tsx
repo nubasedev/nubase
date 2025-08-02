@@ -16,7 +16,7 @@ import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
 
 export type SchemaFormProps<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
-  TData extends Infer<TSchema> = Infer<TSchema>,
+  _TData extends Infer<TSchema> = Infer<TSchema>,
 > = {
   /** Form configuration from useSchemaForm hook */
   form: SchemaFormConfiguration<TSchema>;
@@ -47,11 +47,8 @@ export const SchemaForm = forwardRef(
     const { schema, mode, onPatch, formState } = form;
 
     // Use computed metadata hook to get merged metadata
-    const {
-      metadata: mergedMetadata,
-      isComputing,
-      error: metadataError,
-    } = useComputedMetadata(schema, formState, computedMetadata);
+    const { metadata: mergedMetadata, error: metadataError } =
+      useComputedMetadata(schema, formState, computedMetadata);
 
     // Use layout hook to get the layout (either specified or default)
     const layout = useLayout(schema, layoutName);

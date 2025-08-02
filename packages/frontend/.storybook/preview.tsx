@@ -2,10 +2,10 @@ import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles.css";
 import {
-  RouterProvider,
   createMemoryHistory,
   createRootRoute,
   createRouter,
+  RouterProvider,
 } from "@tanstack/react-router";
 import { ModalProvider } from "../src/components/floating/modal";
 import {

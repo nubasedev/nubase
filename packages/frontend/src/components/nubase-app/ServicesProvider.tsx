@@ -1,25 +1,22 @@
 import type React from "react";
 import type { FC } from "react";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
-import type { HttpClient } from "../../http/http-client";
 import { NubaseContextProvider } from "./NubaseContextProvider";
 import { useCreateNubaseContext } from "./useCreateNubaseContext";
 
 export type ServicesProviderProps = {
   config: NubaseFrontendConfig;
-  httpClient: HttpClient;
 };
 
 export const ServicesProvider: FC<
   React.PropsWithChildren<ServicesProviderProps>
-> = ({ config, httpClient, children }) => {
+> = ({ config, children }) => {
   const {
     data: nubaseContext,
     isLoading,
     error,
   } = useCreateNubaseContext({
     config,
-    httpClient,
   });
 
   if (error) {

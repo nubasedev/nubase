@@ -1,4 +1,5 @@
 import { IconCommand } from "@tabler/icons-react";
+import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import type { CommandDefinition } from "../types";
@@ -18,16 +19,18 @@ export const workbenchRunCommand: CommandDefinition = {
         context.commands.execute(command.id);
       },
     }));
-    context.modal.openModal(
-      <SearchableTreeNavigator
-        items={commandItems}
-        placeHolder="Search in commands..."
-      />,
-      {
-        alignment: "top",
-        size: "lg",
-        showBackdrop: true,
-      },
-    );
+    context.modal.openModal({
+      content: (
+        <ModalFrame>
+          <SearchableTreeNavigator
+            items={commandItems}
+            placeHolder="Search in commands..."
+          />
+        </ModalFrame>
+      ),
+      alignment: "top",
+      size: "lg",
+      showBackdrop: true,
+    });
   },
 };

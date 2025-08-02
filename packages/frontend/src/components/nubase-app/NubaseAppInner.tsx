@@ -1,27 +1,21 @@
 import { RouterProvider } from "@tanstack/react-router";
 import type { FC } from "react";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
-import type { HttpClient } from "../../http/http-client";
 import { router } from "../../routes/router";
 import { NubaseContextProvider } from "./NubaseContextProvider";
 import { useCreateNubaseContext } from "./useCreateNubaseContext";
 
 export type NubaseAppInnerProps = {
   config: NubaseFrontendConfig;
-  httpClient: HttpClient;
 };
 
-export const NubaseAppInner: FC<NubaseAppInnerProps> = ({
-  config,
-  httpClient,
-}) => {
+export const NubaseAppInner: FC<NubaseAppInnerProps> = ({ config }) => {
   const {
     data: nubaseContext,
     isLoading,
     error,
   } = useCreateNubaseContext({
     config,
-    httpClient,
   });
 
   if (error) {

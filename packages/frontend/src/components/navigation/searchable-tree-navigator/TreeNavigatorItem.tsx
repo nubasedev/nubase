@@ -1,6 +1,5 @@
 import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { RefObject } from "react";
 import { cn } from "../../../utils";
 
 export interface TreeNavigatorItem {
@@ -31,7 +30,6 @@ interface TreeNavigatorItemComponentProps {
 
 export const TreeNavigatorItemComponent = ({
   item,
-  index,
   isSelected,
   onToggleExpanded,
   itemRef,

@@ -1,4 +1,4 @@
-import { type RequestSchema, emptySchema, nu } from "@nubase/core";
+import { emptySchema, nu, type RequestSchema } from "@nubase/core";
 
 export const ticketBaseSchema = nu.object({
   id: nu.number(),

@@ -5,10 +5,16 @@ import {
   NumberSchema,
   type ObjectSchema,
   OptionalSchema,
-  StringSchema,
+  toZod,
 } from "@nubase/core";
 import { type ReactFormExtendedApi, useForm } from "@tanstack/react-form";
-import { useState } from "react";
+import type React from "react";
+import { createElement, useMemo, useState } from "react";
+import {
+  SchemaFormBody,
+  SchemaFormButtonBarComposable,
+  SchemaFormComposable,
+} from "../components/form/SchemaForm/SchemaFormComposable";
 
 export interface SchemaFormConfiguration<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
@@ -19,6 +25,30 @@ export interface SchemaFormConfiguration<
   mode: "edit" | "view" | "patch";
   onPatch?: (fieldName: string, value: any) => Promise<void>;
   formState: Record<string, any>;
+}
+
+export interface ComposableSchemaForm<
+  TSchema extends ObjectSchema<any> = ObjectSchema<any>,
+  TData = any,
+> extends SchemaFormConfiguration<TSchema, TData> {
+  Form: React.FC<{
+    children: React.ReactNode;
+    className?: string;
+    onSubmit?: (e: React.FormEvent) => void;
+  }>;
+  Body: React.FC<{
+    className?: string;
+    layoutName?: string;
+    computedMetadata?: {
+      debounceMs?: number;
+    };
+  }>;
+  ButtonBar: React.FC<{
+    submitText?: string;
+    isComputing?: boolean;
+    className?: string;
+    alignment?: "left" | "center" | "right";
+  }>;
 }
 
 export type UseSchemaFormOptions<
@@ -65,7 +95,7 @@ function processFormData(
   schema: ObjectSchema<any>,
 ): Record<string, any> {
   // First, validate the raw values with the schema
-  const validatedValues = schema.parse(values);
+  const validatedValues = toZod(schema).parse(values);
 
   // Then apply transformations to the validated data
   const processedValues = transformEmptyToNull(validatedValues, schema);
@@ -81,7 +111,7 @@ export function useSchemaForm<
   TData extends Infer<TSchema> = Infer<TSchema>,
 >(
   options: UseSchemaFormOptions<TSchema, TData>,
-): SchemaFormConfiguration<TSchema> {
+): ComposableSchemaForm<TSchema> {
   const { schema, onSubmit, mode = "edit", onPatch } = options;
 
   // Validate mode and onPatch combination
@@ -106,8 +136,11 @@ export function useSchemaForm<
     useState<Record<string, any>>(defaultValues);
 
   // Create validators for the form level
-  const formValidators = {
-    onSubmit: async ({ value }: { value: TData }) => {
+  const formValidators: any = {};
+
+  // Only add validators if they exist
+  if (schema._meta?.validateOnSubmit || schema._meta?.validateOnSubmitAsync) {
+    formValidators.onSubmit = ({ value }: { value: TData }) => {
       // Run form-level sync validation
       if (schema._meta?.validateOnSubmit) {
         const error = schema._meta.validateOnSubmit(value);
@@ -115,18 +148,20 @@ export function useSchemaForm<
           return error;
         }
       }
+      return undefined;
+    };
 
-      // Run form-level async validation
-      if (schema._meta?.validateOnSubmitAsync) {
-        const error = await schema._meta.validateOnSubmitAsync(value);
+    const validateOnSubmitAsync = schema._meta?.validateOnSubmitAsync;
+    if (validateOnSubmitAsync) {
+      formValidators.onSubmitAsync = async ({ value }: { value: TData }) => {
+        const error = await validateOnSubmitAsync(value);
         if (error) {
           return error;
         }
-      }
-
-      return undefined;
-    },
-  };
+        return undefined;
+      };
+    }
+  }
 
   const form = useForm({
     defaultValues,
@@ -136,7 +171,8 @@ export function useSchemaForm<
       },
       onChangeDebounceMs: 200,
     },
-    validators: formValidators,
+    validators:
+      Object.keys(formValidators).length > 0 ? formValidators : undefined,
     onSubmit: async ({ value }) => {
       try {
         // Process form data (validate and transform empty values to null, etc.)
@@ -150,12 +186,50 @@ export function useSchemaForm<
     },
   });
 
-  // Return a clean configuration object with the form API
-  return {
-    api: form,
-    schema,
-    mode,
-    onPatch,
-    formState,
-  };
+  // Create composable components using useMemo to ensure stability
+  const formConfig = useMemo(
+    (): SchemaFormConfiguration<TSchema> => ({
+      api: form,
+      schema,
+      mode,
+      onPatch,
+      formState,
+    }),
+    [form, schema, mode, onPatch, formState],
+  );
+
+  const Form = useMemo(() => {
+    const FormComponent: React.FC<any> = (props) =>
+      createElement(SchemaFormComposable, { ...props, form: formConfig });
+    FormComponent.displayName = "Form";
+    return FormComponent;
+  }, [formConfig]);
+
+  const Body = useMemo(() => {
+    const BodyComponent: React.FC<any> = (props) =>
+      createElement(SchemaFormBody, { ...props, form: formConfig });
+    BodyComponent.displayName = "Body";
+    return BodyComponent;
+  }, [formConfig]);
+
+  const ButtonBar = useMemo(() => {
+    const ButtonBarComponent: React.FC<any> = (props) =>
+      createElement(SchemaFormButtonBarComposable, {
+        ...props,
+        form: formConfig,
+      });
+    ButtonBarComponent.displayName = "ButtonBar";
+    return ButtonBarComponent;
+  }, [formConfig]);
+
+  // Return a clean configuration object with the form API and composable components
+  return useMemo(
+    () => ({
+      ...formConfig,
+      Form,
+      Body,
+      ButtonBar,
+    }),
+    [formConfig, Form, Body, ButtonBar],
+  );
 }

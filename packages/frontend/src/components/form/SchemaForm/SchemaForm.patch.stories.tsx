@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSchemaForm } from "../../../hooks";
 import { showToast } from "../../floating/toast";
 import { SchemaForm } from "./SchemaForm";
-import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
 
 const meta: Meta<typeof SchemaForm> = {
   title: "Form/SchemaForm - Patch Mode",

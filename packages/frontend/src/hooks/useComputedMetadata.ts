@@ -48,7 +48,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
     // Initialize with static metadata only
     const initialMeta: any = {};
     for (const key in schema._shape) {
-      if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {
+      if (Object.hasOwn(schema._shape, key)) {
         const fieldSchema = schema._shape[key];
         if (fieldSchema) {
           initialMeta[key] = { ...fieldSchema._meta };
@@ -96,7 +96,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
   );
 
   // Create a stable key for formData changes to trigger effect properly
-  const formDataKey = JSON.stringify(formData);
+  const _formDataKey = JSON.stringify(formData);
 
   // Debounced computation effect
   useEffect(() => {
@@ -115,7 +115,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
       // No computed metadata, just use static metadata
       const staticMeta: any = {};
       for (const key in schema._shape) {
-        if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {
+        if (Object.hasOwn(schema._shape, key)) {
           const fieldSchema = schema._shape[key];
           if (fieldSchema) {
             staticMeta[key] = { ...fieldSchema._meta };

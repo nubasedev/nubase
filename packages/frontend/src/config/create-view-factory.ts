@@ -14,14 +14,12 @@ export function createCreateView<
   id,
   title,
   schema,
-  endpoints,
-  onSubmit,
+  createResource,
 }: {
   id: string;
   title: string;
   schema: TSchema;
-  endpoints: TEndpoints;
-  onSubmit: ({
+  createResource: ({
     data,
     context,
   }: {
@@ -34,6 +32,6 @@ export function createCreateView<
     id,
     title,
     schema,
-    onSubmit,
+    createResource,
   };
 }

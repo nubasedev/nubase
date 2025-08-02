@@ -3,20 +3,18 @@ import {
   DialogPanel,
   Dialog as HeadlessDialog,
 } from "@headlessui/react";
-import type { FC, ReactNode } from "react";
-
-export type ModalAlignment = "center" | "top";
+import type { FC, ReactElement } from "react";
+import { cloneElement } from "react";
+import type { BaseModalFrameProps, ModalAlignment, ModalSize } from "./types";
 
 export type ModalProps = {
   open: boolean;
   onClose: () => void;
-  children: ReactNode;
+  content: ReactElement<BaseModalFrameProps>;
   alignment?: ModalAlignment;
   showBackdrop?: boolean;
-  className?: string;
-  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
+  size?: ModalSize;
   zIndex?: number;
-  initialFocus?: React.RefObject<HTMLElement | null>;
 };
 
 const sizeClasses = {
@@ -36,13 +34,11 @@ const alignmentClasses = {
 export const Modal: FC<ModalProps> = ({
   open,
   onClose,
-  children,
+  content,
   alignment = "center",
   showBackdrop = true,
-  className = "",
   size = "md",
   zIndex = 50,
-  initialFocus,
 }) => {
   return (
     <HeadlessDialog
@@ -50,7 +46,6 @@ export const Modal: FC<ModalProps> = ({
       onClose={onClose}
       className="relative"
       style={{ zIndex }}
-      initialFocus={initialFocus}
     >
       {showBackdrop && (
         <DialogBackdrop className="fixed inset-0 bg-scrim/30 backdrop-blur-xxs transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
@@ -58,9 +53,9 @@ export const Modal: FC<ModalProps> = ({
 
       <div className={`fixed inset-0 flex p-4 ${alignmentClasses[alignment]}`}>
         <DialogPanel
-          className={`w-full ${sizeClasses[size]} rounded-lg bg-surface shadow-xl ring-1 ring-outline/20 transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 ${className}`}
+          className={`w-full ${sizeClasses[size]} transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0`}
         >
-          <div className="p-4">{children}</div>
+          {cloneElement(content, { onClose })}
         </DialogPanel>
       </div>
     </HeadlessDialog>

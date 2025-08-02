@@ -1,4 +1,5 @@
 import { IconEye } from "@tabler/icons-react";
+import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import type { CommandDefinition } from "../types";
@@ -12,16 +13,18 @@ export const workbenchOpenView: CommandDefinition = {
     const viewEntries = Object.entries(views);
 
     if (viewEntries.length === 0) {
-      context.modal.openModal(
-        <div className="p-4 text-center">
-          <p className="text-onSurface">No views available</p>
-        </div>,
-        {
-          alignment: "top",
-          size: "md",
-          showBackdrop: true,
-        },
-      );
+      context.modal.openModal({
+        content: (
+          <ModalFrame>
+            <div className="p-4 text-center">
+              <p className="text-onSurface">No views available</p>
+            </div>
+          </ModalFrame>
+        ),
+        alignment: "top",
+        size: "md",
+        showBackdrop: true,
+      });
       return;
     }
 
@@ -41,16 +44,18 @@ export const workbenchOpenView: CommandDefinition = {
       }),
     );
 
-    context.modal.openModal(
-      <SearchableTreeNavigator
-        items={viewItems}
-        placeHolder="Search views..."
-      />,
-      {
-        alignment: "top",
-        size: "lg",
-        showBackdrop: true,
-      },
-    );
+    context.modal.openModal({
+      content: (
+        <ModalFrame>
+          <SearchableTreeNavigator
+            items={viewItems}
+            placeHolder="Search views..."
+          />
+        </ModalFrame>
+      ),
+      alignment: "top",
+      size: "lg",
+      showBackdrop: true,
+    });
   },
 };

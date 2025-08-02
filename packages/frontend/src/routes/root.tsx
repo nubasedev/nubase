@@ -1,5 +1,4 @@
-import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { Dock } from "../components";
 import { MainNav } from "../components/navigation/main-nav/MainNav";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";

@@ -4,8 +4,8 @@ import { z } from "zod";
 import {
   ArraySchema,
   BooleanSchema,
-  type NuSchema, // The union type of all nu schemas
   NumberSchema,
+  type NuSchema, // The union type of all nu schemas
   type ObjectOutput, // Type utility to get object output type
   ObjectSchema,
   OptionalSchema,
@@ -25,7 +25,7 @@ export type NuSchemaToZodSchema<S extends NuSchema> = S extends StringSchema
     : S extends BooleanSchema
       ? z.ZodBoolean
       : S extends OptionalSchema<infer TWrapped>
-        ? z.ZodOptional<NuSchemaToZodSchema<TWrapped & NuSchema>>
+        ? z.ZodOptional<z.ZodNullable<NuSchemaToZodSchema<TWrapped & NuSchema>>>
         : S extends ObjectSchema<infer TShape>
           ? z.ZodObject<
               {
@@ -39,7 +39,7 @@ export type NuSchemaToZodSchema<S extends NuSchema> = S extends StringSchema
             ? z.ZodObject<
                 {
                   [K in keyof TShape]: z.ZodOptional<
-                    NuSchemaToZodSchema<TShape[K] & NuSchema>
+                    z.ZodNullable<NuSchemaToZodSchema<TShape[K] & NuSchema>>
                   >;
                 },
                 any,
@@ -80,16 +80,17 @@ export function toZod<S extends NuSchema>(schema: S): NuSchemaToZodSchema<S> {
   }
 
   if (schema instanceof OptionalSchema) {
-    // Recursively convert the wrapped schema and make it optional
+    // Recursively convert the wrapped schema and make it optional and nullable
+    // This handles form fields that can be empty (null) or undefined
     const wrappedZodSchema = toZod(schema._wrapped as NuSchema);
-    return wrappedZodSchema.optional() as NuSchemaToZodSchema<S>;
+    return wrappedZodSchema.nullable().optional() as NuSchemaToZodSchema<S>;
   }
 
   if (schema instanceof ObjectSchema) {
     const zodShape: Record<string, z.ZodTypeAny> = {};
     // Recursively convert each schema in the shape
     for (const key in schema._shape) {
-      if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {
+      if (Object.hasOwn(schema._shape, key)) {
         zodShape[key] = toZod(schema._shape[key] as NuSchema); // Recursive call
       }
     }
@@ -99,10 +100,12 @@ export function toZod<S extends NuSchema>(schema: S): NuSchemaToZodSchema<S> {
 
   if (schema instanceof PartialObjectSchema) {
     const zodShape: Record<string, z.ZodTypeAny> = {};
-    // Recursively convert each schema in the shape and make them optional
+    // Recursively convert each schema in the shape and make them optional and nullable
     for (const key in schema._shape) {
-      if (Object.prototype.hasOwnProperty.call(schema._shape, key)) {
-        zodShape[key] = toZod(schema._shape[key] as NuSchema).optional(); // Make optional
+      if (Object.hasOwn(schema._shape, key)) {
+        zodShape[key] = toZod(schema._shape[key] as NuSchema)
+          .nullable()
+          .optional(); // Make nullable and optional
       }
     }
     // Zod object constructor needs the shape object

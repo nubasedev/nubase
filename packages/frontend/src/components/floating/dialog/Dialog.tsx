@@ -2,10 +2,9 @@ import { DialogTitle } from "@headlessui/react";
 import type { FC, ReactNode } from "react";
 import { Button } from "../../buttons/Button/Button";
 import { ButtonBar } from "../../buttons/ButtonBar/ButtonBar";
-import {
-  ModalStructured,
-  type ModalStructuredAlignment,
-} from "../modal/ModalStructured";
+import { Modal } from "../modal/Modal";
+import { ModalFrameStructured } from "../modal/ModalFrameStructured";
+import type { ModalAlignment } from "../modal/types";
 
 export type DialogProps = {
   open: boolean;
@@ -15,7 +14,7 @@ export type DialogProps = {
   children: ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
-  alignment?: ModalStructuredAlignment;
+  alignment?: ModalAlignment;
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: "primary" | "danger";
@@ -50,7 +49,7 @@ export const Dialog: FC<DialogProps> = ({
   ) : undefined;
 
   const footer = onConfirm ? (
-    <ButtonBar>
+    <ButtonBar className="p-4">
       <Button variant="secondary" onClick={onClose}>
         {cancelText}
       </Button>
@@ -61,16 +60,20 @@ export const Dialog: FC<DialogProps> = ({
   ) : undefined;
 
   return (
-    <ModalStructured
+    <Modal
       open={open}
       onClose={onClose}
-      header={header}
-      body={children}
-      footer={footer}
+      content={
+        <ModalFrameStructured
+          header={header}
+          body={children}
+          footer={footer}
+          className={className}
+        />
+      }
       size={size}
       alignment={alignment}
       showBackdrop={showBackdrop}
-      className={className}
       zIndex={zIndex}
     />
   );

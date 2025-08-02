@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { Keybinding } from "../commands/types";
 import { keybindingManager } from "./KeybindingManager";
 import {
@@ -16,7 +16,7 @@ class MockKeyboardEvent {
   public readonly shiftKey: boolean;
 
   constructor(
-    type: string,
+    _type: string,
     options: {
       key?: string;
       metaKey?: boolean;

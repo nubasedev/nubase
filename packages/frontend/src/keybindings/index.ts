@@ -1,13 +1,13 @@
-export {
-  registerKeybindings,
-  cleanupKeybindings,
-  updateKeybindings,
-} from "./registerKeybindings";
 export { keybindingManager } from "./KeybindingManager";
-export type { ParsedKeybinding, KeySequence, KeybindingState } from "./types";
 export {
+  matchesKeySequence,
+  normalizeEventKey,
   parseKeybinding,
   parseKeySequence,
-  normalizeEventKey,
-  matchesKeySequence,
 } from "./keyParser";
+export {
+  cleanupKeybindings,
+  registerKeybindings,
+  updateKeybindings,
+} from "./registerKeybindings";
+export type { KeybindingState, KeySequence, ParsedKeybinding } from "./types";

@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { nu } from "./nu";
+import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should add computed metadata to string property", async () => {
@@ -253,7 +254,7 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
 
     // Test that original parsing still works
     const validData = { name: "Test Product", price: 99.99, inStock: true };
-    const parsed = productSchema.parse(validData);
+    const parsed = toZod(productSchema).parse(validData);
     expect(parsed).toEqual(validData);
 
     // Test that original metadata is preserved

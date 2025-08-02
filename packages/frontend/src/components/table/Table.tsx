@@ -1,13 +1,12 @@
 import {
   type ColumnDef,
-  type OnChangeFn,
-  type SortingState,
-  type Table as TanStackTable,
   flexRender,
   getCoreRowModel,
+  type OnChangeFn,
+  type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { type VariantProps, cva } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 import type React from "react";
 import { forwardRef } from "react";
 import { cn } from "../../utils";

@@ -1,8 +1,8 @@
 import { Command, program } from "commander";
 import { config } from "dotenv";
 import { printError, printSuccess } from "./lib/console";
-import { pgDumpData } from "./pg-dump-data/index";
 import { pgDump } from "./pg-dump/index";
+import { pgDumpData } from "./pg-dump-data/index";
 
 config({ path: ".env.development" });
 
@@ -38,11 +38,11 @@ Command.prototype.action = function (fn) {
   return originalAction.call(this, timedFn);
 };
 
-program.command("pg-dump").action(async (options: any) => {
+program.command("pg-dump").action(async (_options: any) => {
   await pgDump();
 });
 
-program.command("pg-dump-data").action(async (options: any) => {
+program.command("pg-dump-data").action(async (_options: any) => {
   await pgDumpData();
 });
 

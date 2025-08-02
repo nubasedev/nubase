@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "Schema for the Questlog App",
   "type": "module",
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.ts",

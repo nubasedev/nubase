@@ -2,7 +2,6 @@ import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
 import Heading from "@theme/Heading";
 import Layout from "@theme/Layout";
-import clsx from "clsx";
 import type { ReactNode } from "react";
 
 import styles from "./index.module.css";
@@ -18,7 +17,6 @@ function InstallationBox() {
 }
 
 function HomepageHero() {
-  const { siteConfig } = useDocusaurusContext();
   return (
     <div className={styles.heroContainer}>
       <div className="container">

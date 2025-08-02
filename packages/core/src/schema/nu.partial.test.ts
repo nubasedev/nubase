@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { nu } from "./nu";
+import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   const baseObjectSchema = nu
@@ -101,17 +102,17 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Test with only some properties
     const partialData1 = { name: "John Doe" };
-    const parsed1 = partialSchema.parse(partialData1);
+    const parsed1 = toZod(partialSchema).parse(partialData1);
     expect(parsed1).toEqual({ name: "John Doe" });
 
     // Test with multiple properties
     const partialData2 = { id: 1, email: "john@example.com" };
-    const parsed2 = partialSchema.parse(partialData2);
+    const parsed2 = toZod(partialSchema).parse(partialData2);
     expect(parsed2).toEqual({ id: 1, email: "john@example.com" });
 
     // Test with no properties
     const partialData3 = {};
-    const parsed3 = partialSchema.parse(partialData3);
+    const parsed3 = toZod(partialSchema).parse(partialData3);
     expect(parsed3).toEqual({});
   });
 
@@ -126,7 +127,7 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
       isActive: true,
     };
 
-    const parsed = partialSchema.parse(completeData);
+    const parsed = toZod(partialSchema).parse(completeData);
     expect(parsed).toEqual(completeData);
   });
 
@@ -135,19 +136,13 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Should fail validation for invalid property types
     const invalidData1 = { id: "not-a-number" };
-    expect(() => partialSchema.parse(invalidData1)).toThrow(
-      /Object validation failed:\nProperty "id": Expected number, received string/,
-    );
+    expect(() => toZod(partialSchema).parse(invalidData1)).toThrow();
 
     const invalidData2 = { name: 123 };
-    expect(() => partialSchema.parse(invalidData2)).toThrow(
-      /Object validation failed:\nProperty "name": Expected string, received number/,
-    );
+    expect(() => toZod(partialSchema).parse(invalidData2)).toThrow();
 
     const invalidData3 = { isActive: "not-a-boolean" };
-    expect(() => partialSchema.parse(invalidData3)).toThrow(
-      /Object validation failed:\nProperty "isActive": Expected boolean, received string/,
-    );
+    expect(() => toZod(partialSchema).parse(invalidData3)).toThrow();
   });
 
   it("should maintain type safety with partial output type", () => {
@@ -183,21 +178,19 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     const partialData1 = {
       user: { name: "John", age: 30 },
     };
-    const parsed1 = partialSchema.parse(partialData1);
+    const parsed1 = toZod(partialSchema).parse(partialData1);
     expect(parsed1).toEqual(partialData1);
 
     // Should parse with completely missing properties
     const partialData2 = {};
-    const parsed2 = partialSchema.parse(partialData2);
+    const parsed2 = toZod(partialSchema).parse(partialData2);
     expect(parsed2).toEqual({});
 
     // Should validate nested objects when present
     const invalidData = {
       user: { name: 123 }, // Invalid name type
     };
-    expect(() => partialSchema.parse(invalidData)).toThrow(
-      /Property "name": Expected string, received number/,
-    );
+    expect(() => toZod(partialSchema).parse(invalidData)).toThrow();
   });
 
   it("should work with computed metadata using partial data", async () => {
@@ -225,7 +218,7 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
       anotherExtra: 123,
     };
 
-    const parsed = partialSchema.parse(dataWithExtra);
+    const parsed = toZod(partialSchema).parse(dataWithExtra);
     expect(parsed).toEqual({ name: "John" });
   });
 
@@ -242,19 +235,17 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Test with only array property
     const partialData1 = { tags: ["tag1", "tag2"] };
-    const parsed1 = partialSchema.parse(partialData1);
+    const parsed1 = toZod(partialSchema).parse(partialData1);
     expect(parsed1).toEqual(partialData1);
 
     // Test with missing array properties
     const partialData2 = { name: "Test" };
-    const parsed2 = partialSchema.parse(partialData2);
+    const parsed2 = toZod(partialSchema).parse(partialData2);
     expect(parsed2).toEqual({ name: "Test" });
 
     // Test array validation still works
     const invalidData = { tags: ["valid", 123] }; // Invalid array element
-    expect(() => partialSchema.parse(invalidData)).toThrow(
-      /Element at index 1: Expected string, received number/,
-    );
+    expect(() => toZod(partialSchema).parse(invalidData)).toThrow();
   });
 
   it("should chain with other ObjectSchema methods", () => {
@@ -283,8 +274,8 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Test parsing with chained methods
     const partialData = { name: "John" };
-    const parsed1 = partialOmittedSchema.parse(partialData);
-    const parsed2 = omittedPartialSchema.parse(partialData);
+    const parsed1 = toZod(partialOmittedSchema).parse(partialData);
+    const parsed2 = toZod(omittedPartialSchema).parse(partialData);
     expect(parsed1).toEqual({ name: "John" });
     expect(parsed2).toEqual({ name: "John" });
   });
@@ -308,7 +299,7 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Test parsing with extended partial schema
     const partialData = { name: "John", email: "john@example.com" };
-    const parsed = partialExtendedSchema.parse(partialData);
+    const parsed = toZod(partialExtendedSchema).parse(partialData);
     expect(parsed).toEqual(partialData);
 
     // Test TypeScript inference
@@ -371,17 +362,17 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
 
     // Test with some boolean properties
     const partialData1 = { isActive: true };
-    const parsed1 = partialSchema.parse(partialData1);
+    const parsed1 = toZod(partialSchema).parse(partialData1);
     expect(parsed1).toEqual({ isActive: true });
 
     // Test with false values (should not be treated as missing)
     const partialData2 = { isActive: false, isVerified: true };
-    const parsed2 = partialSchema.parse(partialData2);
+    const parsed2 = toZod(partialSchema).parse(partialData2);
     expect(parsed2).toEqual({ isActive: false, isVerified: true });
 
     // Test with no boolean properties
     const partialData3 = {};
-    const parsed3 = partialSchema.parse(partialData3);
+    const parsed3 = toZod(partialSchema).parse(partialData3);
     expect(parsed3).toEqual({});
   });
 });

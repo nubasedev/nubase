@@ -6,7 +6,7 @@ import { ticketsTable } from "../../db/schema/tickets";
 
 export const handleGetTickets = createHttpHandler({
   endpoint: apiEndpoints.getTickets,
-  handler: async ({ params, body, ctx }) => {
+  handler: async () => {
     const db = getDb();
     const tickets = await db.select().from(ticketsTable);
     console.log("Fetched tickets:", tickets);
@@ -21,7 +21,7 @@ export const handleGetTickets = createHttpHandler({
 
 export const handleGetTicketById = createHttpHandler({
   endpoint: apiEndpoints.getTicket,
-  handler: async ({ params, body, ctx }) => {
+  handler: async ({ params }) => {
     const db = getDb();
     const tickets = await db
       .select()
@@ -43,7 +43,7 @@ export const handleGetTicketById = createHttpHandler({
 
 export const handlePostTicket = createHttpHandler({
   endpoint: apiEndpoints.postTicket,
-  handler: async ({ params, body, ctx }) => {
+  handler: async ({ body }) => {
     console.log("Received ticket data:", body);
     const db = getDb();
 
@@ -69,7 +69,7 @@ export const handlePostTicket = createHttpHandler({
 
 export const handlePutTicket = createHttpHandler({
   endpoint: apiEndpoints.putTicket,
-  handler: async ({ params, body, ctx }) => {
+  handler: async ({ params, body }) => {
     const db = getDb();
 
     const updateData = {
@@ -98,7 +98,7 @@ export const handlePutTicket = createHttpHandler({
 
 export const handleDeleteTicket = createHttpHandler({
   endpoint: apiEndpoints.deleteTicket,
-  handler: async ({ params, body, ctx }) => {
+  handler: async ({ params }) => {
     const db = getDb();
 
     const result = await db

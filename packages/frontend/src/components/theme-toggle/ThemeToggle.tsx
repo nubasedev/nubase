@@ -1,5 +1,4 @@
 import { IconMoon, IconSun } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
 import { Button } from "../buttons/Button/Button";
 import { useNubaseContext } from "../nubase-app/NubaseContextProvider";
 

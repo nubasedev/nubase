@@ -1,70 +1,37 @@
 import {
+  createContext,
   type FC,
   type ReactNode,
-  createContext,
   useCallback,
   useContext,
   useMemo,
   useState,
 } from "react";
-import { Modal, type ModalProps } from "./Modal";
-import { ModalStructured, type ModalStructuredProps } from "./ModalStructured";
-
-type BaseModalConfig = {
-  id: string;
-  onDismiss?: () => void;
-};
-
-type RegularModalConfig = BaseModalConfig &
-  Omit<ModalProps, "open" | "onClose" | "children"> & {
-    type: "regular";
-    component: ReactNode;
-  };
-
-type StructuredModalConfig = BaseModalConfig &
-  Omit<ModalStructuredProps, "open" | "onClose"> & {
-    type: "structured";
-  };
-
-type ModalConfig = RegularModalConfig | StructuredModalConfig;
+import { Modal } from "./Modal";
+import type { ModalConfig, ModalInstance } from "./types";
 
 type ModalContextType = {
-  openModal: (config: Omit<ModalConfig, "id">) => string;
-  openStructuredModal: (
-    config: Omit<StructuredModalConfig, "id" | "type">,
-  ) => string;
+  openModal: (config: ModalConfig) => string;
   closeModal: (id?: string) => void;
   closeAllModals: () => void;
-  modals: ModalConfig[];
+  modals: ModalInstance[];
 };
 
 export const ModalContext = createContext<ModalContextType | null>(null);
 
 export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [modals, setModals] = useState<ModalConfig[]>([]);
+  const [modals, setModals] = useState<ModalInstance[]>([]);
 
-  const openModal = useCallback((config: Omit<ModalConfig, "id">) => {
+  const openModal = useCallback((config: ModalConfig) => {
     const id = Math.random().toString(36).substr(2, 9);
-    const newModal = { ...config, id } as ModalConfig;
+    const newModal: ModalInstance = {
+      id,
+      config,
+    };
 
     setModals((prev) => [...prev, newModal]);
     return id;
   }, []);
-
-  const openStructuredModal = useCallback(
-    (config: Omit<StructuredModalConfig, "id" | "type">) => {
-      const id = Math.random().toString(36).substr(2, 9);
-      const newModal: StructuredModalConfig = {
-        ...config,
-        id,
-        type: "structured",
-      };
-
-      setModals((prev) => [...prev, newModal]);
-      return id;
-    },
-    [],
-  );
 
   const closeModal = useCallback((id?: string) => {
     setModals((prev) => {
@@ -82,8 +49,8 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const handleModalClose = useCallback(
     (modalId: string) => {
       const modal = modals.find((m) => m.id === modalId);
-      if (modal?.onDismiss) {
-        modal.onDismiss();
+      if (modal?.config.onDismiss) {
+        modal.config.onDismiss();
       }
       closeModal(modalId);
     },
@@ -94,7 +61,6 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
     <ModalContext.Provider
       value={{
         openModal,
-        openStructuredModal,
         closeModal,
         closeAllModals,
         modals,
@@ -102,65 +68,45 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
     >
       {children}
       {modals.map((modal, index) => {
-        if (modal.type === "structured") {
-          const { id, type, onDismiss, ...modalProps } = modal;
-          return (
-            <ModalStructured
-              key={id}
-              open={true}
-              onClose={() => handleModalClose(id)}
-              zIndex={50 + index}
-              {...modalProps}
-            />
-          );
-        }
-        const { id, type, onDismiss, component, ...modalProps } = modal;
+        const { content, ...modalProps } = modal.config;
         return (
           <Modal
-            key={id}
+            key={modal.id}
             open={true}
-            onClose={() => handleModalClose(id)}
-            zIndex={50 + index}
+            onClose={() => handleModalClose(modal.id)}
+            content={content}
+            zIndex={(modalProps.zIndex || 50) + index}
             {...modalProps}
-          >
-            {component}
-          </Modal>
+          />
         );
       })}
     </ModalContext.Provider>
   );
 };
 
-export const useModal = () => {
+export type UseModalResult = {
+  openModal: (config: ModalConfig) => string;
+  closeModal: (id?: string) => void;
+  closeAllModals: () => void;
+  modalCount: number;
+};
+
+export const useModal = (): UseModalResult => {
   const context = useContext(ModalContext);
   if (!context) {
     throw new Error("useModal must be used within a ModalProvider");
   }
 
-  const { openModal: contextOpenModal, closeModal, closeAllModals } = context;
-
-  const openModal = useCallback(
-    (
-      component: ReactNode,
-      options?: Omit<RegularModalConfig, "id" | "component" | "type">,
-    ) => {
-      return contextOpenModal({
-        type: "regular",
-        component,
-        ...options,
-      } as Omit<ModalConfig, "id">);
-    },
-    [contextOpenModal],
-  );
+  const { openModal, closeModal, closeAllModals, modals } = context;
 
   const result = useMemo(() => {
     return {
       openModal,
       closeModal,
       closeAllModals,
-      modalCount: context.modals.length,
+      modalCount: modals.length,
     };
-  }, [openModal, closeModal, closeAllModals, context.modals.length]);
+  }, [openModal, closeModal, closeAllModals, modals.length]);
 
   return result;
 };

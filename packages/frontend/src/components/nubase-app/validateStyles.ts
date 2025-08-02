@@ -165,7 +165,7 @@ export function validateThemeColors(theme: NubaseTheme): void {
   for (const pair of textColorPairs) {
     const ratio = getContrastRatio(pair.background, pair.foreground);
     if (ratio === null) {
-      console.error(
+      console.warn(
         `⚠️  Invalid color format in ${pair.name}: ${pair.background} / ${pair.foreground}`,
       );
       hasErrors = true;
@@ -173,7 +173,7 @@ export function validateThemeColors(theme: NubaseTheme): void {
     }
 
     if (ratio < TEXT_CONTRAST_MIN) {
-      console.error(
+      console.warn(
         `⚠️  Text contrast too low for ${pair.name}: ${ratio.toFixed(2)}:1 (minimum: ${TEXT_CONTRAST_MIN}:1)\n` +
           `   Background: ${pair.background} | Foreground: ${pair.foreground}`,
       );
@@ -191,7 +191,7 @@ export function validateThemeColors(theme: NubaseTheme): void {
   for (const pair of uiColorPairs) {
     const ratio = getContrastRatio(pair.background, pair.foreground);
     if (ratio === null) {
-      console.error(
+      console.warn(
         `⚠️  Invalid color format in ${pair.name}: ${pair.background} / ${pair.foreground}`,
       );
       hasErrors = true;
@@ -199,7 +199,7 @@ export function validateThemeColors(theme: NubaseTheme): void {
     }
 
     if (ratio < UI_CONTRAST_MIN) {
-      console.error(
+      console.warn(
         `⚠️  UI component contrast too low for ${pair.name}: ${ratio.toFixed(2)}:1 (minimum: ${UI_CONTRAST_MIN}:1)\n` +
           `   Background: ${pair.background} | Foreground: ${pair.foreground}`,
       );

@@ -1,11 +1,5 @@
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
 
-interface QuickActionCardProps {
-  title: string;
-  description: string;
-  href: string;
-}
-
 export default function IndexScreen() {
   const context = useNubaseContext();
   const { config } = context;

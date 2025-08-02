@@ -5,7 +5,6 @@ import {
   NumberSchema,
   ObjectSchema,
   type ObjectShape,
-  PartialObjectSchema,
   StringSchema,
 } from "./schema";
 

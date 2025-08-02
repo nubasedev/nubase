@@ -1,2 +1,2 @@
-export { Dock } from "./Dock";
 export type { DockProps } from "./Dock";
+export { Dock } from "./Dock";

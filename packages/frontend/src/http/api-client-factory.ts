@@ -1,5 +1,3 @@
-import type { RequestSchema } from "@nubase/core";
-import type { HttpClient } from "./http-client";
 import type { createTypedApiClient } from "./typed-api-client";
 
 /**

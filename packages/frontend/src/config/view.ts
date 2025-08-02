@@ -15,7 +15,10 @@ export type CreateView<
 > = ViewBase & {
   type: "create";
   schema: TSchema;
-  onSubmit: ({
+  /**
+   * Creates a new resource.
+   */
+  createResource: ({
     data,
     context,
   }: {

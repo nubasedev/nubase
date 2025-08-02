@@ -2,9 +2,19 @@
   "name": "@nubase/frontend",
   "version": "0.1.2",
   "description": "React components and utilities for nubase",
-  "keywords": ["react", "components", "forms", "table", "ui"],
-  "sideEffects": ["**/*.css"],
-  "files": ["dist"],
+  "keywords": [
+    "react",
+    "components",
+    "forms",
+    "table",
+    "ui"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -66,7 +76,7 @@
     "@tabler/icons-react": "^3.34.0",
     "@tailwindcss/cli": "^4.1.3",
     "@tailwindcss/postcss": "^4.1.3",
-    "@tanstack/react-form": "^1.12.3",
+    "@tanstack/react-form": "^1.15.2",
     "@tanstack/react-router": "^1.121.2",
     "@tanstack/react-router-devtools": "^1.121.12",
     "@tanstack/react-table": "^8.21.3",

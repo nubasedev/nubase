@@ -1,4 +1,5 @@
 import { IconEyeCheck } from "@tabler/icons-react";
+import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import { NubaseContextProvider } from "../../components/nubase-app/NubaseContextProvider";
@@ -14,16 +15,18 @@ export const workbenchOpenViewInModal: CommandDefinition = {
     const viewEntries = Object.entries(views);
 
     if (viewEntries.length === 0) {
-      context.modal.openModal(
-        <div className="p-4 text-center">
-          <p className="text-onSurface">No views available</p>
-        </div>,
-        {
-          alignment: "top",
-          size: "md",
-          showBackdrop: true,
-        },
-      );
+      context.modal.openModal({
+        content: (
+          <ModalFrame>
+            <div className="p-4 text-center">
+              <p className="text-onSurface">No views available</p>
+            </div>
+          </ModalFrame>
+        ),
+        alignment: "top",
+        size: "md",
+        showBackdrop: true,
+      });
       return;
     }
 
@@ -35,30 +38,34 @@ export const workbenchOpenViewInModal: CommandDefinition = {
         subtitle: `Open ${viewId} view in modal`,
         onNavigate: () => {
           context.modal.closeModal();
-          context.modal.openModal(
-            <NubaseContextProvider context={context}>
-              <ViewRenderer view={view} />
-            </NubaseContextProvider>,
-            {
-              alignment: "center",
-              size: "xl",
-              showBackdrop: true,
-            },
-          );
+          context.modal.openModal({
+            content: (
+              <ModalFrame>
+                <NubaseContextProvider context={context}>
+                  <ViewRenderer view={view} />
+                </NubaseContextProvider>
+              </ModalFrame>
+            ),
+            alignment: "center",
+            size: "xl",
+            showBackdrop: true,
+          });
         },
       }),
     );
 
-    context.modal.openModal(
-      <SearchableTreeNavigator
-        items={viewItems}
-        placeHolder="Search views to open in modal..."
-      />,
-      {
-        alignment: "top",
-        size: "lg",
-        showBackdrop: true,
-      },
-    );
+    context.modal.openModal({
+      content: (
+        <ModalFrame>
+          <SearchableTreeNavigator
+            items={viewItems}
+            placeHolder="Search views to open in modal..."
+          />
+        </ModalFrame>
+      ),
+      alignment: "top",
+      size: "lg",
+      showBackdrop: true,
+    });
   },
 };

@@ -1,8 +1,7 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import type React from "react";
-import { PatchWrapper } from "./PatchWrapper";
 import { defaultRenderer, editFieldRenderers } from "./edit-field-renderers";
+import { PatchWrapper } from "./PatchWrapper";
 import {
   defaultViewRenderer,
   viewFieldRenderers,

@@ -1,6 +1,9 @@
 import { useParams } from "@tanstack/react-router";
+import type { ReactNode } from "react";
+import { showToast } from "../../components";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
-import { ViewRenderer } from "../../components/views/ViewRenderer/ViewRenderer";
+import { MaxWidthLayout } from "../../components/page-layouts/MaxWidthLayout/MaxWidthLayout";
+import { CreateViewRenderer } from "../../components/views/ViewRenderer/CreateViewRenderer";
 
 export default function ResourceScreen() {
   const { resourceName, operation } = useParams({
@@ -29,6 +32,38 @@ export default function ResourceScreen() {
     );
   }
 
+  let element: ReactNode | null = null;
+
+  switch (resourceOperation.view.type) {
+    case "create":
+      element = (
+        <CreateViewRenderer
+          view={resourceOperation.view}
+          onCreate={(_data) => {
+            // We need to show a toast saying the resource has been created and, if there is a view,
+            // we will redirect to that view
+            showToast(
+              `Resource ${resourceName} created successfully`,
+              "success",
+            );
+          }}
+          onError={(error) => {
+            showToast(
+              `Error creating resource ${resourceName}: ${error.message}`,
+              "error",
+            );
+          }}
+        />
+      );
+      break;
+    default:
+      return null;
+  }
+
   // Render the view associated with the operation
-  return <ViewRenderer view={resourceOperation.view} />;
+  return (
+    <MaxWidthLayout title={resourceOperation.view.title}>
+      {element}
+    </MaxWidthLayout>
+  );
 }

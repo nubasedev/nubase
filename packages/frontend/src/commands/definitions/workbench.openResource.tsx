@@ -1,4 +1,5 @@
 import { IconDatabase, IconFolder } from "@tabler/icons-react";
+import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import type { CommandDefinition } from "../types";
@@ -12,16 +13,18 @@ export const workbenchOpenResource: CommandDefinition = {
     const resourceEntries = Object.entries(resources);
 
     if (resourceEntries.length === 0) {
-      context.modal.openModal(
-        <div className="p-4 text-center">
-          <p className="text-onSurface">No resources available</p>
-        </div>,
-        {
-          alignment: "top",
-          size: "md",
-          showBackdrop: true,
-        },
-      );
+      context.modal.openModal({
+        content: (
+          <ModalFrame>
+            <div className="p-4 text-center">
+              <p className="text-onSurface">No resources available</p>
+            </div>
+          </ModalFrame>
+        ),
+        alignment: "top",
+        size: "md",
+        showBackdrop: true,
+      });
       return;
     }
 
@@ -41,7 +44,7 @@ export const workbenchOpenResource: CommandDefinition = {
         });
       } else {
         // Add operations as separate items
-        for (const [operationId, operation] of operations) {
+        for (const [operationId, _operation] of operations) {
           resourceItems.push({
             id: `${resourceId}.${operationId}`,
             icon: <IconFolder />,
@@ -62,16 +65,18 @@ export const workbenchOpenResource: CommandDefinition = {
       }
     }
 
-    context.modal.openModal(
-      <SearchableTreeNavigator
-        items={resourceItems}
-        placeHolder="Search resources..."
-      />,
-      {
-        alignment: "top",
-        size: "lg",
-        showBackdrop: true,
-      },
-    );
+    context.modal.openModal({
+      content: (
+        <ModalFrame>
+          <SearchableTreeNavigator
+            items={resourceItems}
+            placeHolder="Search resources..."
+          />
+        </ModalFrame>
+      ),
+      alignment: "top",
+      size: "lg",
+      showBackdrop: true,
+    });
   },
 };

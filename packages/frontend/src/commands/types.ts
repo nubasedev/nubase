@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import type { ModalProps } from "../components/floating/modal/Modal";
-import type { NubaseFrontendConfig } from "../config/nubase-frontend-config";
 import type { NubaseContextData } from "../context/types";
 
 export type { NubaseContextData };

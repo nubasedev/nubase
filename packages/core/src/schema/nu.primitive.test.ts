@@ -36,54 +36,51 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   // --- Parse/Validation Tests ---
   it("should parse valid string data", () => {
     const stringSchema = nu.string();
-    expect(stringSchema.parse("hello")).toBe("hello");
+    expect(toZod(stringSchema).parse("hello")).toBe("hello");
   });
 
   it("should throw error for invalid string data", () => {
     const stringSchema = nu.string();
-    expect(() => stringSchema.parse(123)).toThrow(
-      "Expected string, received number",
-    );
+    expect(() => toZod(stringSchema).parse(123)).toThrow();
   });
 
   it("should parse valid number data", () => {
     const numberSchema = nu.number();
-    expect(numberSchema.parse(123)).toBe(123);
-    expect(numberSchema.parse(123.45)).toBe(123.45);
+    expect(toZod(numberSchema).parse(123)).toBe(123);
+    expect(toZod(numberSchema).parse(123.45)).toBe(123.45);
   });
 
   it("should throw error for invalid number data", () => {
     const numberSchema = nu.number();
-    expect(() => numberSchema.parse("abc")).toThrow(
-      "Expected number, received string",
+    expect(() => toZod(numberSchema).parse("abc")).toThrow();
+    expect(() => toZod(numberSchema).parse(Number.NaN)).toThrow();
+  });
+
+  it("should parse Infinity as a valid number (Zod behavior)", () => {
+    const numberSchema = nu.number();
+    expect(toZod(numberSchema).parse(Number.POSITIVE_INFINITY)).toBe(
+      Number.POSITIVE_INFINITY,
     );
-    expect(() => numberSchema.parse(Number.NaN)).toThrow(
-      "Expected number, received number",
-    ); // NaN is typeof number but not finite
-    expect(() => numberSchema.parse(Number.POSITIVE_INFINITY)).toThrow(
-      "Expected number, received number",
+    expect(toZod(numberSchema).parse(Number.NEGATIVE_INFINITY)).toBe(
+      Number.NEGATIVE_INFINITY,
     );
   });
 
   it("should parse valid array data", () => {
     const stringArraySchema = nu.array(nu.string());
     const validData = ["a", "b", "c"];
-    expect(stringArraySchema.parse(validData)).toEqual(validData);
+    expect(toZod(stringArraySchema).parse(validData)).toEqual(validData);
   });
 
   it("should throw error for invalid array data (wrong type)", () => {
     const stringArraySchema = nu.array(nu.string());
-    expect(() => stringArraySchema.parse("not an array")).toThrow(
-      "Expected array, received string",
-    );
+    expect(() => toZod(stringArraySchema).parse("not an array")).toThrow();
   });
 
   it("should throw error for invalid array data (invalid element)", () => {
     const stringArraySchema = nu.array(nu.string());
     const invalidData = ["a", 123, "c"];
-    expect(() => stringArraySchema.parse(invalidData)).toThrow(
-      /Array validation failed:\nElement at index 1: Expected string, received number/,
-    );
+    expect(() => toZod(stringArraySchema).parse(invalidData)).toThrow();
   });
 
   // --- toZod Conversion Tests ---
@@ -147,7 +144,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
     // Test that assigning parsed data is type-safe
     const numberArrayData = [1, 2, 3];
-    const parsedNumberArray = numberArraySchema.parse(numberArrayData);
+    const parsedNumberArray = toZod(numberArraySchema).parse(numberArrayData);
     expectTypeOf(parsedNumberArray).toBeArray();
     // This would be a TS error:
     // const badParsedNumberArray: string[] = parsedNumberArray; // TS error expected

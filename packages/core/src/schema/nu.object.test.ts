@@ -13,18 +13,18 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     });
 
     type User = Infer<typeof userSchema>;
-    const user: User = {
+    const _user: User = {
       id: 1,
       name: "Andre Pena",
       // isActive is optional, so can be omitted
     };
 
     // Test parsing with optional field
-    const parsed = userSchema.parse({ id: 1, name: "Andre Pena" });
+    const parsed = toZod(userSchema).parse({ id: 1, name: "Andre Pena" });
     expect(parsed).toEqual({ id: 1, name: "Andre Pena" });
 
     // Test parsing with optional field provided
-    const parsedWithOptional = userSchema.parse({
+    const parsedWithOptional = toZod(userSchema).parse({
       id: 1,
       name: "Andre Pena",
       isActive: true,
@@ -75,32 +75,26 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     });
 
     const validData = { id: 1, name: "Alice", isActive: true };
-    expect(userSchema.parse(validData)).toEqual(validData);
+    expect(toZod(userSchema).parse(validData)).toEqual(validData);
   });
 
   it("should throw error for invalid object data (wrong type)", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
-    expect(() => userSchema.parse(123)).toThrow(
-      "Expected object, received number",
-    );
-    expect(() => userSchema.parse(null)).toThrow(
-      "Expected object, received object",
-    ); // typeof null is 'object'
+    expect(() => toZod(userSchema).parse(123)).toThrow();
+    expect(() => toZod(userSchema).parse(null)).toThrow(); // typeof null is 'object'
   });
 
   it("should throw error for invalid object data (invalid property)", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
     const invalidData = { id: "one", name: "Alice" };
-    expect(() => userSchema.parse(invalidData)).toThrow(
-      /Object validation failed:\nProperty "id": Expected number, received string/,
-    );
+    expect(() => toZod(userSchema).parse(invalidData)).toThrow();
   });
 
   // Note: Current ObjectSchema parse ignores extra keys. Add a test if you change that.
   it("should ignore extra keys in object data by default", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
     const dataWithExtra = { id: 1, name: "Alice", age: 30 };
-    const parsedData = userSchema.parse(dataWithExtra);
+    const parsedData = toZod(userSchema).parse(dataWithExtra);
     expect(parsedData).toEqual({ id: 1, name: "Alice" }); // Extra 'age' is ignored
   });
 
@@ -211,7 +205,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       name: "Test",
       settings: { theme: "dark", darkMode: false },
     };
-    const parsedUser = userSchema.parse(userData);
+    const parsedUser = toZod(userSchema).parse(userData);
     expectTypeOf(parsedUser).toMatchTypeOf<{
       id: number;
       name: string;
@@ -219,7 +213,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     }>();
 
     // This would be a TS error if types mismatched:
-    // const badParsedUser: string = userSchema.parse(userData); // TS error expected
+    // const badParsedUser: string = toZod(userSchema).parse(userData); // TS error expected
   });
 
   it("should infer correct Zod schema type after toZod conversion", () => {

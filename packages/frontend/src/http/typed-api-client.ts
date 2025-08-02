@@ -4,6 +4,8 @@ import type {
   InferResponseBody,
   RequestSchema,
 } from "@nubase/core";
+import { toZod } from "@nubase/core";
+import { ClientNetworkError } from "../utils/network-errors";
 import type {
   HttpClient,
   HttpRequestConfig,
@@ -15,6 +17,8 @@ type TypedMethodOptions<T extends RequestSchema> = {
   data?: InferRequestBody<T>;
   config?: HttpRequestConfig;
 };
+
+export type ErrorListener = (error: Error) => void;
 
 // Helper type to create method signature based on HTTP method
 type MethodSignature<T extends RequestSchema> = T["method"] extends "GET"
@@ -33,10 +37,16 @@ type TypedApiMethods<T> = {
 export class TypedApiClient<T> {
   private httpClient: HttpClient;
   private endpoints: T;
+  private errorListener?: ErrorListener;
 
-  constructor(httpClient: HttpClient, endpoints: T) {
+  constructor(
+    httpClient: HttpClient,
+    endpoints: T,
+    errorListener?: ErrorListener,
+  ) {
     this.httpClient = httpClient;
     this.endpoints = endpoints;
+    this.errorListener = errorListener;
 
     // Create flattened API client structure
     this.createFlatApiClient();
@@ -58,39 +68,81 @@ export class TypedApiClient<T> {
     schema: RequestSchema,
     options: TypedMethodOptions<any>,
   ): Promise<HttpResponse<any>> {
-    const { params, data, config } = options;
+    try {
+      const { params, data, config } = options;
 
-    // Replace path parameters if they exist
-    let path = schema.path;
-    if (params && typeof params === "object") {
-      for (const [key, value] of Object.entries(params)) {
-        path = path.replace(`:${key}`, String(value));
+      // Replace path parameters if they exist
+      let path = schema.path;
+      if (params && typeof params === "object") {
+        for (const [key, value] of Object.entries(params)) {
+          path = path.replace(`:${key}`, String(value));
+        }
       }
-    }
 
-    // Validate request body if provided
-    if (data && schema.requestBody) {
-      try {
-        schema.requestBody.parse(data);
-      } catch (error) {
-        throw new Error(`Request body validation failed: ${error}`);
+      // Validate request body if provided
+      if (data && schema.requestBody) {
+        const result = toZod(schema.requestBody).safeParse(data);
+        if (!result.success) {
+          throw new ClientNetworkError(
+            `Request validation failed for ${schema.method} ${path}`,
+            {
+              endpoint: path,
+              method: schema.method,
+              phase: "request-validation",
+              zodError: result.error,
+            },
+          );
+        }
       }
-    }
 
-    // Make the HTTP request
-    switch (schema.method) {
-      case "GET":
-        return this.httpClient.get(path, config);
-      case "POST":
-        return this.httpClient.post(path, data, config);
-      case "PUT":
-        return this.httpClient.put(path, data, config);
-      case "PATCH":
-        return this.httpClient.patch(path, data, config);
-      case "DELETE":
-        return this.httpClient.delete(path, config);
-      default:
-        throw new Error(`Unsupported HTTP method: ${schema.method}`);
+      // Make the HTTP request
+      let response: HttpResponse<any>;
+      switch (schema.method) {
+        case "GET":
+          response = await this.httpClient.get(path, config);
+          break;
+        case "POST":
+          response = await this.httpClient.post(path, data, config);
+          break;
+        case "PUT":
+          response = await this.httpClient.put(path, data, config);
+          break;
+        case "PATCH":
+          response = await this.httpClient.patch(path, data, config);
+          break;
+        case "DELETE":
+          response = await this.httpClient.delete(path, config);
+          break;
+        default:
+          throw new Error(`Unsupported HTTP method: ${schema.method}`);
+      }
+
+      // Validate response body
+      if (schema.responseBody && response.data !== undefined) {
+        const result = toZod(schema.responseBody).safeParse(response.data);
+        if (!result.success) {
+          throw new ClientNetworkError(
+            `Response validation failed for ${schema.method} ${path}`,
+            {
+              endpoint: path,
+              method: schema.method,
+              phase: "response-validation",
+              zodError: result.error,
+            },
+          );
+        }
+        return {
+          ...response,
+          data: result.data,
+        };
+      }
+
+      return response;
+    } catch (error) {
+      if (this.errorListener && error instanceof Error) {
+        this.errorListener(error);
+      }
+      throw error;
     }
   }
 
@@ -105,16 +157,16 @@ export class TypedApiClient<T> {
       "responseBody" in obj
     );
   }
-
-  private capitalize(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
 }
 
 export function createTypedApiClient<T>(
   httpClient: HttpClient,
   endpoints: T,
+  errorListener?: ErrorListener,
 ): TypedApiClient<T> & TypedApiMethods<T> {
-  return new TypedApiClient(httpClient, endpoints) as TypedApiClient<T> &
-    TypedApiMethods<T>;
+  return new TypedApiClient(
+    httpClient,
+    endpoints,
+    errorListener,
+  ) as TypedApiClient<T> & TypedApiMethods<T>;
 }

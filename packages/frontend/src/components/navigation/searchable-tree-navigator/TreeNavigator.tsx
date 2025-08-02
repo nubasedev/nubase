@@ -16,8 +16,6 @@ export interface TreeNavigatorProps {
 const TreeNavigatorComponent = ({
   items,
   searchInputRef,
-  selectedItemId,
-  onSelectionChange,
 }: TreeNavigatorProps) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -160,4 +158,4 @@ export type ListNavigatorItem = TreeNavigatorItem;
 export type ListNavigatorProps = TreeNavigatorProps;
 
 // Re-export types from TreeNavigatorItem
-export type { TreeNavigatorItem, FlatItem } from "./TreeNavigatorItem";
+export type { FlatItem, TreeNavigatorItem } from "./TreeNavigatorItem";

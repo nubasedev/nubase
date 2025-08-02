@@ -60,53 +60,21 @@ export abstract class BaseSchema<Output = any> {
   optional(): OptionalSchema<this> {
     return new OptionalSchema(this);
   }
-
-  /**
-   * Parses and validates the input data against the schema.
-   * Should throw an error if validation fails.
-   * @param data The data to parse.
-   * @returns The parsed data (potentially transformed).
-   */
-  abstract parse(data: any): Output;
-
-  // We could also add a safeParse method like Zod if needed
-  // safeParse(data: any): { success: true; data: Output } | { success: false; error: SchemaError };
 }
 
 // --- Primitive Schemas ---
 
 export class BooleanSchema extends BaseSchema<boolean> {
   readonly type = "boolean" as const;
-
-  parse(data: any): boolean {
-    if (typeof data !== "boolean") {
-      throw new Error(`Expected boolean, received ${typeof data}`);
-    }
-    return data;
-  }
 }
 
 export class StringSchema extends BaseSchema<string> {
   readonly type = "string" as const;
-
-  parse(data: any): string {
-    if (typeof data !== "string") {
-      throw new Error(`Expected string, received ${typeof data}`);
-    }
-    return data;
-  }
   // Add string-specific validation methods here (e.g., minLength, pattern)
 }
 
 export class NumberSchema extends BaseSchema<number> {
   readonly type = "number" as const;
-
-  parse(data: any): number {
-    if (typeof data !== "number" || !Number.isFinite(data)) {
-      throw new Error(`Expected number, received ${typeof data}`);
-    }
-    return data;
-  }
   // Add number-specific validation methods here (e.g., min, max)
 }
 
@@ -125,13 +93,6 @@ export class OptionalSchema<
   constructor(wrapped: TWrapped) {
     super();
     this._wrapped = wrapped;
-  }
-
-  parse(data: any): TWrapped["_outputType"] | undefined {
-    if (data === undefined) {
-      return undefined;
-    }
-    return this._wrapped.parse(data);
   }
 
   /**
@@ -375,7 +336,7 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
 
     // Start with static metadata for each property
     for (const key in this._shape) {
-      if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
+      if (Object.hasOwn(this._shape, key)) {
         const schema = this._shape[key];
         if (schema) {
           result[key] = { ...schema._meta };
@@ -390,7 +351,7 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
         // Use provided data and fill missing properties with default values
         const completeData: any = {};
         for (const key in this._shape) {
-          if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
+          if (Object.hasOwn(this._shape, key)) {
             const schema = this._shape[key];
             if (schema) {
               if (data[key] !== undefined) {
@@ -436,52 +397,6 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
     return result;
   }
 
-  parse(data: any): PartialObjectOutput<TShape> {
-    if (typeof data !== "object" || data === null) {
-      throw new Error(`Expected object, received ${typeof data}`);
-    }
-
-    const result: any = {};
-    const errors: string[] = [];
-
-    // Validate defined properties, but make them all optional
-    for (const key in this._shape) {
-      if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
-        const schema = this._shape[key];
-        const value = (data as any)[key]; // Get value from input data
-
-        // Only validate if the property is present
-        if (value !== undefined) {
-          try {
-            if (schema) {
-              result[key] = schema.parse(value); // Recursively parse property
-            }
-          } catch (e: any) {
-            errors.push(`Property "${key}": ${e.message}`);
-          }
-        }
-      }
-    }
-
-    // Basic handling for extra keys (can be made configurable)
-    for (const key in data) {
-      if (
-        Object.prototype.hasOwnProperty.call(data, key) &&
-        !Object.prototype.hasOwnProperty.call(this._shape, key)
-      ) {
-        // For now, ignore extra keys. Could throw an error or strip them.
-        // errors.push(`Unknown property "${key}"`);
-        // console.warn(`Warning: Unknown property "${key}" in object data.`);
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Object validation failed:\n${errors.join("\n")}`);
-    }
-
-    return result as PartialObjectOutput<TShape>;
-  }
-
   /**
    * Create a new PartialObjectSchema with certain properties omitted.
    * @param keys The property keys to omit from the schema.
@@ -494,10 +409,7 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
     const keysToOmit = new Set(keys);
 
     for (const key in this._shape) {
-      if (
-        Object.prototype.hasOwnProperty.call(this._shape, key) &&
-        !keysToOmit.has(key as any)
-      ) {
+      if (Object.hasOwn(this._shape, key) && !keysToOmit.has(key as any)) {
         newShape[key] = this._shape[key];
       }
     }
@@ -682,7 +594,7 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
     // Start with static metadata for each property
     for (const key in this._shape) {
-      if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
+      if (Object.hasOwn(this._shape, key)) {
         const schema = this._shape[key];
         if (schema) {
           result[key] = { ...schema._meta };
@@ -697,7 +609,7 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
         // Use provided data and fill missing properties with default values
         const completeData: any = {};
         for (const key in this._shape) {
-          if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
+          if (Object.hasOwn(this._shape, key)) {
             const schema = this._shape[key];
             if (schema) {
               if ((data as any)[key] !== undefined) {
@@ -753,10 +665,7 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     const keysToOmit = new Set(keys);
 
     for (const key in this._shape) {
-      if (
-        Object.prototype.hasOwnProperty.call(this._shape, key) &&
-        !keysToOmit.has(key as any)
-      ) {
+      if (Object.hasOwn(this._shape, key) && !keysToOmit.has(key as any)) {
         newShape[key] = this._shape[key];
       }
     }
@@ -838,59 +747,6 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
     return partialSchema;
   }
-
-  parse(data: any): ObjectOutput<TShape> {
-    if (typeof data !== "object" || data === null) {
-      throw new Error(`Expected object, received ${typeof data}`);
-    }
-
-    const result: any = {};
-    const errors: string[] = [];
-
-    // Validate defined properties
-    for (const key in this._shape) {
-      if (Object.prototype.hasOwnProperty.call(this._shape, key)) {
-        const schema = this._shape[key];
-        const value = (data as any)[key]; // Get value from input data
-
-        try {
-          if (schema) {
-            // Check if the field is optional
-            if (schema instanceof OptionalSchema) {
-              // For optional fields, only parse if value is provided
-              if (value !== undefined) {
-                result[key] = schema.parse(value);
-              }
-              // If undefined and optional, don't add to result (making it truly optional)
-            } else {
-              // For required fields, always parse (will throw if undefined/missing)
-              result[key] = schema.parse(value);
-            }
-          }
-        } catch (e: any) {
-          errors.push(`Property "${key}": ${e.message}`);
-        }
-      }
-    }
-
-    // Basic handling for extra keys (can be made configurable)
-    for (const key in data) {
-      if (
-        Object.prototype.hasOwnProperty.call(data, key) &&
-        !Object.prototype.hasOwnProperty.call(this._shape, key)
-      ) {
-        // For now, ignore extra keys. Could throw an error or strip them.
-        // errors.push(`Unknown property "${key}"`);
-        // console.warn(`Warning: Unknown property "${key}" in object data.`);
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Object validation failed:\n${errors.join("\n")}`);
-    }
-
-    return result as ObjectOutput<TShape>;
-  }
 }
 
 /**
@@ -909,29 +765,6 @@ export class ArraySchema<
   constructor(elementSchema: TElementSchema) {
     super();
     this._element = elementSchema;
-  }
-
-  parse(data: any): ArrayOutput<TElementSchema> {
-    if (!Array.isArray(data)) {
-      throw new Error(`Expected array, received ${typeof data}`);
-    }
-
-    const result: any[] = [];
-    const errors: string[] = [];
-
-    for (let i = 0; i < data.length; i++) {
-      try {
-        result[i] = this._element.parse(data[i]); // Recursively parse each element
-      } catch (e: any) {
-        errors.push(`Element at index ${i}: ${e.message}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      throw new Error(`Array validation failed:\n${errors.join("\n")}`);
-    }
-
-    return result as ArrayOutput<TElementSchema>;
   }
 }
 

@@ -2,8 +2,8 @@ import type * as monacoEditor from "monaco-editor/esm/vs/editor/editor.api";
 import type React from "react";
 import { useEffect, useRef } from "react";
 import ReactMonacoEditor, {
-  monaco,
   type EditorDidMount,
+  monaco,
 } from "react-monaco-editor";
 
 import "monaco-editor/esm/vs/language/json/monaco.contribution"; // Import JSON language features
@@ -90,10 +90,10 @@ function MonacoEditor({
         const spellchecker = getSpellchecker(monaco, editor, {
           check: (word: string) => dictionary.check(word),
           suggest: (word: string) => dictionary.suggest(word),
-          ignore: (word: string) => {
+          ignore: (_word: string) => {
             // Word ignored from spellcheck
           },
-          addWord: (word: string) => {
+          addWord: (_word: string) => {
             // Word added to custom dictionary
           },
         });

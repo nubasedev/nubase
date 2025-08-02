@@ -2,9 +2,16 @@
   "name": "@nubase/backend",
   "version": "0.1.1",
   "description": "Backend utilities and typed handlers for nubase",
-  "keywords": ["backend", "handlers", "api", "typescript"],
+  "keywords": [
+    "backend",
+    "handlers",
+    "api",
+    "typescript"
+  ],
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

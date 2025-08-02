@@ -1,4 +1,5 @@
 import { IconMoon, IconPalette, IconSun } from "@tabler/icons-react";
+import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import type { CommandDefinition } from "../types";
@@ -39,20 +40,22 @@ export const workbenchSetTheme: CommandDefinition = {
       };
     });
 
-    context.modal.openModal(
-      <SearchableTreeNavigator
-        items={themeItems}
-        placeHolder="Search themes..."
-      />,
-      {
-        alignment: "top",
-        size: "lg",
-        showBackdrop: true,
-        onDismiss: () => {
-          // Revert to the original theme if modal is dismissed
-          context.theming.setActiveThemeId(originalTheme);
-        },
+    context.modal.openModal({
+      content: (
+        <ModalFrame>
+          <SearchableTreeNavigator
+            items={themeItems}
+            placeHolder="Search themes..."
+          />
+        </ModalFrame>
+      ),
+      alignment: "top",
+      size: "lg",
+      showBackdrop: true,
+      onDismiss: () => {
+        // Revert to the original theme if modal is dismissed
+        context.theming.setActiveThemeId(originalTheme);
       },
-    );
+    });
   },
 };

@@ -420,7 +420,7 @@ export const AsyncLoadingSimulation: Story = {
 };
 
 export const InteractiveDemo: Story = {
-  render: (args) => {
+  render: (_args) => {
     const [value, setValue] = useState<Country | null>(null);
     const [searchable, setSearchable] = useState(true);
     const [clearable, setClearable] = useState(true);

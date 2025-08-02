@@ -2,8 +2,9 @@ import { DialogTitle } from "@headlessui/react";
 import { type ReactNode, useCallback, useRef } from "react";
 import { Button } from "../../buttons/Button/Button";
 import { ButtonBar } from "../../buttons/ButtonBar/ButtonBar";
-import type { ModalStructuredAlignment } from "../modal/ModalStructured";
-import { useModalStructured } from "../modal/useModalStructured";
+import { ModalFrameStructured } from "../modal/ModalFrameStructured";
+import type { ModalAlignment } from "../modal/types";
+import { useModal } from "../modal/useModal";
 
 type DialogConfig = {
   title?: string;
@@ -11,7 +12,7 @@ type DialogConfig = {
   onConfirm?: () => void;
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
-  alignment?: ModalStructuredAlignment;
+  alignment?: ModalAlignment;
   confirmText?: string;
   cancelText?: string;
   confirmVariant?: "primary" | "danger";
@@ -27,7 +28,7 @@ export type UseDialogResult = {
 };
 
 export const useDialog = (): UseDialogResult => {
-  const { openModal, closeModal } = useModalStructured();
+  const { openModal, closeModal } = useModal();
   const modalIdRef = useRef<string | null>(null);
 
   const openDialog = useCallback(
@@ -65,7 +66,7 @@ export const useDialog = (): UseDialogResult => {
       ) : undefined;
 
       const footer = onConfirm ? (
-        <ButtonBar>
+        <ButtonBar className="p-4">
           <Button variant="secondary" onClick={handleClose}>
             {cancelText}
           </Button>
@@ -76,13 +77,17 @@ export const useDialog = (): UseDialogResult => {
       ) : undefined;
 
       modalIdRef.current = openModal({
-        header,
-        body: content,
-        footer,
+        content: (
+          <ModalFrameStructured
+            header={header}
+            body={content}
+            footer={footer}
+            className={className}
+          />
+        ),
         size,
         alignment,
         showBackdrop,
-        className,
         zIndex,
       });
     },

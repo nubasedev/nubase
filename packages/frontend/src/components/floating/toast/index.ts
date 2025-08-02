@@ -1,14 +1,14 @@
 export { Toast } from "./Toast";
 export { ToastContainer } from "./ToastContainer";
 export { ToastProvider, useToast } from "./ToastContext";
-export { showToast, showPromiseToast } from "./toastUtils";
+export { showPromiseToast, showToast } from "./toastUtils";
 export type {
+  PromiseResult,
+  PromiseToastCallback,
+  PromiseToastConfig,
+  PromiseToastOptions,
   ToastData,
   ToastOptions,
-  PromiseToastOptions,
-  ToastType,
   ToastPosition,
-  PromiseResult,
-  PromiseToastConfig,
-  PromiseToastCallback,
+  ToastType,
 } from "./types";

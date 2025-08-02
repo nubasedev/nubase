@@ -20,19 +20,20 @@ export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
 }) => {
   return (
     <form.api.Subscribe
-      selector={(state) => [state.canSubmit, state.isSubmitting]}
+      selector={(state) => [
+        state.canSubmit,
+        state.isSubmitting,
+        state.isValidating,
+        state.errors,
+      ]}
     >
-      {([canSubmit, isSubmitting]) => (
+      {([canSubmit, isSubmitting, _isValidating, _errors]) => (
         <ButtonBar
           alignment={alignment}
           className={className}
           variant="transparent"
         >
-          <Button
-            type="button"
-            disabled={!canSubmit || isComputing}
-            onClick={() => form.api.handleSubmit()}
-          >
+          <Button type="submit" disabled={!canSubmit || isComputing}>
             {isSubmitting
               ? "Submitting..."
               : isComputing
