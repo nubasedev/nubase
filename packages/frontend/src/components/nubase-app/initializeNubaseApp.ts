@@ -1,6 +1,7 @@
 import { commandRegistry } from "../../commands";
 import { workbenchOpenResource } from "../../commands/definitions/workbench.openResource";
 import { workbenchOpenView } from "../../commands/definitions/workbench.openView";
+import { workbenchOpenViewInModal } from "../../commands/definitions/workbench.openViewInModal";
 import { workbenchRunCommand } from "../../commands/definitions/workbench.runCommand";
 import { workbenchSetTheme } from "../../commands/definitions/workbench.setTheme";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
@@ -45,6 +46,7 @@ export async function initializeNubaseApp({
   commandRegistry.register(workbenchRunCommand);
   commandRegistry.register(workbenchSetTheme);
   commandRegistry.register(workbenchOpenView);
+  commandRegistry.register(workbenchOpenViewInModal);
   commandRegistry.register(workbenchOpenResource);
 
   console.info("Nubase app initialized");

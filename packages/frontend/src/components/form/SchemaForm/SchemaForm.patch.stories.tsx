@@ -1,8 +1,10 @@
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSchemaForm } from "../../../hooks";
 import { showToast } from "../../floating/toast";
 import { SchemaForm } from "./SchemaForm";
+import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
 
 const meta: Meta<typeof SchemaForm> = {
   title: "Form/SchemaForm - Patch Mode",
@@ -50,25 +52,26 @@ export const ViewMode: Story = {
       bio: "I'm a software developer with 10 years of experience in web development. I love working with React and TypeScript.",
     };
 
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "view",
+      onSubmit: () => {},
+    });
+
+    // Pre-populate the form with data
+    useEffect(() => {
+      form.api.setFieldValue("firstName", initialData.firstName);
+      form.api.setFieldValue("lastName", initialData.lastName);
+      form.api.setFieldValue("email", initialData.email);
+      form.api.setFieldValue("age", initialData.age);
+      form.api.setFieldValue("isActive", initialData.isActive);
+      form.api.setFieldValue("bio", initialData.bio);
+    }, [form.api]);
+
     return (
       <div className="max-w-2xl">
         <h3 className="text-lg font-semibold mb-4">View Mode - Read Only</h3>
-        <SchemaForm
-          schema={userSchema}
-          mode="view"
-          onSubmit={() => {}}
-          // Pre-populate the form with data
-          ref={(form) => {
-            if (form) {
-              form.setFieldValue("firstName", initialData.firstName);
-              form.setFieldValue("lastName", initialData.lastName);
-              form.setFieldValue("email", initialData.email);
-              form.setFieldValue("age", initialData.age);
-              form.setFieldValue("isActive", initialData.isActive);
-              form.setFieldValue("bio", initialData.bio);
-            }
-          }}
-        />
+        <SchemaForm form={form} />
       </div>
     );
   },
@@ -97,6 +100,20 @@ export const PatchMode: Story = {
       }));
     };
 
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "patch",
+      onSubmit: () => {},
+      onPatch: handlePatch,
+    });
+
+    // Pre-populate the form with current data
+    useEffect(() => {
+      for (const [key, value] of Object.entries(userData)) {
+        form.api.setFieldValue(key as keyof typeof userData, value);
+      }
+    }, [form.api, userData]);
+
     return (
       <div className="max-w-2xl">
         <h3 className="text-lg font-semibold mb-4">
@@ -108,20 +125,7 @@ export const PatchMode: Story = {
             inline. Use the ✓ button to apply changes or ✕ to cancel.
           </p>
         </div>
-        <SchemaForm
-          schema={userSchema}
-          mode="patch"
-          onSubmit={() => {}}
-          onPatch={handlePatch}
-          ref={(form) => {
-            if (form) {
-              // Pre-populate the form with current data
-              for (const [key, value] of Object.entries(userData)) {
-                form.setFieldValue(key as keyof typeof userData, value);
-              }
-            }
-          }}
-        />
+        <SchemaForm form={form} />
       </div>
     );
   },
@@ -160,6 +164,20 @@ export const PatchModeWithValidation: Story = {
       }));
     };
 
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "patch",
+      onSubmit: () => {},
+      onPatch: handlePatch,
+    });
+
+    // Pre-populate the form with current data
+    useEffect(() => {
+      for (const [key, value] of Object.entries(userData)) {
+        form.api.setFieldValue(key as keyof typeof userData, value);
+      }
+    }, [form.api, userData]);
+
     return (
       <div className="max-w-2xl">
         <h3 className="text-lg font-semibold mb-4">
@@ -172,111 +190,7 @@ export const PatchModeWithValidation: Story = {
             action.
           </p>
         </div>
-        <SchemaForm
-          schema={userSchema}
-          mode="patch"
-          onSubmit={() => {}}
-          onPatch={handlePatch}
-          ref={(form) => {
-            if (form) {
-              // Pre-populate the form with current data
-              for (const [key, value] of Object.entries(userData)) {
-                form.setFieldValue(key as keyof typeof userData, value);
-              }
-            }
-          }}
-        />
-      </div>
-    );
-  },
-};
-
-export const ComparisonAllModes: Story = {
-  render: () => {
-    const [userData, setUserData] = useState({
-      firstName: "Alice",
-      lastName: "Wilson",
-      email: "alice.wilson@example.com",
-      age: 32,
-      isActive: true,
-      bio: "UX designer with a passion for creating intuitive user experiences.",
-    });
-
-    const handleSubmit = async (data: any) => {
-      showToast("Form submitted successfully!", "success");
-      setUserData(data);
-    };
-
-    const handlePatch = async (fieldName: string, value: any) => {
-      showToast(`Updated ${fieldName}`, "success");
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      setUserData((prev) => ({
-        ...prev,
-        [fieldName]: value,
-      }));
-    };
-
-    return (
-      <div className="space-y-8">
-        <div>
-          <h3 className="text-lg font-semibold mb-4">
-            Edit Mode - Traditional Form
-          </h3>
-          <div className="max-w-2xl p-4 border border-outline rounded-lg">
-            <SchemaForm
-              schema={userSchema}
-              mode="edit"
-              onSubmit={handleSubmit}
-              submitText="Save Changes"
-              ref={(form) => {
-                if (form) {
-                  for (const [key, value] of Object.entries(userData)) {
-                    form.setFieldValue(key as keyof typeof userData, value);
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-4">View Mode - Read Only</h3>
-          <div className="max-w-2xl p-4 border border-outline rounded-lg">
-            <SchemaForm
-              schema={userSchema}
-              mode="view"
-              onSubmit={() => {}}
-              ref={(form) => {
-                if (form) {
-                  for (const [key, value] of Object.entries(userData)) {
-                    form.setFieldValue(key as keyof typeof userData, value);
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-4">
-            Patch Mode - Inline Editing
-          </h3>
-          <div className="max-w-2xl p-4 border border-outline rounded-lg">
-            <SchemaForm
-              schema={userSchema}
-              mode="patch"
-              onSubmit={() => {}}
-              onPatch={handlePatch}
-              ref={(form) => {
-                if (form) {
-                  for (const [key, value] of Object.entries(userData)) {
-                    form.setFieldValue(key as keyof typeof userData, value);
-                  }
-                }
-              }}
-            />
-          </div>
-        </div>
+        <SchemaForm form={form} />
       </div>
     );
   },

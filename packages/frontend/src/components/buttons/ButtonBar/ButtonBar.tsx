@@ -1,24 +1,35 @@
+import { type VariantProps, cva } from "class-variance-authority";
 import type React from "react";
 import { forwardRef } from "react";
 import { cn } from "../../../utils";
 
-export interface ButtonBarProps extends React.HTMLAttributes<HTMLDivElement> {
-  alignment?: "left" | "center" | "right";
-}
+const buttonBarVariants = cva("flex gap-2 p-3", {
+  variants: {
+    alignment: {
+      left: "justify-start",
+      center: "justify-center",
+      right: "justify-end",
+    },
+    variant: {
+      default: "bg-surfaceVariant",
+      transparent: "",
+    },
+  },
+  defaultVariants: {
+    alignment: "right",
+    variant: "default",
+  },
+});
+
+export interface ButtonBarProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof buttonBarVariants> {}
 
 const ButtonBar = forwardRef<HTMLDivElement, ButtonBarProps>(
-  ({ className, alignment = "right", children, ...props }, ref) => {
+  ({ className, alignment, variant, children, ...props }, ref) => {
     return (
       <div
-        className={cn(
-          "flex gap-2",
-          {
-            "justify-start": alignment === "left",
-            "justify-center": alignment === "center",
-            "justify-end": alignment === "right",
-          },
-          className,
-        )}
+        className={cn(buttonBarVariants({ alignment, variant }), className)}
         ref={ref}
         {...props}
       >
@@ -30,4 +41,4 @@ const ButtonBar = forwardRef<HTMLDivElement, ButtonBarProps>(
 
 ButtonBar.displayName = "ButtonBar";
 
-export { ButtonBar };
+export { ButtonBar, buttonBarVariants };

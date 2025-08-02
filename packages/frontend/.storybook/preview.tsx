@@ -7,6 +7,7 @@ import {
   createRootRoute,
   createRouter,
 } from "@tanstack/react-router";
+import { ModalProvider } from "../src/components/floating/modal";
 import {
   ToastContainer,
   ToastProvider,
@@ -51,6 +52,11 @@ const preview: Preview = {
         <Story />
         <ToastContainer />
       </ToastProvider>
+    ),
+    (Story) => (
+      <ModalProvider>
+        <Story />
+      </ModalProvider>
     ),
     (Story) => (
       <RouterProvider

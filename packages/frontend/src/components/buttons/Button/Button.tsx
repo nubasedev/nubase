@@ -11,7 +11,7 @@ const buttonVariants = cva(
         primary:
           "bg-primary text-onPrimary hover:bg-primary/90 focus:ring-primary/20 shadow-sm hover:-translate-y-0.5 active:translate-y-0",
         secondary:
-          "bg-secondaryContainer text-onSecondaryContainer border border-outline hover:bg-secondaryContainer/80 hover:border-outline/80 focus:ring-outline/20 shadow-sm",
+          "bg-secondaryContainer text-onSecondaryContainer hover:bg-secondaryContainer/80 hover:border-outline/80 focus:ring-outline/20 shadow-sm",
         danger:
           "bg-error text-onError hover:bg-error/90 focus:ring-error/20 shadow-sm hover:-translate-y-0.5 active:translate-y-0",
       },

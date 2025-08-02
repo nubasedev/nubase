@@ -1,12 +1,14 @@
-import { IconEye } from "@tabler/icons-react";
+import { IconEyeCheck } from "@tabler/icons-react";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
+import { NubaseContextProvider } from "../../components/nubase-app/NubaseContextProvider";
+import { ViewRenderer } from "../../components/views/ViewRenderer/ViewRenderer";
 import type { CommandDefinition } from "../types";
 
-export const workbenchOpenView: CommandDefinition = {
-  id: "workbench.openView",
-  name: "Open View",
-  icon: <IconEye />,
+export const workbenchOpenViewInModal: CommandDefinition = {
+  id: "workbench.openViewInModal",
+  name: "Open View in Modal",
+  icon: <IconEyeCheck />,
   execute: (context) => {
     const views = context.config?.views || {};
     const viewEntries = Object.entries(views);
@@ -28,15 +30,21 @@ export const workbenchOpenView: CommandDefinition = {
     const viewItems: TreeNavigatorItem[] = viewEntries.map(
       ([viewId, view]) => ({
         id: viewId,
-        icon: <IconEye />,
+        icon: <IconEyeCheck />,
         title: view.title || viewId,
-        subtitle: `Navigate to ${viewId} view`,
+        subtitle: `Open ${viewId} view in modal`,
         onNavigate: () => {
           context.modal.closeModal();
-          context.router.navigate({
-            to: "/v/$view",
-            params: { view: viewId },
-          });
+          context.modal.openModal(
+            <NubaseContextProvider context={context}>
+              <ViewRenderer view={view} />
+            </NubaseContextProvider>,
+            {
+              alignment: "center",
+              size: "xl",
+              showBackdrop: true,
+            },
+          );
         },
       }),
     );
@@ -44,7 +52,7 @@ export const workbenchOpenView: CommandDefinition = {
     context.modal.openModal(
       <SearchableTreeNavigator
         items={viewItems}
-        placeHolder="Search views..."
+        placeHolder="Search views to open in modal..."
       />,
       {
         alignment: "top",

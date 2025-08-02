@@ -3,10 +3,7 @@ import { OptionalSchema } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
 import { useState } from "react";
-import {
-  FormControl,
-  type FormControlLayout,
-} from "../../form-controls/FormControl/FormControl";
+import { FormControl } from "../../form-controls/FormControl/FormControl";
 import {
   type FormFieldRendererContext,
   createFieldRenderer,
@@ -18,7 +15,6 @@ export interface FormFieldRendererProps {
   metadata: SchemaMetadata<any>;
   mode?: "edit" | "view" | "patch";
   onPatch?: (fieldName: string, value: any) => Promise<void>;
-  layout?: FormControlLayout;
 }
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
@@ -27,7 +23,6 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
   metadata,
   mode = "edit",
   onPatch,
-  layout = "vertical",
 }) => {
   const [isPatching, setIsPatching] = useState(false);
   const [originalValue, setOriginalValue] = useState(fieldState.state.value);
@@ -72,7 +67,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       hint={metadata.description}
       field={fieldState}
       required={isRequired}
-      layout={layout}
+      layout="horizontal"
     >
       {mode === "patch" ? <div>{fieldElement}</div> : fieldElement}
     </FormControl>

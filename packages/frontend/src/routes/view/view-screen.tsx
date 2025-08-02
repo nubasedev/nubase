@@ -1,5 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
+import { MaxWidthLayout } from "../../components/page-layouts/MaxWidthLayout/MaxWidthLayout";
 import { ViewRenderer } from "../../components/views/ViewRenderer/ViewRenderer";
 
 export default function ViewScreen() {
@@ -11,5 +12,9 @@ export default function ViewScreen() {
     return <div>View not found</div>;
   }
 
-  return <ViewRenderer view={context.config.views[view]} />;
+  return (
+    <MaxWidthLayout title={context.config.views[view].title}>
+      <ViewRenderer view={context.config.views[view]} />
+    </MaxWidthLayout>
+  );
 }

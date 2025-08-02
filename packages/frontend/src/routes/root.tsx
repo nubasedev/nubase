@@ -14,7 +14,7 @@ function RootComponent() {
         left={<MainNav items={context.config.mainMenu} />}
       />
       {/* Development Tools - Top Right */}
-      <TanStackRouterDevtools position="top-right" />
+      {/* <TanStackRouterDevtools position="top-right" /> */}
     </div>
   );
 }

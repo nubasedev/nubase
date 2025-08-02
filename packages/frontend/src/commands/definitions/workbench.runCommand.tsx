@@ -27,7 +27,6 @@ export const workbenchRunCommand: CommandDefinition = {
         alignment: "top",
         size: "lg",
         showBackdrop: true,
-        showCloseButton: false,
       },
     );
   },

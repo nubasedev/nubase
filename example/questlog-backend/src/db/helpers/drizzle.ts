@@ -16,6 +16,10 @@ export function getDb() {
     }
     const databaseUrl = process.env.DATABASE_URL;
     const client = new Client({ connectionString: databaseUrl });
+    client.connect().catch((err) => {
+      console.error("Failed to connect to database:", err);
+      throw err;
+    });
     global.db = drizzle(client);
   }
 

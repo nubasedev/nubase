@@ -5,13 +5,18 @@ import {
 } from "@headlessui/react";
 import type { FC, ReactNode } from "react";
 
-export type ModalAlignment = "center" | "top";
+export type ModalStructuredAlignment = "center" | "top";
 
-export type ModalProps = {
+export type ModalStructuredProps = {
   open: boolean;
   onClose: () => void;
-  children: ReactNode;
-  alignment?: ModalAlignment;
+  /** Modal header content (fixed at top) */
+  header?: ReactNode;
+  /** Modal body content (scrollable) */
+  body?: ReactNode;
+  /** Modal footer content (fixed at bottom) */
+  footer?: ReactNode;
+  alignment?: ModalStructuredAlignment;
   showBackdrop?: boolean;
   className?: string;
   size?: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
@@ -33,10 +38,12 @@ const alignmentClasses = {
   top: "items-start justify-center pt-16",
 };
 
-export const Modal: FC<ModalProps> = ({
+export const ModalStructured: FC<ModalStructuredProps> = ({
   open,
   onClose,
-  children,
+  header,
+  body,
+  footer,
   alignment = "center",
   showBackdrop = true,
   className = "",
@@ -58,9 +65,25 @@ export const Modal: FC<ModalProps> = ({
 
       <div className={`fixed inset-0 flex p-4 ${alignmentClasses[alignment]}`}>
         <DialogPanel
-          className={`w-full ${sizeClasses[size]} rounded-lg bg-surface shadow-xl ring-1 ring-outline/20 transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 ${className}`}
+          className={`w-full ${sizeClasses[size]} rounded-lg bg-surface shadow-xl ring-1 ring-outline/20 transition-all duration-300 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 ${className} flex flex-col overflow-hidden`}
+          style={{ maxHeight: "calc(100vh - 2rem)" }}
         >
-          <div className="p-4">{children}</div>
+          {/* Header - Fixed at top */}
+          {header && <div className="flex-shrink-0 p-4 pb-3">{header}</div>}
+
+          {/* Body - Scrollable content */}
+          {body && (
+            <div
+              className={`flex-1 overflow-y-auto min-h-0 pb-4 ${!header ? "p-4" : "px-4"}`}
+            >
+              {body}
+            </div>
+          )}
+
+          {/* Footer - Fixed at bottom */}
+          {footer && (
+            <div className="flex-shrink-0 bg-surfaceVariant">{footer}</div>
+          )}
         </DialogPanel>
       </div>
     </HeadlessDialog>

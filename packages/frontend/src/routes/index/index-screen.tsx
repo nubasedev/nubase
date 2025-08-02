@@ -1,0 +1,26 @@
+import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
+
+interface QuickActionCardProps {
+  title: string;
+  description: string;
+  href: string;
+}
+
+export default function IndexScreen() {
+  const context = useNubaseContext();
+  const { config } = context;
+
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-onSurface mb-4">
+          Welcome to {config.appName}
+        </h1>
+        <p className="text-lg text-onSurfaceVariant max-w-2xl mx-auto">
+          Your Nubase application is ready. Choose from the quick actions below
+          or use the navigation menu to get started.
+        </p>
+      </div>
+    </div>
+  );
+}

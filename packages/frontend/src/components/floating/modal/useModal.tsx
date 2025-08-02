@@ -8,32 +8,63 @@ import {
   useState,
 } from "react";
 import { Modal, type ModalProps } from "./Modal";
+import { ModalStructured, type ModalStructuredProps } from "./ModalStructured";
 
-type ModalConfig = Omit<ModalProps, "open" | "onClose" | "children"> & {
-  component: ReactNode;
+type BaseModalConfig = {
   id: string;
   onDismiss?: () => void;
 };
 
+type RegularModalConfig = BaseModalConfig &
+  Omit<ModalProps, "open" | "onClose" | "children"> & {
+    type: "regular";
+    component: ReactNode;
+  };
+
+type StructuredModalConfig = BaseModalConfig &
+  Omit<ModalStructuredProps, "open" | "onClose"> & {
+    type: "structured";
+  };
+
+type ModalConfig = RegularModalConfig | StructuredModalConfig;
+
 type ModalContextType = {
   openModal: (config: Omit<ModalConfig, "id">) => string;
+  openStructuredModal: (
+    config: Omit<StructuredModalConfig, "id" | "type">,
+  ) => string;
   closeModal: (id?: string) => void;
   closeAllModals: () => void;
   modals: ModalConfig[];
 };
 
-const ModalContext = createContext<ModalContextType | null>(null);
+export const ModalContext = createContext<ModalContextType | null>(null);
 
 export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [modals, setModals] = useState<ModalConfig[]>([]);
 
   const openModal = useCallback((config: Omit<ModalConfig, "id">) => {
     const id = Math.random().toString(36).substr(2, 9);
-    const newModal: ModalConfig = { ...config, id };
+    const newModal = { ...config, id } as ModalConfig;
 
     setModals((prev) => [...prev, newModal]);
     return id;
   }, []);
+
+  const openStructuredModal = useCallback(
+    (config: Omit<StructuredModalConfig, "id" | "type">) => {
+      const id = Math.random().toString(36).substr(2, 9);
+      const newModal: StructuredModalConfig = {
+        ...config,
+        id,
+        type: "structured",
+      };
+
+      setModals((prev) => [...prev, newModal]);
+      return id;
+    },
+    [],
+  );
 
   const closeModal = useCallback((id?: string) => {
     setModals((prev) => {
@@ -61,20 +92,41 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   return (
     <ModalContext.Provider
-      value={{ openModal, closeModal, closeAllModals, modals }}
+      value={{
+        openModal,
+        openStructuredModal,
+        closeModal,
+        closeAllModals,
+        modals,
+      }}
     >
       {children}
-      {modals.map((modal, index) => (
-        <Modal
-          key={modal.id}
-          open={true}
-          onClose={() => handleModalClose(modal.id)}
-          zIndex={50 + index}
-          {...modal}
-        >
-          {modal.component}
-        </Modal>
-      ))}
+      {modals.map((modal, index) => {
+        if (modal.type === "structured") {
+          const { id, type, onDismiss, ...modalProps } = modal;
+          return (
+            <ModalStructured
+              key={id}
+              open={true}
+              onClose={() => handleModalClose(id)}
+              zIndex={50 + index}
+              {...modalProps}
+            />
+          );
+        }
+        const { id, type, onDismiss, component, ...modalProps } = modal;
+        return (
+          <Modal
+            key={id}
+            open={true}
+            onClose={() => handleModalClose(id)}
+            zIndex={50 + index}
+            {...modalProps}
+          >
+            {component}
+          </Modal>
+        );
+      })}
     </ModalContext.Provider>
   );
 };
@@ -88,8 +140,15 @@ export const useModal = () => {
   const { openModal: contextOpenModal, closeModal, closeAllModals } = context;
 
   const openModal = useCallback(
-    (component: ReactNode, options?: Omit<ModalConfig, "id" | "component">) => {
-      return contextOpenModal({ component, ...options });
+    (
+      component: ReactNode,
+      options?: Omit<RegularModalConfig, "id" | "component" | "type">,
+    ) => {
+      return contextOpenModal({
+        type: "regular",
+        component,
+        ...options,
+      } as Omit<ModalConfig, "id">);
     },
     [contextOpenModal],
   );

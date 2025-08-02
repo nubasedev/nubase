@@ -47,11 +47,6 @@ const meta: Meta<typeof FormFieldRenderer> = {
   },
   tags: ["autodocs"],
   argTypes: {
-    layout: {
-      control: "select",
-      options: ["vertical", "horizontal"],
-      description: "Layout style for the form control",
-    },
     mode: {
       control: "select",
       options: ["edit", "view", "patch"],
@@ -95,7 +90,6 @@ export const StringField: Story = {
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
-          layout={args.layout}
           mode={args.mode}
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
@@ -103,7 +97,6 @@ export const StringField: Story = {
     );
   },
   args: {
-    layout: "vertical",
     mode: "edit",
   },
   parameters: {
@@ -148,7 +141,6 @@ export const NumberField: Story = {
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
-          layout={args.layout}
           mode={args.mode}
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
@@ -156,7 +148,6 @@ export const NumberField: Story = {
     );
   },
   args: {
-    layout: "vertical",
     mode: "edit",
   },
   parameters: {

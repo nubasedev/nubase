@@ -20,7 +20,6 @@ export const workbenchOpenResource: CommandDefinition = {
           alignment: "top",
           size: "md",
           showBackdrop: true,
-          showCloseButton: true,
         },
       );
       return;
@@ -72,7 +71,6 @@ export const workbenchOpenResource: CommandDefinition = {
         alignment: "top",
         size: "lg",
         showBackdrop: true,
-        showCloseButton: false,
       },
     );
   },

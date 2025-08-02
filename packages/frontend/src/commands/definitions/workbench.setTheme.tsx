@@ -48,7 +48,6 @@ export const workbenchSetTheme: CommandDefinition = {
         alignment: "top",
         size: "lg",
         showBackdrop: true,
-        showCloseButton: false,
         onDismiss: () => {
           // Revert to the original theme if modal is dismissed
           context.theming.setActiveThemeId(originalTheme);

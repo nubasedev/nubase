@@ -1,6 +1,8 @@
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useSchemaForm } from "../../../hooks";
 import { SchemaForm } from "./SchemaForm";
+import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
 
 const meta: Meta<typeof SchemaForm> = {
   title: "Form/SchemaForm - Validation",
@@ -19,8 +21,8 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // Field-level validation stories
 export const FieldSyncValidation: Story = {
   name: "Field - Sync Validation",
-  args: {
-    schema: nu.object({
+  render: () => {
+    const schema = nu.object({
       email: nu.string().withMetadata({
         label: "Email",
         validateOnBlur: (value: string) => {
@@ -45,18 +47,29 @@ export const FieldSyncValidation: Story = {
           return undefined;
         },
       }),
-    }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };
 
 export const FieldAsyncValidation: Story = {
   name: "Field - Async Validation",
-  args: {
-    schema: nu.object({
+  render: () => {
+    const schema = nu.object({
       username: nu.string().withMetadata({
         label: "Username",
         validateOnBlurAsync: async (value: string) => {
@@ -96,18 +109,29 @@ export const FieldAsyncValidation: Story = {
           return undefined;
         },
       }),
-    }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };
 
 export const FieldCombinedValidation: Story = {
   name: "Field - Combined Sync + Async Validation",
-  args: {
-    schema: nu.object({
+  render: () => {
+    const schema = nu.object({
       password: nu.string().withMetadata({
         label: "Password",
         description:
@@ -159,19 +183,30 @@ export const FieldCombinedValidation: Story = {
           return undefined;
         },
       }),
-    }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };
 
 // Form-level validation stories
 export const FormSyncValidation: Story = {
   name: "Form - Sync Validation",
-  args: {
-    schema: nu
+  render: () => {
+    const schema = nu
       .object({
         firstName: nu.string().withMetadata({ label: "First Name" }),
         lastName: nu.string().withMetadata({ label: "Last Name" }),
@@ -192,18 +227,29 @@ export const FormSyncValidation: Story = {
           }
           return undefined;
         },
-      }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };
 
 export const FormAsyncValidation: Story = {
   name: "Form - Async Validation",
-  args: {
-    schema: nu
+  render: () => {
+    const schema = nu
       .object({
         companyName: nu.string().withMetadata({ label: "Company Name" }),
         website: nu.string().withMetadata({ label: "Website" }),
@@ -227,18 +273,29 @@ export const FormAsyncValidation: Story = {
 
           return undefined;
         },
-      }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };
 
 export const FormCombinedValidation: Story = {
   name: "Form - Combined Sync + Async Validation",
-  args: {
-    schema: nu
+  render: () => {
+    const schema = nu
       .object({
         teamName: nu.string().withMetadata({ label: "Team Name" }),
         memberCount: nu.number().withMetadata({ label: "Number of Members" }),
@@ -275,10 +332,21 @@ export const FormCombinedValidation: Story = {
 
           return undefined;
         },
-      }),
-    onSubmit: async (data) => {
-      console.log("Form submitted:", data);
-      alert("Form submitted successfully!");
-    },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        alert("Form submitted successfully!");
+      },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} />
+      </div>
+    );
   },
 };

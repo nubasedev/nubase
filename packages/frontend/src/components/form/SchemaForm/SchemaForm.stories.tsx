@@ -1,10 +1,11 @@
 import { faker } from "@faker-js/faker";
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
-import { useRef } from "react";
+import { useSchemaForm } from "../../../hooks";
 import { Button } from "../../buttons/Button/Button";
 import { showPromiseToast, showToast } from "../../floating/toast";
-import { SchemaForm, type SchemaFormRef } from "./SchemaForm";
+import { SchemaForm } from "./SchemaForm";
+import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
 
 const meta = {
   title: "Form/SchemaForm",
@@ -14,14 +15,11 @@ const meta = {
     docs: {
       description: {
         component:
-          "A dynamic form component that automatically renders form controls based on a provided ObjectSchema.",
+          "A dynamic form component that automatically renders form controls based on a provided ObjectSchema. Use with the useSchemaForm hook.",
       },
     },
   },
   tags: ["autodocs"],
-  argTypes: {
-    onSubmit: { action: "submitted" },
-  },
   decorators: [
     (Story) => (
       <div className="w-full max-w-3xl p-4">
@@ -29,11 +27,11 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof SchemaForm<any>>;
+} satisfies Meta;
 
 export default meta;
 
-type Story = StoryObj<typeof SchemaForm<any>>;
+type Story = StoryObj;
 
 // Basic contact schema
 const ContactSchema = nu.object({
@@ -100,9 +98,10 @@ const ContactWithLayoutSchema = nu
       label: "Message",
       description: "Enter your message",
     }),
-    urgent: nu.boolean().optional().withMeta({
-      label: "Urgent",
-      description: "Is this message urgent?",
+    subscribe: nu.boolean().optional().withMeta({
+      label: "Subscribe to newsletter",
+      description: "Get updates about our services",
+      defaultValue: false,
     }),
   })
   .withLayouts({
@@ -111,253 +110,239 @@ const ContactWithLayoutSchema = nu
       groups: [
         {
           label: "Contact Information",
-          fields: [
-            {
-              name: "name",
-              size: 6,
-            },
-            {
-              name: "email",
-              size: 6,
-            },
-          ],
+          fields: [{ name: "name" }, { name: "email" }],
         },
         {
-          label: "Message Details",
-          fields: [
-            {
-              name: "message",
-              size: 12,
-            },
-            {
-              name: "urgent",
-              size: 3,
-            },
-          ],
+          label: "Your Message",
+          fields: [{ name: "message" }, { name: "subscribe" }],
         },
       ],
     },
   });
 
+// Schema for error handling demo
+const ErrorDemoSchema = nu.object({
+  username: nu.string().withMeta({
+    label: "Username",
+    description: "Enter 'error' to simulate an error",
+  }),
+  password: nu.string().withMeta({
+    label: "Password",
+    description: "Enter a secure password",
+  }),
+  confirmPassword: nu.string().withMeta({
+    label: "Confirm Password",
+    description: "Re-enter your password",
+  }),
+});
+
 export const Default: Story = {
-  args: {
-    schema: ContactSchema,
-    submitText: "Submit Contact",
-    onSubmit: async (data) => {
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Form submitted:", data);
-        showToast("Contact information submitted successfully!", "success");
-      } catch (error) {
-        console.error("Form submission error:", error);
-        showToast(
-          "Failed to submit contact information. Please try again.",
-          "error",
-        );
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Basic contact form with first name, last name, email, and phone fields. Shows success toast on submission.",
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactSchema,
+      onSubmit: async (data) => {
+        try {
+          // Simulate API call
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("Form submitted:", data);
+          showToast("Contact form submitted successfully!", "success");
+        } catch (error) {
+          console.error("Submission error:", error);
+          showToast("Failed to submit form", "error");
+        }
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} submitText="Submit Contact" />
+      </div>
+    );
   },
 };
 
 export const WithComputed: Story = {
-  args: {
-    schema: ContactWithComputedSchema,
-    submitText: "Save Contact",
-    onSubmit: async (data) => {
-      try {
-        // Simulate API call with computed data
-        await new Promise((resolve) => setTimeout(resolve, 1200));
-        console.log("Contact saved:", data);
-        showToast(
-          `Contact saved successfully! Welcome ${data.firstName}!`,
-          "success",
-        );
-      } catch (error) {
-        console.error("Save error:", error);
-        showToast(
-          "Failed to save contact. Please check your information and try again.",
-          "error",
-        );
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Contact form with computed metadata that dynamically updates the job title label based on company. Shows personalized success toast.",
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactWithComputedSchema,
+      onSubmit: async (data) => {
+        try {
+          // Simulate API call with computed data
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+          console.log("Contact saved:", data);
+          showToast("Contact saved successfully!", "success");
+        } catch (error) {
+          console.error("Save error:", error);
+          showToast("Failed to save contact", "error");
+        }
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} computedMetadata={{ debounceMs: 500 }} />
+        <SchemaFormButtonBar form={form} submitText="Save Contact" />
+      </div>
+    );
   },
 };
 
 export const WithLayout: Story = {
-  args: {
-    schema: ContactWithLayoutSchema,
-    submitText: "Send Message",
-    layoutName: "default",
-    onSubmit: async (data) => {
-      try {
-        // Simulate message sending with longer delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log("Message sent:", data);
-        showToast(
-          data.urgent
-            ? "Urgent message sent successfully! We'll respond within 1 hour."
-            : "Message sent successfully! We'll get back to you soon.",
-          "success",
-        );
-      } catch (error) {
-        console.error("Message send error:", error);
-        showToast("Failed to send message. Please try again later.", "error");
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Contact form using a custom layout that groups fields into Contact Information and Message Details sections. Shows conditional success messages based on urgency.",
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactWithLayoutSchema,
+      onSubmit: async (data) => {
+        try {
+          // Simulate message sending with longer delay
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          console.log("Message sent:", data);
+          showToast("Message sent successfully!", "success");
+        } catch (error) {
+          console.error("Send error:", error);
+          showToast("Failed to send message", "error");
+        }
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} layoutName="default" />
+        <SchemaFormButtonBar form={form} submitText="Send Message" />
+      </div>
+    );
   },
 };
 
-// Schema for error demonstration
-const ErrorDemoSchema = nu.object({
-  username: nu.string().withMeta({
-    label: "Username",
-    description: "Enter a username (use 'error' to trigger failure)",
-  }),
-  email: nu.string().optional().withMeta({
-    label: "Email",
-    description: "Enter your email address",
-  }),
-});
-
 export const WithErrorHandling: Story = {
-  args: {
-    schema: ErrorDemoSchema,
-    submitText: "Create Account",
-    onSubmit: async (data) => {
-      try {
-        // Simulate API call that fails if username is 'error'
-        await new Promise((resolve, reject) => {
-          setTimeout(() => {
-            if (data.username.toLowerCase() === "error") {
-              reject(new Error("Username already exists"));
-            } else {
-              resolve(data);
-            }
-          }, 1000);
-        });
-        console.log("Account created:", data);
-        showToast(
-          `Account created successfully! Welcome, ${data.username}!`,
-          "success",
-        );
-      } catch (error) {
-        console.error("Account creation error:", error);
-        showToast(
-          error instanceof Error
-            ? error.message
-            : "Failed to create account. Please try again.",
-          "error",
-        );
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Demonstrates error handling with toasts. Enter 'error' as username to trigger a failure toast, or any other username for success.",
+  render: () => {
+    const form = useSchemaForm({
+      schema: ErrorDemoSchema,
+      onSubmit: async (data) => {
+        try {
+          // Simulate API call that fails if username is 'error'
+          await new Promise((resolve, reject) => {
+            setTimeout(() => {
+              if (data.username === "error") {
+                reject(new Error("Username already taken!"));
+              } else {
+                resolve(data);
+              }
+            }, 1000);
+          });
+          showToast("Account created successfully!", "success");
+        } catch (error) {
+          console.error("Account creation error:", error);
+          showToast(
+            error instanceof Error ? error.message : "Failed to create account",
+            "error",
+          );
+          throw error; // Re-throw to trigger form error state
+        }
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} submitText="Create Account" />
+      </div>
+    );
   },
 };
 
 export const WithPromiseToast: Story = {
-  args: {
-    schema: ContactSchema,
-    submitText: "Submit with Promise Toast",
-    onSubmit: async (data) => {
-      // Use showPromiseToast for automatic loading/success/error states
-      const submitPromise = new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Randomly succeed or fail for demo purposes
-          if (Math.random() > 0.3) {
-            resolve(data);
-          } else {
-            reject(new Error("Random network error"));
-          }
-        }, 2000);
-      });
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactSchema,
+      onSubmit: async (data) => {
+        // Use showPromiseToast for automatic loading/success/error states
+        const submitPromise = new Promise((resolve, reject) => {
+          setTimeout(() => {
+            // Randomly succeed or fail for demo purposes
+            if (Math.random() > 0.5) {
+              resolve({ success: true, data });
+            } else {
+              reject(new Error("Random failure for demo purposes"));
+            }
+          }, 2000);
+        });
 
-      showPromiseToast(
-        submitPromise,
-        (result) => ({
+        showPromiseToast(submitPromise, (result) => ({
           message: result.success
-            ? "Contact submitted successfully!"
-            : result.error?.message || "Failed to submit contact",
+            ? "Contact form submitted successfully!"
+            : "Failed to submit contact form",
           type: result.success ? "success" : "error",
-        }),
-        {
-          loadingText: "Submitting contact...",
-        },
-      );
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Uses showPromiseToast for automatic loading states. Shows loading toast while submitting, then success or error based on random outcome.",
+        }));
+        await submitPromise;
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar
+          form={form}
+          submitText="Submit with Promise Toast"
+        />
+      </div>
+    );
   },
 };
 
 export const ValidationErrors: Story = {
-  args: {
-    schema: ContactSchema,
-    submitText: "Test Validation",
-    onSubmit: async (data) => {
-      // This story focuses on form validation, so always show success
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("Validation passed, form submitted:", data);
-        showToast(
-          "All validations passed! Form submitted successfully.",
-          "success",
-        );
-      } catch (error) {
-        showToast("Unexpected error occurred.", "error");
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Demonstrates form validation. Try submitting with empty required fields to see validation errors, then fill them out to see success toast.",
+  render: () => {
+    // Schema without default values to test validation
+    const testSchema = nu.object({
+      firstName: nu.string().withMeta({
+        label: "First Name",
+        description: "Enter your first name",
+      }),
+      lastName: nu.string().withMeta({
+        label: "Last Name",
+        description: "Enter your last name",
+      }),
+      email: nu.string().withMeta({
+        label: "Email",
+        description: "Enter your email address",
+      }),
+    });
+
+    const form = useSchemaForm({
+      schema: testSchema,
+      onSubmit: async (data) => {
+        // This story focuses on form validation, so always show success
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          console.log("Validation passed, form submitted:", data);
+          showToast("Form submitted successfully!", "success");
+        } catch (error) {
+          console.error("Validation error:", error);
+        }
       },
-    },
+    });
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-onSurface">
+          Try submitting with empty required fields
+        </h3>
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} submitText="Test Validation" />
+      </div>
+    );
   },
 };
 
 export const ImperativeValueSetting: Story = {
-  render: (args) => {
-    const formRef = useRef<SchemaFormRef<typeof ContactSchema>>(null);
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactSchema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        showToast("Form submitted with random values!", "success");
+      },
+    });
 
     const setRandomValues = () => {
       const firstName = faker.person.firstName();
@@ -365,72 +350,25 @@ export const ImperativeValueSetting: Story = {
       const email = faker.internet.email();
       const phone = faker.phone.number();
 
-      if (formRef.current) {
-        formRef.current.setFieldValue("firstName", firstName);
-        formRef.current.setFieldValue("lastName", lastName);
-        formRef.current.setFieldValue("email", email);
-        formRef.current.setFieldValue("phone", phone);
-        showToast("Random values set successfully!", "success");
-      }
-    };
-
-    const clearForm = () => {
-      if (formRef.current) {
-        formRef.current.setFieldValue("firstName", "");
-        formRef.current.setFieldValue("lastName", "");
-        formRef.current.setFieldValue("email", "");
-        formRef.current.setFieldValue("phone", "");
-        showToast("Form cleared!", "info");
-      }
-    };
-
-    const resetToDefaults = () => {
-      if (formRef.current) {
-        formRef.current.reset();
-        showToast("Form reset to defaults!", "info");
-      }
+      form.api.setFieldValue("firstName", firstName);
+      form.api.setFieldValue("lastName", lastName);
+      form.api.setFieldValue("email", email);
+      form.api.setFieldValue("phone", phone);
     };
 
     return (
       <div className="space-y-4">
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
           <Button variant="secondary" onClick={setRandomValues}>
             Set Random Values
           </Button>
-          <Button variant="secondary" onClick={clearForm}>
-            Clear Form
-          </Button>
-          <Button variant="secondary" onClick={resetToDefaults}>
-            Reset to Defaults
+          <Button variant="secondary" onClick={() => form.api.reset()}>
+            Reset Form
           </Button>
         </div>
-        <SchemaForm ref={formRef} {...args} />
+        <SchemaForm form={form} />
+        <SchemaFormButtonBar form={form} submitText="Submit" />
       </div>
     );
-  },
-  args: {
-    schema: ContactSchema,
-    submitText: "Submit Contact",
-    onSubmit: async (data) => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        console.log("Form submitted:", data);
-        showToast("Contact information submitted successfully!", "success");
-      } catch (error) {
-        console.error("Form submission error:", error);
-        showToast(
-          "Failed to submit contact information. Please try again.",
-          "error",
-        );
-      }
-    },
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Demonstrates imperative form value setting using buttons. Click 'Set Random Values' to populate the form with random data, 'Clear Form' to empty all fields, or 'Reset to Defaults' to restore default values using the form API.",
-      },
-    },
   },
 };

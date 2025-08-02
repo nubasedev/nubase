@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useState } from "react";
 import { Button } from "../../buttons/Button/Button";
-import { ModalProvider } from "../modal/useModal";
 import { Dialog } from "./Dialog";
 import { useDialog } from "./useDialog";
 
@@ -31,9 +29,6 @@ const meta = {
       control: "select",
       options: ["default", "destructive"],
     },
-    showCloseButton: {
-      control: "boolean",
-    },
     showBackdrop: {
       control: "boolean",
     },
@@ -44,37 +39,32 @@ export default meta;
 
 type Story = StoryObj<typeof Dialog>;
 
-const DialogWithState = (args: any) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <Button onClick={() => setIsOpen(true)}>Open Dialog</Button>
-      <Dialog
-        {...args}
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        onConfirm={() => {
-          console.log("Confirmed!");
-          setIsOpen(false);
-        }}
-      />
-    </>
-  );
-};
-
 export const Default: Story = {
-  render: DialogWithState,
-  args: {
-    title: "Confirm Action",
-    children: (
-      <div className="space-y-4">
-        <p className="text-text-muted">
-          Are you sure you want to proceed with this action? This cannot be
-          undone.
-        </p>
-      </div>
-    ),
+  render: () => {
+    const { openDialog } = useDialog();
+
+    return (
+      <Button
+        onClick={() => {
+          openDialog({
+            title: "Confirm Action",
+            content: (
+              <div className="space-y-4">
+                <p className="text-text-muted">
+                  Are you sure you want to proceed with this action? This cannot
+                  be undone.
+                </p>
+              </div>
+            ),
+            onConfirm: () => {
+              console.log("Confirmed!");
+            },
+          });
+        }}
+      >
+        Open Dialog
+      </Button>
+    );
   },
   parameters: {
     docs: {
@@ -86,19 +76,33 @@ export const Default: Story = {
 };
 
 export const DangerAction: Story = {
-  render: DialogWithState,
-  args: {
-    title: "Delete Item",
-    confirmText: "Delete",
-    confirmVariant: "danger",
-    children: (
-      <div className="space-y-4">
-        <p className="text-text-muted">
-          This will permanently delete the selected item. This action cannot be
-          undone.
-        </p>
-      </div>
-    ),
+  render: () => {
+    const { openDialog } = useDialog();
+
+    return (
+      <Button
+        onClick={() => {
+          openDialog({
+            title: "Delete Item",
+            confirmText: "Delete",
+            confirmVariant: "danger",
+            content: (
+              <div className="space-y-4">
+                <p className="text-text-muted">
+                  This will permanently delete the selected item. This action
+                  cannot be undone.
+                </p>
+              </div>
+            ),
+            onConfirm: () => {
+              console.log("Item deleted!");
+            },
+          });
+        }}
+      >
+        Open Delete Dialog
+      </Button>
+    );
   },
   parameters: {
     docs: {
@@ -110,18 +114,33 @@ export const DangerAction: Story = {
 };
 
 export const CustomButtons: Story = {
-  render: DialogWithState,
-  args: {
-    title: "Save Changes",
-    confirmText: "Save",
-    cancelText: "Discard",
-    children: (
-      <div className="space-y-4">
-        <p className="text-text-muted">
-          You have unsaved changes. Do you want to save them before leaving?
-        </p>
-      </div>
-    ),
+  render: () => {
+    const { openDialog } = useDialog();
+
+    return (
+      <Button
+        onClick={() => {
+          openDialog({
+            title: "Save Changes",
+            confirmText: "Save",
+            cancelText: "Discard",
+            content: (
+              <div className="space-y-4">
+                <p className="text-text-muted">
+                  You have unsaved changes. Do you want to save them before
+                  leaving?
+                </p>
+              </div>
+            ),
+            onConfirm: () => {
+              console.log("Changes saved!");
+            },
+          });
+        }}
+      >
+        Open Save Dialog
+      </Button>
+    );
   },
   parameters: {
     docs: {
@@ -134,43 +153,45 @@ export const CustomButtons: Story = {
 
 export const NoConfirmAction: Story = {
   render: () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const { openDialog } = useDialog();
 
     return (
-      <>
-        <Button onClick={() => setIsOpen(true)}>Open Info Dialog</Button>
-        <Dialog
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          title="Information"
-        >
-          <div className="space-y-4">
-            <p className="text-text-muted">
-              This is an informational dialog without confirmation buttons. It
-              only has the close button.
-            </p>
-          </div>
-        </Dialog>
-      </>
+      <Button
+        onClick={() => {
+          openDialog({
+            title: "Information",
+            content: (
+              <div className="space-y-4">
+                <p className="text-text-muted">
+                  This is an informational dialog without confirmation buttons.
+                </p>
+              </div>
+            ),
+            // No onConfirm means no action buttons
+          });
+        }}
+      >
+        Open Info Dialog
+      </Button>
     );
   },
   parameters: {
     docs: {
       description: {
         story:
-          "Dialog without onConfirm prop, showing only content with close functionality.",
+          "Dialog without onConfirm prop, showing only informational content.",
       },
     },
   },
 };
 
 const UseDialogExample = () => {
-  const confirmDialog = useDialog();
-  const deleteDialog = useDialog();
-  const infoDialog = useDialog();
+  const { openDialog: showConfirmDialog } = useDialog();
+  const { openDialog: showDeleteDialog } = useDialog();
+  const { openDialog: showInfoDialog } = useDialog();
 
   const handleSaveDocument = () => {
-    confirmDialog.show({
+    showConfirmDialog({
       title: "Save Document",
       content: (
         <p className="text-text-muted">
@@ -187,7 +208,7 @@ const UseDialogExample = () => {
   };
 
   const handleDeleteItem = () => {
-    deleteDialog.show({
+    showDeleteDialog({
       title: "Delete Item",
       content: (
         <div className="space-y-2">
@@ -209,7 +230,7 @@ const UseDialogExample = () => {
   };
 
   const showInfo = () => {
-    infoDialog.show({
+    showInfoDialog({
       title: "Information",
       content: (
         <p className="text-text-muted">
@@ -236,20 +257,12 @@ const UseDialogExample = () => {
         Click the buttons to see different dialog types using the useDialog
         hook. Check the browser console for confirmation actions.
       </p>
-
-      {confirmDialog.DialogComponent}
-      {deleteDialog.DialogComponent}
-      {infoDialog.DialogComponent}
     </div>
   );
 };
 
 export const UseDialogHook: Story = {
-  render: () => (
-    <ModalProvider>
-      <UseDialogExample />
-    </ModalProvider>
-  ),
+  render: () => <UseDialogExample />,
   parameters: {
     docs: {
       description: {
@@ -261,12 +274,12 @@ export const UseDialogHook: Story = {
 };
 
 const StackedDialogsExample = () => {
-  const dialog1 = useDialog();
-  const dialog2 = useDialog();
-  const dialog3 = useDialog();
+  const { openDialog: showDialog1 } = useDialog();
+  const { openDialog: showDialog2 } = useDialog();
+  const { openDialog: showDialog3 } = useDialog();
 
   const openFirstDialog = () => {
-    dialog1.show({
+    showDialog1({
       title: "First Dialog",
       content: (
         <div className="space-y-4">
@@ -278,13 +291,13 @@ const StackedDialogsExample = () => {
           </Button>
         </div>
       ),
-      confirmText: "Close First",
+      confirmText: "Confirm",
       onConfirm: () => console.log("First dialog confirmed"),
     });
   };
 
   const openSecondDialog = () => {
-    dialog2.show({
+    showDialog2({
       title: "Second Dialog",
       content: (
         <div className="space-y-4">
@@ -296,20 +309,20 @@ const StackedDialogsExample = () => {
           </Button>
         </div>
       ),
-      confirmText: "Close Second",
+      confirmText: "Confirm",
       onConfirm: () => console.log("Second dialog confirmed"),
     });
   };
 
   const openThirdDialog = () => {
-    dialog3.show({
+    showDialog3({
       title: "Third Dialog",
       content: (
         <p className="text-text-muted">
           This is the third dialog. Dialogs stack properly on top of each other.
         </p>
       ),
-      confirmText: "Close Third",
+      confirmText: "Confirm",
       confirmVariant: "danger",
       onConfirm: () => console.log("Third dialog confirmed"),
     });
@@ -323,20 +336,12 @@ const StackedDialogsExample = () => {
         Click to open dialogs that can stack on top of each other. Each dialog
         can open another dialog while remaining open itself.
       </p>
-
-      {dialog1.DialogComponent}
-      {dialog2.DialogComponent}
-      {dialog3.DialogComponent}
     </div>
   );
 };
 
 export const StackedDialogs: Story = {
-  render: () => (
-    <ModalProvider>
-      <StackedDialogsExample />
-    </ModalProvider>
-  ),
+  render: () => <StackedDialogsExample />,
   parameters: {
     docs: {
       description: {
