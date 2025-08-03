@@ -1,3 +1,4 @@
+import { IconCheck, IconX } from "@tabler/icons-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../../buttons/Button/Button";
@@ -26,6 +27,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 }) => {
   const [isApplying, setIsApplying] = useState(false);
   const prevIsEditingRef = useRef(isEditing);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Trigger lifecycle callbacks when entering/exiting edit mode
   useEffect(() => {
@@ -43,6 +45,34 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
     }
   }, [isEditing, editFieldLifecycle]);
 
+  // Handle click outside and ESC key to cancel
+  useEffect(() => {
+    if (!isEditing) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        onCancel();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isEditing, onCancel]);
+
   const handleApply = async () => {
     setIsApplying(true);
     try {
@@ -54,42 +84,14 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 
   if (isEditing) {
     return (
-      <div className="relative" id={id}>
+      <div ref={wrapperRef} id={id}>
         {editComponent}
-        <div className="absolute top-full left-0 z-50 flex gap-2 mt-2 p-2 bg-surface border border-outline rounded-lg shadow-xl">
+        <div className="flex gap-2 mt-2 p-2 bg-surfaceVariant rounded-lg shadow-xl">
           <Button variant="primary" onClick={handleApply} disabled={isApplying}>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-label="Apply changes"
-            >
-              <title>Apply</title>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
+            <IconCheck className="w-4 h-4" aria-label="Apply changes" />
           </Button>
           <Button variant="secondary" onClick={onCancel} disabled={isApplying}>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-label="Cancel changes"
-            >
-              <title>Cancel</title>
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <IconX className="w-4 h-4" aria-label="Cancel changes" />
           </Button>
         </div>
       </div>
