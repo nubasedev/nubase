@@ -14,7 +14,7 @@ export interface FormFieldRendererProps {
   fieldState: AnyFieldApi;
   metadata: SchemaMetadata<any>;
   mode?: "edit" | "view" | "patch";
-  onPatch?: (fieldName: string, value: any) => Promise<void>;
+  onPatch?: (value: any) => Promise<void>;
 }
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
@@ -49,7 +49,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
     },
     onApplyPatch: async () => {
       if (onPatch) {
-        await onPatch(fieldState.name, fieldState.state.value);
+        await onPatch(fieldState.state.value);
       }
       setIsPatching(false);
     },

@@ -272,10 +272,10 @@ export const PatchModeWithFocus: Story = {
       handleBlur: () => console.log("Patch field blurred"),
     });
 
-    const handlePatch = async (fieldName: string, newValue: any) => {
+    const handlePatch = async (newValue: any) => {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500));
-      showToast(`Updated ${fieldName} to: ${newValue}`, "success");
+      showToast(`Updated value to: ${newValue}`, "success");
     };
 
     return (
