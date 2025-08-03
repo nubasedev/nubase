@@ -61,10 +61,13 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
 
   const fieldElement = createFieldRenderer(mode, context, patchContext);
 
+  // Show hint in edit mode, or in patch mode when actively patching
+  const showHint = mode === "edit" || (mode === "patch" && isPatching);
+
   return (
     <FormControl
       label={metadata.label}
-      hint={metadata.description}
+      hint={showHint ? metadata.description : undefined}
       field={fieldState}
       required={isRequired}
       layout="horizontal"

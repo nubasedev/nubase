@@ -9,6 +9,7 @@ export interface SchemaFormButtonBarProps {
   isComputing?: boolean;
   className?: string;
   alignment?: "left" | "center" | "right";
+  variant?: "default" | "transparent";
 }
 
 // ButtonBar component
@@ -18,6 +19,7 @@ export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
   isComputing,
   className,
   alignment,
+  variant = "default",
 }) => {
   return (
     <form.api.Subscribe
@@ -32,7 +34,7 @@ export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
         <ButtonBar
           alignment={alignment}
           className={className}
-          variant="transparent"
+          variant={variant}
         >
           <Button type="submit" disabled={!canSubmit || isComputing}>
             {isSubmitting

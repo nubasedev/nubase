@@ -2,11 +2,9 @@ import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
 import type { CreateView } from "../../../config/view";
 import { useSchemaForm } from "../../../hooks";
-import {
-  SchemaForm,
-  SchemaFormBody,
-  SchemaFormButtonBar,
-} from "../../form/SchemaForm/SchemaForm";
+import { SchemaForm } from "../../form/SchemaForm/SchemaForm";
+import { SchemaFormBody } from "../../form/SchemaForm/SchemaFormBody";
+import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
 import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 
 export type CreateViewRendererProps = {

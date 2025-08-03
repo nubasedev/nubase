@@ -4,8 +4,10 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import { useSchemaForm } from "../../../hooks";
 import { Button } from "../../buttons/Button/Button";
-import { showPromiseToast, showToast } from "../../floating/toast";
-import { SchemaForm, SchemaFormBody, SchemaFormButtonBar } from "./SchemaForm";
+import { showToast } from "../../floating/toast";
+import { SchemaForm } from "./SchemaForm";
+import { SchemaFormBody } from "./SchemaFormBody";
+import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
 
 const meta = {
   title: "Form/SchemaForm",
@@ -119,7 +121,7 @@ const ContactWithLayoutSchema = nu
   });
 
 // Schema for error handling demo
-const ErrorDemoSchema = nu.object({
+const _ErrorDemoSchema = nu.object({
   username: nu.string().withMeta({
     label: "Username",
     description: "Enter 'error' to simulate an error",
@@ -162,11 +164,10 @@ export const Default: Story = {
   render: () => {
     const form = useSchemaForm({
       schema: ContactSchema,
-      onSubmit: async (data) => {
+      onSubmit: async () => {
         try {
           // Simulate API call
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log("Form submitted:", data);
           showToast("Contact form submitted successfully!", "success");
         } catch (error) {
           console.error("Submission error:", error);
@@ -183,35 +184,6 @@ export const Default: Story = {
     );
   },
 };
-
-export const SeparateLayout: Story = {
-  render: () => {
-    const form = useSchemaForm({
-      schema: ContactSchema,
-      onSubmit: async (data) => {
-        console.log("Form submitted with data:", data);
-        showToast("Form submitted successfully!", "success");
-      },
-    });
-
-    return (
-      <SchemaForm form={form}>
-        <div className="border border-outline rounded-lg p-4 space-y-4">
-          <h2 className="text-lg font-semibold">Contact Information</h2>
-          <SchemaFormBody form={form} />
-        </div>
-        <div className="mt-4 border-t border-outline pt-4">
-          <SchemaFormButtonBar
-            form={form}
-            submitText="Submit Form"
-            alignment="right"
-          />
-        </div>
-      </SchemaForm>
-    );
-  },
-};
-
 export const WithComputed: Story = {
   render: () => {
     const form = useSchemaForm({
@@ -264,126 +236,6 @@ export const WithLayout: Story = {
   },
 };
 
-export const WithErrorHandling: Story = {
-  render: () => {
-    const form = useSchemaForm({
-      schema: ErrorDemoSchema,
-      onSubmit: async (data) => {
-        try {
-          // Simulate API call that fails if username is 'error'
-          await new Promise((resolve, reject) => {
-            setTimeout(() => {
-              if (data.username === "error") {
-                reject(new Error("Username already taken!"));
-              } else {
-                resolve(data);
-              }
-            }, 1000);
-          });
-          showToast("Account created successfully!", "success");
-        } catch (error) {
-          console.error("Account creation error:", error);
-          showToast(
-            error instanceof Error ? error.message : "Failed to create account",
-            "error",
-          );
-          throw error; // Re-throw to trigger form error state
-        }
-      },
-    });
-
-    return (
-      <SchemaForm form={form} className="space-y-4">
-        <SchemaFormBody form={form} />
-        <SchemaFormButtonBar form={form} submitText="Create Account" />
-      </SchemaForm>
-    );
-  },
-};
-
-export const WithPromiseToast: Story = {
-  render: () => {
-    const form = useSchemaForm({
-      schema: ContactSchema,
-      onSubmit: async (data) => {
-        // Use showPromiseToast for automatic loading/success/error states
-        const submitPromise = new Promise((resolve, reject) => {
-          setTimeout(() => {
-            // Randomly succeed or fail for demo purposes
-            if (Math.random() > 0.5) {
-              resolve({ success: true, data });
-            } else {
-              reject(new Error("Random failure for demo purposes"));
-            }
-          }, 2000);
-        });
-
-        showPromiseToast(submitPromise, (result) => ({
-          message: result.success
-            ? "Contact form submitted successfully!"
-            : "Failed to submit contact form",
-          type: result.success ? "success" : "error",
-        }));
-        await submitPromise;
-      },
-    });
-
-    return (
-      <SchemaForm form={form} className="space-y-4">
-        <SchemaFormBody form={form} />
-        <SchemaFormButtonBar
-          form={form}
-          submitText="Submit with Promise Toast"
-        />
-      </SchemaForm>
-    );
-  },
-};
-
-export const ValidationErrors: Story = {
-  render: () => {
-    // Schema without default values to test validation
-    const testSchema = nu.object({
-      firstName: nu.string().withMeta({
-        label: "First Name",
-        description: "Enter your first name",
-      }),
-      lastName: nu.string().withMeta({
-        label: "Last Name",
-        description: "Enter your last name",
-      }),
-      email: nu.string().withMeta({
-        label: "Email",
-        description: "Enter your email address",
-      }),
-    });
-
-    const form = useSchemaForm({
-      schema: testSchema,
-      onSubmit: async (data) => {
-        // This story focuses on form validation, so always show success
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          console.log("Validation passed, form submitted:", data);
-          showToast("Form submitted successfully!", "success");
-        } catch (error) {
-          console.error("Validation error:", error);
-        }
-      },
-    });
-
-    return (
-      <SchemaForm form={form} className="space-y-4">
-        <h3 className="text-lg font-semibold text-onSurface">
-          Try submitting with empty required fields
-        </h3>
-        <SchemaFormBody form={form} />
-        <SchemaFormButtonBar form={form} submitText="Test Validation" />
-      </SchemaForm>
-    );
-  },
-};
-
 export const ImperativeValueSetting: Story = {
   render: () => {
     const form = useSchemaForm({
@@ -407,7 +259,7 @@ export const ImperativeValueSetting: Story = {
     };
 
     return (
-      <SchemaForm form={form}>
+      <SchemaForm form={form} className="space-y-4">
         <div className="flex gap-2 mb-4">
           <Button variant="secondary" onClick={setRandomValues}>
             Set Random Values
@@ -544,6 +396,331 @@ export const PatchModeWithValidation: Story = {
           </p>
         </div>
         <SchemaFormBody form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+// Helper function to simulate async validation delay
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Field-level validation stories
+export const FieldSyncValidation: Story = {
+  name: "Field - Sync Validation",
+  render: () => {
+    const schema = nu.object({
+      email: nu.string().withMetadata({
+        label: "Email",
+        validateOnBlur: (value: string) => {
+          if (!value.includes("@")) {
+            return "Email must contain @ symbol";
+          }
+          return undefined;
+        },
+        validateOnSubmit: (value: string) => {
+          if (!value.includes("@") || !value.includes(".")) {
+            return "Please enter a valid email address";
+          }
+          return undefined;
+        },
+      }),
+      name: nu.string().withMetadata({
+        label: "Name",
+        validateOnSubmit: (value: string) => {
+          if (value.length < 2) {
+            return "Name must be at least 2 characters";
+          }
+          return undefined;
+        },
+      }),
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async () => {
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const FieldAsyncValidation: Story = {
+  name: "Field - Async Validation",
+  render: () => {
+    const schema = nu.object({
+      username: nu.string().withMetadata({
+        label: "Username",
+        validateOnBlurAsync: async (value: string) => {
+          if (!value) return undefined;
+
+          await delay(1000); // Simulate API call
+
+          // Simulate checking if username is taken
+          const takenUsernames = ["admin", "user", "test"];
+          if (takenUsernames.includes(value.toLowerCase())) {
+            return "Username is already taken";
+          }
+          return undefined;
+        },
+        validateOnSubmitAsync: async (value: string) => {
+          await delay(500);
+
+          if (value.length < 3) {
+            return "Username must be at least 3 characters";
+          }
+          if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+            return "Username can only contain letters, numbers, and underscores";
+          }
+          return undefined;
+        },
+      }),
+      email: nu.string().withMetadata({
+        label: "Email",
+        validateOnSubmitAsync: async (value: string) => {
+          await delay(800);
+
+          // Simulate checking if email is already registered
+          const registeredEmails = ["test@example.com", "admin@example.com"];
+          if (registeredEmails.includes(value.toLowerCase())) {
+            return "Email is already registered";
+          }
+          return undefined;
+        },
+      }),
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async () => {
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const FieldCombinedValidation: Story = {
+  name: "Field - Combined Sync + Async Validation",
+  render: () => {
+    const schema = nu.object({
+      password: nu.string().withMetadata({
+        label: "Password",
+        description:
+          "Password will be checked for strength on blur and uniqueness on submit",
+        // Sync validation for immediate feedback
+        validateOnBlur: (value: string) => {
+          if (!value) return undefined;
+
+          if (value.length < 8) {
+            return "Password must be at least 8 characters";
+          }
+          if (!/[A-Z]/.test(value)) {
+            return "Password must contain at least one uppercase letter";
+          }
+          if (!/[0-9]/.test(value)) {
+            return "Password must contain at least one number";
+          }
+          return undefined;
+        },
+        // Async validation for server-side checks
+        validateOnBlurAsync: async (value: string) => {
+          if (!value || value.length < 8) return undefined; // Skip if basic validation fails
+
+          await delay(1200);
+
+          // Simulate checking against common passwords
+          const commonPasswords = ["password123", "123456789", "qwerty123"];
+          if (commonPasswords.includes(value.toLowerCase())) {
+            return "This password is too common. Please choose a stronger one.";
+          }
+          return undefined;
+        },
+        // Additional submit validation
+        validateOnSubmit: (value: string) => {
+          if (!/[!@#$%^&*]/.test(value)) {
+            return "Password should contain at least one special character";
+          }
+          return undefined;
+        },
+      }),
+      confirmPassword: nu.string().withMetadata({
+        label: "Confirm Password",
+        validateOnSubmit: (value: string) => {
+          // Note: In a real app, you'd compare with the password field
+          // For this demo, we'll just check it's not empty
+          if (!value) {
+            return "Please confirm your password";
+          }
+          return undefined;
+        },
+      }),
+    });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+// Form-level validation stories
+export const FormSyncValidation: Story = {
+  name: "Form - Sync Validation",
+  render: () => {
+    const schema = nu
+      .object({
+        firstName: nu.string().withMetadata({ label: "First Name" }),
+        lastName: nu.string().withMetadata({ label: "Last Name" }),
+      })
+      .withMetadata({
+        validateOnSubmit: (data) => {
+          // Cross-field validation
+          if (data.firstName === data.lastName) {
+            return "First name and last name cannot be the same";
+          }
+          return undefined;
+        },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async () => {
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const FormAsyncValidation: Story = {
+  name: "Form - Async Validation",
+  render: () => {
+    const schema = nu
+      .object({
+        companyName: nu.string().withMetadata({ label: "Company Name" }),
+        website: nu.string().withMetadata({ label: "Website" }),
+        industry: nu.string().withMetadata({ label: "Industry" }),
+      })
+      .withMetadata({
+        validateOnSubmitAsync: async (data: any) => {
+          await delay(1500); // Simulate API call to validate company
+
+          // Simulate checking if company registration is valid
+          if (data.companyName && data.website) {
+            const forbiddenCompanies = ["test corp", "fake company"];
+            if (forbiddenCompanies.includes(data.companyName.toLowerCase())) {
+              return "This company name is not allowed for registration";
+            }
+
+            if (data.website && !data.website.startsWith("http")) {
+              return "Website URL must start with http:// or https://";
+            }
+          }
+
+          return undefined;
+        },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const FormCombinedValidation: Story = {
+  name: "Form - Combined Sync + Async Validation",
+  render: () => {
+    const schema = nu
+      .object({
+        teamName: nu.string().withMetadata({ label: "Team Name" }),
+        memberCount: nu.number().withMetadata({ label: "Number of Members" }),
+        budget: nu.number().withMetadata({ label: "Budget ($)" }),
+      })
+      .withMetadata({
+        // Sync validation for immediate feedback
+        validateOnSubmit: (data: any) => {
+          if (data.memberCount && data.budget) {
+            const budgetPerMember = data.budget / data.memberCount;
+            if (budgetPerMember < 1000) {
+              return "Budget per team member must be at least $1,000";
+            }
+          }
+          return undefined;
+        },
+        // Async validation for server-side checks
+        validateOnSubmitAsync: async (data: any) => {
+          await delay(1000);
+
+          // Simulate checking team name availability
+          const takenTeamNames = ["alpha team", "beta squad", "gamma force"];
+          if (
+            data.teamName &&
+            takenTeamNames.includes(data.teamName.toLowerCase())
+          ) {
+            return "This team name is already taken. Please choose another one.";
+          }
+
+          // Simulate budget approval check
+          if (data.budget && data.budget > 100000) {
+            return "Budgets over $100,000 require manager approval. Please contact your manager.";
+          }
+
+          return undefined;
+        },
+      });
+
+    const form = useSchemaForm({
+      schema,
+      onSubmit: async (data) => {
+        console.log("Form submitted:", data);
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
+        <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
   },

@@ -41,15 +41,10 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   },
 };
 
-export const defaultViewRenderer: ViewFieldRenderer = ({ fieldState }) => {
-  const value = fieldState.state.value;
+export const unsupportedViewRenderer: ViewFieldRenderer = ({ schema }) => {
   return (
-    <div className="px-3 py-2 text-onSurface">
-      {value != null ? (
-        String(value)
-      ) : (
-        <span className="text-onSurfaceVariant italic">Empty</span>
-      )}
+    <div className="px-3 py-2 bg-errorContainer text-onErrorContainer rounded-md">
+      <div>Unsupported field type: {schema.type}</div>
     </div>
   );
 };

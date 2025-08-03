@@ -37,7 +37,7 @@ const meta: Meta<typeof FormFieldRenderer> = {
   title: "Form/FormFieldRenderer",
   component: FormFieldRenderer,
   parameters: {
-    layout: "centered",
+    layout: "fullscreen",
     docs: {
       description: {
         component:
@@ -58,8 +58,8 @@ const meta: Meta<typeof FormFieldRenderer> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const StringField: Story = {
-  render: (args) => {
+export const StringFieldEdit: Story = {
+  render: () => {
     const [value, setValue] = useState("This text is too long");
     const [hasError, setHasError] = useState(true);
 
@@ -84,33 +84,123 @@ export const StringField: Story = {
     return (
       <div className="w-80">
         <p className="text-sm text-onSurfaceVariant mb-4">
-          String field (shows error when text is longer than 10 characters)
+          String field in edit mode (shows error when text is longer than 10
+          characters)
         </p>
         <FormFieldRenderer
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
-          mode={args.mode}
+          mode="edit"
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
-  args: {
-    mode: "edit",
-  },
   parameters: {
     docs: {
       description: {
         story:
-          "Interactive string field that renders a text input. Shows error state when text exceeds 10 characters. Use the controls to change layout and mode.",
+          "String field in edit mode. Interactive text input that shows error state when text exceeds 10 characters.",
       },
     },
   },
 };
 
-export const NumberField: Story = {
-  render: (args) => {
+export const StringFieldView: Story = {
+  render: () => {
+    const value = "Hello, World!";
+
+    const schema = nu.string().withMeta({
+      label: "Text Field",
+      description: "Enter some text",
+    });
+
+    const fieldState = createMockField({
+      name: "textField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: () => {},
+      handleBlur: () => {},
+    });
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          String field in view mode (read-only)
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="view"
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "String field in view mode. Displays the value as read-only text.",
+      },
+    },
+  },
+};
+
+export const StringFieldPatch: Story = {
+  render: () => {
+    const [value, setValue] = useState("Click to edit this text");
+
+    const schema = nu.string().withMeta({
+      label: "Text Field",
+      description: "Click to edit",
+    });
+
+    const fieldState = createMockField({
+      name: "textField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: (newValue: string) => setValue(newValue),
+      handleBlur: () => console.log("String field blurred"),
+    });
+
+    const handlePatch = async (newValue: any) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      showToast(`Updated text to: ${newValue}`, "success");
+    };
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          String field in patch mode - click to edit inline
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="patch"
+          onPatch={handlePatch}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "String field in patch mode. Click the value to edit inline with auto-focus and text selection.",
+      },
+    },
+  },
+};
+
+export const NumberFieldEdit: Story = {
+  render: () => {
     const [value, setValue] = useState(-5);
     const [hasError, setHasError] = useState(true);
 
@@ -135,32 +225,121 @@ export const NumberField: Story = {
     return (
       <div className="w-80">
         <p className="text-sm text-onSurfaceVariant mb-4">
-          Number field (shows error when value is negative)
+          Number field in edit mode (shows error when value is negative)
         </p>
         <FormFieldRenderer
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
-          mode={args.mode}
+          mode="edit"
         />
         <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
-  args: {
-    mode: "edit",
-  },
   parameters: {
     docs: {
       description: {
         story:
-          "Interactive number field that renders a number input. Shows error state for negative values. Use the controls to change layout and mode.",
+          "Number field in edit mode. Interactive number input that shows error state for negative values.",
       },
     },
   },
 };
 
-export const BooleanField: Story = {
+export const NumberFieldView: Story = {
+  render: () => {
+    const value = 42;
+
+    const schema = nu.number().withMeta({
+      label: "Number Field",
+      description: "Enter a number",
+    });
+
+    const fieldState = createMockField({
+      name: "numberField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: () => {},
+      handleBlur: () => {},
+    });
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Number field in view mode (read-only)
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="view"
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Number field in view mode. Displays the value as read-only text.",
+      },
+    },
+  },
+};
+
+export const NumberFieldPatch: Story = {
+  render: () => {
+    const [value, setValue] = useState(100);
+
+    const schema = nu.number().withMeta({
+      label: "Number Field",
+      description: "Click to edit",
+    });
+
+    const fieldState = createMockField({
+      name: "numberField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: (newValue: number) => setValue(newValue),
+      handleBlur: () => console.log("Number field blurred"),
+    });
+
+    const handlePatch = async (newValue: any) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      showToast(`Updated number to: ${newValue}`, "success");
+    };
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Number field in patch mode - click to edit inline
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="patch"
+          onPatch={handlePatch}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Number field in patch mode. Click the value to edit inline with auto-focus and text selection.",
+      },
+    },
+  },
+};
+
+export const BooleanFieldEdit: Story = {
   render: () => {
     const [value, setValue] = useState(true);
 
@@ -182,12 +361,13 @@ export const BooleanField: Story = {
     return (
       <div className="w-80">
         <p className="text-sm text-onSurfaceVariant mb-4">
-          Boolean field (checkbox input)
+          Boolean field in edit mode (checkbox input)
         </p>
         <FormFieldRenderer
           schema={schema}
           fieldState={fieldState}
           metadata={schema._meta}
+          mode="edit"
         />
         <p className="text-xs text-onSurfaceVariant mt-2">
           Value: {String(value)}
@@ -198,15 +378,108 @@ export const BooleanField: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Interactive boolean field that renders a checkbox input.",
+        story:
+          "Boolean field in edit mode. Interactive checkbox that can be toggled.",
       },
     },
   },
 };
 
-export const DefaultField: Story = {
+export const BooleanFieldView: Story = {
   render: () => {
-    const [value, setValue] = useState("fallback value");
+    const value = true;
+
+    const schema = nu.boolean().withMeta({
+      label: "Checkbox Field",
+      description: "Toggle this option",
+    });
+
+    const fieldState = createMockField({
+      name: "booleanField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: () => {},
+      handleBlur: () => {},
+    });
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Boolean field in view mode (read-only)
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="view"
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Boolean field in view mode. Displays the value as read-only text (Yes/No).",
+      },
+    },
+  },
+};
+
+export const BooleanFieldPatch: Story = {
+  render: () => {
+    const [value, setValue] = useState(false);
+
+    const schema = nu.boolean().withMeta({
+      label: "Checkbox Field",
+      description: "Click to toggle",
+    });
+
+    const fieldState = createMockField({
+      name: "booleanField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: (newValue: boolean) => setValue(newValue),
+      handleBlur: () => console.log("Boolean field blurred"),
+    });
+
+    const handlePatch = async (newValue: any) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      showToast(`Updated boolean to: ${newValue}`, "success");
+    };
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Boolean field in patch mode - click to toggle inline
+        </p>
+        <FormFieldRenderer
+          schema={schema}
+          fieldState={fieldState}
+          metadata={schema._meta}
+          mode="patch"
+          onPatch={handlePatch}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Boolean field in patch mode. Click the checkbox to toggle the value inline.",
+      },
+    },
+  },
+};
+
+export const UnsupportedFieldEdit: Story = {
+  render: () => {
+    const value = "some value";
 
     const schema = {
       type: "unsupported",
@@ -223,21 +496,21 @@ export const DefaultField: Story = {
       isValid: true,
       isTouched: false,
       errors: [],
-      handleChange: (newValue: string) => setValue(newValue),
-      handleBlur: () => console.log("Unsupported field blurred"),
+      handleChange: () => {},
+      handleBlur: () => {},
     });
 
     return (
       <div className="w-80">
         <p className="text-sm text-onSurfaceVariant mb-4">
-          Unsupported field type (falls back to text input)
+          Unsupported field type in edit mode (non-editable error display)
         </p>
         <FormFieldRenderer
           schema={schema as any}
           fieldState={fieldState}
           metadata={(schema as any)._meta}
+          mode="edit"
         />
-        <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
@@ -245,53 +518,46 @@ export const DefaultField: Story = {
     docs: {
       description: {
         story:
-          "Default field renderer for unsupported schema types. Falls back to a text input with placeholder indicating unsupported type.",
+          "Unsupported field renderer in edit mode. Displays an error container with message indicating the field type is not supported and cannot be edited.",
       },
     },
   },
 };
 
-export const PatchModeWithFocus: Story = {
+export const UnsupportedFieldView: Story = {
   render: () => {
-    const [value, setValue] = useState(
-      "Click me to edit with focus and select!",
-    );
+    const value = "Some unsupported value";
 
-    const schema = nu.string().withMeta({
-      label: "Patch Mode Text Field",
-      description: "Click the text to edit it",
-    });
+    const schema = {
+      type: "unsupported",
+      _meta: {
+        label: "Unsupported Field",
+        description: "This field type is not supported",
+      },
+      parse: (data: any) => data,
+    };
 
     const fieldState = createMockField({
-      name: "patchField",
+      name: "unsupportedField",
       value,
       isValid: true,
       isTouched: false,
       errors: [],
-      handleChange: (newValue: string) => setValue(newValue),
-      handleBlur: () => console.log("Patch field blurred"),
+      handleChange: () => {},
+      handleBlur: () => {},
     });
-
-    const handlePatch = async (newValue: any) => {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      showToast(`Updated value to: ${newValue}`, "success");
-    };
 
     return (
       <div className="w-80">
         <p className="text-sm text-onSurfaceVariant mb-4">
-          Patch mode field - click the text to edit. Notice how the text input
-          gets focus and all text is selected when you enter edit mode.
+          Unsupported field type in view mode (error display)
         </p>
         <FormFieldRenderer
-          schema={schema}
+          schema={schema as any}
           fieldState={fieldState}
-          metadata={schema._meta}
-          mode="patch"
-          onPatch={handlePatch}
+          metadata={(schema as any)._meta}
+          mode="view"
         />
-        <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
       </div>
     );
   },
@@ -299,7 +565,61 @@ export const PatchModeWithFocus: Story = {
     docs: {
       description: {
         story:
-          "Patch mode field that demonstrates the new edit field lifecycle. When you click to edit, the text input will automatically receive focus and all text will be selected for easy editing.",
+          "Unsupported field renderer in view mode. Displays an error container with message indicating the field type is not supported.",
+      },
+    },
+  },
+};
+
+export const UnsupportedFieldPatch: Story = {
+  render: () => {
+    const value = "some value";
+
+    const schema = {
+      type: "unsupported",
+      _meta: {
+        label: "Unsupported Field",
+        description: "This field type is not supported",
+      },
+      parse: (data: any) => data,
+    };
+
+    const fieldState = createMockField({
+      name: "unsupportedField",
+      value,
+      isValid: true,
+      isTouched: false,
+      errors: [],
+      handleChange: () => {},
+      handleBlur: () => {},
+    });
+
+    const handlePatch = async (_newValue: any) => {
+      // This won't actually be called since unsupported fields can't be edited
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      showToast(`This should not happen`, "error");
+    };
+
+    return (
+      <div className="w-80">
+        <p className="text-sm text-onSurfaceVariant mb-4">
+          Unsupported field type in patch mode (non-editable error display)
+        </p>
+        <FormFieldRenderer
+          schema={schema as any}
+          fieldState={fieldState}
+          metadata={(schema as any)._meta}
+          mode="patch"
+          onPatch={handlePatch}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Unsupported field renderer in patch mode. Displays an error container that cannot be clicked or edited.",
       },
     },
   },

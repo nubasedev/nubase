@@ -148,15 +148,15 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
       </div>
 
       {/* Callout to show form-level errors */}
-      {form.api.state?.errors?.length > 0 && mode !== "view" && (
-        <Callout variant="danger" className="mt-4">
-          <ul>
-            {form.api.state.errors.map((error, index) => (
-              <li key={`${index}-${error}`}>{error}</li>
-            ))}
-          </ul>
-        </Callout>
-      )}
+      <form.api.Subscribe selector={(state) => [state.errorMap]}>
+        {([errorMap]) =>
+          errorMap?.onSubmit && mode !== "view" ? (
+            <Callout variant="danger" className="mt-4">
+              {errorMap.onSubmit}
+            </Callout>
+          ) : null
+        }
+      </form.api.Subscribe>
     </div>
   );
 };

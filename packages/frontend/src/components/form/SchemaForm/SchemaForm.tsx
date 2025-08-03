@@ -1,14 +1,31 @@
-// Re-export all schema form components and hooks for convenience
+import type React from "react";
+import { forwardRef } from "react";
+import type { SchemaFormConfiguration } from "../../../hooks";
 
-export type { SchemaFormBodyProps } from "./SchemaFormBody";
-export { SchemaFormBody } from "./SchemaFormBody";
-export type { SchemaFormButtonBarProps } from "./SchemaFormButtonBar";
-export { SchemaFormButtonBar } from "./SchemaFormButtonBar";
-export type { SchemaFormProps } from "./SchemaFormWrapper";
-export { SchemaForm } from "./SchemaFormWrapper";
+export interface SchemaFormProps {
+  form: SchemaFormConfiguration<any>;
+  className?: string;
+  children?: React.ReactNode;
+  onSubmit?: (e: React.FormEvent) => void;
+}
 
-export type {
-  SchemaFormConfiguration,
-  UseSchemaFormOptions,
-} from "./useSchemaForm";
-export { useSchemaForm } from "./useSchemaForm";
+// Form component - wraps the form element
+export const SchemaForm = forwardRef<HTMLFormElement, SchemaFormProps>(
+  ({ form, className = "", children, onSubmit }, ref) => {
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onSubmit) {
+        onSubmit(e);
+      } else {
+        await form.api.handleSubmit();
+      }
+    };
+
+    return (
+      <form ref={ref} onSubmit={handleSubmit} className={className}>
+        {children}
+      </form>
+    );
+  },
+);

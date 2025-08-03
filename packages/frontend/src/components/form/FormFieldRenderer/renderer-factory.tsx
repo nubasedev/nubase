@@ -1,9 +1,12 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { defaultRenderer, editFieldRenderers } from "./edit-field-renderers";
+import {
+  editFieldRenderers,
+  unsupportedRenderer,
+} from "./edit-field-renderers";
 import { PatchWrapper } from "./PatchWrapper";
 import {
-  defaultViewRenderer,
+  unsupportedViewRenderer,
   viewFieldRenderers,
 } from "./view-field-renderers";
 
@@ -29,7 +32,8 @@ export interface PatchContext extends FormFieldRendererContext {
 }
 
 export const createEditRenderer = (context: FormFieldRendererContext) => {
-  const renderer = editFieldRenderers[context.schema.type] || defaultRenderer;
+  const renderer =
+    editFieldRenderers[context.schema.type] || unsupportedRenderer;
   const result = renderer({
     schema: context.schema,
     fieldState: context.fieldState,
@@ -41,7 +45,7 @@ export const createEditRenderer = (context: FormFieldRendererContext) => {
 
 export const createViewRenderer = (context: FormFieldRendererContext) => {
   const renderer =
-    viewFieldRenderers[context.schema.type] || defaultViewRenderer;
+    viewFieldRenderers[context.schema.type] || unsupportedViewRenderer;
   return renderer({
     schema: context.schema,
     fieldState: context.fieldState,

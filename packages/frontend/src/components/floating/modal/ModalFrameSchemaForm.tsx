@@ -1,12 +1,12 @@
 import type { ObjectSchema } from "@nubase/core";
 import type { FC, ReactNode } from "react";
 import type { SchemaFormConfiguration } from "../../../hooks";
-import type { SchemaFormBodyProps } from "../../form/SchemaForm/SchemaForm";
+import { SchemaForm } from "../../form/SchemaForm/SchemaForm";
 import {
-  SchemaForm,
   SchemaFormBody,
-  SchemaFormButtonBar,
-} from "../../form/SchemaForm/SchemaForm";
+  type SchemaFormBodyProps,
+} from "../../form/SchemaForm/SchemaFormBody";
+import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
 import { ModalFrameStructured } from "./ModalFrameStructured";
 
 export type ModalFrameSchemaFormProps<TSchema extends ObjectSchema<any>> = {
@@ -49,6 +49,7 @@ export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
                 form={form}
                 submitText={submitText}
                 alignment="right"
+                variant="transparent"
               />
             </div>
           </div>

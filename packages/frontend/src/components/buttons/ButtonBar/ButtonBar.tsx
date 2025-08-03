@@ -11,7 +11,7 @@ const buttonBarVariants = cva("flex gap-2 p-3", {
       right: "justify-end",
     },
     variant: {
-      default: "bg-surfaceVariant",
+      default: "bg-surfaceVariant rounded-lg",
       transparent: "",
     },
   },

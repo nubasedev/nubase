@@ -125,20 +125,11 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
   },
 };
 
-export const defaultRenderer: FieldRenderer = ({ fieldState, hasError }) => {
+export const unsupportedRenderer: FieldRenderer = ({ schema }) => {
   const element = (
-    <TextInput
-      id={fieldState.name}
-      name={fieldState.name}
-      onBlur={fieldState.handleBlur}
-      type="text"
-      value={String(fieldState.state.value ?? "")}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        fieldState.handleChange(e.target.value)
-      }
-      placeholder="Unsupported field type"
-      hasError={hasError}
-    />
+    <div className="px-3 py-2 bg-errorContainer text-onErrorContainer rounded-md">
+      <div>Unsupported field type: {schema.type}</div>
+    </div>
   );
 
   return { element };
