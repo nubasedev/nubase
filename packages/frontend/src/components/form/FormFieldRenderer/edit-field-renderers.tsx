@@ -23,6 +23,7 @@ type FieldRenderer = (props: FieldRendererProps) => FieldRendererResult;
 export const editFieldRenderers: Record<string, FieldRenderer> = {
   string: ({ fieldState, hasError, metadata }) => {
     const inputRef = useRef<HTMLInputElement>(null);
+    const hasSelectedRef = useRef(false);
 
     const lifecycle: EditFieldLifecycle = {
       onEnterEdit: () => {
@@ -30,9 +31,17 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         setTimeout(() => {
           if (inputRef.current) {
             inputRef.current.focus();
-            inputRef.current.select();
+            // Only select on the first enter, not on re-renders
+            if (!hasSelectedRef.current) {
+              inputRef.current.select();
+              hasSelectedRef.current = true;
+            }
           }
         }, 0);
+      },
+      onExitEdit: () => {
+        // Reset the flag when exiting edit mode
+        hasSelectedRef.current = false;
       },
     };
 
@@ -43,7 +52,7 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         name={fieldState.name}
         onBlur={fieldState.handleBlur}
         type="text"
-        value={fieldState.state.value || ""}
+        value={fieldState.state.value ?? ""}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           fieldState.handleChange(e.target.value)
         }
@@ -56,13 +65,37 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
   },
 
   number: ({ fieldState, hasError, metadata }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const hasSelectedRef = useRef(false);
+
+    const lifecycle: EditFieldLifecycle = {
+      onEnterEdit: () => {
+        // Use setTimeout to ensure the input is rendered before focusing
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus();
+            // Only select on the first enter, not on re-renders
+            if (!hasSelectedRef.current) {
+              inputRef.current.select();
+              hasSelectedRef.current = true;
+            }
+          }
+        }, 0);
+      },
+      onExitEdit: () => {
+        // Reset the flag when exiting edit mode
+        hasSelectedRef.current = false;
+      },
+    };
+
     const element = (
       <TextInput
+        ref={inputRef}
         id={fieldState.name}
         name={fieldState.name}
         onBlur={fieldState.handleBlur}
         type="number"
-        value={fieldState.state.value || 0}
+        value={fieldState.state.value ?? 0}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           fieldState.handleChange(Number(e.target.value))
         }
@@ -71,7 +104,7 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
       />
     );
 
-    return { element };
+    return { element, lifecycle };
   },
 
   boolean: ({ fieldState, hasError }) => {
@@ -80,7 +113,7 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
         id={fieldState.name}
         name={fieldState.name}
         onBlur={fieldState.handleBlur}
-        checked={fieldState.state.value || false}
+        checked={fieldState.state.value ?? false}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           fieldState.handleChange(e.target.checked)
         }
@@ -99,7 +132,7 @@ export const defaultRenderer: FieldRenderer = ({ fieldState, hasError }) => {
       name={fieldState.name}
       onBlur={fieldState.handleBlur}
       type="text"
-      value={String(fieldState.state.value || "")}
+      value={String(fieldState.state.value ?? "")}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
         fieldState.handleChange(e.target.value)
       }

@@ -69,7 +69,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       required={isRequired}
       layout="horizontal"
     >
-      {mode === "patch" ? <div>{fieldElement}</div> : fieldElement}
+      {fieldElement}
     </FormControl>
   );
 };

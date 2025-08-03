@@ -11,12 +11,13 @@ export interface SchemaFormButtonBarProps {
   alignment?: "left" | "center" | "right";
 }
 
+// ButtonBar component
 export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
   form,
   submitText = "Submit",
-  isComputing = false,
+  isComputing,
   className,
-  alignment = "right",
+  alignment,
 }) => {
   return (
     <form.api.Subscribe

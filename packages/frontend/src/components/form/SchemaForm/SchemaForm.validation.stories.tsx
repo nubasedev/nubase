@@ -1,19 +1,25 @@
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
 import { useSchemaForm } from "../../../hooks";
-import { SchemaForm } from "./SchemaForm";
-import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
+import { showToast } from "../../floating/toast";
+import { SchemaForm, SchemaFormBody, SchemaFormButtonBar } from "./SchemaForm";
 
-const meta: Meta<typeof SchemaForm> = {
-  title: "Form/SchemaForm - Validation",
-  component: SchemaForm,
+const meta: Meta = {
+  title: "Form/SchemaFormComposable - Validation",
   parameters: {
     layout: "padded",
   },
+  decorators: [
+    (Story) => (
+      <div className="w-full max-w-3xl p-4">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;
-type Story = StoryObj<typeof SchemaForm>;
+type Story = StoryObj;
 
 // Helper function to simulate async validation delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -53,15 +59,15 @@ export const FieldSyncValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -115,15 +121,15 @@ export const FieldAsyncValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -189,15 +195,15 @@ export const FieldCombinedValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -233,15 +239,15 @@ export const FormSyncValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -279,15 +285,15 @@ export const FormAsyncValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -338,15 +344,15 @@ export const FormCombinedValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        alert("Form submitted successfully!");
+        showToast("Form submitted successfully!", "success");
       },
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} />
-      </div>
+      </SchemaForm>
     );
   },
 };

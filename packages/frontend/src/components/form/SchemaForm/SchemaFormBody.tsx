@@ -4,21 +4,12 @@ import {
   OptionalSchema,
 } from "@nubase/core";
 import type React from "react";
-import { forwardRef } from "react";
 import type { SchemaFormConfiguration } from "../../../hooks";
 import { useComputedMetadata } from "../../../hooks/useComputedMetadata";
 import { useLayout } from "../../../hooks/useLayout";
 import { Callout } from "../../callout/Callout";
 import { FormFieldRenderer } from "../FormFieldRenderer/FormFieldRenderer";
-import { SchemaFormButtonBar as ButtonBarComponent } from "./SchemaFormButtonBar";
 import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
-
-export interface SchemaFormComposableProps {
-  form: SchemaFormConfiguration<any>;
-  className?: string;
-  children?: React.ReactNode;
-  onSubmit?: (e: React.FormEvent) => void;
-}
 
 export interface SchemaFormBodyProps {
   form: SchemaFormConfiguration<any>;
@@ -28,38 +19,6 @@ export interface SchemaFormBodyProps {
     debounceMs?: number;
   };
 }
-
-export interface SchemaFormButtonBarComposableProps {
-  form: SchemaFormConfiguration<any>;
-  submitText?: string;
-  isComputing?: boolean;
-  className?: string;
-  alignment?: "left" | "center" | "right";
-}
-
-// Form component - wraps the form element
-export const SchemaFormComposable = forwardRef<
-  HTMLFormElement,
-  SchemaFormComposableProps
->(({ form, className = "", children, onSubmit }, ref) => {
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (onSubmit) {
-      onSubmit(e);
-    } else {
-      await form.api.handleSubmit();
-    }
-  };
-
-  return (
-    <form ref={ref} onSubmit={handleSubmit} className={className}>
-      {children}
-    </form>
-  );
-});
-
-SchemaFormComposable.displayName = "SchemaFormComposable";
 
 // Body component - renders the form fields
 export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
@@ -71,11 +30,8 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
   const { schema, mode, onPatch } = form;
 
   // Use computed metadata hook to get merged metadata
-  const {
-    metadata: mergedMetadata,
-    isComputing, // Used in SchemaFormButtonBarComposable
-    error: metadataError,
-  } = useComputedMetadata(schema, form.formState, computedMetadata);
+  const { metadata: mergedMetadata, error: metadataError } =
+    useComputedMetadata(schema, form.formState, computedMetadata);
 
   // Use layout hook to get the layout (either specified or default)
   const layout = useLayout(schema, layoutName);
@@ -202,20 +158,5 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
         </Callout>
       )}
     </div>
-  );
-};
-
-// ButtonBar component - wraps the existing SchemaFormButtonBar
-export const SchemaFormButtonBarComposable: React.FC<
-  SchemaFormButtonBarComposableProps
-> = ({ form, submitText, isComputing, className, alignment }) => {
-  return (
-    <ButtonBarComponent
-      form={form}
-      submitText={submitText}
-      isComputing={isComputing}
-      className={className}
-      alignment={alignment}
-    />
   );
 };

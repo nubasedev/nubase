@@ -1,25 +1,23 @@
 import { faker } from "@faker-js/faker";
 import { nu } from "@nubase/core";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useState } from "react";
 import { useSchemaForm } from "../../../hooks";
 import { Button } from "../../buttons/Button/Button";
 import { showPromiseToast, showToast } from "../../floating/toast";
-import { SchemaForm } from "./SchemaForm";
-import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
+import { SchemaForm, SchemaFormBody, SchemaFormButtonBar } from "./SchemaForm";
 
 const meta = {
   title: "Form/SchemaForm",
-  component: SchemaForm,
   parameters: {
     layout: "fullscreen",
     docs: {
       description: {
         component:
-          "A dynamic form component that automatically renders form controls based on a provided ObjectSchema. Use with the useSchemaForm hook.",
+          "Composable form components that allow flexible layout and form element placement. This replaces the legacy SchemaForm component with a more flexible composable API.",
       },
     },
   },
-  tags: ["autodocs"],
   decorators: [
     (Story) => (
       <div className="w-full max-w-3xl p-4">
@@ -136,6 +134,30 @@ const ErrorDemoSchema = nu.object({
   }),
 });
 
+// User schema for patch mode demo
+const userSchema = nu.object({
+  firstName: nu
+    .string()
+    .withMetadata({ label: "First Name", description: "Your first name" }),
+  lastName: nu
+    .string()
+    .withMetadata({ label: "Last Name", description: "Your last name" }),
+  email: nu
+    .string()
+    .withMetadata({ label: "Email", description: "Your email address" }),
+  age: nu
+    .number()
+    .withMetadata({ label: "Age", description: "Your age in years" }),
+  isActive: nu.boolean().withMetadata({
+    label: "Active",
+    description: "Whether the user is active",
+  }),
+  bio: nu
+    .string()
+    .optional()
+    .withMetadata({ label: "Bio", description: "Tell us about yourself" }),
+});
+
 export const Default: Story = {
   render: () => {
     const form = useSchemaForm({
@@ -154,10 +176,38 @@ export const Default: Story = {
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} submitText="Submit Contact" />
-      </div>
+      </SchemaForm>
+    );
+  },
+};
+
+export const SeparateLayout: Story = {
+  render: () => {
+    const form = useSchemaForm({
+      schema: ContactSchema,
+      onSubmit: async (data) => {
+        console.log("Form submitted with data:", data);
+        showToast("Form submitted successfully!", "success");
+      },
+    });
+
+    return (
+      <SchemaForm form={form}>
+        <div className="border border-outline rounded-lg p-4 space-y-4">
+          <h2 className="text-lg font-semibold">Contact Information</h2>
+          <SchemaFormBody form={form} />
+        </div>
+        <div className="mt-4 border-t border-outline pt-4">
+          <SchemaFormButtonBar
+            form={form}
+            submitText="Submit Form"
+            alignment="right"
+          />
+        </div>
+      </SchemaForm>
     );
   },
 };
@@ -180,10 +230,10 @@ export const WithComputed: Story = {
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} computedMetadata={{ debounceMs: 500 }} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} computedMetadata={{ debounceMs: 500 }} />
         <SchemaFormButtonBar form={form} submitText="Save Contact" />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -206,10 +256,10 @@ export const WithLayout: Story = {
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} layoutName="default" />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} layoutName="default" />
         <SchemaFormButtonBar form={form} submitText="Send Message" />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -243,10 +293,10 @@ export const WithErrorHandling: Story = {
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} submitText="Create Account" />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -279,13 +329,13 @@ export const WithPromiseToast: Story = {
     });
 
     return (
-      <div className="space-y-4">
-        <SchemaForm form={form} />
+      <SchemaForm form={form} className="space-y-4">
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar
           form={form}
           submitText="Submit with Promise Toast"
         />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -323,13 +373,13 @@ export const ValidationErrors: Story = {
     });
 
     return (
-      <div className="space-y-4">
+      <SchemaForm form={form} className="space-y-4">
         <h3 className="text-lg font-semibold text-onSurface">
           Try submitting with empty required fields
         </h3>
-        <SchemaForm form={form} />
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} submitText="Test Validation" />
-      </div>
+      </SchemaForm>
     );
   },
 };
@@ -357,8 +407,8 @@ export const ImperativeValueSetting: Story = {
     };
 
     return (
-      <div className="space-y-4">
-        <div className="flex gap-2">
+      <SchemaForm form={form}>
+        <div className="flex gap-2 mb-4">
           <Button variant="secondary" onClick={setRandomValues}>
             Set Random Values
           </Button>
@@ -366,9 +416,135 @@ export const ImperativeValueSetting: Story = {
             Reset Form
           </Button>
         </div>
-        <SchemaForm form={form} />
+        <SchemaFormBody form={form} />
         <SchemaFormButtonBar form={form} submitText="Submit" />
-      </div>
+      </SchemaForm>
+    );
+  },
+};
+
+export const ViewMode: Story = {
+  render: () => {
+    const initialData = {
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+      age: 30,
+      isActive: true,
+      bio: "I'm a software developer with 10 years of experience in web development. I love working with React and TypeScript.",
+    };
+
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "view",
+      onSubmit: () => {},
+      initialValues: initialData,
+    });
+
+    return (
+      <SchemaForm form={form}>
+        <h3 className="text-lg font-semibold mb-4">View Mode - Read Only</h3>
+        <SchemaFormBody form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const PatchMode: Story = {
+  render: () => {
+    const [userData, _setUserData] = useState({
+      firstName: "Jane",
+      lastName: "Smith",
+      email: "jane.smith@example.com",
+      age: 28,
+      isActive: false,
+      bio: "Product manager passionate about user experience and building great products.",
+    });
+
+    const handlePatch = async (fieldName: string, value: any) => {
+      showToast(`Patching ${fieldName} to: ${value}`, "info");
+    };
+
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "patch",
+      onSubmit: () => {},
+      onPatch: handlePatch,
+      initialValues: userData,
+    });
+
+    return (
+      <SchemaForm form={form}>
+        <h3 className="text-lg font-semibold mb-4">
+          Patch Mode - Click to Edit Fields
+        </h3>
+        <div className="mb-4 p-4 bg-primaryContainer/10 border border-primary/20 rounded-lg">
+          <p className="text-sm text-onSurface/70">
+            💡 <strong>How to use:</strong> Click on any field value to edit it
+            inline. Use the ✓ button to apply changes or ✕ to cancel.
+          </p>
+        </div>
+        <SchemaFormBody form={form} />
+      </SchemaForm>
+    );
+  },
+};
+
+export const PatchModeWithValidation: Story = {
+  render: () => {
+    const [userData, setUserData] = useState({
+      firstName: "Bob",
+      lastName: "Johnson",
+      email: "invalid-email", // Invalid email to show validation
+      age: -5, // Invalid age to show validation
+      isActive: true,
+      bio: "",
+    });
+
+    const handlePatch = async (fieldName: string, value: any) => {
+      showToast(`Validating patch for ${fieldName}`, "info");
+
+      // Simulate validation - reject invalid emails
+      if (fieldName === "email" && !value.includes("@")) {
+        throw new Error("Please enter a valid email address");
+      }
+
+      // Simulate validation - reject negative ages
+      if (fieldName === "age" && value < 0) {
+        throw new Error("Age must be a positive number");
+      }
+
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      setUserData((prev) => ({
+        ...prev,
+        [fieldName]: value,
+      }));
+    };
+
+    const form = useSchemaForm({
+      schema: userSchema,
+      mode: "patch",
+      onSubmit: () => {},
+      onPatch: handlePatch,
+      initialValues: userData,
+    });
+
+    return (
+      <SchemaForm form={form}>
+        <h3 className="text-lg font-semibold mb-4">
+          Patch Mode with Validation
+        </h3>
+        <div className="mb-4 p-4 bg-errorContainer/10 border border-error/20 rounded-lg">
+          <p className="text-sm text-onSurface/70">
+            ⚠️ <strong>Try editing:</strong> The email field has an invalid
+            value, and age is negative. Try fixing them to see validation in
+            action.
+          </p>
+        </div>
+        <SchemaFormBody form={form} />
+      </SchemaForm>
     );
   },
 };

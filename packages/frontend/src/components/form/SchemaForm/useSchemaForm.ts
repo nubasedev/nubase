@@ -8,13 +8,7 @@ import {
   toZod,
 } from "@nubase/core";
 import { type ReactFormExtendedApi, useForm } from "@tanstack/react-form";
-import type React from "react";
-import { createElement, useMemo, useState } from "react";
-import {
-  SchemaFormBody,
-  SchemaFormButtonBarComposable,
-  SchemaFormComposable,
-} from "../components/form/SchemaForm/SchemaFormComposable";
+import { useMemo, useState } from "react";
 
 export interface SchemaFormConfiguration<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
@@ -27,30 +21,6 @@ export interface SchemaFormConfiguration<
   formState: Record<string, any>;
 }
 
-export interface ComposableSchemaForm<
-  TSchema extends ObjectSchema<any> = ObjectSchema<any>,
-  TData = any,
-> extends SchemaFormConfiguration<TSchema, TData> {
-  Form: React.FC<{
-    children: React.ReactNode;
-    className?: string;
-    onSubmit?: (e: React.FormEvent) => void;
-  }>;
-  Body: React.FC<{
-    className?: string;
-    layoutName?: string;
-    computedMetadata?: {
-      debounceMs?: number;
-    };
-  }>;
-  ButtonBar: React.FC<{
-    submitText?: string;
-    isComputing?: boolean;
-    className?: string;
-    alignment?: "left" | "center" | "right";
-  }>;
-}
-
 export type UseSchemaFormOptions<
   TSchema extends ObjectSchema<any>,
   TData extends Infer<TSchema> = Infer<TSchema>,
@@ -61,6 +31,8 @@ export type UseSchemaFormOptions<
   mode?: "edit" | "view" | "patch";
   /** Callback for patching individual fields in patch mode */
   onPatch?: (fieldName: string, value: any) => Promise<void>;
+  /** Initial values for the form fields */
+  initialValues?: Partial<TData>;
 };
 
 // Helper function to transform empty strings and 0 to null for optional fields
@@ -111,21 +83,26 @@ export function useSchemaForm<
   TData extends Infer<TSchema> = Infer<TSchema>,
 >(
   options: UseSchemaFormOptions<TSchema, TData>,
-): ComposableSchemaForm<TSchema> {
-  const { schema, onSubmit, mode = "edit", onPatch } = options;
+): SchemaFormConfiguration<TSchema> {
+  const { schema, onSubmit, mode = "edit", onPatch, initialValues } = options;
 
   // Validate mode and onPatch combination
   if (mode === "patch" && !onPatch) {
     throw new Error("onPatch is required when mode is 'patch'");
   }
 
-  // Create default values from schema
+  // Create default values from schema and merge with initial values
   const defaultValues = Object.entries(schema._shape).reduce(
     (acc, [key, fieldSchema]) => {
       const baseFieldSchema = fieldSchema as BaseSchema<any>;
       const defaultValue = baseFieldSchema._meta?.defaultValue;
+
+      // Use initial value if provided, otherwise use schema default or type default
       acc[key] =
-        defaultValue ?? (baseFieldSchema instanceof BooleanSchema ? false : "");
+        initialValues?.[key as keyof TData] ??
+        defaultValue ??
+        (baseFieldSchema instanceof BooleanSchema ? false : "");
+
       return acc;
     },
     {} as Record<string, any>,
@@ -186,8 +163,8 @@ export function useSchemaForm<
     },
   });
 
-  // Create composable components using useMemo to ensure stability
-  const formConfig = useMemo(
+  // Return the configuration object
+  return useMemo(
     (): SchemaFormConfiguration<TSchema> => ({
       api: form,
       schema,
@@ -196,40 +173,5 @@ export function useSchemaForm<
       formState,
     }),
     [form, schema, mode, onPatch, formState],
-  );
-
-  const Form = useMemo(() => {
-    const FormComponent: React.FC<any> = (props) =>
-      createElement(SchemaFormComposable, { ...props, form: formConfig });
-    FormComponent.displayName = "Form";
-    return FormComponent;
-  }, [formConfig]);
-
-  const Body = useMemo(() => {
-    const BodyComponent: React.FC<any> = (props) =>
-      createElement(SchemaFormBody, { ...props, form: formConfig });
-    BodyComponent.displayName = "Body";
-    return BodyComponent;
-  }, [formConfig]);
-
-  const ButtonBar = useMemo(() => {
-    const ButtonBarComponent: React.FC<any> = (props) =>
-      createElement(SchemaFormButtonBarComposable, {
-        ...props,
-        form: formConfig,
-      });
-    ButtonBarComponent.displayName = "ButtonBar";
-    return ButtonBarComponent;
-  }, [formConfig]);
-
-  // Return a clean configuration object with the form API and composable components
-  return useMemo(
-    () => ({
-      ...formConfig,
-      Form,
-      Body,
-      ButtonBar,
-    }),
-    [formConfig, Form, Body, ButtonBar],
   );
 }

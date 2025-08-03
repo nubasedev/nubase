@@ -2,6 +2,11 @@ import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
 import type { CreateView } from "../../../config/view";
 import { useSchemaForm } from "../../../hooks";
+import {
+  SchemaForm,
+  SchemaFormBody,
+  SchemaFormButtonBar,
+} from "../../form/SchemaForm/SchemaForm";
 import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 
 export type CreateViewRendererProps = {
@@ -30,9 +35,9 @@ export const CreateViewRenderer: FC<CreateViewRendererProps> = (props) => {
   });
 
   return (
-    <form.Form className="space-y-4">
-      <form.Body />
-      <form.ButtonBar />
-    </form.Form>
+    <SchemaForm form={form} className="space-y-4">
+      <SchemaFormBody form={form} />
+      <SchemaFormButtonBar form={form} />
+    </SchemaForm>
   );
 };

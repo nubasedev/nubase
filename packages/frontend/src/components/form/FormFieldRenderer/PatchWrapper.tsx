@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../buttons/Button/Button";
 import type { EditFieldLifecycle } from "./renderer-factory";
 
@@ -25,11 +25,21 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   id,
 }) => {
   const [isApplying, setIsApplying] = useState(false);
+  const prevIsEditingRef = useRef(isEditing);
 
-  // Trigger onEnterEdit lifecycle callback when entering edit mode
+  // Trigger lifecycle callbacks when entering/exiting edit mode
   useEffect(() => {
-    if (isEditing && editFieldLifecycle?.onEnterEdit) {
+    const prevIsEditing = prevIsEditingRef.current;
+    prevIsEditingRef.current = isEditing;
+
+    // Entering edit mode
+    if (isEditing && !prevIsEditing && editFieldLifecycle?.onEnterEdit) {
       editFieldLifecycle.onEnterEdit();
+    }
+
+    // Exiting edit mode
+    if (!isEditing && prevIsEditing && editFieldLifecycle?.onExitEdit) {
+      editFieldLifecycle.onExitEdit();
     }
   }, [isEditing, editFieldLifecycle]);
 
