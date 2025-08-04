@@ -3,9 +3,9 @@ import {
   deleteTicketSchema,
   getTicketSchema,
   getTicketsSchema,
+  patchTicketSchema,
   postTicketSchema,
-  putTicketSchema,
-} from "./tickets";
+} from "./schema/ticket";
 
 /**
  * Flattened API endpoints at root level.
@@ -16,7 +16,7 @@ export const apiEndpoints = {
   getTickets: getTicketsSchema, // GET /tickets
   getTicket: getTicketSchema, // GET /tickets/:id
   postTicket: postTicketSchema, // POST /tickets
-  putTicket: putTicketSchema, // PUT /tickets/:id
+  patchTicket: patchTicketSchema, // PUT /tickets/:id
   deleteTicket: deleteTicketSchema, // DELETE /tickets/:id
 } satisfies Record<string, RequestSchema>;
 

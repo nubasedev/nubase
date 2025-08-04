@@ -2,14 +2,14 @@ import { serve } from "@hono/node-server";
 import { config } from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getRoot } from "./api/routes/index";
+import { getRoot } from "./api/routes";
 import {
   handleDeleteTicket,
-  handleGetTicketById,
+  handleGetTicket,
   handleGetTickets,
+  handlePatchTicket,
   handlePostTicket,
-  handlePutTicket,
-} from "./api/routes/tickets";
+} from "./api/routes/ticket";
 
 config();
 
@@ -21,9 +21,9 @@ app.get("/", getRoot);
 
 // Tickets - RESTful routes with type safety
 app.get("/tickets", handleGetTickets);
-app.get("/tickets/:id", handleGetTicketById);
+app.get("/tickets/:id", handleGetTicket);
 app.post("/tickets", handlePostTicket);
-app.put("/tickets/:id", handlePutTicket);
+app.patch("/tickets/:id", handlePatchTicket);
 app.delete("/tickets/:id", handleDeleteTicket);
 
 serve(

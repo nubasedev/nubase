@@ -1,2 +1,2 @@
 export * from "./api-endpoints";
-export * from "./tickets";
+export * from "./schema/ticket";

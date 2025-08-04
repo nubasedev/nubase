@@ -4,6 +4,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
 import { useState } from "react";
 import { FormControl } from "../../form-controls/FormControl/FormControl";
+import type { PatchResult } from "./PatchWrapper";
 import {
   createFieldRenderer,
   type FormFieldRendererContext,
@@ -14,7 +15,7 @@ export interface FormFieldRendererProps {
   fieldState: AnyFieldApi;
   metadata: SchemaMetadata<any>;
   mode?: "edit" | "view" | "patch";
-  onPatch?: (value: any) => Promise<void>;
+  onPatch?: (value: any) => Promise<PatchResult>;
 }
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
@@ -47,11 +48,16 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       setOriginalValue(fieldState.state.value);
       setIsPatching(true);
     },
-    onApplyPatch: async () => {
+    onApplyPatch: async (): Promise<PatchResult> => {
       if (onPatch) {
-        await onPatch(fieldState.state.value);
+        const result = await onPatch(fieldState.state.value);
+        if (result.success) {
+          setIsPatching(false);
+        }
+        return result;
       }
       setIsPatching(false);
+      return { success: true };
     },
     onCancelPatch: () => {
       fieldState.handleChange(originalValue);

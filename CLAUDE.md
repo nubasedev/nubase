@@ -309,6 +309,17 @@ All MD3 colors are available as Tailwind classes:
 - **Borders**: `border-outline`, `border-primary`, `border-error`
 - **Utilities**: `ring-primary/20`, `bg-scrim/30`
 
+## Documentation
+
+**All documentation should be written to the `apps/docs` Docusaurus application, not as .md files in the source code.**
+
+- The main documentation site is located in `apps/docs/`
+- Documentation files go in `apps/docs/docs/`
+- If you think it's relevant to add docs to your changes, you can do it in the docs app
+- Use Docusaurus features like sidebar configuration, frontmatter, and MDX
+- Run the docs locally with: `cd apps/docs && npm start`
+- **Do NOT create README.md files in source packages** - document features in the docs app instead
+
 ## Development Notes
 
 - Uses Biome for code formatting and linting (configured in biome.json)
@@ -319,6 +330,17 @@ All MD3 colors are available as Tailwind classes:
 - All packages are published to npm under @nubase scope
 
 ## Component Development Guidelines
+
+### ActivityIndicator Component
+- **Always use the centralized ActivityIndicator component** for loading states instead of custom spinners
+- **Location**: `packages/frontend/src/components/activity-indicator/ActivityIndicator.tsx`
+- **Import**: `import { ActivityIndicator } from "@nubase/frontend"`
+- **Usage**: `<ActivityIndicator size="sm" color="primary" aria-label="Loading..." />`
+- **Available sizes**: `xs`, `sm`, `md`, `lg`, `xl`
+- **Available colors**: `primary`, `secondary`, `surface`, `surfaceVariant`, `inherit`
+- **Button loading states**: Use the `isLoading` prop on Button components instead of manual ActivityIndicator placement
+- **Form submissions**: SchemaFormButtonBar automatically uses ActivityIndicator via Button's isLoading prop
+- **Toast notifications**: Toast component automatically uses ActivityIndicator for promise-based toasts
 
 ### Size Variants
 - **Do not** add size variants (sm, md, lg) to new components unless explicitly requested

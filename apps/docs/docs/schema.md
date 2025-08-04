@@ -83,10 +83,10 @@ type User = Infer<typeof userSchema>;
 // }
 
 // Valid - only required fields needed
-userSchema.parse({ name: "John", email: "john@example.com" });
+userSchema.toZod().parse({ name: "John", email: "john@example.com" });
 
 // Also valid - optional fields can be included
-userSchema.parse({ 
+userSchema.toZod().parse({ 
   name: "John", 
   email: "john@example.com",
   phone: "555-1234" 
@@ -116,7 +116,7 @@ This design ensures that:
 
 ### Parsing and Validation
 
-Schemas validate and parse data:
+Schemas can be converted to Zod schemas for validation and parsing:
 
 ```typescript
 const userSchema = nu.object({
@@ -126,12 +126,12 @@ const userSchema = nu.object({
 
 // Valid data
 const userData = { name: "John Doe", age: 30 };
-const parsed = userSchema.parse(userData);
+const parsed = userSchema.toZod().parse(userData);
 // Returns: { name: "John Doe", age: 30 }
 
 // Invalid data throws an error
 try {
-  userSchema.parse({ name: "John", age: "thirty" });
+  userSchema.toZod().parse({ name: "John", age: "thirty" });
 } catch (error) {
   console.log(error.message);
   // "Object validation failed: Property "age": Expected number, received string"
@@ -150,8 +150,8 @@ const nameSchema = nu.string().withMeta({
   description: "Enter your name"
 });
 
-nameSchema.parse("John"); // ✅ Returns "John"
-nameSchema.parse(123);    // ❌ Throws error
+nameSchema.toZod().parse("John"); // ✅ Returns "John"
+nameSchema.toZod().parse(123);    // ❌ Throws error
 ```
 
 #### NumberSchema
@@ -162,10 +162,10 @@ const ageSchema = nu.number().withMeta({
   defaultValue: 0
 });
 
-ageSchema.parse(25);     // ✅ Returns 25
-ageSchema.parse("25");   // ❌ Throws error
-ageSchema.parse(NaN);    // ❌ Throws error
-ageSchema.parse(Infinity); // ❌ Throws error
+ageSchema.toZod().parse(25);     // ✅ Returns 25
+ageSchema.toZod().parse("25");   // ❌ Throws error
+ageSchema.toZod().parse(NaN);    // ❌ Throws error
+ageSchema.toZod().parse(Infinity); // ❌ Throws error
 ```
 
 #### BooleanSchema
@@ -176,9 +176,9 @@ const activeSchema = nu.boolean().withMeta({
   defaultValue: true
 });
 
-activeSchema.parse(true);    // ✅ Returns true
-activeSchema.parse(false);   // ✅ Returns false
-activeSchema.parse("true");  // ❌ Throws error
+activeSchema.toZod().parse(true);    // ✅ Returns true
+activeSchema.toZod().parse(false);   // ✅ Returns false
+activeSchema.toZod().parse("true");  // ❌ Throws error
 ```
 
 ### Complex Schemas
@@ -215,10 +215,10 @@ Array schemas validate collections:
 const stringArraySchema = nu.array(nu.string());
 const userArraySchema = nu.array(userSchema);
 
-stringArraySchema.parse(["a", "b", "c"]); // ✅
-stringArraySchema.parse(["a", 123, "c"]); // ❌ Throws error
+stringArraySchema.toZod().parse(["a", "b", "c"]); // ✅
+stringArraySchema.toZod().parse(["a", 123, "c"]); // ❌ Throws error
 
-userArraySchema.parse([
+userArraySchema.toZod().parse([
   { id: 1, name: "John", address: { street: "123 Main", city: "NYC", zip: "10001" } }
 ]); // ✅
 ```
@@ -237,9 +237,9 @@ const userSchema = nu.object({
 const partialUserSchema = userSchema.partial();
 
 // All properties are now optional
-partialUserSchema.parse({}); // ✅ Returns {}
-partialUserSchema.parse({ name: "John" }); // ✅ Returns { name: "John" }
-partialUserSchema.parse({ id: 1, email: "john@example.com" }); // ✅
+partialUserSchema.toZod().parse({}); // ✅ Returns {}
+partialUserSchema.toZod().parse({ name: "John" }); // ✅ Returns { name: "John" }
+partialUserSchema.toZod().parse({ id: 1, email: "john@example.com" }); // ✅
 ```
 
 ## Computed Metadata
@@ -377,19 +377,39 @@ const finalSchema = baseUserSchema
 Convert Nubase schemas to Zod for additional validation:
 
 ```typescript
-import { toZod } from '@nubase/core';
-
 const userSchema = nu.object({
   name: nu.string(),
   age: nu.number().optional()
 });
 
-const zodSchema = toZod(userSchema);
+const zodSchema = userSchema.toZod();
 // Returns: z.ZodObject<{ name: z.ZodString; age: z.ZodOptional<z.ZodNumber>; }>
 
 // Use with existing Zod-based libraries  
 zodSchema.parse({ name: "John" }); // Works - age is optional
 zodSchema.parse({ name: "John", age: 30 }); // Also works
+```
+
+### Important: Nubase Schemas Don't Have `.parse()`
+
+Unlike Zod, **nubase schemas do not have a `.parse()` method**. Nubase schemas are primarily for:
+- Type inference
+- Form generation
+- Layout definition
+- Metadata management
+
+For validation and parsing, you must first convert to Zod:
+
+```typescript
+// ❌ This won't work - nubase schemas don't have .parse()
+userSchema.parse(data); 
+
+// ✅ This works - convert to Zod first
+userSchema.toZod().parse(data);
+
+// ✅ Or store the Zod schema for reuse
+const zodSchema = userSchema.toZod();
+zodSchema.parse(data);
 ```
 
 ## TypeScript Integration
@@ -427,7 +447,7 @@ type User = Infer<typeof userSchema>;
 // }
 
 // Type-safe parsing
-const userData = userSchema.parse(data); // userData has the correct type
+const userData = userSchema.toZod().parse(data); // userData has the correct type
 ```
 
 ### Generic Helper Types
@@ -443,7 +463,7 @@ function processObjectSchema<TShape extends ObjectShape>(
   schema: ObjectSchema<TShape>
 ): ObjectOutput<TShape> {
   // TypeScript knows the exact shape
-  return schema.parse(data);
+  return schema.toZod().parse(data);
 }
 ```
 
@@ -459,7 +479,7 @@ const userSchema = nu.object({
 });
 
 try {
-  userSchema.parse({
+  userSchema.toZod().parse({
     name: 123,           // Wrong type
     age: "thirty",       // Wrong type
     contacts: ["email", 456, "phone"] // Mixed array with wrong type

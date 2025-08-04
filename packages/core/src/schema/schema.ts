@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 // Define metadata types
 export interface SchemaMetadata<Output = any> {
   label?: string;
@@ -60,22 +62,40 @@ export abstract class BaseSchema<Output = any> {
   optional(): OptionalSchema<this> {
     return new OptionalSchema(this);
   }
+
+  /**
+   * Converts this nubase schema to a Zod schema.
+   * @returns The equivalent Zod schema.
+   */
+  abstract toZod(): z.ZodSchema<Output>;
 }
 
 // --- Primitive Schemas ---
 
 export class BooleanSchema extends BaseSchema<boolean> {
   readonly type = "boolean" as const;
+
+  toZod(): z.ZodBoolean {
+    return z.boolean();
+  }
 }
 
 export class StringSchema extends BaseSchema<string> {
   readonly type = "string" as const;
   // Add string-specific validation methods here (e.g., minLength, pattern)
+
+  toZod(): z.ZodString {
+    return z.string();
+  }
 }
 
 export class NumberSchema extends BaseSchema<number> {
   readonly type = "number" as const;
   // Add number-specific validation methods here (e.g., min, max)
+
+  toZod(): z.ZodNumber {
+    return z.number();
+  }
 }
 
 // --- Optional Schema ---
@@ -101,6 +121,10 @@ export class OptionalSchema<
    */
   unwrap(): TWrapped {
     return this._wrapped;
+  }
+
+  toZod(): z.ZodOptional<z.ZodNullable<z.ZodSchema<TWrapped["_outputType"]>>> {
+    return this._wrapped.toZod().nullable().optional();
   }
 }
 
@@ -472,6 +496,16 @@ export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
 
     return newSchema;
   }
+
+  toZod(): z.ZodSchema<PartialObjectOutput<TShape>> {
+    const zodShape: Record<string, z.ZodTypeAny> = {};
+    for (const key in this._shape) {
+      if (Object.hasOwn(this._shape, key) && this._shape[key]) {
+        zodShape[key] = this._shape[key].toZod().nullable().optional();
+      }
+    }
+    return z.object(zodShape) as z.ZodSchema<PartialObjectOutput<TShape>>;
+  }
 }
 
 export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
@@ -747,6 +781,16 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
     return partialSchema;
   }
+
+  toZod(): z.ZodSchema<ObjectOutput<TShape>> {
+    const zodShape: Record<string, z.ZodTypeAny> = {};
+    for (const key in this._shape) {
+      if (Object.hasOwn(this._shape, key) && this._shape[key]) {
+        zodShape[key] = this._shape[key].toZod();
+      }
+    }
+    return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
+  }
 }
 
 /**
@@ -765,6 +809,10 @@ export class ArraySchema<
   constructor(elementSchema: TElementSchema) {
     super();
     this._element = elementSchema;
+  }
+
+  toZod(): z.ZodArray<z.ZodSchema<TElementSchema["_outputType"]>> {
+    return z.array(this._element.toZod());
   }
 }
 

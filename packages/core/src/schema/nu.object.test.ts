@@ -2,7 +2,6 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import { nu } from "./nu";
 import type { Infer } from "./schema";
-import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - Object Types", () => {
   it("required and optional fields", () => {
@@ -20,11 +19,11 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     };
 
     // Test parsing with optional field
-    const parsed = toZod(userSchema).parse({ id: 1, name: "Andre Pena" });
+    const parsed = userSchema.toZod().parse({ id: 1, name: "Andre Pena" });
     expect(parsed).toEqual({ id: 1, name: "Andre Pena" });
 
     // Test parsing with optional field provided
-    const parsedWithOptional = toZod(userSchema).parse({
+    const parsedWithOptional = userSchema.toZod().parse({
       id: 1,
       name: "Andre Pena",
       isActive: true,
@@ -75,26 +74,26 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     });
 
     const validData = { id: 1, name: "Alice", isActive: true };
-    expect(toZod(userSchema).parse(validData)).toEqual(validData);
+    expect(userSchema.toZod().parse(validData)).toEqual(validData);
   });
 
   it("should throw error for invalid object data (wrong type)", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
-    expect(() => toZod(userSchema).parse(123)).toThrow();
-    expect(() => toZod(userSchema).parse(null)).toThrow(); // typeof null is 'object'
+    expect(() => userSchema.toZod().parse(123)).toThrow();
+    expect(() => userSchema.toZod().parse(null)).toThrow(); // typeof null is 'object'
   });
 
   it("should throw error for invalid object data (invalid property)", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
     const invalidData = { id: "one", name: "Alice" };
-    expect(() => toZod(userSchema).parse(invalidData)).toThrow();
+    expect(() => userSchema.toZod().parse(invalidData)).toThrow();
   });
 
   // Note: Current ObjectSchema parse ignores extra keys. Add a test if you change that.
   it("should ignore extra keys in object data by default", () => {
     const userSchema = nu.object({ id: nu.number(), name: nu.string() });
     const dataWithExtra = { id: 1, name: "Alice", age: 30 };
-    const parsedData = toZod(userSchema).parse(dataWithExtra);
+    const parsedData = userSchema.toZod().parse(dataWithExtra);
     expect(parsedData).toEqual({ id: 1, name: "Alice" }); // Extra 'age' is ignored
   });
 
@@ -106,7 +105,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       age: nu.number(),
     });
 
-    const zodObject = toZod(nuObject);
+    const zodObject = nuObject.toZod();
 
     expect(zodObject instanceof z.ZodObject).toBe(true);
 
@@ -132,7 +131,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       tags: nu.array(nu.string()),
     });
 
-    const nestedZodSchema = toZod(nestedNuSchema);
+    const nestedZodSchema = nestedNuSchema.toZod();
 
     // Check types in the converted Zod schema structure
     expect(nestedZodSchema instanceof z.ZodObject).toBe(true);
@@ -205,7 +204,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       name: "Test",
       settings: { theme: "dark", darkMode: false },
     };
-    const parsedUser = toZod(userSchema).parse(userData);
+    const parsedUser = userSchema.toZod().parse(userData);
     expectTypeOf(parsedUser).toMatchTypeOf<{
       id: number;
       name: string;
@@ -213,7 +212,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     }>();
 
     // This would be a TS error if types mismatched:
-    // const badParsedUser: string = toZod(userSchema).parse(userData); // TS error expected
+    // const badParsedUser: string = userSchema.toZod().parse(userData); // TS error expected
   });
 
   it("should infer correct Zod schema type after toZod conversion", () => {
@@ -221,7 +220,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       name: nu.string(),
       age: nu.number(),
     });
-    const zodObject = toZod(nuObject);
+    const zodObject = nuObject.toZod();
     expectTypeOf(zodObject).toMatchTypeOf<z.ZodObject<any>>(); // Should be a ZodObject
     expectTypeOf(zodObject._output).toMatchTypeOf<{
       name: string;
@@ -235,7 +234,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
         }),
       ),
     });
-    const zodNested = toZod(nuNested);
+    const zodNested = nuNested.toZod();
     expectTypeOf(zodNested._output).toMatchTypeOf<{
       items: Array<{ id: number }>;
     }>(); // Should infer nested type
@@ -247,7 +246,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
       optional: nu.number().optional(),
     });
 
-    const zodSchema = toZod(nuSchemaWithOptional);
+    const zodSchema = nuSchemaWithOptional.toZod();
 
     // Test that required field is required in Zod
     expect(() => zodSchema.parse({ optional: 42 })).toThrow();

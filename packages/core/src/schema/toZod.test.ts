@@ -1,13 +1,12 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import { nu } from "./nu";
-import { toZod } from "./toZod";
 
 describe("toZod converter", () => {
   describe("primitive types", () => {
     it("should convert string schema to Zod string", () => {
       const nuSchema = nu.string();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodString);
       expect(zodSchema.parse("hello")).toBe("hello");
@@ -19,7 +18,7 @@ describe("toZod converter", () => {
 
     it("should convert number schema to Zod number", () => {
       const nuSchema = nu.number();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodNumber);
       expect(zodSchema.parse(42)).toBe(42);
@@ -31,7 +30,7 @@ describe("toZod converter", () => {
 
     it("should convert boolean schema to Zod boolean", () => {
       const nuSchema = nu.boolean();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodBoolean);
       expect(zodSchema.parse(true)).toBe(true);
@@ -46,7 +45,7 @@ describe("toZod converter", () => {
   describe("optional types", () => {
     it("should convert optional string schema to Zod optional and nullable", () => {
       const nuSchema = nu.string().optional();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodOptional);
       expect(zodSchema.parse("hello")).toBe("hello");
@@ -62,7 +61,7 @@ describe("toZod converter", () => {
 
     it("should convert optional number schema to Zod optional and nullable", () => {
       const nuSchema = nu.number().optional();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodOptional);
       expect(zodSchema.parse(42)).toBe(42);
@@ -78,7 +77,7 @@ describe("toZod converter", () => {
 
     it("should convert optional boolean schema to Zod optional and nullable", () => {
       const nuSchema = nu.boolean().optional();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodOptional);
       expect(zodSchema.parse(true)).toBe(true);
@@ -97,7 +96,7 @@ describe("toZod converter", () => {
   describe("array types", () => {
     it("should convert array of strings to Zod array", () => {
       const nuSchema = nu.array(nu.string());
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodArray);
       expect(zodSchema.parse(["a", "b", "c"])).toEqual(["a", "b", "c"]);
@@ -111,7 +110,7 @@ describe("toZod converter", () => {
 
     it("should convert array of numbers to Zod array", () => {
       const nuSchema = nu.array(nu.number());
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodArray);
       expect(zodSchema.parse([1, 2, 3])).toEqual([1, 2, 3]);
@@ -124,7 +123,7 @@ describe("toZod converter", () => {
 
     it("should convert array of optional elements to Zod array", () => {
       const nuSchema = nu.array(nu.string().optional());
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodArray);
       expect(zodSchema.parse(["a", undefined, "c"])).toEqual([
@@ -143,7 +142,7 @@ describe("toZod converter", () => {
 
     it("should convert nested arrays to Zod arrays", () => {
       const nuSchema = nu.array(nu.array(nu.number()));
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodArray);
       expect(
@@ -172,7 +171,7 @@ describe("toZod converter", () => {
         name: nu.string(),
         age: nu.number(),
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -202,7 +201,7 @@ describe("toZod converter", () => {
         age: nu.number().optional(),
         active: nu.boolean().optional(),
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -255,7 +254,7 @@ describe("toZod converter", () => {
         }),
         timestamp: nu.number(),
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -289,7 +288,7 @@ describe("toZod converter", () => {
         tags: nu.array(nu.string()),
         scores: nu.array(nu.number()),
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -319,7 +318,7 @@ describe("toZod converter", () => {
           active: nu.boolean(),
         })
         .partial();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -367,7 +366,7 @@ describe("toZod converter", () => {
             .partial(),
         })
         .partial();
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -400,7 +399,7 @@ describe("toZod converter", () => {
       });
 
       const omittedSchema = baseSchema.omit("email", "age");
-      const zodSchema = toZod(omittedSchema);
+      const zodSchema = omittedSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -443,7 +442,7 @@ describe("toZod converter", () => {
         email: nu.string(),
         active: nu.boolean().optional(),
       });
-      const zodSchema = toZod(extendedSchema);
+      const zodSchema = extendedSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -495,7 +494,7 @@ describe("toZod converter", () => {
         username: nu.string(),
         role: nu.string().optional(),
       });
-      const zodSchema = toZod(modifiedSchema);
+      const zodSchema = modifiedSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -526,7 +525,7 @@ describe("toZod converter", () => {
         .partial();
 
       const omittedSchema = baseSchema.omit("email", "age");
-      const zodSchema = toZod(omittedSchema);
+      const zodSchema = omittedSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -548,7 +547,7 @@ describe("toZod converter", () => {
       });
 
       const partialSchema = baseSchema.partial();
-      const zodSchema = toZod(partialSchema);
+      const zodSchema = partialSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -572,7 +571,7 @@ describe("toZod converter", () => {
       });
 
       const createTicketSchema = ticketSchema.omit("id");
-      const zodSchema = toZod(createTicketSchema);
+      const zodSchema = createTicketSchema.toZod();
 
       // Form data with null description (common from form submissions)
       const formData = {
@@ -606,7 +605,7 @@ describe("toZod converter", () => {
         label: "Username",
         description: "The user's login name",
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       // The Zod schema should work normally
       expect(zodSchema).toBeInstanceOf(z.ZodString);
@@ -632,7 +631,7 @@ describe("toZod converter", () => {
           }),
         }),
       });
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodObject);
 
@@ -660,7 +659,7 @@ describe("toZod converter", () => {
           description: nu.string().optional(),
         }),
       );
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       expect(zodSchema).toBeInstanceOf(z.ZodArray);
 
@@ -684,9 +683,7 @@ describe("toZod converter", () => {
 
       const unsupportedSchema = new UnsupportedSchema();
 
-      expect(() => toZod(unsupportedSchema as any)).toThrow(
-        "Unsupported schema type for Zod conversion: UnsupportedSchema",
-      );
+      expect(() => (unsupportedSchema as any).toZod()).toThrow();
     });
   });
 
@@ -718,7 +715,7 @@ describe("toZod converter", () => {
         ),
       });
 
-      const zodSchema = toZod(nuSchema);
+      const zodSchema = nuSchema.toZod();
 
       // This should compile without errors, proving type inference works
       const _typeCheck: z.ZodObject<

@@ -1,29 +1,34 @@
 import { createHttpHandler } from "@nubase/backend";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import { getDb } from "../../db/helpers/drizzle";
-import { ticketsTable } from "../../db/schema/tickets";
+import { ticketsTable } from "../../db/schema/ticket";
+
+// Type-safe database types inferred from schema
+type Ticket = InferSelectModel<typeof ticketsTable>;
+type NewTicket = InferInsertModel<typeof ticketsTable>;
 
 export const handleGetTickets = createHttpHandler({
   endpoint: apiEndpoints.getTickets,
   handler: async () => {
     const db = getDb();
-    const tickets = await db.select().from(ticketsTable);
+    const tickets: Ticket[] = await db.select().from(ticketsTable);
     console.log("Fetched tickets:", tickets);
 
-    // Transform database result to match schema
-    return tickets.map((ticket) => ({
+    // Transform database result to match API schema - only return id and title
+    return tickets.map((ticket): { id: number; title: string } => ({
       id: ticket.id,
       title: ticket.title,
     }));
   },
 });
 
-export const handleGetTicketById = createHttpHandler({
+export const handleGetTicket = createHttpHandler({
   endpoint: apiEndpoints.getTicket,
   handler: async ({ params }) => {
     const db = getDb();
-    const tickets = await db
+    const tickets: Ticket[] = await db
       .select()
       .from(ticketsTable)
       .where(eq(ticketsTable.id, params.id));
@@ -32,7 +37,7 @@ export const handleGetTicketById = createHttpHandler({
       throw new Error("Ticket not found");
     }
 
-    const ticket = tickets[0];
+    const ticket: Ticket = tickets[0];
     return {
       id: ticket.id,
       title: ticket.title,
@@ -47,18 +52,22 @@ export const handlePostTicket = createHttpHandler({
     console.log("Received ticket data:", body);
     const db = getDb();
 
-    const insertData = {
+    // Type-safe insert data - only include fields that can be inserted
+    const insertData: NewTicket = {
       title: body.title,
       description: body.description,
     };
 
-    const result = await db.insert(ticketsTable).values(insertData).returning();
+    const result: Ticket[] = await db
+      .insert(ticketsTable)
+      .values(insertData)
+      .returning();
 
     if (result.length === 0) {
       throw new Error("Failed to create ticket");
     }
 
-    const createdTicket = result[0];
+    const createdTicket: Ticket = result[0];
     return {
       id: createdTicket.id,
       title: createdTicket.title,
@@ -67,17 +76,21 @@ export const handlePostTicket = createHttpHandler({
   },
 });
 
-export const handlePutTicket = createHttpHandler({
-  endpoint: apiEndpoints.putTicket,
+export const handlePatchTicket = createHttpHandler({
+  endpoint: apiEndpoints.patchTicket,
   handler: async ({ params, body }) => {
     const db = getDb();
 
-    const updateData = {
-      title: body.title,
-      description: body.description || null,
-    };
+    // Type-safe partial update - only include fields that exist and are not undefined
+    const updateData: Partial<NewTicket> = {};
+    if (body.title !== undefined) {
+      updateData.title = body.title;
+    }
+    if (body.description !== undefined) {
+      updateData.description = body.description;
+    }
 
-    const result = await db
+    const result: Ticket[] = await db
       .update(ticketsTable)
       .set(updateData)
       .where(eq(ticketsTable.id, params.id))
@@ -87,7 +100,7 @@ export const handlePutTicket = createHttpHandler({
       throw new Error("Ticket not found");
     }
 
-    const updatedTicket = result[0];
+    const updatedTicket: Ticket = result[0];
     return {
       id: updatedTicket.id,
       title: updatedTicket.title,
@@ -101,7 +114,7 @@ export const handleDeleteTicket = createHttpHandler({
   handler: async ({ params }) => {
     const db = getDb();
 
-    const result = await db
+    const result: Ticket[] = await db
       .delete(ticketsTable)
       .where(eq(ticketsTable.id, params.id))
       .returning();

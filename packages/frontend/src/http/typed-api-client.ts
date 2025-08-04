@@ -4,7 +4,6 @@ import type {
   InferResponseBody,
   RequestSchema,
 } from "@nubase/core";
-import { toZod } from "@nubase/core";
 import { ClientNetworkError } from "../utils/network-errors";
 import type {
   HttpClient,
@@ -81,7 +80,7 @@ export class TypedApiClient<T> {
 
       // Validate request body if provided
       if (data && schema.requestBody) {
-        const result = toZod(schema.requestBody).safeParse(data);
+        const result = schema.requestBody.toZod().safeParse(data);
         if (!result.success) {
           throw new ClientNetworkError(
             `Request validation failed for ${schema.method} ${path}`,
@@ -119,7 +118,7 @@ export class TypedApiClient<T> {
 
       // Validate response body
       if (schema.responseBody && response.data !== undefined) {
-        const result = toZod(schema.responseBody).safeParse(response.data);
+        const result = schema.responseBody.toZod().safeParse(response.data);
         if (!result.success) {
           throw new ClientNetworkError(
             `Response validation failed for ${schema.method} ${path}`,

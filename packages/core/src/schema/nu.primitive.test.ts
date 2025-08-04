@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import { nu } from "./nu";
-import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - Primitive Types", () => {
   // --- Basic Schema Creation and Metadata ---
@@ -36,32 +35,32 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   // --- Parse/Validation Tests ---
   it("should parse valid string data", () => {
     const stringSchema = nu.string();
-    expect(toZod(stringSchema).parse("hello")).toBe("hello");
+    expect(stringSchema.toZod().parse("hello")).toBe("hello");
   });
 
   it("should throw error for invalid string data", () => {
     const stringSchema = nu.string();
-    expect(() => toZod(stringSchema).parse(123)).toThrow();
+    expect(() => stringSchema.toZod().parse(123)).toThrow();
   });
 
   it("should parse valid number data", () => {
     const numberSchema = nu.number();
-    expect(toZod(numberSchema).parse(123)).toBe(123);
-    expect(toZod(numberSchema).parse(123.45)).toBe(123.45);
+    expect(numberSchema.toZod().parse(123)).toBe(123);
+    expect(numberSchema.toZod().parse(123.45)).toBe(123.45);
   });
 
   it("should throw error for invalid number data", () => {
     const numberSchema = nu.number();
-    expect(() => toZod(numberSchema).parse("abc")).toThrow();
-    expect(() => toZod(numberSchema).parse(Number.NaN)).toThrow();
+    expect(() => numberSchema.toZod().parse("abc")).toThrow();
+    expect(() => numberSchema.toZod().parse(Number.NaN)).toThrow();
   });
 
   it("should parse Infinity as a valid number (Zod behavior)", () => {
     const numberSchema = nu.number();
-    expect(toZod(numberSchema).parse(Number.POSITIVE_INFINITY)).toBe(
+    expect(numberSchema.toZod().parse(Number.POSITIVE_INFINITY)).toBe(
       Number.POSITIVE_INFINITY,
     );
-    expect(toZod(numberSchema).parse(Number.NEGATIVE_INFINITY)).toBe(
+    expect(numberSchema.toZod().parse(Number.NEGATIVE_INFINITY)).toBe(
       Number.NEGATIVE_INFINITY,
     );
   });
@@ -69,25 +68,25 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   it("should parse valid array data", () => {
     const stringArraySchema = nu.array(nu.string());
     const validData = ["a", "b", "c"];
-    expect(toZod(stringArraySchema).parse(validData)).toEqual(validData);
+    expect(stringArraySchema.toZod().parse(validData)).toEqual(validData);
   });
 
   it("should throw error for invalid array data (wrong type)", () => {
     const stringArraySchema = nu.array(nu.string());
-    expect(() => toZod(stringArraySchema).parse("not an array")).toThrow();
+    expect(() => stringArraySchema.toZod().parse("not an array")).toThrow();
   });
 
   it("should throw error for invalid array data (invalid element)", () => {
     const stringArraySchema = nu.array(nu.string());
     const invalidData = ["a", 123, "c"];
-    expect(() => toZod(stringArraySchema).parse(invalidData)).toThrow();
+    expect(() => stringArraySchema.toZod().parse(invalidData)).toThrow();
   });
 
   // --- toZod Conversion Tests ---
 
   it("should convert a string schema to a Zod string schema", () => {
     const nuString = nu.string();
-    const zodString = toZod(nuString);
+    const zodString = nuString.toZod();
     expect(zodString instanceof z.ZodString).toBe(true);
     // Test Zod validation
     expect(zodString.parse("test")).toBe("test");
@@ -96,7 +95,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
   it("should convert a number schema to a Zod number schema", () => {
     const nuNumber = nu.number();
-    const zodNumber = toZod(nuNumber);
+    const zodNumber = nuNumber.toZod();
     expect(zodNumber instanceof z.ZodNumber).toBe(true);
     // Test Zod validation
     expect(zodNumber.parse(123)).toBe(123);
@@ -105,7 +104,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
   it("should convert an array schema to a Zod array schema", () => {
     const nuArray = nu.array(nu.number());
-    const zodArray = toZod(nuArray);
+    const zodArray = nuArray.toZod();
     expect(zodArray instanceof z.ZodArray).toBe(true);
     expect(zodArray.element instanceof z.ZodNumber).toBe(true);
 
@@ -144,7 +143,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
     // Test that assigning parsed data is type-safe
     const numberArrayData = [1, 2, 3];
-    const parsedNumberArray = toZod(numberArraySchema).parse(numberArrayData);
+    const parsedNumberArray = numberArraySchema.toZod().parse(numberArrayData);
     expectTypeOf(parsedNumberArray).toBeArray();
     // This would be a TS error:
     // const badParsedNumberArray: string[] = parsedNumberArray; // TS error expected
@@ -152,12 +151,12 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
   it("should infer correct Zod schema type after toZod conversion", () => {
     const nuString = nu.string().withMeta({ label: "ID" });
-    const zodString = toZod(nuString);
+    const zodString = nuString.toZod();
     expectTypeOf(zodString).toMatchTypeOf<z.ZodString>(); // Should be a ZodString
     expectTypeOf(zodString._output).toBeString(); // Should infer string output
 
     const nuArray = nu.array(nu.string());
-    const zodArray = toZod(nuArray);
+    const zodArray = nuArray.toZod();
     expectTypeOf(zodArray).toMatchTypeOf<z.ZodArray<z.ZodString>>(); // Should be ZodArray of ZodString
   });
 });

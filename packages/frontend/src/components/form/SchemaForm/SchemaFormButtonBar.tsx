@@ -36,7 +36,11 @@ export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
           className={className}
           variant={variant}
         >
-          <Button type="submit" disabled={!canSubmit || isComputing}>
+          <Button
+            type="submit"
+            disabled={!canSubmit}
+            isLoading={Boolean(isSubmitting || isComputing)}
+          >
             {isSubmitting
               ? "Submitting..."
               : isComputing

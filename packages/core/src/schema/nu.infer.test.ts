@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { nu } from "./nu";
 import type { Infer } from "./schema";
-import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - Type Inference", () => {
   // --- Primitive Type Inference ---
@@ -12,7 +11,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<StringType>().toEqualTypeOf<string>();
 
-    const parsed = toZod(stringSchema).parse("hello");
+    const parsed = stringSchema.toZod().parse("hello");
     expectTypeOf(parsed).toEqualTypeOf<string>();
     expect(parsed).toBe("hello");
   });
@@ -23,7 +22,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<NumberType>().toEqualTypeOf<number>();
 
-    const parsed = toZod(numberSchema).parse(42);
+    const parsed = numberSchema.toZod().parse(42);
     expectTypeOf(parsed).toEqualTypeOf<number>();
     expect(parsed).toBe(42);
   });
@@ -34,7 +33,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<BooleanType>().toEqualTypeOf<boolean>();
 
-    const parsed = toZod(booleanSchema).parse(true);
+    const parsed = booleanSchema.toZod().parse(true);
     expectTypeOf(parsed).toEqualTypeOf<boolean>();
     expect(parsed).toBe(true);
   });
@@ -47,11 +46,11 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<OptionalStringType>().toEqualTypeOf<string | undefined>();
 
-    const parsedString = toZod(optionalStringSchema).parse("hello");
+    const parsedString = optionalStringSchema.toZod().parse("hello");
     expectTypeOf(parsedString).toEqualTypeOf<string | undefined>();
     expect(parsedString).toBe("hello");
 
-    const parsedUndefined = toZod(optionalStringSchema).parse(undefined);
+    const parsedUndefined = optionalStringSchema.toZod().parse(undefined);
     expectTypeOf(parsedUndefined).toEqualTypeOf<string | undefined>();
     expect(parsedUndefined).toBeUndefined();
   });
@@ -62,10 +61,10 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<OptionalNumberType>().toEqualTypeOf<number | undefined>();
 
-    const parsed = toZod(optionalNumberSchema).parse(42);
+    const parsed = optionalNumberSchema.toZod().parse(42);
     expect(parsed).toBe(42);
 
-    const parsedUndefined = toZod(optionalNumberSchema).parse(undefined);
+    const parsedUndefined = optionalNumberSchema.toZod().parse(undefined);
     expect(parsedUndefined).toBeUndefined();
   });
 
@@ -75,10 +74,10 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<OptionalBooleanType>().toEqualTypeOf<boolean | undefined>();
 
-    const parsed = toZod(optionalBooleanSchema).parse(false);
+    const parsed = optionalBooleanSchema.toZod().parse(false);
     expect(parsed).toBe(false);
 
-    const parsedUndefined = toZod(optionalBooleanSchema).parse(undefined);
+    const parsedUndefined = optionalBooleanSchema.toZod().parse(undefined);
     expect(parsedUndefined).toBeUndefined();
   });
 
@@ -90,7 +89,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<ArrayType>().toEqualTypeOf<string[]>();
 
-    const parsed = toZod(arraySchema).parse(["hello", "world"]);
+    const parsed = arraySchema.toZod().parse(["hello", "world"]);
     expectTypeOf(parsed).toEqualTypeOf<string[]>();
     expect(parsed).toEqual(["hello", "world"]);
   });
@@ -101,10 +100,10 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<OptionalArrayType>().toEqualTypeOf<string[] | undefined>();
 
-    const parsed = toZod(optionalArraySchema).parse(["hello"]);
+    const parsed = optionalArraySchema.toZod().parse(["hello"]);
     expect(parsed).toEqual(["hello"]);
 
-    const parsedUndefined = toZod(optionalArraySchema).parse(undefined);
+    const parsedUndefined = optionalArraySchema.toZod().parse(undefined);
     expect(parsedUndefined).toBeUndefined();
   });
 
@@ -114,11 +113,9 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<ArrayOfOptionalType>().toEqualTypeOf<(string | undefined)[]>();
 
-    const parsed = toZod(arrayOfOptionalSchema).parse([
-      "hello",
-      undefined,
-      "world",
-    ]);
+    const parsed = arrayOfOptionalSchema
+      .toZod()
+      .parse(["hello", undefined, "world"]);
     expect(parsed).toEqual(["hello", undefined, "world"]);
   });
 
@@ -139,7 +136,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
       active: boolean;
     }>();
 
-    const parsed = toZod(userSchema).parse({
+    const parsed = userSchema.toZod().parse({
       id: 1,
       name: "John",
       active: true,
@@ -176,7 +173,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
     }>();
 
     // Test with all fields
-    const fullUser = toZod(userSchema).parse({
+    const fullUser = userSchema.toZod().parse({
       id: 1,
       name: "John",
       email: "john@example.com",
@@ -191,7 +188,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
     });
 
     // Test with only required fields
-    const minimalUser = toZod(userSchema).parse({
+    const minimalUser = userSchema.toZod().parse({
       id: 1,
       name: "John",
     });
@@ -202,7 +199,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
     });
 
     // Test with some optional fields
-    const partialUser = toZod(userSchema).parse({
+    const partialUser = userSchema.toZod().parse({
       id: 1,
       name: "John",
       email: "john@example.com",
@@ -231,11 +228,11 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
     }>();
 
     // Test with empty object
-    const emptyConfig = toZod(configSchema).parse({});
+    const emptyConfig = configSchema.toZod().parse({});
     expect(emptyConfig).toEqual({});
 
     // Test with some fields
-    const partialConfig = toZod(configSchema).parse({
+    const partialConfig = configSchema.toZod().parse({
       theme: "dark",
       debug: true,
     });
@@ -279,7 +276,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
         | undefined;
     }>();
 
-    const profile = toZod(profileSchema).parse({
+    const profile = profileSchema.toZod().parse({
       user: {
         id: 1,
         name: "John",
@@ -359,7 +356,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
         | undefined;
     }>();
 
-    const response = toZod(apiResponseSchema).parse({
+    const response = apiResponseSchema.toZod().parse({
       data: [
         {
           id: 1,
@@ -395,7 +392,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
       email?: string | undefined;
     }>();
 
-    const partialUser = toZod(partialUserSchema).parse({
+    const partialUser = partialUserSchema.toZod().parse({
       name: "John",
     });
 
@@ -423,7 +420,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
       email: string;
     }>();
 
-    const publicUser = toZod(publicUserSchema).parse({
+    const publicUser = publicUserSchema.toZod().parse({
       id: 1,
       name: "John",
       email: "john@example.com",
@@ -456,7 +453,7 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
       role?: string | undefined;
     }>();
 
-    const extendedUser = toZod(extendedUserSchema).parse({
+    const extendedUser = extendedUserSchema.toZod().parse({
       id: 1,
       name: "John",
       email: "john@example.com",
@@ -511,10 +508,10 @@ describe("nubase Schema Library (nu) - Type Inference", () => {
 
     expectTypeOf<DoubleOptionalType>().toEqualTypeOf<string | undefined>();
 
-    const parsed = toZod(doubleOptionalSchema).parse("hello");
+    const parsed = doubleOptionalSchema.toZod().parse("hello");
     expect(parsed).toBe("hello");
 
-    const parsedUndefined = toZod(doubleOptionalSchema).parse(undefined);
+    const parsedUndefined = doubleOptionalSchema.toZod().parse(undefined);
     expect(parsedUndefined).toBeUndefined();
   });
 });

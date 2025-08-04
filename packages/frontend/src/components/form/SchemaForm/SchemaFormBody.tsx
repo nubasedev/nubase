@@ -9,6 +9,7 @@ import { useComputedMetadata } from "../../../hooks/useComputedMetadata";
 import { useLayout } from "../../../hooks/useLayout";
 import { Callout } from "../../callout/Callout";
 import { FormFieldRenderer } from "../FormFieldRenderer/FormFieldRenderer";
+import type { PatchResult } from "../FormFieldRenderer/PatchWrapper";
 import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
 
 export interface SchemaFormBodyProps {
@@ -115,15 +116,22 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
               };
             }
 
-            const handleFieldPatch = async (value: any) => {
+            const handleFieldPatch = async (
+              value: any,
+            ): Promise<PatchResult> => {
               if (mode === "patch" && onPatch) {
                 try {
                   await onPatch(fieldName, value);
+                  return { success: true };
                 } catch (error) {
                   console.error(`Error patching field ${fieldName}:`, error);
-                  throw error;
+                  return {
+                    success: false,
+                    errors: [`Failed to update ${fieldName}`],
+                  };
                 }
               }
+              return { success: true };
             };
 
             return (

@@ -4,7 +4,6 @@ import type {
   InferResponseBody,
   RequestSchema,
 } from "@nubase/core";
-import { toZod } from "@nubase/core";
 import type { Context } from "hono";
 
 export type TypedHandlerContext<T extends RequestSchema> = {
@@ -46,9 +45,9 @@ function createTypedHandlerInternal<T extends RequestSchema>(
       let params: InferRequestParams<T>;
       try {
         const rawParams = c.req.param();
-        params = toZod(schema.requestParams).parse(
-          rawParams,
-        ) as InferRequestParams<T>;
+        params = schema.requestParams
+          .toZod()
+          .parse(rawParams) as InferRequestParams<T>;
       } catch (error) {
         return c.json(
           {
@@ -63,7 +62,7 @@ function createTypedHandlerInternal<T extends RequestSchema>(
       let body: InferRequestBody<T>;
       try {
         const rawBody = schema.method === "GET" ? {} : await c.req.json();
-        body = toZod(schema.requestBody).parse(rawBody) as InferRequestBody<T>;
+        body = schema.requestBody.toZod().parse(rawBody) as InferRequestBody<T>;
       } catch (error) {
         return c.json(
           {
@@ -83,7 +82,7 @@ function createTypedHandlerInternal<T extends RequestSchema>(
 
       // Validate response body (optional, for development safety)
       try {
-        const validatedResult = toZod(schema.responseBody).parse(result);
+        const validatedResult = schema.responseBody.toZod().parse(result);
 
         // Return appropriate status code based on method
         const statusCode = schema.method === "POST" ? 201 : 200;

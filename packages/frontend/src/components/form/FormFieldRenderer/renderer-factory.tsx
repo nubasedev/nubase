@@ -4,7 +4,7 @@ import {
   editFieldRenderers,
   unsupportedRenderer,
 } from "./edit-field-renderers";
-import { PatchWrapper } from "./PatchWrapper";
+import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 import {
   unsupportedViewRenderer,
   viewFieldRenderers,
@@ -26,7 +26,7 @@ export interface FormFieldRendererContext {
 export interface PatchContext extends FormFieldRendererContext {
   isPatching: boolean;
   onStartPatch: () => void;
-  onApplyPatch: () => Promise<void>;
+  onApplyPatch: () => Promise<PatchResult>;
   onCancelPatch: () => void;
   editFieldLifecycle?: EditFieldLifecycle;
 }
@@ -61,9 +61,9 @@ export const createPatchRenderer = (context: PatchContext) => {
     <PatchWrapper
       isEditing={context.isPatching}
       onStartEdit={context.onStartPatch}
-      onApply={context.onApplyPatch}
+      onPatch={context.onApplyPatch}
       onCancel={context.onCancelPatch}
-      editComponent={editResult.element}
+      editComponent={(_errors) => editResult.element}
       editFieldLifecycle={editResult.lifecycle}
       id={context.fieldState.name}
     >

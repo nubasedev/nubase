@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { IconFolder, IconMail, IconSettings } from "@tabler/icons-react";
+import { useState } from "react";
+import { showToast } from "../../floating/toast";
 import { Button } from "./Button";
 
 const meta: Meta<typeof Button> = {
@@ -13,6 +15,10 @@ const meta: Meta<typeof Button> = {
     variant: {
       control: { type: "select" },
       options: ["primary", "secondary", "danger"],
+    },
+    isLoading: {
+      control: "boolean",
+      description: "Shows loading indicator and disables the button",
     },
   },
 };
@@ -41,6 +47,7 @@ export const States: Story = {
     <div className="flex gap-4 flex-wrap">
       <Button>Normal</Button>
       <Button disabled>Disabled</Button>
+      <Button isLoading>Loading</Button>
     </div>
   ),
 };
@@ -62,4 +69,102 @@ export const WithIcons: Story = {
       </Button>
     </div>
   ),
+};
+
+export const LoadingStates: Story = {
+  render: () => (
+    <div className="flex gap-4 flex-wrap">
+      <Button isLoading variant="primary">
+        Saving...
+      </Button>
+      <Button isLoading variant="secondary">
+        Loading...
+      </Button>
+      <Button isLoading variant="danger">
+        Deleting...
+      </Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Loading states for all button variants. The button is automatically disabled when loading.",
+      },
+    },
+  },
+};
+
+export const InteractiveLoading: Story = {
+  render: () => {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleClick = async () => {
+      setIsLoading(true);
+      showToast("Processing request...", "info");
+
+      // Simulate async operation
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      setIsLoading(false);
+      showToast("Operation completed!", "success");
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="flex gap-4">
+          <Button isLoading={isLoading} onClick={handleClick}>
+            {isLoading ? "Processing..." : "Start Process"}
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => setIsLoading(!isLoading)}
+            disabled={isLoading}
+          >
+            Toggle Loading
+          </Button>
+        </div>
+
+        <p className="text-sm text-onSurfaceVariant">
+          Click "Start Process" to see a 2-second loading simulation
+        </p>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Interactive example showing how to use the isLoading prop with async operations.",
+      },
+    },
+  },
+};
+
+export const LoadingWithIcons: Story = {
+  render: () => (
+    <div className="flex gap-4 flex-wrap">
+      <Button isLoading>
+        <IconMail size={16} />
+        Sending Email...
+      </Button>
+      <Button isLoading variant="secondary">
+        <IconFolder size={16} />
+        Saving File...
+      </Button>
+      <Button isLoading variant="danger">
+        <IconSettings size={16} />
+        Updating Settings...
+      </Button>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Loading states with icons. The activity indicator appears before the existing content.",
+      },
+    },
+  },
 };

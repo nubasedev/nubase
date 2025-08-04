@@ -9,16 +9,16 @@ export type ViewBase = {
   id: string;
 };
 
-export type CreateView<
+export type ResourceCreateView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
 > = ViewBase & {
-  type: "create";
+  type: "resource-create";
   schema: TSchema;
   /**
    * Creates a new resource.
    */
-  createResource: ({
+  onSubmit: ({
     data,
     context,
   }: {
@@ -27,13 +27,27 @@ export type CreateView<
   }) => Promise<HttpResponse<any>>;
 };
 
-export type ViewView<TSchema extends ObjectSchema<any> = ObjectSchema<any>> =
-  ViewBase & {
-    type: "view";
-    schema: TSchema;
-  };
+export type ResourceViewView<
+  TSchema extends ObjectSchema<any> = ObjectSchema<any>,
+  TApiEndpoints = any,
+> = ViewBase & {
+  type: "resource-view";
+  schema: TSchema;
+  /**
+   * Patches a resource with partial data.
+   */
+  onPatch: ({
+    data,
+    context,
+  }: {
+    data: Partial<Infer<TSchema>>;
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<any>>;
+};
 
 export type View<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
-> = CreateView<TSchema, TApiEndpoints> | ViewView<TSchema>;
+> =
+  | ResourceCreateView<TSchema, TApiEndpoints>
+  | ResourceViewView<TSchema, TApiEndpoints>;

@@ -40,8 +40,8 @@ export const postTicketSchema = {
   responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 
-export const putTicketSchema = {
-  method: "PUT" as const,
+export const patchTicketSchema = {
+  method: "PATCH" as const,
   path: "/tickets/:id",
   requestParams: ticketIdParamsSchema,
   requestBody: ticketBaseSchema.omit("id"),

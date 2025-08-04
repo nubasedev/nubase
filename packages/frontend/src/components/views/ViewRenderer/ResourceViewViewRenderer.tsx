@@ -1,19 +1,21 @@
 import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
-import type { CreateView } from "../../../config/view";
+import type { ResourceCreateView } from "../../../config/view";
 import { useSchemaForm } from "../../../hooks";
 import { SchemaForm } from "../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
 import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 
-export type CreateViewRendererProps = {
-  view: CreateView;
+export type ResourceViewViewRendererProps = {
+  view: ResourceCreateView;
   onCreate?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
 };
 
-export const CreateViewRenderer: FC<CreateViewRendererProps> = (props) => {
+export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
+  props,
+) => {
   const { view, onCreate, onError } = props;
   const context = useNubaseContext();
 
@@ -21,7 +23,7 @@ export const CreateViewRenderer: FC<CreateViewRendererProps> = (props) => {
     schema: view.schema,
     onSubmit: async (data: ObjectOutput<any>) => {
       try {
-        const result = await view.createResource({
+        const result = await view.onSubmit({
           data,
           context,
         });

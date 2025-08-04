@@ -42,12 +42,12 @@ In Nubase, you define your application as a collection of schema and business lo
 
 ## How does a Nubase app look like?
 
-A Nubase app is basically a Vite app that renders a single top-level React component, the `NubaseApplication` component.
+A Nubase app is basically a Vite app that renders a single top-level React component, the `NubaseApp` component.
 
 It looks like:
 
 ```tsx
-<NubaseApplication config={config}>
+<NubaseApp config={config} />
 ```
 
 ## FAQ

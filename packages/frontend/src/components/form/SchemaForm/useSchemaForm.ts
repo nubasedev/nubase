@@ -5,7 +5,6 @@ import {
   NumberSchema,
   type ObjectSchema,
   OptionalSchema,
-  toZod,
 } from "@nubase/core";
 import { type ReactFormExtendedApi, useForm } from "@tanstack/react-form";
 import { useMemo, useState } from "react";
@@ -67,7 +66,7 @@ function processFormData(
   schema: ObjectSchema<any>,
 ): Record<string, any> {
   // First, validate the raw values with the schema
-  const validatedValues = toZod(schema).parse(values);
+  const validatedValues = schema.toZod().parse(values);
 
   // Then apply transformations to the validated data
   const processedValues = transformEmptyToNull(validatedValues, schema);

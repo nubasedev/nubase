@@ -2,11 +2,11 @@ import {
   IconAlertTriangle,
   IconCheck,
   IconInfoCircle,
-  IconLoader2,
   IconX,
 } from "@tabler/icons-react";
 import type { FC } from "react";
 import { cn } from "../../../utils";
+import { ActivityIndicator } from "../../activity-indicator";
 import { Button } from "../../buttons/Button/Button";
 import type { ToastData } from "./types";
 
@@ -44,7 +44,7 @@ const typeConfig = {
 
 export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
   const config = typeConfig[toast.type];
-  const Icon = toast.promise ? IconLoader2 : config.icon;
+  const Icon = config.icon;
 
   return (
     <div
@@ -54,13 +54,15 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
         config.className,
       )}
     >
-      {Icon && (
-        <Icon
-          className={cn(
-            "h-5 w-5 flex-shrink-0",
-            toast.promise && "animate-spin",
-          )}
+      {toast.promise ? (
+        <ActivityIndicator
+          size="md"
+          color="inherit"
+          aria-label="Loading"
+          className="flex-shrink-0"
         />
+      ) : (
+        Icon && <Icon className="h-5 w-5 flex-shrink-0" />
       )}
 
       <div className="flex-1 text-sm">

@@ -1,6 +1,6 @@
 import type { NubaseFrontendConfig } from "@nubase/frontend";
 import { apiEndpoints } from "questlog-schema";
-import { mainMenu } from "./main-menu";
+import { mainMenu } from "../main-menu";
 import { ticketResource } from "./resources/ticket";
 import { createTicketView } from "./views/create-ticket";
 

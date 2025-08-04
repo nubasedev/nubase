@@ -4,6 +4,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { useState } from "react";
 import { showToast } from "../../floating/toast";
 import { FormFieldRenderer } from "./FormFieldRenderer";
+import type { PatchResult } from "./PatchWrapper";
 
 // Mock factory to create field objects that satisfy AnyFieldApi interface
 // Uses 'unknown' conversion to bypass strict type checking for stories
@@ -169,9 +170,10 @@ export const StringFieldPatch: Story = {
       handleBlur: () => console.log("String field blurred"),
     });
 
-    const handlePatch = async (newValue: any) => {
+    const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast(`Updated text to: ${newValue}`, "success");
+      return { success: true };
     };
 
     return (
@@ -309,9 +311,10 @@ export const NumberFieldPatch: Story = {
       handleBlur: () => console.log("Number field blurred"),
     });
 
-    const handlePatch = async (newValue: any) => {
+    const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast(`Updated number to: ${newValue}`, "success");
+      return { success: true };
     };
 
     return (
@@ -447,9 +450,10 @@ export const BooleanFieldPatch: Story = {
       handleBlur: () => console.log("Boolean field blurred"),
     });
 
-    const handlePatch = async (newValue: any) => {
+    const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast(`Updated boolean to: ${newValue}`, "success");
+      return { success: true };
     };
 
     return (
@@ -594,10 +598,11 @@ export const UnsupportedFieldPatch: Story = {
       handleBlur: () => {},
     });
 
-    const handlePatch = async (_newValue: any) => {
+    const handlePatch = async (_newValue: any): Promise<PatchResult> => {
       // This won't actually be called since unsupported fields can't be edited
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast(`This should not happen`, "error");
+      return { success: true };
     };
 
     return (

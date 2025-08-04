@@ -1,6 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { nu } from "./nu";
-import { toZod } from "./toZod";
 
 describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
   const baseObjectSchema = nu
@@ -141,7 +140,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         },
       };
 
-      const parsed = toZod(omittedSchema).parse(validData);
+      const parsed = omittedSchema.toZod().parse(validData);
       expect(parsed).toEqual(validData);
     });
 
@@ -265,7 +264,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         isActive: true,
       };
 
-      const parsed = toZod(extendedSchema).parse(validData);
+      const parsed = extendedSchema.toZod().parse(validData);
       expect(parsed).toEqual(validData);
     });
 
@@ -322,7 +321,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         },
       };
 
-      const parsed = toZod(extendedSchema).parse(validData);
+      const parsed = extendedSchema.toZod().parse(validData);
       expect(parsed).toEqual(validData);
     });
   });
@@ -393,7 +392,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         department: "Engineering",
       };
 
-      const parsed = toZod(modifiedSchema).parse(validData);
+      const parsed = modifiedSchema.toZod().parse(validData);
       expect(parsed).toEqual(validData);
     });
   });

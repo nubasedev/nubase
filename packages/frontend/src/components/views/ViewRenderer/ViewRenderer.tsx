@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import type { View } from "../../../config/view";
-import { CreateViewRenderer } from "./CreateViewRenderer";
+import { ResourceCreateViewRenderer } from "./ResourceCreateViewRenderer";
 
 export type ViewRendererProps = {
   view: View;
@@ -10,8 +10,8 @@ export const ViewRenderer: FC<ViewRendererProps> = (props) => {
   const { view } = props;
 
   switch (view.type) {
-    case "create":
-      return <CreateViewRenderer view={view} />;
+    case "resource-create":
+      return <ResourceCreateViewRenderer view={view} />;
     default:
       return null;
   }
