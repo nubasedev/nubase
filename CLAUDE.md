@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## About
+
+This project, Nubase, is highly-opinionated full-stack framework for creating internal tools and business
+applications. It's extremely opinionated. Meaning, amongst other things, it expects things to be in very particular locations.
+The main proposition of Nubase is that it's configuration based. 
+As an example: the "example" folder contains 3 projects
+
+example/questlog-backend
+example/questlog-frontend
+example/questlog-schema
+
+The schema is defined in example/questlog-schema and both the frontend and backend use this common schema to configure itself.
+
 ## Development Commands
 
 ### Build, Development and Code quality
@@ -94,6 +107,44 @@ The core package implements a schema system with these key concepts:
 3. **Complex Schemas** - ObjectSchema for object validation with computed metadata and layout support
 4. **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
 5. **Computed Metadata** - Async functions that compute metadata based on form data
+6. **URL Parameter Coercion** - Built-in system for converting string URL parameters to typed values
+
+#### URL Parameter Coercion System
+
+**The Problem:**
+URL parameters always arrive as strings (e.g., `?id=37` gives `id: "37"`), but schemas expect typed values (numbers, booleans).
+
+**The Solution:**
+ObjectSchema provides a `toZodWithCoercion()` method that leverages Zod's built-in coercion to automatically convert string values to expected types:
+
+```typescript
+const paramsSchema = nu.object({
+  id: nu.number(),
+  active: nu.boolean(),
+  name: nu.string(),
+});
+
+// Use toZodWithCoercion() for URL parameter parsing
+const coercionSchema = paramsSchema.toZodWithCoercion();
+const result = coercionSchema.parse({ id: "37", active: "true", name: "test" });
+// Result: { id: 37, active: true, name: "test" }
+```
+
+**Type Conversions:**
+- `"37"` → `37` (string to number)
+- `"true"/"false"` → `true`/`false` (string to boolean)
+- `"1"/"0"` → `true`/`false` (string to boolean, Zod's coerce.boolean behavior)
+- `"hello"` → `"hello"` (string remains unchanged)
+
+**Usage in Nubase:**
+- **Frontend:** `resource-screen.tsx` uses `toZodWithCoercion()` to parse URL search parameters
+- **Backend:** `typed-handlers.ts` uses `toZodWithCoercion()` to parse URL path parameters
+- **Static Typing:** The coerced schema maintains the same TypeScript output type as the original schema
+
+**Example Use Cases:**
+- Resource view URLs: `/r/ticket/view?id=37` → `{ id: 37 }`
+- API endpoints: `/tickets/:id` with `id: "42"` → `{ id: 42 }`
+- Query parameters: `?page=2&active=true` → `{ page: 2, active: true }`
 
 ### Configuration System Architecture
 
@@ -513,3 +564,39 @@ return (
 ```
 
 Use your best judgment - extract to named functions when handlers become complex, contain multiple operations, or exceed reasonable inline length.
+
+## URL Parameter Type Coercion
+
+### Important Technical Detail
+
+**URL parameters always arrive as strings**, but Nubase schemas often expect typed values (numbers, booleans). Both frontend and backend have automatic type coercion to handle this:
+
+### Frontend (Search Params)
+The router automatically coerces URL search params (`?id=37`) before schema validation:
+- `"37"` → `37` (number)
+- `"true"` → `true` (boolean)
+- Strings remain as strings
+
+### Backend (Path Params) 
+The `createHttpHandler` automatically coerces URL path params (`/tickets/37`) before schema validation using the same logic.
+
+### Example
+```typescript
+// Schema expects number
+const paramsSchema = nu.object({
+  id: nu.number(), // Schema expects number
+});
+
+// URL: /r/ticket/view?id=37
+// Raw param: { id: "37" }      ← String from URL
+// Coerced: { id: 37 }          ← Number for schema
+// Validated: ✅ passes schema validation
+```
+
+### Why This Matters
+Without coercion, you'd get validation errors like:
+```
+400 Bad Request: Expected number, received string
+```
+
+The coercion is automatic and transparent - just define your schemas with the correct types and the system handles URL string conversion.

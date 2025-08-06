@@ -1,19 +1,40 @@
+import { nu } from "@nubase/core";
 import { createViewView } from "@nubase/frontend";
 import { type apiEndpoints, patchTicketSchema } from "questlog-schema";
 
 export const viewTicketViewSchema = patchTicketSchema.requestBody;
 
+// Define the parameters schema for this view
+export const viewTicketParamsSchema = nu.object({
+  id: nu.number(), // Fields are required by default in Nubase
+});
+
 export const viewTicketView = createViewView<
   typeof viewTicketViewSchema,
-  typeof apiEndpoints
+  typeof apiEndpoints,
+  typeof viewTicketParamsSchema
 >({
   id: "view-ticket",
   title: "View Ticket",
   schema: viewTicketViewSchema,
+  schemaParams: viewTicketParamsSchema,
+  onLoad: async ({ context }) => {
+    // Load the ticket data using the ID from params
+    const ticketId = context.params.id;
+
+    const response = await context.http.getTicket({
+      params: { id: ticketId },
+    });
+
+    console.info("Ticket loaded successfully:", response.data);
+
+    // Return the response which contains the ticket data
+    // The data will be used to populate the form
+    return response;
+  },
   onPatch: async ({ data, context }) => {
-    // Note: In a real implementation, you would need to get the ticket ID
-    // from somewhere (e.g., route params, context, or props)
-    const ticketId = 1; // This should be dynamic based on the ticket being viewed
+    // Now we can access the statically typed params from context
+    const ticketId = context.params.id; // This is now type-safe!
 
     const response = await context.http.patchTicket({
       params: { id: ticketId },
@@ -21,6 +42,7 @@ export const viewTicketView = createViewView<
     });
     console.info("Ticket patched successfully:", response.data);
     console.info("App context available:", context.config.appName);
+    console.info("Ticket ID from params:", ticketId);
     return response;
   },
 });

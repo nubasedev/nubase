@@ -12,9 +12,14 @@ export type ViewBase = {
 export type ResourceCreateView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = ViewBase & {
   type: "resource-create";
   schema: TSchema;
+  /**
+   * Optional schema for URL parameters this view expects.
+   */
+  schemaParams?: TParamsSchema;
   /**
    * Creates a new resource.
    */
@@ -23,16 +28,29 @@ export type ResourceCreateView<
     context,
   }: {
     data: Infer<TSchema>;
-    context: NubaseContextData<TApiEndpoints>;
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
 };
 
 export type ResourceViewView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = ViewBase & {
   type: "resource-view";
   schema: TSchema;
+  /**
+   * Optional schema for URL parameters this view expects.
+   */
+  schemaParams?: TParamsSchema;
+  /**
+   * Loads the resource data.
+   */
+  onLoad: ({
+    context,
+  }: {
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<Infer<TSchema>>>;
   /**
    * Patches a resource with partial data.
    */
@@ -41,13 +59,14 @@ export type ResourceViewView<
     context,
   }: {
     data: Partial<Infer<TSchema>>;
-    context: NubaseContextData<TApiEndpoints>;
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
 };
 
 export type View<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > =
-  | ResourceCreateView<TSchema, TApiEndpoints>
-  | ResourceViewView<TSchema, TApiEndpoints>;
+  | ResourceCreateView<TSchema, TApiEndpoints, TParamsSchema>
+  | ResourceViewView<TSchema, TApiEndpoints, TParamsSchema>;

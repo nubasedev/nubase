@@ -10,28 +10,32 @@ import type { ResourceCreateView, ResourceViewView } from "./view";
 export function createCreateView<
   TSchema extends ObjectSchema<any>,
   TEndpoints,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 >({
   id,
   title,
   schema,
+  schemaParams,
   onSubmit,
 }: {
   id: string;
   title: string;
   schema: TSchema;
+  schemaParams?: TParamsSchema;
   onSubmit: ({
     data,
     context,
   }: {
     data: Infer<TSchema>;
-    context: NubaseContextData<TEndpoints>;
+    context: NubaseContextData<TEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
-}): ResourceCreateView<TSchema, TEndpoints> {
+}): ResourceCreateView<TSchema, TEndpoints, TParamsSchema> {
   return {
     type: "resource-create",
     id,
     title,
     schema,
+    ...(schemaParams && { schemaParams }),
     onSubmit,
   };
 }
@@ -40,28 +44,42 @@ export function createCreateView<
  * Factory function to create a ResourceViewView with type inference.
  * Eliminates redundancy by inferring schema and API client types from parameters.
  */
-export function createViewView<TSchema extends ObjectSchema<any>, TEndpoints>({
+export function createViewView<
+  TSchema extends ObjectSchema<any>,
+  TEndpoints,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
+>({
   id,
   title,
   schema,
+  schemaParams,
+  onLoad,
   onPatch,
 }: {
   id: string;
   title: string;
   schema: TSchema;
+  schemaParams?: TParamsSchema;
+  onLoad: ({
+    context,
+  }: {
+    context: NubaseContextData<TEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<Infer<TSchema>>>;
   onPatch: ({
     data,
     context,
   }: {
     data: Partial<Infer<TSchema>>;
-    context: NubaseContextData<TEndpoints>;
+    context: NubaseContextData<TEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
-}): ResourceViewView<TSchema, TEndpoints> {
+}): ResourceViewView<TSchema, TEndpoints, TParamsSchema> {
   return {
     type: "resource-view",
     id,
     title,
     schema,
+    ...(schemaParams && { schemaParams }),
+    onLoad,
     onPatch,
   };
 }

@@ -1,3 +1,4 @@
+import type { Infer, ObjectSchema } from "@nubase/core";
 import type { AnyRouter } from "@tanstack/react-router";
 import type { CommandRegistry, Keybinding } from "../commands/types";
 import type { UseModalResult } from "../components/floating/modal";
@@ -5,7 +6,10 @@ import type { NubaseFrontendConfig } from "../config/nubase-frontend-config";
 import type { TypedApiClientFromEndpoints } from "../http/api-client-factory";
 import type { NubaseTheme } from "../theming/theme";
 
-export interface NubaseContextData<TApiEndpoints = any> {
+export interface NubaseContextData<
+  TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
+> {
   config: NubaseFrontendConfig<TApiEndpoints>;
   commands: CommandRegistry;
   keybindings: Keybinding[];
@@ -22,4 +26,11 @@ export interface NubaseContextData<TApiEndpoints = any> {
     setActiveThemeId: (themeId: string) => void;
   };
   router: AnyRouter;
+  /**
+   * URL parameters extracted and validated against the view's schemaParams.
+   * Only present when the view defines a schemaParams.
+   */
+  params: TParamsSchema extends ObjectSchema<any>
+    ? Infer<TParamsSchema>
+    : undefined;
 }

@@ -125,6 +125,7 @@ export function useCreateNubaseContext({
         },
       },
       router,
+      params: undefined,
     };
 
     return nubaseContextDataInternal;

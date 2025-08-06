@@ -791,6 +791,67 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     }
     return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
   }
+
+  /**
+   * Returns a Zod schema with URL coercion enabled.
+   * This automatically converts string values from URL parameters to the expected types:
+   * - "37" → 37 (number)
+   * - "true" → true (boolean)
+   * - "hello" → "hello" (string, unchanged)
+   *
+   * Use this when parsing URL search params that arrive as strings but need to be typed.
+   *
+   * @returns A Zod schema with coercion for URL parameter parsing
+   */
+  toZodWithCoercion(): z.ZodSchema<ObjectOutput<TShape>> {
+    const zodShape: Record<string, z.ZodTypeAny> = {};
+    for (const key in this._shape) {
+      if (Object.hasOwn(this._shape, key) && this._shape[key]) {
+        const fieldSchema = this._shape[key];
+        const baseZodSchema = fieldSchema.toZod();
+
+        // Apply coercion based on the field's type
+        const wrappedType =
+          fieldSchema.type === "optional"
+            ? (fieldSchema as OptionalSchema<any>)._wrapped.type
+            : null;
+
+        if (fieldSchema.type === "number" || wrappedType === "number") {
+          const coercedSchema = z.coerce.number();
+          // For optional fields, preserve the optional nature
+          if (fieldSchema.type === "optional") {
+            zodShape[key] = coercedSchema.nullable().optional();
+          } else {
+            zodShape[key] = coercedSchema;
+          }
+        } else if (
+          fieldSchema.type === "boolean" ||
+          wrappedType === "boolean"
+        ) {
+          // Custom boolean coercion that properly handles "false" and "true" strings
+          const customBooleanCoercion = z.preprocess((val) => {
+            if (typeof val === "string") {
+              const lower = val.toLowerCase();
+              if (lower === "true" || lower === "1") return true;
+              if (lower === "false" || lower === "0") return false;
+            }
+            return val;
+          }, z.boolean());
+
+          // For optional fields, preserve the optional nature
+          if (fieldSchema.type === "optional") {
+            zodShape[key] = customBooleanCoercion.nullable().optional();
+          } else {
+            zodShape[key] = customBooleanCoercion;
+          }
+        } else {
+          // For strings and other types, use the original schema
+          zodShape[key] = baseZodSchema;
+        }
+      }
+    }
+    return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
+  }
 }
 
 /**

@@ -32,7 +32,7 @@
     "build:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css",
     "build:storybook": "storybook build",
     "build": "npm run build:ts && npm run build:css",
-    "test": "vitest",
+    "test": "vitest run --passWithNoTests",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",

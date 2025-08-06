@@ -6,6 +6,23 @@ import type {
 } from "@nubase/core";
 import type { Context } from "hono";
 
+/**
+ * URL Parameter Coercion System (Backend)
+ *
+ * **The Problem:**
+ * URL path parameters always arrive as strings from HTTP requests,
+ * but schemas expect typed values (numbers, booleans).
+ *
+ * **The Solution:**
+ * We use the schema's `toZodWithCoercion()` method which leverages Zod's
+ * built-in coercion to automatically convert string values to expected types.
+ *
+ * **Example:**
+ * - URL: `/tickets/37` → params: { id: "37" }
+ * - Schema expects: { id: number }
+ * - toZodWithCoercion() converts: { id: 37 }
+ */
+
 export type TypedHandlerContext<T extends RequestSchema> = {
   params: InferRequestParams<T>;
   body: InferRequestBody<T>;
@@ -41,12 +58,14 @@ function createTypedHandlerInternal<T extends RequestSchema>(
 ) {
   return async (c: Context) => {
     try {
-      // Parse and validate request parameters
+      // Parse and validate request parameters using schema's built-in coercion
       let params: InferRequestParams<T>;
       try {
         const rawParams = c.req.param();
+
+        // Use toZodWithCoercion() to automatically convert string params to expected types
         params = schema.requestParams
-          .toZod()
+          .toZodWithCoercion()
           .parse(rawParams) as InferRequestParams<T>;
       } catch (error) {
         return c.json(

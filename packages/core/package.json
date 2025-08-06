@@ -27,7 +27,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsup",
-    "test": "vitest",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",

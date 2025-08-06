@@ -823,4 +823,247 @@ describe("toZod converter", () => {
       expect(_typeCheck).toBeDefined();
     });
   });
+
+  describe("URL coercion", () => {
+    describe("toZodWithCoercion method", () => {
+      it("should coerce string numbers to numbers", () => {
+        const nuSchema = nu.object({
+          id: nu.number(),
+          name: nu.string(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // String number should be coerced to number
+        expect(coercionSchema.parse({ id: "37", name: "test" })).toEqual({
+          id: 37,
+          name: "test",
+        });
+
+        // Already correct types should pass through
+        expect(coercionSchema.parse({ id: 37, name: "test" })).toEqual({
+          id: 37,
+          name: "test",
+        });
+
+        // Invalid number strings should fail
+        expect(() =>
+          coercionSchema.parse({ id: "invalid", name: "test" }),
+        ).toThrow();
+      });
+
+      it("should coerce string booleans to booleans", () => {
+        const nuSchema = nu.object({
+          active: nu.boolean(),
+          name: nu.string(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // String booleans should be coerced
+        expect(coercionSchema.parse({ active: "true", name: "test" })).toEqual({
+          active: true,
+          name: "test",
+        });
+        // Custom boolean coercion properly handles "false" string
+        expect(coercionSchema.parse({ active: "false", name: "test" })).toEqual(
+          {
+            active: false,
+            name: "test",
+          },
+        );
+
+        // Already correct types should pass through
+        expect(coercionSchema.parse({ active: true, name: "test" })).toEqual({
+          active: true,
+          name: "test",
+        });
+
+        // Numbers as strings should be coerced properly
+        expect(coercionSchema.parse({ active: "1", name: "test" })).toEqual({
+          active: true,
+          name: "test",
+        });
+        expect(coercionSchema.parse({ active: "0", name: "test" })).toEqual({
+          active: false,
+          name: "test",
+        });
+      });
+
+      it("should handle mixed types correctly", () => {
+        const nuSchema = nu.object({
+          id: nu.number(),
+          active: nu.boolean(),
+          name: nu.string(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // URL params scenario: all come as strings
+        const urlParamsData = {
+          id: "42",
+          active: "true",
+          name: "test-item",
+        };
+
+        expect(coercionSchema.parse(urlParamsData)).toEqual({
+          id: 42,
+          active: true,
+          name: "test-item",
+        });
+      });
+
+      it("should handle optional fields with coercion", () => {
+        const nuSchema = nu.object({
+          id: nu.number(),
+          count: nu.number().optional(),
+          active: nu.boolean().optional(),
+          name: nu.string(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // With optional fields present as strings
+        expect(
+          coercionSchema.parse({
+            id: "1",
+            count: "5",
+            active: "true",
+            name: "test",
+          }),
+        ).toEqual({
+          id: 1,
+          count: 5,
+          active: true,
+          name: "test",
+        });
+
+        // With optional fields missing
+        expect(coercionSchema.parse({ id: "1", name: "test" })).toEqual({
+          id: 1,
+          name: "test",
+        });
+
+        // With optional fields as null/undefined
+        expect(
+          coercionSchema.parse({
+            id: "1",
+            count: null,
+            active: undefined,
+            name: "test",
+          }),
+        ).toEqual({
+          id: 1,
+          count: null,
+          active: undefined,
+          name: "test",
+        });
+      });
+
+      it("should not affect strings - they remain unchanged", () => {
+        const nuSchema = nu.object({
+          id: nu.string(),
+          description: nu.string().optional(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        expect(
+          coercionSchema.parse({ id: "123", description: "test" }),
+        ).toEqual({
+          id: "123",
+          description: "test",
+        });
+
+        // Numbers and booleans as strings should remain strings for string fields
+        expect(coercionSchema.parse({ id: "true" })).toEqual({
+          id: "true",
+        });
+      });
+
+      it("should handle real URL parameter scenario", () => {
+        // Simulate a typical resource view URL parameter schema
+        const viewTicketParamsSchema = nu.object({
+          id: nu.number(),
+        });
+
+        const coercionSchema = viewTicketParamsSchema.toZodWithCoercion();
+
+        // URL: /r/ticket/view?id=37
+        // URLSearchParams would give us: { id: "37" }
+        const urlParams = { id: "37" };
+
+        const result = coercionSchema.parse(urlParams);
+        expect(result).toEqual({ id: 37 });
+        expect(typeof result.id).toBe("number");
+      });
+
+      it("should maintain static typing", () => {
+        const nuSchema = nu.object({
+          id: nu.number(),
+          active: nu.boolean(),
+          name: nu.string(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // This should have the same output type as the original schema
+        expectTypeOf(coercionSchema).toEqualTypeOf<
+          z.ZodSchema<{
+            id: number;
+            active: boolean;
+            name: string;
+          }>
+        >();
+      });
+
+      it("should handle validation errors appropriately", () => {
+        const nuSchema = nu.object({
+          id: nu.number(),
+          active: nu.boolean(),
+        });
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // Missing required field should still fail
+        expect(() => coercionSchema.parse({ id: "1" })).toThrow();
+
+        // Invalid coercion should fail
+        expect(() =>
+          coercionSchema.parse({
+            id: "not-a-number",
+            active: "true",
+          }),
+        ).toThrow();
+      });
+
+      it("should work with complex nested structures", () => {
+        const nuSchema = nu.object({
+          user: nu.object({
+            id: nu.number(),
+            active: nu.boolean(),
+          }),
+          count: nu.number().optional(),
+        });
+
+        // Note: toZodWithCoercion is applied to the root object schema
+        // Nested objects would need their own coercion if needed
+        // For URL params, we typically only coerce at the top level
+        const coercionSchema = nuSchema.toZodWithCoercion();
+
+        // This would not coerce nested object fields, which is expected
+        // URL params are typically flat: ?userId=1&userActive=true&count=5
+        expect(() =>
+          coercionSchema.parse({
+            user: { id: "1", active: "true" },
+            count: "5",
+          }),
+        ).toThrow(); // Because nested user fields aren't coerced
+
+        // But top-level coercion works
+        expect(
+          coercionSchema.parse({
+            user: { id: 1, active: true },
+            count: "5",
+          }),
+        ).toEqual({
+          user: { id: 1, active: true },
+          count: 5,
+        });
+      });
+    });
+  });
 });

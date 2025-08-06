@@ -4,7 +4,9 @@ import type { View } from "./view";
  * Represents an operation that can be performed on a resource.
  * For now, each operation references a view, but can be extended with more properties.
  */
-export type ResourceOperation<TView extends View<any, any> = View<any, any>> = {
+export type ResourceOperation<
+  TView extends View<any, any, any> = View<any, any, any>,
+> = {
   view: TView;
 };
 
