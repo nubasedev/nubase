@@ -4,9 +4,11 @@
   "scripts": {
     "build:cli": "tsup --config tsup.config.cli.js",
     "dev": "tsx watch src/index.ts",
+    "dev:test": "PORT=4001 DB_PORT=5435 NODE_ENV=test tsx watch src/index.ts",
     "dev:cli": "npm run build:cli && node dist-cli/index.cjs",
     "cli": "node dist-cli/index.cjs",
     "start": "node dist/index.js",
+    "start:test": "PORT=4001 DB_PORT=5435 NODE_ENV=test node dist/index.js",
     "test": "vitest run",
     "test:unit": "vitest run --exclude='**/*.integration.test.ts'",
     "test:integration": "vitest run '**/*.integration.test.ts'",

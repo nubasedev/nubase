@@ -21,7 +21,9 @@
       "!**/storybook-static/**",
       "!**/docker/**",
       "!**/bruno/**",
-      "!**/.docusaurus/**"
+      "!**/.docusaurus/**",
+      "!**/.claude/**",
+      "!**/.claude-flow/**"
     ]
   },
   "formatter": {

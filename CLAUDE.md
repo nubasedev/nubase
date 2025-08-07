@@ -1,602 +1,265 @@
-# CLAUDE.md
+# Claude Code Configuration - SPARC Development Environment
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## 🚨 CRITICAL: CONCURRENT EXECUTION & FILE MANAGEMENT
 
-## About
+**ABSOLUTE RULES**:
+1. ALL operations MUST be concurrent/parallel in a single message
+2. **NEVER save working files, text/mds and tests to the root folder**
+3. ALWAYS organize files in appropriate subdirectories
 
-This project, Nubase, is highly-opinionated full-stack framework for creating internal tools and business
-applications. It's extremely opinionated. Meaning, amongst other things, it expects things to be in very particular locations.
-The main proposition of Nubase is that it's configuration based. 
-As an example: the "example" folder contains 3 projects
+### ⚡ GOLDEN RULE: "1 MESSAGE = ALL RELATED OPERATIONS"
 
-example/questlog-backend
-example/questlog-frontend
-example/questlog-schema
+**MANDATORY PATTERNS:**
+- **TodoWrite**: ALWAYS batch ALL todos in ONE call (5-10+ todos minimum)
+- **Task tool**: ALWAYS spawn ALL agents in ONE message with full instructions
+- **File operations**: ALWAYS batch ALL reads/writes/edits in ONE message
+- **Bash commands**: ALWAYS batch ALL terminal operations in ONE message
+- **Memory operations**: ALWAYS batch ALL memory store/retrieve in ONE message
 
-The schema is defined in example/questlog-schema and both the frontend and backend use this common schema to configure itself.
+### 📁 File Organization Rules
 
-## Development Commands
+**NEVER save to root folder. Use these directories:**
+- `/src` - Source code files
+- `/tests` - Test files
+- `/docs` - Documentation and markdown files
+- `/config` - Configuration files
+- `/scripts` - Utility scripts
+- `/examples` - Example code
 
-### Build, Development and Code quality
-- `npm run build` - Build all packages using Turbo
-- `npm run dev` - Start development mode for all packages 
-- `npm run typecheck` - Run TypeScript type checking across all packages
-- `npm run lint` - Run linting across all packages
+## Project Overview
 
-### Package-Specific Commands
-- `cd packages/core && npm run test` - Run Vitest tests for core package
-- `cd packages/frontend && npm run storybook` - Start Storybook development server
-- `cd packages/frontend && npm run build:storybook` - Build Storybook for production
+This project uses SPARC (Specification, Pseudocode, Architecture, Refinement, Completion) methodology with Claude-Flow orchestration for systematic Test-Driven Development.
 
-### Publishing
-- `npm run publish:core` - Build and publish @nubase/core package
-- `npm run publish:frontend` - Build and publish @nubase/frontend package  
-- `npm run publish:all` - Publish both core and frontend packages
+## SPARC Commands
 
-## Project Architecture
+### Core Commands
+- `npx claude-flow sparc modes` - List available modes
+- `npx claude-flow sparc run <mode> "<task>"` - Execute specific mode
+- `npx claude-flow sparc tdd "<feature>"` - Run complete TDD workflow
+- `npx claude-flow sparc info <mode>` - Get mode details
 
-### Monorepo Structure
-This is a Turborepo-based monorepo with the following structure:
+### Batchtools Commands
+- `npx claude-flow sparc batch <modes> "<task>"` - Parallel execution
+- `npx claude-flow sparc pipeline "<task>"` - Full pipeline processing
+- `npx claude-flow sparc concurrent <mode> "<tasks-file>"` - Multi-task processing
 
-**Core Packages:**
-- `packages/core` - [@nubase/core] Core schema system with Zod-based validation, computed metadata, and layout definitions
-- `packages/frontend` - [@nubase/frontend] React components, form controls, and hooks for building nubase applications
+### Build Commands
+- `npm run build` - Build project
+- `npm run test` - Run tests
+- `npm run lint` - Linting
+- `npm run typecheck` - Type checking
 
-**Example Applications:**
-- `apps/docs` - Docusaurus documentation site
-- `example/questlog-frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in localhost:3000
-- `example/questlog-backend` - Node.js backend example with API endpoints. It runs in localhost:3001
-- `example/questlog-schema` - Shared schema definitions for the questlog example app
+## SPARC Workflow Phases
 
-### Example Application Architecture
+1. **Specification** - Requirements analysis (`sparc run spec-pseudocode`)
+2. **Pseudocode** - Algorithm design (`sparc run spec-pseudocode`)
+3. **Architecture** - System design (`sparc run architect`)
+4. **Refinement** - TDD implementation (`sparc tdd`)
+5. **Completion** - Integration (`sparc run integration`)
 
-When you run the development environment (`npm run dev`), you're running the example application located in the `example/` folder. This demonstrates a real-world Nubase application with three interconnected parts:
+## Code Style & Best Practices
 
-**Frontend (`example/questlog-frontend`)**
-- The main application configuration is defined in `example/questlog-frontend/src/config/config.ts`
-- The application entry point (`example/questlog-frontend/src/main.tsx`) simply renders the `NubaseApp` component with this configuration
-- Most of the application's functionality is automatically generated by the `NubaseApp` component from the `@nubase/frontend` package
+- **Modular Design**: Files under 500 lines
+- **Environment Safety**: Never hardcode secrets
+- **Test-First**: Write tests before implementation
+- **Clean Architecture**: Separate concerns
+- **Documentation**: Keep updated
 
-**Backend (`example/questlog-backend`)**  
-- Provides REST API endpoints for the frontend to consume
-- Uses Drizzle ORM with PostgreSQL for data persistence
-- Includes database schema definitions and migration files
+## 🚀 Available Agents (54 Total)
 
-**Schema (`example/questlog-schema`)**
-- Shared TypeScript definitions used by both frontend and backend
-- Defines API endpoint types and data schemas for type safety across the stack
+### Core Development
+`coder`, `reviewer`, `tester`, `planner`, `researcher`
 
-#### NubaseApp Component Architecture
+### Swarm Coordination
+`hierarchical-coordinator`, `mesh-coordinator`, `adaptive-coordinator`, `collective-intelligence-coordinator`, `swarm-memory-manager`
 
-The `NubaseApp` component (`packages/frontend/src/components/nubase-app/NubaseApp.tsx`) serves as the application shell that automatically generates a complete application from configuration:
+### Consensus & Distributed
+`byzantine-coordinator`, `raft-manager`, `gossip-coordinator`, `consensus-builder`, `crdt-synchronizer`, `quorum-manager`, `security-manager`
 
-**Automatic Code Generation:**
-- **Routing System** - Automatically creates routes for all views and resources defined in the config
-  - View routes: `/v/{viewId}` (e.g., `/v/create-ticket`)
-  - Resource routes: `/r/{resourceId}/{operation}` (e.g., `/r/ticket/create`, `/r/ticket/edit`)
-- **Navigation** - Generates the main navigation menu from the `mainMenu` configuration
-- **HTTP Client** - Sets up API client with the configured `apiBaseUrl` and `apiEndpoints`
-- **Theme System** - Provides theme switching capabilities based on `themeIds` and `defaultThemeId`
-- **Provider Context** - Wraps the app with necessary providers (Modal, Services, Router)
+### Performance & Optimization
+`perf-analyzer`, `performance-benchmarker`, `task-orchestrator`, `memory-coordinator`, `smart-agent`
 
-**What Gets Generated:**
-- Complete routing infrastructure using TanStack Router
-- Type-safe API client for backend communication  
-- Fully functional navigation with hierarchical menu support
-- Theme switching UI and runtime CSS variable injection
-- Modal and dialog management systems
-- Form rendering from schema definitions
-- CRUD operation screens for resources
+### GitHub & Repository
+`github-modes`, `pr-manager`, `code-review-swarm`, `issue-tracker`, `release-manager`, `workflow-automation`, `project-board-sync`, `repo-architect`, `multi-repo-swarm`
 
-**Configuration-Driven Development:**
-Instead of manually coding routes, API calls, forms, and navigation, developers only need to:
-1. Define schemas using `@nubase/core`
-2. Create view configurations that reference these schemas
-3. Define resource operations (create, view, edit, etc.)
-4. Configure the main menu structure
-5. Specify API endpoints and theme preferences
+### SPARC Methodology
+`sparc-coord`, `sparc-coder`, `specification`, `pseudocode`, `architecture`, `refinement`
 
-The `NubaseApp` component then automatically generates a fully functional application with consistent UI, proper routing, type safety, and theme support.
+### Specialized Development
+`backend-dev`, `mobile-dev`, `ml-developer`, `cicd-engineer`, `api-docs`, `system-architect`, `code-analyzer`, `base-template-generator`
 
-### Schema System Architecture
+### Testing & Validation
+`tdd-london-swarm`, `production-validator`
 
-The core package implements a schema system with these key concepts:
+### Migration & Planning
+`migration-planner`, `swarm-init`
 
-1. **BaseSchema** - Abstract base class for all schemas with metadata support
-2. **Primitive Schemas** - StringSchema, NumberSchema, BooleanSchema for basic types
-3. **Complex Schemas** - ObjectSchema for object validation with computed metadata and layout support
-4. **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
-5. **Computed Metadata** - Async functions that compute metadata based on form data
-6. **URL Parameter Coercion** - Built-in system for converting string URL parameters to typed values
+## 🎯 Claude Code vs MCP Tools
 
-#### URL Parameter Coercion System
+### Claude Code Handles ALL:
+- File operations (Read, Write, Edit, MultiEdit, Glob, Grep)
+- Code generation and programming
+- Bash commands and system operations
+- Implementation work
+- Project navigation and analysis
+- TodoWrite and task management
+- Git operations
+- Package management
+- Testing and debugging
 
-**The Problem:**
-URL parameters always arrive as strings (e.g., `?id=37` gives `id: "37"`), but schemas expect typed values (numbers, booleans).
+### MCP Tools ONLY:
+- Coordination and planning
+- Memory management
+- Neural features
+- Performance tracking
+- Swarm orchestration
+- GitHub integration
 
-**The Solution:**
-ObjectSchema provides a `toZodWithCoercion()` method that leverages Zod's built-in coercion to automatically convert string values to expected types:
+**KEY**: MCP coordinates, Claude Code executes.
 
-```typescript
-const paramsSchema = nu.object({
-  id: nu.number(),
-  active: nu.boolean(),
-  name: nu.string(),
-});
+## 🚀 Quick Setup
 
-// Use toZodWithCoercion() for URL parameter parsing
-const coercionSchema = paramsSchema.toZodWithCoercion();
-const result = coercionSchema.parse({ id: "37", active: "true", name: "test" });
-// Result: { id: 37, active: true, name: "test" }
+```bash
+# Add Claude Flow MCP server
+claude mcp add claude-flow npx claude-flow@alpha mcp start
 ```
 
-**Type Conversions:**
-- `"37"` → `37` (string to number)
-- `"true"/"false"` → `true`/`false` (string to boolean)
-- `"1"/"0"` → `true`/`false` (string to boolean, Zod's coerce.boolean behavior)
-- `"hello"` → `"hello"` (string remains unchanged)
+## MCP Tool Categories
 
-**Usage in Nubase:**
-- **Frontend:** `resource-screen.tsx` uses `toZodWithCoercion()` to parse URL search parameters
-- **Backend:** `typed-handlers.ts` uses `toZodWithCoercion()` to parse URL path parameters
-- **Static Typing:** The coerced schema maintains the same TypeScript output type as the original schema
+### Coordination
+`swarm_init`, `agent_spawn`, `task_orchestrate`
 
-**Example Use Cases:**
-- Resource view URLs: `/r/ticket/view?id=37` → `{ id: 37 }`
-- API endpoints: `/tickets/:id` with `id: "42"` → `{ id: 42 }`
-- Query parameters: `?page=2&active=true` → `{ page: 2, active: true }`
+### Monitoring
+`swarm_status`, `agent_list`, `agent_metrics`, `task_status`, `task_results`
 
-### Configuration System Architecture
+### Memory & Neural
+`memory_usage`, `neural_status`, `neural_train`, `neural_patterns`
 
-The frontend package provides a structured configuration system for Nubase applications:
+### GitHub Integration
+`github_swarm`, `repo_analyze`, `pr_enhance`, `issue_triage`, `code_review`
 
-#### NubaseFrontendConfig Interface
-- **Core Settings** - `appName`, `mainMenu` for app identity and navigation structure
-- **Views System** - Map of view IDs to view configurations for UI screens and forms
-- **Resources System** - Map of resource IDs to resource descriptors defining CRUD operations
-- **API Integration** - `apiEndpoints` for type-safe client generation, `apiBaseUrl` for request routing
-- **Theming** - `themeIds` and `defaultThemeId` for theme management and switching
+### System
+`benchmark_run`, `features_detect`, `swarm_monitor`
 
-#### Resource System Architecture
+## 📋 Agent Coordination Protocol
 
-Resources define the operations available for entities in your application:
+### Every Agent MUST:
 
-1. **ResourceDescriptor** - Container for all operations available on a resource entity
-2. **ResourceOperation** - Individual operation (create, view, edit, etc.) referencing a view
-3. **Standard Operations** - Common CRUD operations: create, view, edit (extensible for custom operations)
-4. **Type Safety** - Full TypeScript generics preserve operation and view type information
-5. **Extensibility** - Both ResourceDescriptor and ResourceOperation can be extended with additional properties
-
-#### Usage Pattern
-```typescript
-// Define resource with operations (following same pattern as views)
-const ticketResource = createResource({
-  id: "ticket", // Used as URL segment in /r/ticket/operation
-  operations: {
-    create: { view: createTicketView },
-    view: { view: viewTicketView },
-    edit: { view: editTicketView },
-  }
-});
-
-// Register in app config using resource.id as key (same as views)
-const config: NubaseFrontendConfig = {
-  resources: {
-    [ticketResource.id]: ticketResource, // Same pattern as views
-  }
-};
+**1️⃣ BEFORE Work:**
+```bash
+npx claude-flow@alpha hooks pre-task --description "[task]"
+npx claude-flow@alpha hooks session-restore --session-id "swarm-[id]"
 ```
 
-### React Component Architecture
-
-The Frontend package provides a comprehensive component library organized into these categories:
-
-#### Component Categories
-1. **Button System** - Button (5 variants, 4 sizes), ButtonBar (flexible alignment)
-2. **Form Controls** - FormControl (TanStack Form integration), TextInput (multiple types), Label (required indicators)
-3. **Form System** - SchemaForm (schema-driven forms with computed metadata and layouts)
-4. **Floating UI** - Dialog (confirmations), Modal (multi-size), Toast (6 types including promise toasts)
-5. **Navigation** - MainNav (hierarchical navigation with search and badges)
-6. **Application Shell** - NubaseApp (router integration and app bootstrap)
-
-#### Design Patterns
-- **Class Variance Authority (CVA)** - Type-safe variant-based styling across all components
-- **Compound Components** - FormControl enhances child form elements with labels, hints, and error states
-- **Hook-based APIs** - Custom hooks (useDialog, useModal, useToast) for programmatic control
-- **Provider Pattern** - Context-based state management for floating UI components
-- **Schema Integration** - Automatic form generation from @nubase/core ObjectSchema definitions
-
-#### Key Features
-- **Type Safety** - Full TypeScript support with generics preserving schema types
-- **Accessibility** - ARIA attributes, screen reader support, keyboard navigation, focus management
-- **Material Design 3 Theming** - Complete MD3 color system with 26 semantic color roles, runtime theme switching
-- **Performance** - Debounced form updates (200ms), memoized filtering, efficient re-rendering
-- **Storybook Integration** - Comprehensive documentation with interactive examples and variant showcases
-
-### Key Files to Understand
-
-#### Core Package
-- `packages/core/src/schema/schema.ts` - Core schema definitions and types
-- `packages/core/src/schema/nu.ts` - Schema builder utilities
-
-#### Frontend Package - Components
-- `packages/frontend/src/components/form/SchemaForm.tsx` - Main schema-driven form component
-- `packages/frontend/src/components/form-controls/FormControl/` - Form control wrapper with validation
-- `packages/frontend/src/components/buttons/Button/` - Primary button component with CVA variants
-- `packages/frontend/src/components/floating/dialog/` - Confirmation dialog system
-- `packages/frontend/src/components/floating/modal/` - Modal system with backdrop and stacking
-- `packages/frontend/src/components/floating/toast/` - Toast notification system
-- `packages/frontend/src/components/main-nav/` - Hierarchical navigation component
-- `packages/frontend/src/components/nubase-app/` - Application shell and router integration
-
-#### Frontend Package - Hooks & Utilities
-- `packages/frontend/src/hooks/useComputedMetadata.ts` - Computed metadata hook with debouncing
-- `packages/frontend/src/hooks/useLayout.ts` - Layout management hook for schema forms
-- `packages/frontend/src/hooks/useDialog.ts` - Programmatic dialog control
-- `packages/frontend/src/hooks/useModal.ts` - Programmatic modal control
-- `packages/frontend/src/hooks/useToast.ts` - Toast notification management
-
-#### Frontend Package - Configuration & Resources
-- `packages/frontend/src/config/nubase-frontend-config.ts` - Main configuration interface for Nubase applications, defines NubaseFrontendConfig type with app settings, views, resources, API endpoints, and theming options
-- `packages/frontend/src/config/view.ts` - View system types (CreateView, ViewView) for defining UI views with schemas and handlers
-- `packages/frontend/src/config/create-view-factory.ts` - Factory function for creating type-safe view configurations
-- `packages/frontend/src/config/resource.ts` - Resource system types (ResourceOperation, ResourceDescriptor) for defining CRUD operations on entities
-- `packages/frontend/src/config/create-resource-factory.ts` - Factory function for creating type-safe resource configurations with operations
-
-#### Frontend Package - Theming System
-- `packages/frontend/src/theming/theme.ts` - Material Design 3 theme interface and color type definitions
-- `packages/frontend/src/theming/themes/light/lightTheme.ts` - Standard MD3 light theme
-- `packages/frontend/src/theming/themes/dark/darkTheme.ts` - Standard MD3 dark theme
-- `packages/frontend/src/theming/themes/darkhc/darkHighContrastTheme.ts` - Dark high contrast MD3 theme
-- `packages/frontend/src/theming/themes/lighthc/lightHighContrastTheme.ts` - Light high contrast MD3 theme
-- `packages/frontend/src/theming/runtime-theme-generator.ts` - Runtime CSS variable generation and theme switching
-- `packages/frontend/src/theme/theme.css` - Tailwind v4 theme configuration with MD3 color mappings
-
-## Theming System
-
-### Material Design 3 Implementation
-
-The theming system implements Google's Material Design 3 color specification with 26 semantic color roles. This provides consistent, accessible color usage across all components.
-
-#### Theme Structure
-
-Each theme (`NubaseTheme`) contains:
-- `id`: Unique theme identifier
-- `name`: Display name for the theme
-- `type`: Either "light" or "dark" for system preference matching
-- `colors`: 26 Material Design 3 color roles
-
-#### Color Roles
-
-**Primary Colors (4)**
-- `primary` - Main brand color for prominent actions
-- `onPrimary` - Text/icons on primary surfaces
-- `primaryContainer` - Emphasized containers and badges
-- `onPrimaryContainer` - Text/icons on primary containers
-
-**Secondary Colors (4)**
-- `secondary` - Supporting brand color for less prominent actions
-- `onSecondary` - Text/icons on secondary surfaces
-- `secondaryContainer` - Secondary buttons and containers
-- `onSecondaryContainer` - Text/icons on secondary containers
-
-**Tertiary Colors (4)**
-- `tertiary` - Accent color for balance and contrast
-- `onTertiary` - Text/icons on tertiary surfaces
-- `tertiaryContainer` - Tertiary containers and highlights
-- `onTertiaryContainer` - Text/icons on tertiary containers
-
-**Error Colors (4)**
-- `error` - Error states and destructive actions
-- `onError` - Text/icons on error surfaces
-- `errorContainer` - Error containers and alerts
-- `onErrorContainer` - Text/icons on error containers
-
-**Surface Colors (4)**
-- `surface` - Default background surfaces
-- `onSurface` - Primary text color
-- `surfaceVariant` - Subtle background variations
-- `onSurfaceVariant` - Secondary text and placeholders
-
-**Other Colors (6)**
-- `outline` - Borders and dividers
-- `outlineVariant` - Subtle borders
-- `shadow` - Drop shadows
-- `scrim` - Modal backdrops
-- `inverseSurface` - High contrast surfaces
-- `onInverseSurface` - Text on inverse surfaces
-
-#### Available Themes
-
-1. **Light Theme** (`lightTheme`) - Standard Material Design 3 light color scheme
-2. **Dark Theme** (`darkTheme`) - Standard Material Design 3 dark color scheme  
-3. **Dark High Contrast Theme** (`darkHighContrastTheme`) - High contrast dark theme for accessibility
-4. **Light High Contrast Theme** (`lightHighContrastTheme`) - High contrast light theme for accessibility
-
-#### Runtime Theme System
-
-**CSS Variable Generation**
-- Themes are converted to CSS variables at runtime via `runtime-theme-generator.ts`
-- Pattern: theme color `primary` becomes `--theme-color-primary`
-- Automatically injected into document head when themes change
-
-**Tailwind Integration**
-- `packages/frontend/src/theme/theme.css` maps MD3 colors to Tailwind classes
-- Pattern: `--color-primary: var(--theme-color-primary)`
-- Enables classes like `bg-primary`, `text-onPrimary`, `border-outline`
-
-**Usage in Components**
-```tsx
-// Semantic color usage following MD3 guidelines
-<Button variant="primary">        // bg-primary text-onPrimary
-<Button variant="secondary">      // bg-secondaryContainer text-onSecondaryContainer
-<Button variant="danger">         // bg-error text-onError
-
-<TextInput />                     // bg-surface text-onSurface border-outline
-<TextInput hasError />            // border-error focus:ring-error/10
-
-<Dialog title="...">              // border-outline text-onSurface
-<Modal>                           // bg-surface ring-outline/20
+**2️⃣ DURING Work:**
+```bash
+npx claude-flow@alpha hooks post-edit --file "[file]" --memory-key "swarm/[agent]/[step]"
+npx claude-flow@alpha hooks notify --message "[what was done]"
 ```
 
-**Theme Switching**
-- Themes can be switched at runtime via the theme context
-- Component styles automatically update through CSS variable changes
-- No component re-renders required for theme changes
-
-#### Adding New Themes
-
-1. Create new theme file in `packages/frontend/src/theming/themes/[name].ts`
-2. Implement all 26 color roles following MD3 contrast requirements
-3. Export theme with unique `id` and appropriate `type`
-4. Add import and register theme in `packages/frontend/src/theming/themes/index.ts`
-5. **IMPORTANT**: Update `example/questlog-frontend/src/config/config.ts` to include the new theme ID in the `themeIds` array - themes won't be visible in the example application without this step
-
-#### Color Class Reference
-
-All MD3 colors are available as Tailwind classes:
-- **Backgrounds**: `bg-primary`, `bg-surface`, `bg-errorContainer`
-- **Text**: `text-onPrimary`, `text-onSurface`, `text-error`
-- **Borders**: `border-outline`, `border-primary`, `border-error`
-- **Utilities**: `ring-primary/20`, `bg-scrim/30`
-
-## Documentation
-
-**All documentation should be written to the `apps/docs` Docusaurus application, not as .md files in the source code.**
-
-- The main documentation site is located in `apps/docs/`
-- Documentation files go in `apps/docs/docs/`
-- If you think it's relevant to add docs to your changes, you can do it in the docs app
-- Use Docusaurus features like sidebar configuration, frontmatter, and MDX
-- Run the docs locally with: `cd apps/docs && npm start`
-- **Do NOT create README.md files in source packages** - document features in the docs app instead
-
-## Development Notes
-
-- Uses Biome for code formatting and linting (configured in biome.json)
-- Tailwind CSS v4 for styling with Material Design 3 color system
-- Icons from https://tabler.io/icons (SVG icons inline in components)
-- Storybook for component development
-- Vitest for testing
-- All packages are published to npm under @nubase scope
-
-## Component Development Guidelines
-
-### ActivityIndicator Component
-- **Always use the centralized ActivityIndicator component** for loading states instead of custom spinners
-- **Location**: `packages/frontend/src/components/activity-indicator/ActivityIndicator.tsx`
-- **Import**: `import { ActivityIndicator } from "@nubase/frontend"`
-- **Usage**: `<ActivityIndicator size="sm" color="primary" aria-label="Loading..." />`
-- **Available sizes**: `xs`, `sm`, `md`, `lg`, `xl`
-- **Available colors**: `primary`, `secondary`, `surface`, `surfaceVariant`, `inherit`
-- **Button loading states**: Use the `isLoading` prop on Button components instead of manual ActivityIndicator placement
-- **Form submissions**: SchemaFormButtonBar automatically uses ActivityIndicator via Button's isLoading prop
-- **Toast notifications**: Toast component automatically uses ActivityIndicator for promise-based toasts
-
-### Size Variants
-- **Do not** add size variants (sm, md, lg) to new components unless explicitly requested
-- Components should have a single, well-designed default size
-- Only implement size variants when there is a clear use case and explicit requirement
-
-## Storybook Guidelines
-
-### Story Naming Convention
-- **Never** start story titles with "Components" - skip directly to the category
-- Use format: `"Category/ComponentName"` instead of `"Components/Category/ComponentName"`
-- Examples:
-  - ✅ Good: `title: "Form Controls/Label"`
-  - ✅ Good: `title: "Buttons/Button"`
-  - ✅ Good: `title: "Floating/Toast"`
-  - ❌ Bad: `title: "Components/Form Controls/Label"`
-
-### Dark Mode Stories
-- **Never** create stories specifically for dark mode (e.g., `DarkModeDemo`, `DarkMode` stories)
-- Storybook has an automatic dark mode plugin with a toggle that shows all stories in both light and dark modes
-- Focus on creating comprehensive stories that demonstrate functionality, variants, and use cases
-- The dark mode plugin will automatically test visual appearance in both themes
-
-### Story Structure and Self-Containment
-- **CRITICAL**: Both `ToastProvider` and `ModalProvider` are already included in `packages/frontend/.storybook/preview.tsx`
-- **Never** wrap stories with `<ModalProvider>` or `<ToastProvider>` - they're already available globally
-- **Always** use the `render` function in stories and make them self-contained
-- **Never** create external components that stories render - embed all logic directly in the story's render function
-
-#### ❌ Incorrect Story Structure:
-```tsx
-// Don't do this - external component + unnecessary provider
-const ExampleComponent = () => {
-  const { openModal } = useModal();
-  return <Button onClick={() => openModal(...)}>Open Modal</Button>;
-};
-
-export const Example: Story = {
-  render: () => (
-    <ModalProvider>  // ← Already in preview.tsx!
-      <ExampleComponent />  // ← External component
-    </ModalProvider>
-  ),
-};
+**3️⃣ AFTER Work:**
+```bash
+npx claude-flow@alpha hooks post-task --task-id "[task]"
+npx claude-flow@alpha hooks session-end --export-metrics true
 ```
 
-#### ✅ Correct Story Structure:
-```tsx
-// Do this - self-contained story with direct render function
-export const Example: Story = {
-  render: () => {  // ← Self-contained
-    const { openModal } = useModal();  // ← Hooks work directly
-    
-    const handleClick = () => {
-      openModal(/* content */);
-    };
-    
-    return <Button onClick={handleClick}>Open Modal</Button>;
-  },
-};
-```
+## 🎯 Concurrent Execution Examples
 
-### Story Structure and Presentation
-- **Never** add wrapper components with borders, padding, or explanatory text around stories
-- **Never** include explanatory text like "The component appears below" or similar descriptions
-- Don't use `args` in stories. Use the `render` function per story and render the component without wrappers
-- Let the story title and component props speak for themselves
-- Keep stories clean and minimal - focus on demonstrating component functionality
-- Avoid visual noise like borders, background colors, or unnecessary containers unless they're part of the component's intended usage
-
-## Testing
-
-- Core package: `cd packages/core && npm run test`
-- Tests use Vitest framework
-- Test files follow `.test.ts` naming convention
-
-## Toast Notifications
-
-### Usage in Stories and Components
-
-When you need to show notifications or feedback in Storybook stories or components, use the `showToast` function:
-
-```tsx
-import { showToast } from "../../floating/toast";
-
-// Basic usage
-showToast("Operation completed successfully!", "success");
-showToast("Something went wrong", "error");
-showToast("Processing...", "info");
-showToast("Please review this", "warning");
-```
-
-### Important Notes
-
-- **Use `showToast` directly** - Do NOT use `useToast` hook in stories or standalone examples
-- **Toast infrastructure works out of the box in Storybook** - No additional setup required
-- **Available toast types**: `"success"`, `"error"`, `"info"`, `"warning"`, `"loading"`, `"default"`
-- **Automatic positioning and styling** - Toasts appear in the top-right corner with proper theming
-
-### Examples
-
-```tsx
-// In a story or component
-const handleAction = async () => {
-  showToast("Starting operation...", "loading");
+### ✅ CORRECT (Single Message):
+```javascript
+[BatchTool]:
+  // Initialize swarm
+  mcp__claude-flow__swarm_init { topology: "mesh", maxAgents: 6 }
+  mcp__claude-flow__agent_spawn { type: "researcher" }
+  mcp__claude-flow__agent_spawn { type: "coder" }
+  mcp__claude-flow__agent_spawn { type: "tester" }
   
-  try {
-    await someAsyncOperation();
-    showToast("Operation completed!", "success");
-  } catch (error) {
-    showToast("Operation failed", "error");
-  }
-};
-
-// For form operations
-const handlePatch = async (fieldName: string, value: any) => {
-  showToast(`Updating ${fieldName}...`, "info");
+  // Spawn agents with Task tool
+  Task("Research agent: Analyze requirements...")
+  Task("Coder agent: Implement features...")
+  Task("Tester agent: Create test suite...")
   
-  await updateField(fieldName, value);
+  // Batch todos
+  TodoWrite { todos: [
+    {id: "1", content: "Research", status: "in_progress", priority: "high"},
+    {id: "2", content: "Design", status: "pending", priority: "high"},
+    {id: "3", content: "Implement", status: "pending", priority: "high"},
+    {id: "4", content: "Test", status: "pending", priority: "medium"},
+    {id: "5", content: "Document", status: "pending", priority: "low"}
+  ]}
   
-  showToast(`${fieldName} updated successfully`, "success");
-};
+  // File operations
+  Bash "mkdir -p app/{src,tests,docs}"
+  Write "app/src/index.js"
+  Write "app/tests/index.test.js"
+  Write "app/docs/README.md"
 ```
 
-## Development Guidelines
-
-- **ALWAYS run `npm run lint:fix` at the end of every task** to ensure code style compliance
-- **ALWAYS run `npm run typecheck` at the end of every task** to ensure TypeScript compliance
-- Fix any remaining type errors or linting issues before considering a task complete
-- Use proper TypeScript types for all APIs and components
-
-### Event Handler Guidelines
-
-- **Prefer inline event handlers** for short, simple functions to improve readability and reduce code clutter
-- Use inline arrow functions directly in JSX when the handler logic is concise
-- Extract to separate named functions only when the handler logic is complex or lengthy
-
-#### ✅ Preferred (for simple handlers):
-```tsx
-return (
-  <Button
-    onClick={() => {
-      openModalSchemaForm({
-        title: "Contact Information Form",
-        submitText: "Save Contact",
-        form,
-        size: "lg",
-      });
-    }}
-  >
-    Open Schema Form Modal
-  </Button>
-);
+### ❌ WRONG (Multiple Messages):
+```javascript
+Message 1: mcp__claude-flow__swarm_init
+Message 2: Task("agent 1")
+Message 3: TodoWrite { todos: [single todo] }
+Message 4: Write "file.js"
+// This breaks parallel coordination!
 ```
 
-#### ❌ Avoid (unnecessary extraction for simple handlers):
-```tsx
-const handleOpenFormModal = () => {
-  openModalSchemaForm({
-    title: "Contact Information Form",
-    submitText: "Save Contact",
-    form,
-    size: "lg",
-  });
-};
+## Performance Benefits
 
-return (
-  <Button onClick={handleOpenFormModal}>Open Schema Form Modal</Button>
-);
-```
+- **84.8% SWE-Bench solve rate**
+- **32.3% token reduction**
+- **2.8-4.4x speed improvement**
+- **27+ neural models**
 
-Use your best judgment - extract to named functions when handlers become complex, contain multiple operations, or exceed reasonable inline length.
+## Hooks Integration
 
-## URL Parameter Type Coercion
+### Pre-Operation
+- Auto-assign agents by file type
+- Validate commands for safety
+- Prepare resources automatically
+- Optimize topology by complexity
+- Cache searches
 
-### Important Technical Detail
+### Post-Operation
+- Auto-format code
+- Train neural patterns
+- Update memory
+- Analyze performance
+- Track token usage
 
-**URL parameters always arrive as strings**, but Nubase schemas often expect typed values (numbers, booleans). Both frontend and backend have automatic type coercion to handle this:
+### Session Management
+- Generate summaries
+- Persist state
+- Track metrics
+- Restore context
+- Export workflows
 
-### Frontend (Search Params)
-The router automatically coerces URL search params (`?id=37`) before schema validation:
-- `"37"` → `37` (number)
-- `"true"` → `true` (boolean)
-- Strings remain as strings
+## Advanced Features (v2.0.0)
 
-### Backend (Path Params) 
-The `createHttpHandler` automatically coerces URL path params (`/tickets/37`) before schema validation using the same logic.
+- 🚀 Automatic Topology Selection
+- ⚡ Parallel Execution (2.8-4.4x speed)
+- 🧠 Neural Training
+- 📊 Bottleneck Analysis
+- 🤖 Smart Auto-Spawning
+- 🛡️ Self-Healing Workflows
+- 💾 Cross-Session Memory
+- 🔗 GitHub Integration
 
-### Example
-```typescript
-// Schema expects number
-const paramsSchema = nu.object({
-  id: nu.number(), // Schema expects number
-});
+## Integration Tips
 
-// URL: /r/ticket/view?id=37
-// Raw param: { id: "37" }      ← String from URL
-// Coerced: { id: 37 }          ← Number for schema
-// Validated: ✅ passes schema validation
-```
+1. Start with basic swarm init
+2. Scale agents gradually
+3. Use memory for context
+4. Monitor progress regularly
+5. Train patterns from success
+6. Enable hooks automation
+7. Use GitHub tools first
 
-### Why This Matters
-Without coercion, you'd get validation errors like:
-```
-400 Bad Request: Expected number, received string
-```
+## Support
 
-The coercion is automatic and transparent - just define your schemas with the correct types and the system handles URL string conversion.
+- Documentation: https://github.com/ruvnet/claude-flow
+- Issues: https://github.com/ruvnet/claude-flow/issues
+
+---
+
+Remember: **Claude Flow coordinates, Claude Code creates!**

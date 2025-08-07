@@ -2,7 +2,8 @@ import type React from "react";
 import { forwardRef } from "react";
 import type { SchemaFormConfiguration } from "../../../hooks";
 
-export interface SchemaFormProps {
+export interface SchemaFormProps
+  extends React.FormHTMLAttributes<HTMLFormElement> {
   form: SchemaFormConfiguration<any>;
   className?: string;
   children?: React.ReactNode;
@@ -11,7 +12,7 @@ export interface SchemaFormProps {
 
 // Form component - wraps the form element
 export const SchemaForm = forwardRef<HTMLFormElement, SchemaFormProps>(
-  ({ form, className = "", children, onSubmit }, ref) => {
+  ({ form, className = "", children, onSubmit, ...formProps }, ref) => {
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -23,7 +24,12 @@ export const SchemaForm = forwardRef<HTMLFormElement, SchemaFormProps>(
     };
 
     return (
-      <form ref={ref} onSubmit={handleSubmit} className={className}>
+      <form
+        ref={ref}
+        onSubmit={handleSubmit}
+        className={className}
+        {...formProps}
+      >
         {children}
       </form>
     );

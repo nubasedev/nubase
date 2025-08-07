@@ -44,7 +44,7 @@ export const patchTicketSchema = {
   method: "PATCH" as const,
   path: "/tickets/:id",
   requestParams: ticketIdParamsSchema,
-  requestBody: ticketBaseSchema.omit("id"),
+  requestBody: ticketBaseSchema.omit("id").partial(),
   responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 

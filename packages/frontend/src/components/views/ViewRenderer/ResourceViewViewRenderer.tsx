@@ -90,7 +90,9 @@ const ResourceViewForm: FC<{
     schema: view.schema,
     mode: "patch",
     initialValues: initialData,
-    onPatch: async (fieldName: string, value: any) => {
+    onPatch: async (fieldName: string, value) => {
+      // Validation now happens in SchemaFormBody
+      // This layer only handles network operations
       try {
         const patchData = { [fieldName]: value };
         const contextWithParams = {
@@ -101,9 +103,12 @@ const ResourceViewForm: FC<{
           data: patchData,
           context: contextWithParams as any,
         });
+
         onPatchCallback?.(result);
       } catch (error) {
+        // Only call onError for actual network/server errors, not validation errors
         onError?.(error as Error);
+        throw error; // Re-throw to let the form handle it
       }
     },
     onSubmit: async () => {
@@ -112,7 +117,11 @@ const ResourceViewForm: FC<{
   });
 
   return (
-    <SchemaForm form={form} className="space-y-4">
+    <SchemaForm
+      form={form}
+      className="space-y-4"
+      data-testid="resource-view-form"
+    >
       <SchemaFormBody form={form} />
     </SchemaForm>
   );

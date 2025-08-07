@@ -9,6 +9,13 @@
       "cwd": "${workspaceFolder}"
     },
     {
+      "name": "npm run dev:test",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev:test",
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "name": "npm run storybook",
       "type": "node-terminal",
       "request": "launch",

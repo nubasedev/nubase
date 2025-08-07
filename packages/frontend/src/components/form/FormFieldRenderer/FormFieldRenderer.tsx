@@ -15,7 +15,7 @@ export interface FormFieldRendererProps {
   fieldState: AnyFieldApi;
   metadata: SchemaMetadata<any>;
   mode?: "edit" | "view" | "patch";
-  onPatch?: (value: any) => Promise<PatchResult>;
+  onPatch?: (value: any, fieldState?: AnyFieldApi) => Promise<PatchResult>;
 }
 
 export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
@@ -50,7 +50,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
     },
     onApplyPatch: async (): Promise<PatchResult> => {
       if (onPatch) {
-        const result = await onPatch(fieldState.state.value);
+        const result = await onPatch(fieldState.state.value, fieldState);
         if (result.success) {
           setIsPatching(false);
         }
@@ -74,7 +74,7 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
     <FormControl
       label={metadata.label}
       hint={showHint ? metadata.description : undefined}
-      field={fieldState}
+      field={fieldState} // Always use TanStack Form validation
       required={isRequired}
       layout="horizontal"
     >

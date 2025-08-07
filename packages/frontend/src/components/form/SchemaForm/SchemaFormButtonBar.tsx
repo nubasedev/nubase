@@ -40,6 +40,7 @@ export const SchemaFormButtonBar: React.FC<SchemaFormButtonBarProps> = ({
             type="submit"
             disabled={!canSubmit}
             isLoading={Boolean(isSubmitting || isComputing)}
+            data-testid="form-submit-button"
           >
             {isSubmitting
               ? "Submitting..."

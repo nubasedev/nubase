@@ -137,7 +137,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
           {editComponent(errorsToShow)}
         </div>
 
-        {/* Validation errors */}
+        {/* Network errors only - validation errors shown by FormControl */}
         {errorsToShow.length > 0 && (
           <div className="mt-2 space-y-1">
             {errorsToShow.map((error, index) => (

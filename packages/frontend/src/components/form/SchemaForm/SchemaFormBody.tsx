@@ -54,14 +54,14 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
             const fieldMetadata =
               mergedMetadata[fieldName] ?? currentSchema._meta;
 
-            // Validation function for submit - includes required field check
+            // TanStack Form validation function
             const validateFieldOnSubmit = ({ value }: { value: any }) => {
               // Check if field is required and empty
               const isFieldRequired =
                 currentSchema && !(currentSchema instanceof OptionalSchema);
               if (isFieldRequired) {
                 if (value === undefined || value === null || value === "") {
-                  return "This field is required";
+                  return `${fieldName} is required and cannot be empty`;
                 }
               }
 
@@ -94,16 +94,25 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
             // Build field validators object
             const fieldValidators: any = {};
 
-            // Always include submit validators
+            // Use TanStack Form validation for all scenarios
             fieldValidators.onSubmit = validateFieldOnSubmit;
+            // Also validate on blur for immediate feedback
+            fieldValidators.onBlur = validateFieldOnSubmit;
 
             // Add async validators if they exist
             if (fieldMetadata?.validateOnSubmitAsync) {
               fieldValidators.onSubmitAsync = validateFieldOnSubmitAsync;
             }
+            // Add custom onBlur validation if specified in metadata
             if (fieldMetadata?.validateOnBlur) {
+              const customBlurValidation = fieldMetadata.validateOnBlur;
               fieldValidators.onBlur = ({ value }: { value: any }) => {
-                return fieldMetadata.validateOnBlur?.(value);
+                // Run base validation first
+                const baseError = validateFieldOnSubmit({ value });
+                if (baseError) return baseError;
+
+                // Then run custom blur validation
+                return customBlurValidation(value);
               };
             }
             if (fieldMetadata?.validateOnBlurAsync) {
@@ -118,19 +127,35 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
 
             const handleFieldPatch = async (
               value: any,
+              fieldState?: any, // Will receive fieldState from FormFieldRenderer
             ): Promise<PatchResult> => {
-              if (mode === "patch" && onPatch) {
+              if (mode === "patch" && onPatch && fieldState) {
+                // Force validation to run on the current value
+                await fieldState.validate();
+
+                // Check TanStack Form's validation state
+                // Don't return validation errors - FormControl already shows them
+                if (fieldState.state.meta.errors.length > 0) {
+                  // Just prevent the network call, don't return errors for PatchWrapper to show
+                  return { success: false, errors: [] };
+                }
+
                 try {
-                  await onPatch(fieldName, value);
+                  // Transform empty values to null for network call
+                  const transformedValue =
+                    value === "" || value === undefined ? null : value;
+                  await onPatch(fieldName, transformedValue);
                   return { success: true };
                 } catch (error) {
-                  console.error(`Error patching field ${fieldName}:`, error);
                   return {
                     success: false,
-                    errors: [`Failed to update ${fieldName}`],
+                    errors: [
+                      `Failed to update ${fieldName}: ${(error as Error).message}`,
+                    ],
                   };
                 }
               }
+
               return { success: true };
             };
 

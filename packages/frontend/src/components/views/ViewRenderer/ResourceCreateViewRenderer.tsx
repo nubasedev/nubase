@@ -23,19 +23,31 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
     schema: view.schema,
     onSubmit: async (data: ObjectOutput<any>) => {
       try {
+        console.log("RENDERER - Form submitted with data:", data);
         const result = await view.onSubmit({
           data,
           context,
         });
+        console.log("RENDERER - onSubmit completed with result:", result);
+        console.log(
+          "RENDERER - About to call onCreate callback, exists?",
+          !!onCreate,
+        );
         onCreate?.(result);
+        console.log("RENDERER - onCreate callback completed");
       } catch (error) {
+        console.log("RENDERER - Error in form submission:", error);
         onError?.(error as Error);
       }
     },
   });
 
   return (
-    <SchemaForm form={form} className="space-y-4">
+    <SchemaForm
+      form={form}
+      className="space-y-4"
+      data-testid="resource-create-form"
+    >
       <SchemaFormBody form={form} />
       <SchemaFormButtonBar form={form} />
     </SchemaForm>

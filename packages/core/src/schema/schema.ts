@@ -154,14 +154,6 @@ export type ObjectOutput<TShape extends ObjectShape> = {
 };
 
 /**
- * Infers the TypeScript output type for a partial ObjectShape.
- * All properties become optional.
- */
-export type PartialObjectOutput<TShape extends ObjectShape> = {
-  [K in keyof TShape]?: TShape[K]["_outputType"];
-};
-
-/**
  * Type representing computed metadata for object properties.
  */
 export type ObjectComputedMetadata<TShape extends ObjectShape> = {
@@ -231,282 +223,6 @@ export interface Layout<TShape extends ObjectShape> {
 export type ObjectLayouts<TShape extends ObjectShape> = {
   [layoutName: string]: Layout<TShape>;
 };
-
-/**
- * A partial object schema where all properties are optional.
- * Extends BaseSchema with partial output type.
- */
-export class PartialObjectSchema<TShape extends ObjectShape> extends BaseSchema<
-  PartialObjectOutput<TShape>
-> {
-  readonly type = "partial-object" as const;
-  _shape: TShape;
-  _computedMeta: ObjectComputedMetadata<TShape> = {};
-  _layouts: ObjectLayouts<TShape> = {};
-
-  constructor(shape: TShape) {
-    super();
-    this._shape = shape;
-  }
-
-  /**
-   * Add computed metadata to the partial object schema.
-   * @param computedMeta Object mapping property keys to computed metadata functions.
-   * @returns The schema instance for chaining.
-   */
-  withComputed(computedMeta: ObjectComputedMetadata<TShape>): this {
-    this._computedMeta = computedMeta;
-    return this;
-  }
-
-  /**
-   * Add layouts to the partial object schema.
-   * @param layouts Object mapping layout names to layout configurations.
-   * @returns The schema instance for chaining.
-   */
-  withLayouts(layouts: ObjectLayouts<TShape>): this {
-    this._layouts = layouts;
-    return this;
-  }
-
-  /**
-   * Get a specific layout by name.
-   * @param layoutName The name of the layout to retrieve.
-   * @returns The layout configuration or undefined if not found.
-   */
-  getLayout(layoutName: string): Layout<TShape> | undefined {
-    return this._layouts[layoutName];
-  }
-
-  /**
-   * Get all available layout names.
-   * @returns Array of layout names.
-   */
-  getLayoutNames(): string[] {
-    return Object.keys(this._layouts);
-  }
-
-  /**
-   * Check if a layout exists.
-   * @param layoutName The name of the layout to check.
-   * @returns True if the layout exists, false otherwise.
-   */
-  hasLayout(layoutName: string): boolean {
-    return layoutName in this._layouts;
-  }
-
-  /**
-   * Get the computed metadata for a specific property.
-   * @param key The property key.
-   * @param data The parsed object data to pass to computed functions.
-   * @returns Promise resolving to the computed metadata.
-   */
-  async getComputedMeta(
-    key: keyof TShape,
-    data: PartialObjectOutput<TShape>,
-  ): Promise<Partial<SchemaMetadata<TShape[typeof key]["_outputType"]>>> {
-    const computedMeta = this._computedMeta[key];
-    if (!computedMeta) {
-      return {};
-    }
-
-    const result: any = {};
-
-    if (computedMeta.label) {
-      result.label = await computedMeta.label(data as ObjectOutput<TShape>);
-    }
-
-    if (computedMeta.description) {
-      result.description = await computedMeta.description(
-        data as ObjectOutput<TShape>,
-      );
-    }
-
-    if (computedMeta.defaultValue) {
-      result.defaultValue = await computedMeta.defaultValue(
-        data as ObjectOutput<TShape>,
-      );
-    }
-
-    return result;
-  }
-
-  /**
-   * Get all computed metadata for all properties.
-   * @param data The parsed object data to pass to computed functions.
-   * @returns Promise resolving to a map of property keys to computed metadata.
-   */
-  async getAllComputedMeta(
-    data: PartialObjectOutput<TShape>,
-  ): Promise<Record<keyof TShape, Partial<SchemaMetadata<any>>>> {
-    const result: any = {};
-
-    for (const key in this._shape) {
-      result[key] = await this.getComputedMeta(key, data);
-    }
-
-    return result;
-  }
-
-  /**
-   * Get merged metadata (static + computed) for all properties.
-   * @param data The current form data to pass to computed functions.
-   * @returns Promise resolving to a map of property keys to merged metadata.
-   */
-  async getAllMergedMeta(
-    data: Partial<PartialObjectOutput<TShape>>,
-  ): Promise<Record<keyof TShape, SchemaMetadata<any>>> {
-    const result: any = {};
-
-    // Start with static metadata for each property
-    for (const key in this._shape) {
-      if (Object.hasOwn(this._shape, key)) {
-        const schema = this._shape[key];
-        if (schema) {
-          result[key] = { ...schema._meta };
-        }
-      }
-    }
-
-    // Only compute if we have computed metadata and valid data
-    if (Object.keys(this._computedMeta).length > 0) {
-      try {
-        // Try to create a complete object for computed functions
-        // Use provided data and fill missing properties with default values
-        const completeData: any = {};
-        for (const key in this._shape) {
-          if (Object.hasOwn(this._shape, key)) {
-            const schema = this._shape[key];
-            if (schema) {
-              if (data[key] !== undefined) {
-                completeData[key] = data[key];
-              } else if (schema._meta.defaultValue !== undefined) {
-                completeData[key] = schema._meta.defaultValue;
-              } else {
-                // Provide reasonable defaults for computation
-                if (schema instanceof StringSchema) {
-                  completeData[key] = "";
-                } else if (schema instanceof NumberSchema) {
-                  completeData[key] = 0;
-                } else if (schema instanceof BooleanSchema) {
-                  completeData[key] = false;
-                } else {
-                  completeData[key] = null;
-                }
-              }
-            }
-          }
-        }
-
-        // Compute all metadata at once
-        const computedMeta = await this.getAllComputedMeta(
-          completeData as PartialObjectOutput<TShape>,
-        );
-
-        // Merge computed metadata with static metadata
-        for (const key in computedMeta) {
-          if (computedMeta[key]) {
-            result[key] = {
-              ...result[key],
-              ...computedMeta[key],
-            };
-          }
-        }
-      } catch (error) {
-        // If computation fails, just use static metadata
-        console.warn("Failed to compute metadata:", error);
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Create a new PartialObjectSchema with certain properties omitted.
-   * @param keys The property keys to omit from the schema.
-   * @returns A new PartialObjectSchema without the specified properties.
-   */
-  omit<K extends keyof TShape>(
-    ...keys: K[]
-  ): PartialObjectSchema<Omit<TShape, K>> {
-    const newShape: any = {};
-    const keysToOmit = new Set(keys);
-
-    for (const key in this._shape) {
-      if (Object.hasOwn(this._shape, key) && !keysToOmit.has(key as any)) {
-        newShape[key] = this._shape[key];
-      }
-    }
-
-    const newSchema = new PartialObjectSchema(newShape);
-
-    // Copy metadata from parent schema
-    newSchema._meta = { ...this._meta };
-
-    // Copy computed metadata, excluding omitted keys
-    const newComputedMeta: any = {};
-    for (const key in this._computedMeta) {
-      if (!keysToOmit.has(key as any)) {
-        newComputedMeta[key] = this._computedMeta[key];
-      }
-    }
-    newSchema._computedMeta = newComputedMeta;
-
-    // Copy layouts, updating field references to exclude omitted keys
-    const newLayouts: any = {};
-    for (const layoutName in this._layouts) {
-      const originalLayout = this._layouts[layoutName];
-      if (originalLayout) {
-        const newGroups = originalLayout.groups.map((group) => ({
-          ...group,
-          fields: group.fields.filter(
-            (field) => !keysToOmit.has(field.name as any),
-          ),
-        }));
-        newLayouts[layoutName] = {
-          ...originalLayout,
-          groups: newGroups,
-        };
-      }
-    }
-    newSchema._layouts = newLayouts;
-
-    return newSchema;
-  }
-
-  /**
-   * Create a new PartialObjectSchema with additional or modified properties.
-   * @param shape The new properties to add or existing properties to modify.
-   * @returns A new PartialObjectSchema with the extended shape.
-   */
-  extend<TExtend extends ObjectShape>(
-    shape: TExtend,
-  ): PartialObjectSchema<TShape & TExtend> {
-    const newShape = { ...this._shape, ...shape } as TShape & TExtend;
-    const newSchema = new PartialObjectSchema(newShape);
-
-    // Copy metadata from parent schema (with proper typing)
-    newSchema._meta = { ...this._meta } as any;
-
-    // Copy computed metadata from parent schema (with proper typing)
-    newSchema._computedMeta = { ...this._computedMeta } as any;
-
-    // Copy layouts from parent schema - new fields won't appear in layouts unless explicitly added
-    newSchema._layouts = { ...this._layouts } as any;
-
-    return newSchema;
-  }
-
-  toZod(): z.ZodSchema<PartialObjectOutput<TShape>> {
-    const zodShape: Record<string, z.ZodTypeAny> = {};
-    for (const key in this._shape) {
-      if (Object.hasOwn(this._shape, key) && this._shape[key]) {
-        zodShape[key] = this._shape[key].toZod().nullable().optional();
-      }
-    }
-    return z.object(zodShape) as z.ZodSchema<PartialObjectOutput<TShape>>;
-  }
-}
 
 export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
   ObjectOutput<TShape>
@@ -706,6 +422,11 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
     const newSchema = new ObjectSchema(newShape);
 
+    // Preserve partial flag if this schema was partial
+    if ((this as any)._isPartial) {
+      (newSchema as any)._isPartial = true;
+    }
+
     // Copy metadata from parent schema
     newSchema._meta = { ...this._meta };
 
@@ -751,6 +472,11 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     const newShape = { ...this._shape, ...shape } as TShape & TExtend;
     const newSchema = new ObjectSchema(newShape);
 
+    // Preserve partial flag if this schema was partial
+    if ((this as any)._isPartial) {
+      (newSchema as any)._isPartial = true;
+    }
+
     // Copy metadata from parent schema (with proper typing)
     newSchema._meta = { ...this._meta } as any;
 
@@ -764,11 +490,15 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
   }
 
   /**
-   * Create a new PartialObjectSchema where all top-level properties become optional.
-   * @returns A new PartialObjectSchema where all properties are optional.
+   * Create a new ObjectSchema where all top-level properties become optional.
+   * This creates a special ObjectSchema that behaves like a partial object.
+   * @returns A new ObjectSchema where all properties are optional.
    */
-  partial(): PartialObjectSchema<TShape> {
-    const partialSchema = new PartialObjectSchema(this._shape);
+  partial(): ObjectSchema<TShape> {
+    const partialSchema = new ObjectSchema(this._shape) as any;
+
+    // Mark this as a partial schema for special toZod behavior
+    (partialSchema as any)._isPartial = true;
 
     // Copy metadata from parent schema
     partialSchema._meta = { ...this._meta };
@@ -786,7 +516,13 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     const zodShape: Record<string, z.ZodTypeAny> = {};
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
-        zodShape[key] = this._shape[key].toZod();
+        const fieldSchema = this._shape[key];
+        // If this is a partial schema, make all fields optional
+        if ((this as any)._isPartial) {
+          zodShape[key] = fieldSchema.toZod().nullable().optional();
+        } else {
+          zodShape[key] = fieldSchema.toZod();
+        }
       }
     }
     return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
@@ -805,6 +541,8 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
    */
   toZodWithCoercion(): z.ZodSchema<ObjectOutput<TShape>> {
     const zodShape: Record<string, z.ZodTypeAny> = {};
+    const isPartial = (this as any)._isPartial;
+
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
         const fieldSchema = this._shape[key];
@@ -818,8 +556,8 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
         if (fieldSchema.type === "number" || wrappedType === "number") {
           const coercedSchema = z.coerce.number();
-          // For optional fields, preserve the optional nature
-          if (fieldSchema.type === "optional") {
+          // For optional fields or partial schemas, preserve the optional nature
+          if (fieldSchema.type === "optional" || isPartial) {
             zodShape[key] = coercedSchema.nullable().optional();
           } else {
             zodShape[key] = coercedSchema;
@@ -838,15 +576,19 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
             return val;
           }, z.boolean());
 
-          // For optional fields, preserve the optional nature
-          if (fieldSchema.type === "optional") {
+          // For optional fields or partial schemas, preserve the optional nature
+          if (fieldSchema.type === "optional" || isPartial) {
             zodShape[key] = customBooleanCoercion.nullable().optional();
           } else {
             zodShape[key] = customBooleanCoercion;
           }
         } else {
           // For strings and other types, use the original schema
-          zodShape[key] = baseZodSchema;
+          if (isPartial && fieldSchema.type !== "optional") {
+            zodShape[key] = baseZodSchema.nullable().optional();
+          } else {
+            zodShape[key] = baseZodSchema;
+          }
         }
       }
     }
@@ -892,5 +634,4 @@ export type NuSchema =
   | NumberSchema
   | OptionalSchema<any>
   | ObjectSchema<any>
-  | PartialObjectSchema<any>
   | ArraySchema<any>;

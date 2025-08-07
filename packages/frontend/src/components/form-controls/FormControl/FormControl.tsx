@@ -39,9 +39,13 @@ const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
     if (field) {
       isValidating = field.state.meta.isValidating;
       if (!error && field.state.meta.isTouched && !field.state.meta.isValid) {
-        displayError = field.state.meta.errors
-          .filter((e): e is string => typeof e === "string" && e !== undefined)
-          .join(", ");
+        // Deduplicate errors to avoid showing the same message multiple times
+        // TanStack Form can add duplicate errors when multiple validators run
+        const uniqueErrors = [...new Set(field.state.meta.errors)].filter(
+          (e): e is string => typeof e === "string" && e !== undefined,
+        );
+
+        displayError = uniqueErrors.join(", ");
         hasError = true;
       }
     }

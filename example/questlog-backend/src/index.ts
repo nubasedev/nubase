@@ -3,6 +3,7 @@ import { config } from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
+import { testUtils } from "./api/routes/test-utils";
 import {
   handleDeleteTicket,
   handleGetTicket,
@@ -26,10 +27,17 @@ app.post("/tickets", handlePostTicket);
 app.patch("/tickets/:id", handlePatchTicket);
 app.delete("/tickets/:id", handleDeleteTicket);
 
+// Test utility routes - only enabled in test environment
+if (process.env.NODE_ENV === "test" || process.env.DB_PORT === "5435") {
+  app.route("/", testUtils);
+}
+
+const port = Number(process.env.PORT) || 3001;
+
 serve(
   {
     fetch: app.fetch,
-    port: 3001,
+    port,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);

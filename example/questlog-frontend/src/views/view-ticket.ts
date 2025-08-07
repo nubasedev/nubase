@@ -1,8 +1,8 @@
 import { nu } from "@nubase/core";
 import { createViewView } from "@nubase/frontend";
-import { type apiEndpoints, patchTicketSchema } from "questlog-schema";
+import { type apiEndpoints, ticketBaseSchema } from "questlog-schema";
 
-export const viewTicketViewSchema = patchTicketSchema.requestBody;
+export const viewTicketViewSchema = ticketBaseSchema.omit("id").partial();
 
 // Define the parameters schema for this view
 export const viewTicketParamsSchema = nu.object({

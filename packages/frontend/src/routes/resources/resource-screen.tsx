@@ -1,4 +1,4 @@
-import { useParams, useSearch } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { showToast } from "../../components";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
@@ -38,6 +38,7 @@ export default function ResourceScreen() {
   });
   const searchParams = useSearch({ from: "/r/$resourceName/$operation" });
   const context = useNubaseContext();
+  const navigate = useNavigate();
 
   // Check if resources exist in config
   if (!context.config.resources) {
@@ -67,13 +68,35 @@ export default function ResourceScreen() {
       element = (
         <ResourceCreateViewRenderer
           view={resourceOperation.view}
-          onCreate={(_data) => {
-            // We need to show a toast saying the resource has been created and, if there is a view,
-            // we will redirect to that view
+          onCreate={(data) => {
+            // Add a visible indicator that onCreate was called
+            document.title = `ONCREATE CALLED - ${document.title}`;
+
             showToast(
               `Resource ${resourceName} created successfully`,
               "success",
             );
+
+            // Check if resource has a "view" operation and redirect to it
+            if (resource.operations.view && data) {
+              // The data comes from HTTP response, so the actual data is in result.data
+              const recordId = data.data?.id || data.id;
+
+              if (recordId) {
+                // Add another indicator for successful navigation attempt
+                document.title = `NAVIGATING - ${document.title}`;
+
+                navigate({
+                  to: "/r/$resourceName/$operation",
+                  params: { resourceName, operation: "view" },
+                  search: { id: recordId },
+                });
+              } else {
+                document.title = `NO RECORD ID - ${document.title}`;
+              }
+            } else {
+              document.title = `NO VIEW OP - ${document.title}`;
+            }
           }}
           onError={(error) => {
             showToast(

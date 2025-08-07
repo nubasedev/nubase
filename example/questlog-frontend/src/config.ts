@@ -13,7 +13,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   resources: {
     [ticketResource.id]: ticketResource,
   },
-  apiBaseUrl: "http://localhost:3001",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
   apiEndpoints: apiEndpoints,
   themeIds: [
     "dark",
