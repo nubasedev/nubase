@@ -9,7 +9,7 @@ async function globalSetup(_config: FullConfig) {
 
   while (retries < maxRetries) {
     try {
-      const response = await fetch("http://localhost:3001/");
+      const response = await fetch("http://localhost:4001/");
       if (response.ok) {
         console.log("Backend is ready");
         break;
@@ -29,7 +29,7 @@ async function globalSetup(_config: FullConfig) {
   // Clear database at the start of test run
   try {
     const response = await fetch(
-      "http://localhost:3001/api/test/clear-database",
+      "http://localhost:4001/api/test/clear-database",
       {
         method: "POST",
       },

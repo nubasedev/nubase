@@ -63,11 +63,7 @@ export default defineConfig({
       timeout: 120 * 1000,
       env: {
         NODE_ENV: "test",
-        DB_HOST: "localhost",
-        DB_PORT: "5435", // Use test database port
-        DB_USER: "questlog",
-        DB_PASSWORD: "questlog",
-        DB_NAME: "questlog",
+        DATABASE_URL: "postgresql://questlog:questlog@localhost:5435/questlog",
       },
     },
   ],

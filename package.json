@@ -23,7 +23,7 @@
     "build:frontend:storybook": "cd packages/frontend && npm run build:storybook",
     "e2e:setup": "cd example/questlog-frontend && npm run test:setup",
     "e2e:teardown": "cd example/questlog-frontend && npm run test:teardown",
-    "e2e": "cd example/questlog-frontend && npm run e2e",
+    "e2e": "turbo run e2e",
     "e2e:ui": "cd example/questlog-frontend && npm run e2e:ui",
     "e2e:headed": "cd example/questlog-frontend && npm run e2e:headed",
     "e2e:debug": "cd example/questlog-frontend && npm run e2e:debug",
