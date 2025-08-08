@@ -10,11 +10,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-primary text-onPrimary hover:bg-primary/90 focus:ring-primary/20 shadow-sm",
+          "bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring/20 shadow-sm",
         secondary:
-          "bg-secondaryContainer text-onSecondaryContainer hover:bg-secondaryContainer/80 hover:border-outline/80 focus:ring-outline/20 shadow-sm",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:border-border/80 focus:ring-ring/20 shadow-sm",
         danger:
-          "bg-error text-onError hover:bg-error/90 focus:ring-error/20 shadow-sm",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus:ring-destructive/20 shadow-sm",
       },
     },
     defaultVariants: {

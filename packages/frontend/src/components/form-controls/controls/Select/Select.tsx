@@ -5,11 +5,11 @@ import { forwardRef, useMemo, useState } from "react";
 import { cn } from "../../../../utils";
 
 const selectVariants = cva(
-  "w-full appearance-none bg-surface border border-outline rounded-md text-onSurface outline-none transition-all duration-200 cursor-pointer focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-surfaceVariant disabled:cursor-not-allowed disabled:opacity-60 px-4 py-3 text-sm",
+  "w-full appearance-none bg-background border border-border rounded-md text-foreground outline-none transition-all duration-200 cursor-pointer focus:border-primary focus:ring-4 focus:ring-ring/10 disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-60 px-4 py-3 text-sm",
   {
     variants: {
       hasError: {
-        true: "border-error focus:border-error focus:ring-error/10",
+        true: "border-destructive focus:border-destructive focus:ring-destructive/10",
         false: "",
       },
     },
@@ -20,7 +20,7 @@ const selectVariants = cva(
 );
 
 const menuVariants = cva(
-  "absolute z-50 w-full mt-1 bg-surface border border-outline rounded-md shadow-lg max-h-60 overflow-auto text-sm",
+  "absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-auto text-sm",
 );
 
 const optionVariants = cva(
@@ -28,11 +28,11 @@ const optionVariants = cva(
   {
     variants: {
       isHighlighted: {
-        true: "bg-primaryContainer text-onPrimaryContainer",
-        false: "text-onSurface hover:bg-surfaceVariant",
+        true: "bg-secondary text-secondary-foreground",
+        false: "text-foreground hover:bg-muted",
       },
       isSelected: {
-        true: "bg-primary text-onPrimary",
+        true: "bg-primary text-primary-foreground",
         false: "",
       },
     },
@@ -232,7 +232,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps<any>>(
                 className: cn(
                   selectVariants({ hasError }),
                   "flex items-center justify-between pr-10",
-                  !selectedItem && "text-onSurfaceVariant",
+                  !selectedItem && "text-muted-foreground",
                 ),
                 disabled: disabled || loading,
               })}
@@ -255,7 +255,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps<any>>(
             <button
               type="button"
               onClick={handleClear}
-              className="absolute inset-y-0 right-8 flex items-center pr-2 text-onSurfaceVariant hover:text-onSurface transition-colors"
+              className="absolute inset-y-0 right-8 flex items-center pr-2 text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Clear selection"
             >
               <ClearIcon />
@@ -270,7 +270,7 @@ const Select = forwardRef<HTMLDivElement, SelectProps<any>>(
         >
           {isOpen &&
             (displayOptions.length === 0 ? (
-              <li className="px-4 py-2 text-onSurfaceVariant text-center">
+              <li className="px-4 py-2 text-muted-foreground text-center">
                 {loading ? loadingMessage : emptyMessage}
               </li>
             ) : (

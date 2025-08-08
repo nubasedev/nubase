@@ -127,7 +127,7 @@ export const editFieldRenderers: Record<string, FieldRenderer> = {
 
 export const unsupportedRenderer: FieldRenderer = ({ schema }) => {
   const element = (
-    <div className="px-3 py-2 bg-errorContainer text-onErrorContainer rounded-md">
+    <div className="px-3 py-2 bg-destructive/10 text-destructive-foreground rounded-md">
       <div>Unsupported field type: {schema.type}</div>
     </div>
   );

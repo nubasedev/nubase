@@ -69,9 +69,6 @@ export default function ResourceScreen() {
         <ResourceCreateViewRenderer
           view={resourceOperation.view}
           onCreate={(data) => {
-            // Add a visible indicator that onCreate was called
-            document.title = `ONCREATE CALLED - ${document.title}`;
-
             showToast(
               `Resource ${resourceName} created successfully`,
               "success",

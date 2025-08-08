@@ -17,12 +17,12 @@ export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
       {layout.groups.map((group, groupIndex) => (
         <div key={groupIndex} className={`form-group ${group.className || ""}`}>
           {group.label && (
-            <h3 className="text-lg font-medium mb-3 text-onSurface bg-surface py-2 rounded">
+            <h3 className="text-lg font-medium mb-3 text-foreground bg-background py-2 rounded">
               {group.label}
             </h3>
           )}
           {group.description && (
-            <p className="text-sm text-onSurfaceVariant mb-3">
+            <p className="text-sm text-muted-foreground mb-3">
               {group.description}
             </p>
           )}
@@ -36,7 +36,7 @@ export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
                   </div>
                   {fieldIndex < visibleFields.length - 1 && (
                     // This is the separator between fields
-                    <div className="border-t border-outlineVariant my-3" />
+                    <div className="border-t border-border my-3" />
                   )}
                 </div>
               ))}

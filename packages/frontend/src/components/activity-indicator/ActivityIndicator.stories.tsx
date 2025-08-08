@@ -44,23 +44,23 @@ export const Sizes: Story = {
     <div className="flex items-center gap-6">
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator size="xs" />
-        <span className="text-xs text-onSurfaceVariant">xs (12px)</span>
+        <span className="text-xs text-muted-foreground">xs (12px)</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator size="sm" />
-        <span className="text-xs text-onSurfaceVariant">sm (16px)</span>
+        <span className="text-xs text-muted-foreground">sm (16px)</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator size="md" />
-        <span className="text-xs text-onSurfaceVariant">md (20px)</span>
+        <span className="text-xs text-muted-foreground">md (20px)</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator size="lg" />
-        <span className="text-xs text-onSurfaceVariant">lg (24px)</span>
+        <span className="text-xs text-muted-foreground">lg (24px)</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator size="xl" />
-        <span className="text-xs text-onSurfaceVariant">xl (32px)</span>
+        <span className="text-xs text-muted-foreground">xl (32px)</span>
       </div>
     </div>
   ),
@@ -78,19 +78,19 @@ export const Colors: Story = {
     <div className="flex items-center gap-6">
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator color="primary" />
-        <span className="text-xs text-onSurfaceVariant">primary</span>
+        <span className="text-xs text-muted-foreground">primary</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator color="secondary" />
-        <span className="text-xs text-onSurfaceVariant">secondary</span>
+        <span className="text-xs text-muted-foreground">secondary</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator color="surface" />
-        <span className="text-xs text-onSurfaceVariant">surface</span>
+        <span className="text-xs text-muted-foreground">surface</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator color="surfaceVariant" />
-        <span className="text-xs text-onSurfaceVariant">surfaceVariant</span>
+        <span className="text-xs text-muted-foreground">surfaceVariant</span>
       </div>
       <div className="flex flex-col items-center gap-2 p-3 bg-primary rounded">
         <ActivityIndicator color="inherit" className="text-onPrimary" />
@@ -113,7 +113,7 @@ export const InContext: Story = {
     <div className="space-y-6">
       {/* Button Loading State */}
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-onSurface">
+        <h3 className="text-sm font-medium text-foreground">
           Button Loading State
         </h3>
         <button
@@ -128,13 +128,13 @@ export const InContext: Story = {
 
       {/* Form Field Loading */}
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-onSurface">
+        <h3 className="text-sm font-medium text-foreground">
           Form Field Loading
         </h3>
         <div className="relative">
           <input
             type="text"
-            className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-onSurface"
+            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
             value="Updating..."
             readOnly
           />
@@ -146,14 +146,14 @@ export const InContext: Story = {
 
       {/* Card Loading */}
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-onSurface">
+        <h3 className="text-sm font-medium text-foreground">
           Card Loading State
         </h3>
-        <div className="p-4 border border-outline rounded-lg bg-surface">
+        <div className="p-4 border border-border rounded-lg bg-background">
           <div className="flex items-center justify-center h-20">
             <div className="flex flex-col items-center gap-2">
               <ActivityIndicator size="lg" color="primary" />
-              <span className="text-sm text-onSurfaceVariant">
+              <span className="text-sm text-muted-foreground">
                 Loading content...
               </span>
             </div>
@@ -163,8 +163,8 @@ export const InContext: Story = {
 
       {/* Inline Loading */}
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-onSurface">Inline Loading</h3>
-        <p className="text-onSurface flex items-center gap-2">
+        <h3 className="text-sm font-medium text-foreground">Inline Loading</h3>
+        <p className="text-foreground flex items-center gap-2">
           Processing your request
           <ActivityIndicator size="xs" color="primary" />
         </p>
@@ -186,15 +186,15 @@ export const CustomStyling: Story = {
     <div className="flex items-center gap-6">
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator className="text-red-500 w-10 h-10" />
-        <span className="text-xs text-onSurfaceVariant">Custom red color</span>
+        <span className="text-xs text-muted-foreground">Custom red color</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator className="text-green-500 animate-pulse" />
-        <span className="text-xs text-onSurfaceVariant">Pulse animation</span>
+        <span className="text-xs text-muted-foreground">Pulse animation</span>
       </div>
       <div className="flex flex-col items-center gap-2">
         <ActivityIndicator className="text-blue-500 opacity-50" />
-        <span className="text-xs text-onSurfaceVariant">50% opacity</span>
+        <span className="text-xs text-muted-foreground">50% opacity</span>
       </div>
     </div>
   ),
@@ -213,15 +213,15 @@ export const AccessibilityExample: Story = {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <ActivityIndicator size="sm" aria-label="Saving your changes" />
-        <span className="text-onSurface">Custom aria-label for context</span>
+        <span className="text-foreground">Custom aria-label for context</span>
       </div>
       <div className="flex items-center gap-2">
         <ActivityIndicator size="sm" aria-label="Loading user profile data" />
-        <span className="text-onSurface">Specific loading description</span>
+        <span className="text-foreground">Specific loading description</span>
       </div>
       <div className="flex items-center gap-2">
         <ActivityIndicator size="sm" />
-        <span className="text-onSurface">Default "Loading..." aria-label</span>
+        <span className="text-foreground">Default "Loading..." aria-label</span>
       </div>
     </div>
   ),

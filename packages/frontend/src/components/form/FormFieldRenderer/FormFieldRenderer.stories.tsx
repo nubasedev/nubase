@@ -84,7 +84,7 @@ export const StringFieldEdit: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           String field in edit mode (shows error when text is longer than 10
           characters)
         </p>
@@ -94,7 +94,7 @@ export const StringFieldEdit: Story = {
           metadata={schema._meta}
           mode="edit"
         />
-        <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
+        <p className="text-xs text-muted-foreground mt-2">Value: {value}</p>
       </div>
     );
   },
@@ -129,7 +129,7 @@ export const StringFieldView: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           String field in view mode (read-only)
         </p>
         <FormFieldRenderer
@@ -178,7 +178,7 @@ export const StringFieldPatch: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           String field in patch mode - click to edit inline
         </p>
         <FormFieldRenderer
@@ -226,7 +226,7 @@ export const NumberFieldEdit: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Number field in edit mode (shows error when value is negative)
         </p>
         <FormFieldRenderer
@@ -235,7 +235,7 @@ export const NumberFieldEdit: Story = {
           metadata={schema._meta}
           mode="edit"
         />
-        <p className="text-xs text-onSurfaceVariant mt-2">Value: {value}</p>
+        <p className="text-xs text-muted-foreground mt-2">Value: {value}</p>
       </div>
     );
   },
@@ -270,7 +270,7 @@ export const NumberFieldView: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Number field in view mode (read-only)
         </p>
         <FormFieldRenderer
@@ -319,7 +319,7 @@ export const NumberFieldPatch: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Number field in patch mode - click to edit inline
         </p>
         <FormFieldRenderer
@@ -363,7 +363,7 @@ export const BooleanFieldEdit: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Boolean field in edit mode (checkbox input)
         </p>
         <FormFieldRenderer
@@ -372,7 +372,7 @@ export const BooleanFieldEdit: Story = {
           metadata={schema._meta}
           mode="edit"
         />
-        <p className="text-xs text-onSurfaceVariant mt-2">
+        <p className="text-xs text-muted-foreground mt-2">
           Value: {String(value)}
         </p>
       </div>
@@ -409,7 +409,7 @@ export const BooleanFieldView: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Boolean field in view mode (read-only)
         </p>
         <FormFieldRenderer
@@ -458,7 +458,7 @@ export const BooleanFieldPatch: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Boolean field in patch mode - click to toggle inline
         </p>
         <FormFieldRenderer
@@ -506,7 +506,7 @@ export const UnsupportedFieldEdit: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Unsupported field type in edit mode (non-editable error display)
         </p>
         <FormFieldRenderer
@@ -553,7 +553,7 @@ export const UnsupportedFieldView: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Unsupported field type in view mode (error display)
         </p>
         <FormFieldRenderer
@@ -607,7 +607,7 @@ export const UnsupportedFieldPatch: Story = {
 
     return (
       <div className="w-80">
-        <p className="text-sm text-onSurfaceVariant mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           Unsupported field type in patch mode (non-editable error display)
         </p>
         <FormFieldRenderer

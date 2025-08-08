@@ -40,7 +40,7 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
   return (
     <div className={`flex flex-col ${className}`}>
       {metadataError && (
-        <div className="mb-4 p-3 bg-errorContainer border border-error rounded-md text-onErrorContainer text-sm">
+        <div className="mb-4 p-3 bg-destructive/10 border border-destructive rounded-md text-destructive-foreground text-sm">
           <strong>Metadata Error:</strong> {metadataError.message}
         </div>
       )}

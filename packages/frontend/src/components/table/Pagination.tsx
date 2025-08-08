@@ -5,7 +5,7 @@ import { cn } from "../../utils";
 import { Button } from "../buttons/Button/Button";
 
 const paginationVariants = cva(
-  "flex items-center justify-between gap-4 p-4 bg-surface border-t border-outline text-sm",
+  "flex items-center justify-between gap-4 p-4 bg-background border-t border-border text-sm",
 );
 
 export interface PaginationProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -74,18 +74,18 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
       <div ref={ref} className={cn(paginationVariants(), className)} {...props}>
         <div className="flex items-center gap-4">
           {showInfo && (
-            <span className="text-onSurfaceVariant">
+            <span className="text-muted-foreground">
               Showing {startItem}-{endItem} of {totalItems} items
             </span>
           )}
 
           {showPageSizeSelector && onPageSizeChange && (
             <div className="flex items-center gap-2">
-              <span className="text-onSurfaceVariant">Items per page:</span>
+              <span className="text-muted-foreground">Items per page:</span>
               <select
                 value={pageSize}
                 onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="bg-surface border border-outline rounded px-2 py-1 text-onSurface text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
+                className="bg-background border border-border rounded px-2 py-1 text-foreground text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
               >
                 {pageSizeOptions.map((option) => (
                   <option key={option} value={option}>
@@ -120,7 +120,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
             {getVisiblePages().map((page, index) => (
               <div key={index}>
                 {page === "..." ? (
-                  <span className="px-2 py-1 text-onSurfaceVariant">...</span>
+                  <span className="px-2 py-1 text-muted-foreground">...</span>
                 ) : (
                   <Button
                     variant={currentPage === page ? "primary" : "secondary"}

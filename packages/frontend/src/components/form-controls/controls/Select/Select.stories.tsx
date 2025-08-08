@@ -249,15 +249,15 @@ export const ComplexObjectValues: Story = {
           }}
         />
         {selectedUser && (
-          <div className="p-3 bg-surfaceVariant rounded-md">
-            <h4 className="font-semibold text-onSurface">Selected User:</h4>
-            <p className="text-sm text-onSurfaceVariant">
+          <div className="p-3 bg-muted rounded-md">
+            <h4 className="font-semibold text-foreground">Selected User:</h4>
+            <p className="text-sm text-muted-foreground">
               ID: {selectedUser.id}
             </p>
-            <p className="text-sm text-onSurfaceVariant">
+            <p className="text-sm text-muted-foreground">
               Name: {selectedUser.name}
             </p>
-            <p className="text-sm text-onSurfaceVariant">
+            <p className="text-sm text-muted-foreground">
               Role: {selectedUser.role}
             </p>
           </div>
@@ -291,7 +291,7 @@ export const CustomFilterFunction: Story = {
 
     return (
       <div className="w-80 space-y-4">
-        <div className="p-3 bg-surfaceVariant rounded-md text-sm text-onSurfaceVariant">
+        <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
           <p>
             Try searching by country name (e.g., "United") or continent (e.g.,
             "Europe")
@@ -429,8 +429,8 @@ export const InteractiveDemo: Story = {
 
     return (
       <div className="space-y-6 w-96">
-        <div className="p-4 bg-surfaceVariant rounded-lg space-y-3">
-          <h3 className="font-semibold text-onSurface">Configuration</h3>
+        <div className="p-4 bg-muted rounded-lg space-y-3">
+          <h3 className="font-semibold text-foreground">Configuration</h3>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="flex items-center gap-2 text-sm">
@@ -487,7 +487,7 @@ export const InteractiveDemo: Story = {
         />
 
         {value && (
-          <div className="p-3 bg-primaryContainer text-onPrimaryContainer rounded-md">
+          <div className="p-3 bg-secondary text-secondary-foreground rounded-md">
             <h4 className="font-semibold">Selected Country:</h4>
             <p className="text-sm">Name: {value.name}</p>
             <p className="text-sm">Code: {value.code}</p>

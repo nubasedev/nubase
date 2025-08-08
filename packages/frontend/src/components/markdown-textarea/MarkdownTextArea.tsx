@@ -51,12 +51,12 @@ export const MarkdownTextArea = forwardRef<
       ref={textAreaRef}
       className={cn(
         "w-full min-h-[200px] px-3 py-2",
-        "bg-surface text-onSurface",
-        "border border-outline rounded-md",
+        "bg-background text-foreground",
+        "border border-border rounded-md",
         "resize-vertical",
-        "focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary",
+        "focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        "placeholder:text-onSurfaceVariant",
+        "placeholder:text-muted-foreground",
         "font-mono text-sm",
         className,
       )}

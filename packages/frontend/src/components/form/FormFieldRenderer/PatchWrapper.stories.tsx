@@ -49,9 +49,9 @@ export const ViewMode: Story = {
           />
         )}
       >
-        <div className="px-3 py-2 text-onSurface min-h-[2.5rem] flex items-center">
+        <div className="px-3 py-2 text-foreground min-h-[2.5rem] flex items-center">
           {value || (
-            <span className="text-onSurfaceVariant italic">
+            <span className="text-foregroundVariant italic">
               Click me to edit
             </span>
           )}
@@ -84,7 +84,7 @@ export const EditMode: Story = {
           />
         )}
       >
-        <div className="px-3 py-2 text-onSurface">Original content</div>
+        <div className="px-3 py-2 text-foreground">Original content</div>
       </PatchWrapper>
     );
   },
@@ -136,9 +136,9 @@ export const InteractiveExample: Story = {
             />
           )}
         >
-          <div className="px-3 py-2 text-onSurface min-h-[2.5rem] flex items-center">
+          <div className="px-3 py-2 text-foreground min-h-[2.5rem] flex items-center">
             {value || (
-              <span className="text-onSurfaceVariant italic">Empty</span>
+              <span className="text-foregroundVariant italic">Empty</span>
             )}
           </div>
         </PatchWrapper>
@@ -183,10 +183,10 @@ export const LongTextExample: Story = {
           onCancel={handleCancel}
           editComponent={(errors) => (
             <textarea
-              className={`w-full p-3 border rounded-lg bg-surface text-onSurface placeholder-onSurfaceVariant resize-none min-h-[6rem] ${
+              className={`w-full p-3 border rounded-lg bg-background text-foreground placeholder-muted-foreground resize-none min-h-[6rem] ${
                 errors.length > 0
                   ? "border-error focus:ring-error/10"
-                  : "border-outline"
+                  : "border-border"
               }`}
               value={tempValue}
               onChange={(e) => setTempValue(e.target.value)}
@@ -194,9 +194,9 @@ export const LongTextExample: Story = {
             />
           )}
         >
-          <div className="px-3 py-2 text-onSurface min-h-[6rem]">
+          <div className="px-3 py-2 text-foreground min-h-[6rem]">
             {value || (
-              <span className="text-onSurfaceVariant italic">Empty</span>
+              <span className="text-foregroundVariant italic">Empty</span>
             )}
           </div>
         </PatchWrapper>
@@ -253,7 +253,7 @@ export const ValidationErrorsExample: Story = {
 
     return (
       <div className="w-80">
-        <div className="mb-4 p-3 bg-surfaceVariant rounded-lg text-sm text-onSurfaceVariant">
+        <div className="mb-4 p-3 bg-backgroundVariant rounded-lg text-sm text-foregroundVariant">
           <strong>Try these to see validation errors:</strong>
           <ul className="mt-2 space-y-1">
             <li>• Type less than 3 characters</li>
@@ -277,9 +277,9 @@ export const ValidationErrorsExample: Story = {
             />
           )}
         >
-          <div className="px-3 py-2 text-onSurface min-h-[2.5rem] flex items-center">
+          <div className="px-3 py-2 text-foreground min-h-[2.5rem] flex items-center">
             {value || (
-              <span className="text-onSurfaceVariant italic">Empty</span>
+              <span className="text-foregroundVariant italic">Empty</span>
             )}
           </div>
         </PatchWrapper>
@@ -324,7 +324,7 @@ export const NetworkErrorExample: Story = {
 
     return (
       <div className="w-80">
-        <div className="mb-4 p-3 bg-surfaceVariant rounded-lg text-sm text-onSurfaceVariant">
+        <div className="mb-4 p-3 bg-backgroundVariant rounded-lg text-sm text-foregroundVariant">
           <strong>Simulates network errors:</strong>
           <br />
           Every other save attempt will fail with a generic error message.
@@ -345,9 +345,9 @@ export const NetworkErrorExample: Story = {
             />
           )}
         >
-          <div className="px-3 py-2 text-onSurface min-h-[2.5rem] flex items-center">
+          <div className="px-3 py-2 text-foreground min-h-[2.5rem] flex items-center">
             {value || (
-              <span className="text-onSurfaceVariant italic">Empty</span>
+              <span className="text-foregroundVariant italic">Empty</span>
             )}
           </div>
         </PatchWrapper>

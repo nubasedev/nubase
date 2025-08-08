@@ -15,14 +15,6 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   },
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
   apiEndpoints: apiEndpoints,
-  themeIds: [
-    "dark",
-    "darkhc",
-    "darkblue",
-    "darkterminal",
-    "light",
-    "lightereader",
-    "lighthc",
-  ],
+  themeIds: ["dark", "light"],
   defaultThemeId: "dark",
 };

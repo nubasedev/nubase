@@ -9,10 +9,9 @@ const navItemVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "text-onSurfaceVariant hover:text-onSurface hover:bg-surfaceVariant",
-        active: "text-onSurface bg-surfaceVariant border-l-2 border-l-primary",
-        disabled: "text-onSurfaceVariant cursor-not-allowed opacity-50",
+        default: "text-muted-foreground hover:text-foreground hover:bg-muted",
+        active: "text-foreground bg-muted border-l-2 border-l-primary",
+        disabled: "text-muted-foreground cursor-not-allowed opacity-50",
       },
       level: {
         0: "ml-0",
@@ -63,7 +62,7 @@ export const NavItemComponent: FC<NavItemComponentProps> = ({
       <div className="flex items-center gap-2 flex-1">
         <span className="flex-1 truncate">{item.label}</span>
         {item.badge && (
-          <span className="ml-auto px-2 py-0.5 text-xs bg-primaryContainer text-onPrimaryContainer rounded-full">
+          <span className="ml-auto px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded-full">
             {item.badge}
           </span>
         )}

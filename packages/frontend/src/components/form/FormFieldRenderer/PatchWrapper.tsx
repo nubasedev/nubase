@@ -141,7 +141,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
         {errorsToShow.length > 0 && (
           <div className="mt-2 space-y-1">
             {errorsToShow.map((error, index) => (
-              <div key={index} className="text-error text-sm px-2">
+              <div key={index} className="text-destructive text-sm px-2">
                 {error}
               </div>
             ))}
@@ -149,7 +149,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
         )}
 
         {/* Action buttons */}
-        <div className="flex gap-2 mt-2 p-2 bg-surfaceVariant rounded-lg shadow-xl">
+        <div className="flex gap-2 mt-2 p-2 bg-muted rounded-lg shadow-xl">
           <Button variant="primary" onClick={handlePatch} disabled={isPatching}>
             {isPatching ? (
               <ActivityIndicator
@@ -176,7 +176,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   return (
     <button
       type="button"
-      className="w-full text-left cursor-pointer rounded hover:bg-surfaceVariant transition-colors duration-200 border-none bg-transparent p-0"
+      className="w-full text-left cursor-pointer rounded hover:bg-muted transition-colors duration-200 border-none bg-transparent p-0"
       onClick={onStartEdit}
       aria-label="Click to edit"
       id={id}

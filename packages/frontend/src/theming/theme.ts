@@ -6,41 +6,57 @@ export interface NubaseTheme {
 }
 
 export type NubaseThemeColors = {
+  // Base colors
+  background: string;
+  foreground: string;
+
+  // Card colors
+  card: string;
+  cardForeground: string;
+
+  // Popover colors
+  popover: string;
+  popoverForeground: string;
+
   // Primary colors
   primary: string;
-  onPrimary: string;
-  primaryContainer: string;
-  onPrimaryContainer: string;
+  primaryForeground: string;
 
   // Secondary colors
   secondary: string;
-  onSecondary: string;
-  secondaryContainer: string;
-  onSecondaryContainer: string;
+  secondaryForeground: string;
 
-  // Tertiary colors
-  tertiary: string;
-  onTertiary: string;
-  tertiaryContainer: string;
-  onTertiaryContainer: string;
+  // Muted colors
+  muted: string;
+  mutedForeground: string;
 
-  // Error colors
-  error: string;
-  onError: string;
-  errorContainer: string;
-  onErrorContainer: string;
+  // Accent colors
+  accent: string;
+  accentForeground: string;
 
-  // Surface colors
-  surface: string;
-  onSurface: string;
-  surfaceVariant: string;
-  onSurfaceVariant: string;
+  // Destructive colors (replaces error)
+  destructive: string;
+  destructiveForeground: string;
 
-  // Other colors
-  outline: string;
-  outlineVariant: string;
-  shadow: string;
-  scrim: string;
-  inverseSurface: string;
-  onInverseSurface: string;
+  // Border and input colors
+  border: string;
+  input: string;
+  ring: string;
+
+  // Chart colors
+  chart1: string;
+  chart2: string;
+  chart3: string;
+  chart4: string;
+  chart5: string;
+
+  // Sidebar colors
+  sidebar: string;
+  sidebarForeground: string;
+  sidebarPrimary: string;
+  sidebarPrimaryForeground: string;
+  sidebarAccent: string;
+  sidebarAccentForeground: string;
+  sidebarBorder: string;
+  sidebarRing: string;
 };

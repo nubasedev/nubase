@@ -4,12 +4,12 @@ import { forwardRef } from "react";
 import { cn } from "../../../../utils";
 
 const checkboxVariants = cva(
-  "w-4 h-4 rounded border bg-surface text-primary transition-all duration-200 cursor-pointer focus:ring-4 focus:ring-primary/10 disabled:bg-surfaceVariant disabled:cursor-not-allowed disabled:opacity-60",
+  "w-4 h-4 rounded border bg-background text-primary transition-all duration-200 cursor-pointer focus:ring-4 focus:ring-ring/10 disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-60",
   {
     variants: {
       hasError: {
-        true: "border-error focus:ring-error/10",
-        false: "border-outline",
+        true: "border-destructive focus:ring-destructive/10",
+        false: "border-border",
       },
     },
     defaultVariants: {

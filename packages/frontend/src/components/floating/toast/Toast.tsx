@@ -18,7 +18,7 @@ export interface ToastProps {
 const typeConfig = {
   default: {
     icon: null,
-    className: "bg-surface border-border text-text",
+    className: "bg-background border-border text-foreground",
   },
   success: {
     icon: IconCheck,
@@ -28,7 +28,7 @@ const typeConfig = {
   error: {
     icon: IconX,
     className:
-      "bg-error/10 border-error/20 text-error dark:bg-error/20 dark:border-error/30 dark:text-error",
+      "bg-destructive/10 border-destructive/20 text-destructive dark:bg-destructive/20 dark:border-destructive/30 dark:text-destructive",
   },
   warning: {
     icon: IconAlertTriangle,

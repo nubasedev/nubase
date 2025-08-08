@@ -35,7 +35,7 @@ export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
         className={className}
         header={
           title ? (
-            <h2 className="text-lg font-semibold text-onSurface">{title}</h2>
+            <h2 className="text-lg font-semibold text-foreground">{title}</h2>
           ) : undefined
         }
         body={

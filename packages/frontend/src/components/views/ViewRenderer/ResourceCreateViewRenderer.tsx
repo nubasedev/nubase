@@ -28,11 +28,6 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
           data,
           context,
         });
-        console.log("RENDERER - onSubmit completed with result:", result);
-        console.log(
-          "RENDERER - About to call onCreate callback, exists?",
-          !!onCreate,
-        );
         onCreate?.(result);
         console.log("RENDERER - onCreate callback completed");
       } catch (error) {

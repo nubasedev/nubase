@@ -2,53 +2,69 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
-  /* Material Design 3 color roles */
+  /* ShadCN color system */
+  /* Base colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Card colors */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Popover colors */
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
   /* Primary colors */
-  --color-primary: var(--theme-color-primary);
-  --color-onPrimary: var(--theme-color-onPrimary);
-  --color-primaryContainer: var(--theme-color-primaryContainer);
-  --color-onPrimaryContainer: var(--theme-color-onPrimaryContainer);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
   /* Secondary colors */
-  --color-secondary: var(--theme-color-secondary);
-  --color-onSecondary: var(--theme-color-onSecondary);
-  --color-secondaryContainer: var(--theme-color-secondaryContainer);
-  --color-onSecondaryContainer: var(--theme-color-onSecondaryContainer);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  /* Tertiary colors */
-  --color-tertiary: var(--theme-color-tertiary);
-  --color-onTertiary: var(--theme-color-onTertiary);
-  --color-tertiaryContainer: var(--theme-color-tertiaryContainer);
-  --color-onTertiaryContainer: var(--theme-color-onTertiaryContainer);
+  /* Muted colors */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  /* Error colors */
-  --color-error: var(--theme-color-error);
-  --color-onError: var(--theme-color-onError);
-  --color-errorContainer: var(--theme-color-errorContainer);
-  --color-onErrorContainer: var(--theme-color-onErrorContainer);
+  /* Accent colors */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-  /* Surface colors */
-  --color-surface: var(--theme-color-surface);
-  --color-onSurface: var(--theme-color-onSurface);
-  --color-surfaceVariant: var(--theme-color-surfaceVariant);
-  --color-onSurfaceVariant: var(--theme-color-onSurfaceVariant);
+  /* Destructive colors */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
-  /* Other colors */
-  --color-outline: var(--theme-color-outline);
-  --color-outlineVariant: var(--theme-color-outlineVariant);
-  --color-shadow: var(--theme-color-shadow);
-  --color-scrim: var(--theme-color-scrim);
-  --color-inverseSurface: var(--theme-color-inverseSurface);
-  --color-onInverseSurface: var(--theme-color-onInverseSurface);
+  /* Border and input colors */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer components {
   body {
-    color: var(--color-onSurface);
-    background: var(--color-surface);
+    color: var(--color-foreground);
+    background: var(--color-background);
   }
 
   * {
-    scrollbar-color: var(--color-outline) transparent;
+    scrollbar-color: var(--color-border) transparent;
   }
 }

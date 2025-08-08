@@ -43,7 +43,7 @@ export const Dialog: FC<DialogProps> = ({
   };
 
   const header = title ? (
-    <DialogTitle className="text-lg font-semibold text-onSurface">
+    <DialogTitle className="text-lg font-semibold text-foreground">
       {title}
     </DialogTitle>
   ) : undefined;

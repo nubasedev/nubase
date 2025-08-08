@@ -29,39 +29,39 @@ const ResizeDemo = ({
   );
 
   return (
-    <div className="p-8 bg-surface">
-      <div className="mb-4 text-sm text-onSurfaceVariant">
+    <div className="p-8 bg-background">
+      <div className="mb-4 text-sm text-muted-foreground">
         Current size: {size}px (drag the handle to resize)
       </div>
 
       {direction === "vertical" ? (
         <div className="flex">
           <div
-            className="bg-primary/10 border border-outline flex items-center justify-center"
+            className="bg-primary/10 border border-border flex items-center justify-center"
             style={{ width: size, height: 300 }}
           >
-            <span className="text-onSurface">Resizable Panel</span>
+            <span className="text-foreground">Resizable Panel</span>
           </div>
           <div className="relative">
             <ResizeHandle direction="vertical" onMouseDown={handleResize} />
           </div>
-          <div className="w-32 bg-secondary/10 border border-outline flex items-center justify-center">
-            <span className="text-onSurface text-center">Fixed Panel</span>
+          <div className="w-32 bg-secondary/10 border border-border flex items-center justify-center">
+            <span className="text-foreground text-center">Fixed Panel</span>
           </div>
         </div>
       ) : (
         <div className="flex flex-col">
           <div
-            className="bg-primary/10 border border-outline flex items-center justify-center"
+            className="bg-primary/10 border border-border flex items-center justify-center"
             style={{ height: size }}
           >
-            <span className="text-onSurface">Resizable Panel</span>
+            <span className="text-foreground">Resizable Panel</span>
           </div>
           <div className="relative">
             <ResizeHandle direction="horizontal" onMouseDown={handleResize} />
           </div>
-          <div className="h-32 bg-secondary/10 border border-outline flex items-center justify-center">
-            <span className="text-onSurface text-center">Fixed Panel</span>
+          <div className="h-32 bg-secondary/10 border border-border flex items-center justify-center">
+            <span className="text-foreground text-center">Fixed Panel</span>
           </div>
         </div>
       )}

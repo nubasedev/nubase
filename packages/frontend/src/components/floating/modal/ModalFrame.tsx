@@ -12,7 +12,7 @@ export const ModalFrame: FC<ModalFrameProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-lg bg-surface shadow-xl ring-1 ring-outline/20 p-4 overflow-y-auto ${className}`}
+      className={`rounded-xl bg-card text-card-foreground shadow-sm border p-4 overflow-y-auto ${className}`}
       style={{
         minHeight: "100px",
         maxHeight: "min(600px, calc(100vh - 2rem))",

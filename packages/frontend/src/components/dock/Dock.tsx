@@ -73,19 +73,19 @@ export const Dock: React.FC<DockProps> = ({
         className={`flex flex-col h-full w-full min-h-0 min-w-0 ${isNested ? "h-auto w-auto" : "h-screen w-screen"}`}
       >
         {top && (
-          <div className="bg-surface border-b border-outline flex-shrink-0">
+          <div className="bg-background border-b border-border flex-shrink-0">
             {top}
           </div>
         )}
         <div className="flex flex-1 min-h-0">
           {left && (
             <div
-              className="flex flex-col relative bg-surface border-r border-outline"
+              className="flex flex-col relative bg-background border-r border-border"
               style={{
                 width: leftWidth,
               }}
             >
-              <div className="flex-1 bg-surface relative overflow-y-auto">
+              <div className="flex-1 bg-background relative overflow-y-auto">
                 {left}
               </div>
               <div className="absolute top-0 bottom-0 w-0 right-0 z-10">
@@ -97,18 +97,18 @@ export const Dock: React.FC<DockProps> = ({
             </div>
           )}
           <div className="flex-1 flex flex-col relative">
-            <div className="flex-1 bg-surface relative overflow-y-auto">
+            <div className="flex-1 bg-background relative overflow-y-auto">
               {center}
             </div>
           </div>
           {right && (
             <div
-              className="flex flex-col relative bg-surface border-l border-outline"
+              className="flex flex-col relative bg-background border-l border-border"
               style={{
                 width: rightWidth,
               }}
             >
-              <div className="flex-1 bg-surface relative overflow-y-auto">
+              <div className="flex-1 bg-background relative overflow-y-auto">
                 {right}
               </div>
               <div className="absolute top-0 bottom-0 w-0 left-0 z-10">

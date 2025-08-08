@@ -14,8 +14,8 @@ const activityIndicatorVariants = cva("animate-spin", {
     color: {
       primary: "text-primary",
       secondary: "text-secondary",
-      surface: "text-onSurface",
-      surfaceVariant: "text-onSurfaceVariant",
+      surface: "text-foreground",
+      surfaceVariant: "text-muted-foreground",
       inherit: "text-inherit",
     },
   },

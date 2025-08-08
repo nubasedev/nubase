@@ -16,7 +16,7 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-lg bg-surface shadow-xl ring-1 ring-outline/20 flex flex-col overflow-hidden ${className}`}
+      className={`rounded-lg bg-card border shadow-sm flex flex-col overflow-hidden ${className}`}
       style={{ maxHeight: "calc(100vh - 2rem)" }}
     >
       {header && <div className="flex-shrink-0 p-4 pb-3">{header}</div>}
@@ -29,9 +29,7 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
         </div>
       )}
 
-      {footer && (
-        <div className="flex-shrink-0 bg-surfaceVariant">{footer}</div>
-      )}
+      {footer && <div className="flex-shrink-0 bg-muted">{footer}</div>}
     </div>
   );
 };

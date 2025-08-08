@@ -34,8 +34,8 @@ export const ResizeHandle: React.FC<ResizeHandleProps> = ({
       <div
         className={`absolute z-10 transition-all duration-200 ${
           direction === "vertical"
-            ? `cursor-col-resize top-0 bottom-0 left-1/2 -translate-x-1/2 ${isHovering ? "bg-primary/30 w-2" : "bg-outline/20 w-1"}`
-            : `cursor-row-resize left-0 right-0 top-1/2 -translate-y-1/2 ${isHovering ? "bg-primary/30 h-2" : "bg-outline/20 h-1"}`
+            ? `cursor-col-resize top-0 bottom-0 left-1/2 -translate-x-1/2 ${isHovering ? "bg-primary/30 w-2" : "bg-border/20 w-1"}`
+            : `cursor-row-resize left-0 right-0 top-1/2 -translate-y-1/2 ${isHovering ? "bg-primary/30 h-2" : "bg-border/20 h-1"}`
         }`}
       />
     </button>

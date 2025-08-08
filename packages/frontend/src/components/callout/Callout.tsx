@@ -6,8 +6,8 @@ const calloutVariants = cva(
   {
     variants: {
       variant: {
-        info: "bg-surfaceVariant text-onSurface",
-        danger: "bg-errorContainer text-onErrorContainer",
+        info: "bg-muted text-foreground",
+        danger: "bg-destructive/10 text-destructive-foreground",
       },
     },
     defaultVariants: {

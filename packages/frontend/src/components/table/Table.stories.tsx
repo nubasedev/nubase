@@ -160,9 +160,9 @@ const userColumns: ColumnDef<User>[] = [
     cell: ({ getValue }) => {
       const status = getValue() as User["status"];
       const statusClasses = {
-        active: "bg-primaryContainer text-onPrimaryContainer",
-        inactive: "bg-errorContainer text-onErrorContainer",
-        pending: "bg-tertiaryContainer text-onTertiaryContainer",
+        active: "bg-secondary text-secondary-foreground",
+        inactive: "bg-destructive/10 text-destructive-foreground",
+        pending: "bg-accent text-accent-foreground",
       };
       return (
         <span
@@ -184,7 +184,7 @@ const userColumns: ColumnDef<User>[] = [
     size: 120,
     cell: ({ getValue }) => {
       const value = getValue() as string;
-      return value || <span className="text-onSurfaceVariant">Never</span>;
+      return value || <span className="text-muted-foreground">Never</span>;
     },
   },
   {
@@ -313,11 +313,11 @@ export const InteractiveSorting: Story = {
 
     return (
       <div className="space-y-4">
-        <div className="p-4 bg-surfaceVariant rounded-lg">
-          <h3 className="font-semibold text-onSurface mb-2">
+        <div className="p-4 bg-muted rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">
             Current Sorting:
           </h3>
-          <pre className="text-sm text-onSurfaceVariant">
+          <pre className="text-sm text-muted-foreground">
             {sorting.length > 0
               ? JSON.stringify(sorting, null, 2)
               : "No sorting applied"}
@@ -363,16 +363,16 @@ export const WithPagination: Story = {
 
     return (
       <div className="space-y-4">
-        <div className="p-4 bg-surfaceVariant rounded-lg">
-          <h3 className="font-semibold text-onSurface mb-2">
+        <div className="p-4 bg-muted rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">
             Demo with {allUsers.length} total users
           </h3>
-          <p className="text-sm text-onSurfaceVariant">
+          <p className="text-sm text-muted-foreground">
             Showing page {currentPage} of {totalPages} (items {startIndex + 1}-
             {Math.min(endIndex, allUsers.length)})
           </p>
           {sorting.length > 0 && (
-            <p className="text-sm text-onSurfaceVariant mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Sorting by:{" "}
               {sorting
                 .map((s) => `${s.id} ${s.desc ? "desc" : "asc"}`)

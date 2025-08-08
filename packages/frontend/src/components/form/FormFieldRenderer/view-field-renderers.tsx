@@ -14,8 +14,8 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   string: ({ fieldState }) => {
     const value = fieldState.state.value || "";
     return (
-      <div className="px-3 py-2 text-onSurface">
-        {value || <span className="text-onSurfaceVariant italic">Empty</span>}
+      <div className="px-3 py-2 text-foreground">
+        {value || <span className="text-muted-foreground italic">Empty</span>}
       </div>
     );
   },
@@ -23,11 +23,11 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   number: ({ fieldState }) => {
     const value = fieldState.state.value;
     return (
-      <div className="px-3 py-2 text-onSurface">
+      <div className="px-3 py-2 text-foreground">
         {value != null ? (
           value.toString()
         ) : (
-          <span className="text-onSurfaceVariant italic">Empty</span>
+          <span className="text-muted-foreground italic">Empty</span>
         )}
       </div>
     );
@@ -36,14 +36,14 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   boolean: ({ fieldState }) => {
     const value = fieldState.state.value;
     return (
-      <div className="px-3 py-2 text-onSurface">{value ? "Yes" : "No"}</div>
+      <div className="px-3 py-2 text-foreground">{value ? "Yes" : "No"}</div>
     );
   },
 };
 
 export const unsupportedViewRenderer: ViewFieldRenderer = ({ schema }) => {
   return (
-    <div className="px-3 py-2 bg-errorContainer text-onErrorContainer rounded-md">
+    <div className="px-3 py-2 bg-destructive/10 text-destructive-foreground rounded-md">
       <div>Unsupported field type: {schema.type}</div>
     </div>
   );

@@ -5,42 +5,58 @@ export const light: NubaseTheme = {
   type: "light",
   id: "light",
   colors: {
-    // Primary colors - Modern vibrant blue-purple
-    primary: "#6366F1",
-    onPrimary: "#FFFFFF",
-    primaryContainer: "#E0E7FF",
-    onPrimaryContainer: "#1E1B4B",
+    // Base colors
+    background: "oklch(1 0 0)",
+    foreground: "oklch(0.145 0 0)",
 
-    // Secondary colors - Sophisticated slate
-    secondary: "#64748B",
-    onSecondary: "#FFFFFF",
-    secondaryContainer: "#E2E8F0",
-    onSecondaryContainer: "#0F172A",
+    // Card colors
+    card: "oklch(1 0 0)",
+    cardForeground: "oklch(0.145 0 0)",
 
-    // Tertiary colors - Warm emerald accent
-    tertiary: "#059669",
-    onTertiary: "#FFFFFF",
-    tertiaryContainer: "#D1FAE5",
-    onTertiaryContainer: "#064E3B",
+    // Popover colors
+    popover: "oklch(1 0 0)",
+    popoverForeground: "oklch(0.145 0 0)",
 
-    // Error colors - Modern red
-    error: "#DC2626",
-    onError: "#FFFFFF",
-    errorContainer: "#FEE2E2",
-    onErrorContainer: "#7F1D1D",
+    // Primary colors
+    primary: "oklch(0.205 0 0)",
+    primaryForeground: "oklch(0.985 0 0)",
 
-    // Surface colors - Clean neutral base
-    surface: "#FFFFFF",
-    onSurface: "#0F172A",
-    surfaceVariant: "#F8FAFC",
-    onSurfaceVariant: "#475569",
+    // Secondary colors
+    secondary: "oklch(0.97 0 0)",
+    secondaryForeground: "oklch(0.205 0 0)",
 
-    // Other colors
-    outline: "#CBD5E1",
-    outlineVariant: "#E2E8F0",
-    shadow: "#000000",
-    scrim: "#000000",
-    inverseSurface: "#0F172A",
-    onInverseSurface: "#F8FAFC",
+    // Muted colors
+    muted: "oklch(0.97 0 0)",
+    mutedForeground: "oklch(0.556 0 0)",
+
+    // Accent colors
+    accent: "oklch(0.97 0 0)",
+    accentForeground: "oklch(0.205 0 0)",
+
+    // Destructive colors
+    destructive: "oklch(0.577 0.245 27.325)",
+    destructiveForeground: "oklch(0.985 0 0)",
+
+    // Border and input colors
+    border: "oklch(0.922 0 0)",
+    input: "oklch(0.922 0 0)",
+    ring: "oklch(0.708 0 0)",
+
+    // Chart colors
+    chart1: "oklch(0.646 0.222 41.116)",
+    chart2: "oklch(0.6 0.118 184.704)",
+    chart3: "oklch(0.398 0.07 227.392)",
+    chart4: "oklch(0.828 0.189 84.429)",
+    chart5: "oklch(0.769 0.188 70.08)",
+
+    // Sidebar colors
+    sidebar: "oklch(0.985 0 0)",
+    sidebarForeground: "oklch(0.145 0 0)",
+    sidebarPrimary: "oklch(0.205 0 0)",
+    sidebarPrimaryForeground: "oklch(0.985 0 0)",
+    sidebarAccent: "oklch(0.97 0 0)",
+    sidebarAccentForeground: "oklch(0.205 0 0)",
+    sidebarBorder: "oklch(0.922 0 0)",
+    sidebarRing: "oklch(0.708 0 0)",
   },
 };

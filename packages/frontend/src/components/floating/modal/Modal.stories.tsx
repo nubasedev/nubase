@@ -36,7 +36,7 @@ export const BasicModalFrame: Story = {
           <ModalFrame>
             <div>
               <h2 className="text-lg font-semibold mb-4">Basic Modal</h2>
-              <p className="text-onSurfaceVariant mb-4">
+              <p className="text-muted-foreground mb-4">
                 This is a simple modal with minimal content. It demonstrates the
                 default size and behavior of the ModalFrame component.
               </p>
@@ -65,7 +65,7 @@ export const BasicModalWithScrolling: Story = {
               <h2 className="text-lg font-semibold mb-4">
                 Basic Modal with Scrolling
               </h2>
-              <p className="text-onSurfaceVariant mb-4">
+              <p className="text-muted-foreground mb-4">
                 This modal contains enough content to trigger scrolling. It
                 demonstrates how the ModalFrame handles overflow content.
               </p>
@@ -73,14 +73,14 @@ export const BasicModalWithScrolling: Story = {
               <h3 className="text-md font-semibold mt-6 mb-2">
                 Lorem Ipsum Content
               </h3>
-              <p className="text-onSurfaceVariant mb-4">
+              <p className="text-muted-foreground mb-4">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris.
               </p>
 
               <h3 className="text-md font-semibold mt-6 mb-2">Features</h3>
-              <ul className="list-disc list-inside text-onSurfaceVariant mb-4">
+              <ul className="list-disc list-inside text-muted-foreground mb-4">
                 <li>Automatic height adjustment</li>
                 <li>Smooth scrolling behavior</li>
                 <li>Maximum height constraint</li>
@@ -89,7 +89,7 @@ export const BasicModalWithScrolling: Story = {
 
               <h3 className="text-md font-semibold mt-6 mb-2">More Content</h3>
               {Array.from({ length: 15 }, (_, i) => (
-                <p key={i} className="text-onSurfaceVariant mb-3">
+                <p key={i} className="text-muted-foreground mb-3">
                   Paragraph {i + 1}: This is additional content to ensure the
                   modal scrolls. The modal will grow until it reaches its
                   maximum height, then it will become scrollable to accommodate
@@ -122,13 +122,13 @@ export const StructuredModalFrame: Story = {
         content: (
           <ModalFrameStructured
             header={
-              <h2 className="text-lg font-semibold text-onSurface">
+              <h2 className="text-lg font-semibold text-foreground">
                 Structured Modal Frame
               </h2>
             }
             body={
               <div>
-                <p className="text-onSurfaceVariant mb-4">
+                <p className="text-muted-foreground mb-4">
                   This structured modal has distinct header, body, and footer
                   sections.
                 </p>
@@ -172,13 +172,13 @@ export const StructuredModalFrameWithScrolling: Story = {
         content: (
           <ModalFrameStructured
             header={
-              <h2 className="text-lg font-semibold text-onSurface">
+              <h2 className="text-lg font-semibold text-foreground">
                 Structured Modal with Scrolling Body
               </h2>
             }
             body={
               <div>
-                <p className="text-onSurfaceVariant mb-4">
+                <p className="text-muted-foreground mb-4">
                   This structured modal demonstrates how scrolling works with
                   distinct header, body, and footer sections. The header and
                   footer remain fixed while the body content scrolls.
@@ -187,7 +187,7 @@ export const StructuredModalFrameWithScrolling: Story = {
                 <h3 className="text-md font-semibold mt-6 mb-2">
                   Section 1: Overview
                 </h3>
-                <p className="text-onSurfaceVariant mb-4">
+                <p className="text-muted-foreground mb-4">
                   The structured modal frame is designed to handle forms and
                   content that needs clear separation between header, body, and
                   action areas. This is particularly useful for forms, wizards,
@@ -197,7 +197,7 @@ export const StructuredModalFrameWithScrolling: Story = {
                 <h3 className="text-md font-semibold mt-6 mb-2">
                   Section 2: Features
                 </h3>
-                <ul className="list-disc list-inside text-onSurfaceVariant mb-4">
+                <ul className="list-disc list-inside text-muted-foreground mb-4">
                   <li>Fixed header that always remains visible</li>
                   <li>Scrollable body section for long content</li>
                   <li>Fixed footer for action buttons</li>
@@ -208,10 +208,10 @@ export const StructuredModalFrameWithScrolling: Story = {
                 <h3 className="text-md font-semibold mt-6 mb-2">
                   Section 3: Use Cases
                 </h3>
-                <p className="text-onSurfaceVariant mb-4">
+                <p className="text-muted-foreground mb-4">
                   This modal structure is ideal for:
                 </p>
-                <ul className="list-disc list-inside text-onSurfaceVariant mb-4">
+                <ul className="list-disc list-inside text-muted-foreground mb-4">
                   <li>Complex forms with many fields</li>
                   <li>Terms and conditions acceptance</li>
                   <li>Configuration wizards</li>
@@ -224,10 +224,10 @@ export const StructuredModalFrameWithScrolling: Story = {
                 </h3>
                 {Array.from({ length: 10 }, (_, i) => (
                   <div key={i} className="mb-4">
-                    <h4 className="font-medium text-onSurface mb-2">
+                    <h4 className="font-medium text-foreground mb-2">
                       Subsection {i + 1}
                     </h4>
-                    <p className="text-onSurfaceVariant">
+                    <p className="text-muted-foreground">
                       This is additional content to demonstrate the scrolling
                       behavior of the body section. Notice how the header stays
                       fixed at the top and the footer remains at the bottom,
@@ -241,7 +241,7 @@ export const StructuredModalFrameWithScrolling: Story = {
                 <h3 className="text-md font-semibold mt-6 mb-2">
                   Section 5: Conclusion
                 </h3>
-                <p className="text-onSurfaceVariant">
+                <p className="text-muted-foreground">
                   The structured modal frame provides an excellent user
                   experience for content-heavy modals by maintaining context
                   (header) and actions (footer) while allowing users to scroll
@@ -503,7 +503,7 @@ export const DifferentSizes: Story = {
                       <h2 className="text-lg font-semibold mb-4">
                         Size: {size.toUpperCase()}
                       </h2>
-                      <p className="text-onSurfaceVariant">
+                      <p className="text-muted-foreground">
                         This modal demonstrates the {size} size variant.
                       </p>
                     </div>
@@ -534,11 +534,11 @@ export const TopAlignedModal: Story = {
             }
             body={
               <div>
-                <p className="text-onSurfaceVariant mb-4">
+                <p className="text-muted-foreground mb-4">
                   This modal is aligned to the top of the viewport instead of
                   being centered.
                 </p>
-                <p className="text-onSurfaceVariant">
+                <p className="text-muted-foreground">
                   This alignment is useful for forms or content that might
                   extend beyond the viewport height.
                 </p>
@@ -572,7 +572,7 @@ export const CustomFrameComponent: Story = {
     }> = ({ onClose, title, content }) => (
       <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-6 shadow-xl ring-2 ring-primary/20">
         <h2 className="text-2xl font-bold text-primary mb-4">{title}</h2>
-        <p className="text-onSurface mb-6">{content}</p>
+        <p className="text-foreground mb-6">{content}</p>
         <Button variant="primary" onClick={onClose}>
           Close Custom Modal
         </Button>

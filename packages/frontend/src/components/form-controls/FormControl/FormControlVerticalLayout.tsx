@@ -48,15 +48,15 @@ const FormControlVerticalLayout = forwardRef<
         )}
         {children}
         {hint && !hasError && !isValidating && (
-          <div id={`${childId}-hint`} className="text-xs text-onSurfaceVariant">
+          <div id={`${childId}-hint`} className="text-xs text-muted-foreground">
             {hint}
           </div>
         )}
         {isValidating && (
-          <div className="text-xs text-onSurfaceVariant">Validating...</div>
+          <div className="text-xs text-muted-foreground">Validating...</div>
         )}
         {hasError && displayError && (
-          <div id={`${childId}-error`} className="text-xs text-error">
+          <div id={`${childId}-error`} className="text-xs text-destructive">
             {displayError}
           </div>
         )}

@@ -263,7 +263,7 @@ export const Default: Story = {
         center={
           <div className="p-8">
             <h1 className="text-2xl font-bold mb-4">Main Content Area</h1>
-            <p className="text-onSurfaceVariant">
+            <p className="text-muted-foreground">
               This is the main content area. The navigation is on the left side.
             </p>
           </div>
@@ -287,7 +287,7 @@ export const WithManyItems: Story = {
             <h1 className="text-2xl font-bold mb-4">
               Many Items - Scroll Testing
             </h1>
-            <p className="text-onSurfaceVariant">
+            <p className="text-muted-foreground">
               This story contains 100+ dynamically generated navigation items to
               test scrolling performance and behavior. Every 5th item has
               expandable children. Try searching to test filtering performance.
@@ -310,7 +310,7 @@ export const MinimalNavigation: Story = {
         center={
           <div className="p-8">
             <h1 className="text-2xl font-bold mb-4">Minimal Navigation</h1>
-            <p className="text-onSurfaceVariant">
+            <p className="text-muted-foreground">
               Simple navigation with only leaf items.
             </p>
           </div>
@@ -331,7 +331,7 @@ export const DeepNesting: Story = {
         center={
           <div className="p-8">
             <h1 className="text-2xl font-bold mb-4">Deep Nesting</h1>
-            <p className="text-onSurfaceVariant">
+            <p className="text-muted-foreground">
               Navigation with multiple levels of nesting.
             </p>
           </div>
@@ -352,7 +352,7 @@ export const Empty: Story = {
         center={
           <div className="p-8">
             <h1 className="text-2xl font-bold mb-4">Empty Navigation</h1>
-            <p className="text-onSurfaceVariant">
+            <p className="text-muted-foreground">
               Shows how the component handles an empty navigation array.
             </p>
           </div>

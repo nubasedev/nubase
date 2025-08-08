@@ -45,8 +45,8 @@ export const TreeNavigatorItemComponent = ({
   const commonClassName = cn(
     "flex items-center gap-3 rounded-md py-2 pr-3 text-sm cursor-pointer w-full text-left transition-colors",
     isSelected
-      ? "bg-primary text-onPrimary"
-      : "hover:bg-surfaceVariant hover:text-onSurfaceVariant",
+      ? "bg-primary text-primary-foreground"
+      : "hover:bg-muted hover:text-muted-foreground",
   );
 
   const commonStyle = { paddingLeft: `${12 + item.level * 16}px` };

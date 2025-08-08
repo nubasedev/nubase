@@ -14,7 +14,7 @@ import { cn } from "../../utils";
 const tableVariants = cva("w-full border-collapse border-spacing-0 text-sm");
 
 const tableContainerVariants = cva(
-  "relative overflow-auto border border-outline rounded-lg bg-surface",
+  "relative overflow-auto border border-border rounded-lg bg-background",
   {
     variants: {
       loading: {
@@ -134,10 +134,10 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
         className={cn(tableContainerVariants({ loading }), containerClassName)}
       >
         {loading && (
-          <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm flex items-center justify-center z-10">
-            <div className="flex items-center gap-3 bg-surface border border-outline rounded-lg px-4 py-3 shadow-lg">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
+            <div className="flex items-center gap-3 bg-background border border-border rounded-lg px-4 py-3 shadow-lg">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
-              <span className="text-onSurface font-medium">
+              <span className="text-foreground font-medium">
                 {loadingMessage}
               </span>
             </div>
@@ -147,14 +147,14 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
         <table ref={ref} className={cn(tableVariants(), className)} {...props}>
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-outline">
+              <tr key={headerGroup.id} className="border-b border-border">
                 {headerGroup.headers.map((header) => (
                   <th
                     key={header.id}
                     className={cn(
-                      "px-4 py-3 text-left font-semibold text-onSurface bg-surfaceVariant",
+                      "px-4 py-3 text-left font-semibold text-foreground bg-muted",
                       header.column.getCanSort() && enableSorting
-                        ? "cursor-pointer select-none hover:bg-surfaceVariant/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        ? "cursor-pointer select-none hover:bg-muted/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
                         : "",
                     )}
                     tabIndex={
@@ -208,7 +208,7 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-onSurfaceVariant"
+                  className="px-4 py-8 text-center text-muted-foreground"
                 >
                   {emptyMessage}
                 </td>
@@ -218,12 +218,12 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
                 <tr
                   key={row.id}
                   className={cn(
-                    "border-b border-outline/50 hover:bg-surfaceVariant/30 transition-colors",
-                    index % 2 === 0 ? "bg-surface" : "bg-surfaceVariant/20",
+                    "border-b border-border/50 hover:bg-muted/30 transition-colors",
+                    index % 2 === 0 ? "bg-background" : "bg-muted/20",
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-onSurface">
+                    <td key={cell.id} className="px-4 py-3 text-foreground">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

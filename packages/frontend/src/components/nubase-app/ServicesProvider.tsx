@@ -43,7 +43,7 @@ export const ServicesProvider: FC<
             aria-label="Initializing Nubase app"
             className="mx-auto mb-2"
           />
-          <p className="text-sm text-onSurfaceVariant">
+          <p className="text-sm text-muted-foreground">
             Initializing Nubase app...
           </p>
         </div>

@@ -1,11 +1,18 @@
 import type { NubaseTheme } from "./theme";
 
 /**
- * Converts a VS Code theme property name to a CSS variable name
- * Example: "diffEditor.insertedTextBackground" -> "--theme-diffEditor-insertedTextBackground"
+ * Converts a theme property name to a CSS variable name
+ * Example: "primaryContainer" -> "--primary-container"
+ * Example: "onPrimaryContainer" -> "--on-primary-container"
  */
 export function themePropertyToCSSVariable(property: string): string {
-  return `--theme-color-${property.replace(/\./g, "-")}`;
+  // Convert camelCase to kebab-case
+  const kebabCase = property
+    .replace(/([A-Z])/g, "-$1")
+    .toLowerCase()
+    .replace(/^-/, ""); // Remove leading dash if present
+
+  return `--${kebabCase}`;
 }
 
 /**

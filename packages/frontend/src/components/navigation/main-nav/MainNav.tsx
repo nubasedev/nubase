@@ -16,7 +16,10 @@ export const MainNav = forwardRef<HTMLDivElement, MainNavProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex flex-col h-full bg-surface w-full p-2", className)}
+        className={cn(
+          "flex flex-col h-full bg-background w-full p-2",
+          className,
+        )}
         {...props}
       >
         <SearchableTreeNavigator

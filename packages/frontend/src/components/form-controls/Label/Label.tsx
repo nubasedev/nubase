@@ -3,12 +3,12 @@ import type React from "react";
 import { forwardRef } from "react";
 import { cn } from "../../../utils";
 
-const labelVariants = cva("block text-sm font-medium text-onSurface", {
+const labelVariants = cva("block text-sm font-medium text-foreground", {
   variants: {
     variant: {
       default: "",
-      required: "after:content-['*'] after:text-error after:ml-1",
-      muted: "text-onSurfaceVariant font-normal",
+      required: "after:content-['*'] after:text-destructive after:ml-1",
+      muted: "text-muted-foreground font-normal",
     },
     size: {
       sm: "text-xs",

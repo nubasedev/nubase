@@ -75,7 +75,7 @@ export const NavigationSearch: Story = {
   },
   decorators: [
     (Story) => (
-      <div className="w-64 p-4 bg-surface border border-border rounded-lg">
+      <div className="w-64 p-4 bg-backgroundborder border-border rounded-lg">
         <Story />
       </div>
     ),

@@ -6,7 +6,7 @@ export type PageHeaderProps = {
 
 export const PageHeader: FC<PropsWithChildren<PageHeaderProps>> = (props) => {
   return (
-    <div className="mb-4 border-b border-outlineVariant pb-2">
+    <div className="mb-4 border-b border-border pb-2">
       <h1 className="text-2xl font-bold">{props.title}</h1>
     </div>
   );

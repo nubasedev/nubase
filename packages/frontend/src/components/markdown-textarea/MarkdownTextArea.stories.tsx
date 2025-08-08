@@ -472,7 +472,7 @@ export const CustomStyling: Story = {
           ref={markdownRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="min-h-[300px] text-base bg-primaryContainer text-onPrimaryContainer border-primary"
+          className="min-h-[300px] text-base bg-secondary text-secondary-foreground border-primary"
           placeholder="Custom styled markdown editor..."
         />
       </div>

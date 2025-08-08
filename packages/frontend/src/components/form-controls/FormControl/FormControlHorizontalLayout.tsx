@@ -53,18 +53,21 @@ const FormControlHorizontalLayout = forwardRef<
           {hint && !hasError && !isValidating && (
             <div
               id={`${childId}-hint`}
-              className="mt-1 text-xs text-onSurfaceVariant"
+              className="mt-1 text-xs text-muted-foreground"
             >
               {hint}
             </div>
           )}
           {isValidating && (
-            <div className="mt-1 text-xs text-onSurfaceVariant">
+            <div className="mt-1 text-xs text-muted-foreground">
               Validating...
             </div>
           )}
           {hasError && displayError && (
-            <div id={`${childId}-error`} className="mt-1 text-xs text-error">
+            <div
+              id={`${childId}-error`}
+              className="mt-1 text-xs text-destructive"
+            >
               {displayError}
             </div>
           )}

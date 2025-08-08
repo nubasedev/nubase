@@ -126,7 +126,7 @@ export const InteractiveLoading: Story = {
           </Button>
         </div>
 
-        <p className="text-sm text-onSurfaceVariant">
+        <p className="text-sm text-muted-foreground">
           Click "Start Process" to see a 2-second loading simulation
         </p>
       </div>

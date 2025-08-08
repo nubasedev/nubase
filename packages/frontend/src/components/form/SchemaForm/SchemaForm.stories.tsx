@@ -330,8 +330,8 @@ export const PatchMode: Story = {
         <h3 className="text-lg font-semibold mb-4">
           Patch Mode - Click to Edit Fields
         </h3>
-        <div className="mb-4 p-4 bg-primaryContainer/10 border border-primary/20 rounded-lg">
-          <p className="text-sm text-onSurface/70">
+        <div className="mb-4 p-4 bg-secondary/10 border border-primary/20 rounded-lg">
+          <p className="text-sm text-foreground70">
             💡 <strong>How to use:</strong> Click on any field value to edit it
             inline. Use the ✓ button to apply changes or ✕ to cancel.
           </p>
@@ -388,8 +388,8 @@ export const PatchModeWithValidation: Story = {
         <h3 className="text-lg font-semibold mb-4">
           Patch Mode with Validation
         </h3>
-        <div className="mb-4 p-4 bg-errorContainer/10 border border-error/20 rounded-lg">
-          <p className="text-sm text-onSurface/70">
+        <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-sm text-foreground70">
             ⚠️ <strong>Try editing:</strong> The email field has an invalid
             value, and age is negative. Try fixing them to see validation in
             action.
