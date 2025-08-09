@@ -6,29 +6,112 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { cva } from "class-variance-authority";
-import type React from "react";
-import { forwardRef } from "react";
-import { cn } from "../../utils";
+import * as React from "react";
 
-const tableVariants = cva("w-full border-collapse border-spacing-0 text-sm");
+import { cn } from "../../lib/utils";
 
-const tableContainerVariants = cva(
-  "relative overflow-auto border border-border rounded-lg bg-background",
-  {
-    variants: {
-      loading: {
-        true: "relative",
-        false: "",
-      },
-    },
-    defaultVariants: {
-      loading: false,
-    },
-  },
-);
+function Table({ className, ...props }: React.ComponentProps<"table">) {
+  return (
+    <div
+      data-slot="table-container"
+      className="relative w-full overflow-hidden rounded-md border"
+    >
+      <table
+        data-slot="table"
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    </div>
+  );
+}
 
-export interface TableProps<TData>
+function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+  return (
+    <thead
+      data-slot="table-header"
+      className={cn("[&_tr]:border-b", className)}
+      {...props}
+    />
+  );
+}
+
+function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+  return (
+    <tbody
+      data-slot="table-body"
+      className={cn("[&_tr:last-child]:border-0", className)}
+      {...props}
+    />
+  );
+}
+
+function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+  return (
+    <tfoot
+      data-slot="table-footer"
+      className={cn(
+        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+  return (
+    <tr
+      data-slot="table-row"
+      className={cn(
+        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+  return (
+    <th
+      data-slot="table-head"
+      className={cn(
+        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+  return (
+    <td
+      data-slot="table-cell"
+      className={cn(
+        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function TableCaption({
+  className,
+  ...props
+}: React.ComponentProps<"caption">) {
+  return (
+    <caption
+      data-slot="table-caption"
+      className={cn("text-muted-foreground mt-4 text-sm", className)}
+      {...props}
+    />
+  );
+}
+
+// Enhanced Table component with TanStack integration
+export interface EnhancedTableProps<TData>
   extends React.TableHTMLAttributes<HTMLTableElement> {
   data: TData[];
   columns: ColumnDef<TData>[];
@@ -41,7 +124,10 @@ export interface TableProps<TData>
   containerClassName?: string;
 }
 
-const Table = forwardRef<HTMLTableElement, TableProps<any>>(
+const EnhancedTable = React.forwardRef<
+  HTMLTableElement,
+  EnhancedTableProps<any>
+>(
   <TData,>(
     {
       className,
@@ -55,7 +141,7 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
       emptyMessage = "No data available",
       loadingMessage = "Loading...",
       ...props
-    }: TableProps<TData>,
+    }: EnhancedTableProps<TData>,
     ref: React.ForwardedRef<HTMLTableElement>,
   ) => {
     const table = useReactTable({
@@ -130,11 +216,9 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
     };
 
     return (
-      <div
-        className={cn(tableContainerVariants({ loading }), containerClassName)}
-      >
+      <div className={cn("relative w-full", containerClassName)}>
         {loading && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-md">
             <div className="flex items-center gap-3 bg-background border border-border rounded-lg px-4 py-3 shadow-lg">
               <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
               <span className="text-foreground font-medium">
@@ -144,102 +228,113 @@ const Table = forwardRef<HTMLTableElement, TableProps<any>>(
           </div>
         )}
 
-        <table ref={ref} className={cn(tableVariants(), className)} {...props}>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="border-b border-border">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={cn(
-                      "px-4 py-3 text-left font-semibold text-foreground bg-muted",
-                      header.column.getCanSort() && enableSorting
-                        ? "cursor-pointer select-none hover:bg-muted/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        : "",
-                    )}
-                    tabIndex={
-                      header.column.getCanSort() && enableSorting
-                        ? 0
-                        : undefined
-                    }
-                    role={
-                      header.column.getCanSort() && enableSorting
-                        ? "button"
-                        : undefined
-                    }
-                    onClick={
-                      header.column.getCanSort() && enableSorting
-                        ? header.column.getToggleSortingHandler()
-                        : undefined
-                    }
-                    onKeyDown={
-                      header.column.getCanSort() && enableSorting
-                        ? (e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              header.column.getToggleSortingHandler()?.(e);
-                            }
-                          }
-                        : undefined
-                    }
-                    style={{
-                      width:
-                        header.getSize() !== 150 ? header.getSize() : undefined,
-                    }}
-                  >
-                    <div className="flex items-center">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                      {header.column.getCanSort() &&
-                        enableSorting &&
-                        getSortIcon(header.column)}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-8 text-center text-muted-foreground"
-                >
-                  {emptyMessage}
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row, index) => (
-                <tr
-                  key={row.id}
-                  className={cn(
-                    "border-b border-border/50 hover:bg-muted/30 transition-colors",
-                    index % 2 === 0 ? "bg-background" : "bg-muted/20",
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3 text-foreground">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
+        <div className="relative w-full overflow-hidden rounded-md border">
+          <table
+            ref={ref}
+            className={cn("w-full caption-bottom text-sm", className)}
+            {...props}
+          >
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={cn(
+                        header.column.getCanSort() && enableSorting
+                          ? "cursor-pointer select-none hover:bg-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          : "",
                       )}
-                    </td>
+                      tabIndex={
+                        header.column.getCanSort() && enableSorting
+                          ? 0
+                          : undefined
+                      }
+                      role={
+                        header.column.getCanSort() && enableSorting
+                          ? "button"
+                          : undefined
+                      }
+                      onClick={
+                        header.column.getCanSort() && enableSorting
+                          ? header.column.getToggleSortingHandler()
+                          : undefined
+                      }
+                      onKeyDown={
+                        header.column.getCanSort() && enableSorting
+                          ? (e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                header.column.getToggleSortingHandler()?.(e);
+                              }
+                            }
+                          : undefined
+                      }
+                      style={{
+                        width:
+                          header.getSize() !== 150
+                            ? header.getSize()
+                            : undefined,
+                      }}
+                    >
+                      <div className="flex items-center">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                        {header.column.getCanSort() &&
+                          enableSorting &&
+                          getSortIcon(header.column)}
+                      </div>
+                    </TableHead>
                   ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center text-muted-foreground h-24"
+                  >
+                    {emptyMessage}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </table>
+        </div>
       </div>
     );
   },
 );
 
-Table.displayName = "Table";
+EnhancedTable.displayName = "EnhancedTable";
 
-export { Table, tableVariants };
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+  EnhancedTable,
+};

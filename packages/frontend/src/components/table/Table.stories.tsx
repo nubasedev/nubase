@@ -1,13 +1,34 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
+import {
+  MoreHorizontalIcon,
+  SettingsIcon,
+  TrashIcon,
+  UserIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "../buttons/Button/Button";
-import { Pagination } from "./Pagination";
-import { Table } from "./Table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../dropdown-menu/DropdownMenu";
+import { EnhancedPagination } from "./Pagination";
+import {
+  EnhancedTable,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./Table";
 
-const meta: Meta<typeof Table> = {
+const meta: Meta<typeof EnhancedTable> = {
   title: "Table/Table",
-  component: Table,
+  component: EnhancedTable,
   parameters: {
     layout: "padded",
   },
@@ -160,9 +181,12 @@ const userColumns: ColumnDef<User>[] = [
     cell: ({ getValue }) => {
       const status = getValue() as User["status"];
       const statusClasses = {
-        active: "bg-secondary text-secondary-foreground",
-        inactive: "bg-destructive/10 text-destructive-foreground",
-        pending: "bg-accent text-accent-foreground",
+        active:
+          "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300",
+        inactive:
+          "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300",
+        pending:
+          "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300",
       };
       return (
         <span
@@ -190,13 +214,39 @@ const userColumns: ColumnDef<User>[] = [
   {
     id: "actions",
     header: "Actions",
-    size: 120,
-    cell: () => (
-      <div className="flex gap-1">
-        <Button variant="secondary">Edit</Button>
-        <Button variant="destructive">Delete</Button>
-      </div>
-    ),
+    size: 80,
+    cell: ({ row }) => {
+      const user = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="secondary" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => console.log("View user", user.id)}>
+              <UserIcon className="mr-2 h-4 w-4" />
+              View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => console.log("Edit user", user.id)}>
+              <SettingsIcon className="mr-2 h-4 w-4" />
+              Edit User
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => console.log("Delete user", user.id)}
+            >
+              <TrashIcon className="mr-2 h-4 w-4" />
+              Delete User
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
   },
 ];
 
@@ -225,10 +275,10 @@ const productColumns: ColumnDef<Product>[] = [
       const stock = getValue() as number;
       const color =
         stock > 50
-          ? "text-primaryContainer"
+          ? "text-green-600 dark:text-green-400"
           : stock > 20
-            ? "text-tertiaryContainer"
-            : "text-errorContainer";
+            ? "text-yellow-600 dark:text-yellow-400"
+            : "text-red-600 dark:text-red-400";
       return <span className={color}>{stock}</span>;
     },
   },
@@ -241,19 +291,85 @@ const productColumns: ColumnDef<Product>[] = [
       return (
         <div className="flex items-center gap-1">
           <span>{rating}</span>
-          <span className="text-tertiaryContainer">★</span>
+          <span className="text-yellow-500">★</span>
         </div>
       );
     },
   },
 ];
 
-export const BasicTable: Story = {
+// Basic Shadcn-style table story
+export const ShadcnTable: Story = {
+  render: () => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead className="w-[80px]">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sampleUsers.slice(0, 3).map((user) => (
+          <TableRow key={user.id}>
+            <TableCell className="font-medium">{user.name}</TableCell>
+            <TableCell>{user.email}</TableCell>
+            <TableCell>{user.role}</TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem>
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SettingsIcon className="mr-2 h-4 w-4" />
+                    Edit User
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive">
+                    <TrashIcon className="mr-2 h-4 w-4" />
+                    Delete User
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "A basic table using Shadcn-style components with manual data rendering.",
+      },
+    },
+  },
+};
+
+export const BasicEnhancedTable: Story = {
   args: {
     data: sampleUsers,
     columns: userColumns,
     loading: false,
     enableSorting: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "An enhanced table with TanStack Table integration, sorting, and data management.",
+      },
+    },
   },
 };
 
@@ -283,6 +399,22 @@ export const NoSorting: Story = {
     columns: userColumns,
     loading: false,
     enableSorting: false,
+  },
+};
+
+export const ProductTable: Story = {
+  args: {
+    data: sampleProducts,
+    columns: productColumns,
+    loading: false,
+    enableSorting: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: "A table displaying product data with custom cell renderers.",
+      },
+    },
   },
 };
 
@@ -323,7 +455,11 @@ export const InteractiveSorting: Story = {
               : "No sorting applied"}
           </pre>
         </div>
-        <Table {...args} sorting={sorting} onSortingChange={setSorting} />
+        <EnhancedTable
+          {...args}
+          sorting={sorting}
+          onSortingChange={setSorting}
+        />
       </div>
     );
   },
@@ -381,7 +517,7 @@ export const WithPagination: Story = {
           )}
         </div>
 
-        <Table
+        <EnhancedTable
           data={paginatedData}
           columns={userColumns}
           loading={false}
@@ -390,7 +526,7 @@ export const WithPagination: Story = {
           onSortingChange={setSorting}
         />
 
-        <Pagination
+        <EnhancedPagination
           currentPage={currentPage}
           totalPages={totalPages}
           pageSize={pageSize}
@@ -398,7 +534,7 @@ export const WithPagination: Story = {
           onPageChange={setCurrentPage}
           onPageSizeChange={(newPageSize) => {
             setPageSize(newPageSize);
-            setCurrentPage(1); // Reset to first page when changing page size
+            setCurrentPage(1);
           }}
           showPageSizeSelector={true}
           showInfo={true}
@@ -407,6 +543,14 @@ export const WithPagination: Story = {
     );
   },
   args: {},
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "A complete data table with pagination, sorting, and page size selection.",
+      },
+    },
+  },
 };
 
 // Loading state simulation
@@ -418,7 +562,7 @@ export const LoadingSimulation: Story = {
     const simulateLoading = () => {
       setLoading(true);
       setTimeout(() => {
-        setData([...sampleUsers].reverse()); // Simulate data change
+        setData([...sampleUsers].reverse());
         setLoading(false);
       }, 2000);
     };
@@ -431,7 +575,7 @@ export const LoadingSimulation: Story = {
           </Button>
         </div>
 
-        <Table {...args} data={data} loading={loading} />
+        <EnhancedTable {...args} data={data} loading={loading} />
       </div>
     );
   },

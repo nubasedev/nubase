@@ -1,4 +1,4 @@
-import { IconDatabase, IconFolder } from "@tabler/icons-react";
+import { Database, Folder } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
@@ -7,7 +7,7 @@ import type { CommandDefinition } from "../types";
 export const workbenchOpenResource: CommandDefinition = {
   id: "workbench.openResource",
   name: "Open Resource",
-  icon: <IconDatabase />,
+  icon: <Database />,
   execute: (context) => {
     const resources = context.config?.resources || {};
     const resourceEntries = Object.entries(resources);
@@ -38,7 +38,7 @@ export const workbenchOpenResource: CommandDefinition = {
         // Resource with no operations
         resourceItems.push({
           id: resourceId,
-          icon: <IconDatabase />,
+          icon: <Database />,
           title: resourceId,
           subtitle: "No operations available",
         });
@@ -47,7 +47,7 @@ export const workbenchOpenResource: CommandDefinition = {
         for (const [operationId, _operation] of operations) {
           resourceItems.push({
             id: `${resourceId}.${operationId}`,
-            icon: <IconFolder />,
+            icon: <Folder />,
             title: `${resourceId} - ${operationId}`,
             subtitle: `${operationId} operation for ${resourceId}`,
             onNavigate: () => {

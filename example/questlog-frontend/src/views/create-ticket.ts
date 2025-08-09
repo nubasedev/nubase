@@ -1,15 +1,10 @@
-import { createCreateView } from "@nubase/frontend";
-import { type apiEndpoints, postTicketSchema } from "questlog-schema";
+import { apiEndpoints } from "questlog-schema";
+import { viewFactory } from "./factory";
 
-export const createTicketViewSchema = postTicketSchema.requestBody;
-
-export const createTicketView = createCreateView<
-  typeof createTicketViewSchema,
-  typeof apiEndpoints
->({
+export const createTicketView = viewFactory.createCreate({
   id: "create-ticket",
   title: "Create Ticket",
-  schema: createTicketViewSchema,
+  schema: apiEndpoints.postTicket.requestBody,
   onSubmit: async ({ data, context }) => {
     return await context.http.postTicket({ data });
   },

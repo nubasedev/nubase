@@ -4,3 +4,5 @@ export * from "./nav-item";
 export * from "./nubase-frontend-config";
 export * from "./resource";
 export * from "./view";
+export * from "./view-factory";
+export * from "./view-helpers";

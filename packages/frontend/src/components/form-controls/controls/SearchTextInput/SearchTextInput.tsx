@@ -1,5 +1,5 @@
-import { IconSearch } from "@tabler/icons-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Search } from "lucide-react";
 import type React from "react";
 import { forwardRef } from "react";
 import { cn } from "../../../../utils";
@@ -27,7 +27,7 @@ const SearchTextInput = forwardRef<HTMLInputElement, SearchTextInputProps>(
           {...props}
         />
         <div className="absolute top-1/2 left-3 transform -translate-y-1/2 text-muted-foreground pointer-events-none">
-          <IconSearch className="h-4 w-4" />
+          <Search className="h-4 w-4" />
         </div>
       </div>
     );

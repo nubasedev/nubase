@@ -1,4 +1,4 @@
-import { IconCommand } from "@tabler/icons-react";
+import { Terminal } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
@@ -7,12 +7,12 @@ import type { CommandDefinition } from "../types";
 export const workbenchRunCommand: CommandDefinition = {
   id: "workbench.runCommand",
   name: "Run Command",
-  icon: <IconCommand />,
+  icon: <Terminal />,
   execute: (context) => {
     const commands = context.commands.getAllCommands();
     const commandItems: TreeNavigatorItem[] = commands.map((command) => ({
       id: command.id,
-      icon: command.icon || <IconCommand className="h-4 w-4" />,
+      icon: command.icon || <Terminal className="h-4 w-4" />,
       title: command.name,
       onNavigate: () => {
         context.modal.closeModal();

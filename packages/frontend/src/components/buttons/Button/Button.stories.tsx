@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { IconFolder, IconMail, IconSettings } from "@tabler/icons-react";
+import { Folder, Mail, Settings } from "lucide-react";
 import { useState } from "react";
 import { showToast } from "../../floating/toast";
 import { Button } from "./Button";
@@ -56,15 +56,15 @@ export const WithIcons: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
       <Button>
-        <IconMail size={16} />
+        <Mail size={16} />
         Send Email
       </Button>
       <Button variant="secondary">
-        <IconFolder size={16} />
+        <Folder size={16} />
         Save File
       </Button>
       <Button variant="destructive">
-        <IconSettings size={16} />
+        <Settings size={16} />
         Settings
       </Button>
     </div>
@@ -146,15 +146,15 @@ export const LoadingWithIcons: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
       <Button isLoading>
-        <IconMail size={16} />
+        <Mail size={16} />
         Sending Email...
       </Button>
       <Button isLoading variant="secondary">
-        <IconFolder size={16} />
+        <Folder size={16} />
         Saving File...
       </Button>
       <Button isLoading variant="destructive">
-        <IconSettings size={16} />
+        <Settings size={16} />
         Updating Settings...
       </Button>
     </div>

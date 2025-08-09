@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import {
-  IconBook,
-  IconDashboard,
-  IconFile,
-  IconFolder,
-  IconPlus,
-  IconSettings,
-  IconUsers,
-} from "@tabler/icons-react";
+  Book,
+  File,
+  Folder,
+  LayoutDashboard,
+  Plus,
+  Settings,
+  Users,
+} from "lucide-react";
 import { showToast } from "../../floating/toast";
 import { SearchableTreeNavigator } from "./SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "./TreeNavigator";
@@ -28,7 +28,7 @@ type Story = StoryObj<typeof meta>;
 const flatItemsWithCallbacks: TreeNavigatorItem[] = [
   {
     id: "dashboard",
-    icon: <IconDashboard className="h-4 w-4" />,
+    icon: <LayoutDashboard className="h-4 w-4" />,
     title: "Go to Dashboard",
     subtitle: "View your main dashboard (onNavigate)",
     onNavigate: () => {
@@ -37,7 +37,7 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
   },
   {
     id: "create",
-    icon: <IconPlus className="h-4 w-4" />,
+    icon: <Plus className="h-4 w-4" />,
     title: "Create New Item",
     subtitle: "Add a new item to your collection (onNavigate)",
     onNavigate: () => {
@@ -46,7 +46,7 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
   },
   {
     id: "settings",
-    icon: <IconSettings className="h-4 w-4" />,
+    icon: <Settings className="h-4 w-4" />,
     title: "View Settings",
     subtitle: "Configure your preferences (onNavigate)",
     onNavigate: () => {
@@ -59,28 +59,28 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
 const flatItemsWithHrefs: TreeNavigatorItem[] = [
   {
     id: "dashboard-href",
-    icon: <IconDashboard className="h-4 w-4" />,
+    icon: <LayoutDashboard className="h-4 w-4" />,
     title: "Dashboard Page",
     subtitle: "Navigate to dashboard page (href)",
     href: "/dashboard",
   },
   {
     id: "docs-href",
-    icon: <IconBook className="h-4 w-4" />,
+    icon: <Book className="h-4 w-4" />,
     title: "Documentation",
     subtitle: "Read the documentation (href)",
     href: "/docs",
   },
   {
     id: "team-href",
-    icon: <IconUsers className="h-4 w-4" />,
+    icon: <Users className="h-4 w-4" />,
     title: "Team Page",
     subtitle: "View team members (href)",
     href: "/team",
   },
   {
     id: "files-href",
-    icon: <IconFile className="h-4 w-4" />,
+    icon: <File className="h-4 w-4" />,
     title: "File Manager",
     subtitle: "Browse files (href)",
     href: "/files",
@@ -91,14 +91,14 @@ const flatItemsWithHrefs: TreeNavigatorItem[] = [
 const treeItemsMixed: TreeNavigatorItem[] = [
   {
     id: "dashboard",
-    icon: <IconDashboard className="h-4 w-4" />,
+    icon: <LayoutDashboard className="h-4 w-4" />,
     title: "Dashboard",
     subtitle: "Main application dashboard (href)",
     href: "/dashboard",
   },
   {
     id: "projects",
-    icon: <IconFolder className="h-4 w-4" />,
+    icon: <Folder className="h-4 w-4" />,
     title: "Projects",
     subtitle: "Project management folder (expandable)",
     onNavigate: () => {
@@ -107,14 +107,14 @@ const treeItemsMixed: TreeNavigatorItem[] = [
     children: [
       {
         id: "project-1",
-        icon: <IconFile className="h-4 w-4" />,
+        icon: <File className="h-4 w-4" />,
         title: "Website Redesign",
         subtitle: "Frontend project (href)",
         href: "/projects/website-redesign",
       },
       {
         id: "project-2",
-        icon: <IconFile className="h-4 w-4" />,
+        icon: <File className="h-4 w-4" />,
         title: "Mobile App",
         subtitle: "React Native project (onNavigate)",
         onNavigate: () => {
@@ -123,20 +123,20 @@ const treeItemsMixed: TreeNavigatorItem[] = [
       },
       {
         id: "project-3",
-        icon: <IconFolder className="h-4 w-4" />,
+        icon: <Folder className="h-4 w-4" />,
         title: "Legacy Projects",
         subtitle: "Older projects (expandable)",
         children: [
           {
             id: "legacy-1",
-            icon: <IconFile className="h-4 w-4" />,
+            icon: <File className="h-4 w-4" />,
             title: "Old Website",
             subtitle: "Previous version (href)",
             href: "/projects/legacy/old-website",
           },
           {
             id: "legacy-2",
-            icon: <IconFile className="h-4 w-4" />,
+            icon: <File className="h-4 w-4" />,
             title: "Archive",
             subtitle: "Archived projects (onNavigate)",
             onNavigate: () => {
@@ -149,7 +149,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
   },
   {
     id: "team",
-    icon: <IconUsers className="h-4 w-4" />,
+    icon: <Users className="h-4 w-4" />,
     title: "Team Management",
     subtitle: "Manage team members and roles",
     onNavigate: () => {
@@ -158,7 +158,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
     children: [
       {
         id: "developers",
-        icon: <IconUsers className="h-4 w-4" />,
+        icon: <Users className="h-4 w-4" />,
         title: "Developers",
         subtitle: "Development team members",
         onNavigate: () => {
@@ -167,7 +167,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
       },
       {
         id: "designers",
-        icon: <IconUsers className="h-4 w-4" />,
+        icon: <Users className="h-4 w-4" />,
         title: "Designers",
         subtitle: "Design team members",
         onNavigate: () => {
@@ -178,7 +178,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
   },
   {
     id: "settings",
-    icon: <IconSettings className="h-4 w-4" />,
+    icon: <Settings className="h-4 w-4" />,
     title: "Settings",
     subtitle: "Application settings and preferences",
     onNavigate: () => {
@@ -213,7 +213,7 @@ export const TreeStructureMixed: Story = {
 const deepTreeItems: TreeNavigatorItem[] = [
   {
     id: "level1-1",
-    icon: <IconFolder className="h-4 w-4" />,
+    icon: <Folder className="h-4 w-4" />,
     title: "Level 1 - Folder A",
     subtitle: "Top level folder",
     onNavigate: () => {
@@ -222,7 +222,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
     children: [
       {
         id: "level2-1",
-        icon: <IconFolder className="h-4 w-4" />,
+        icon: <Folder className="h-4 w-4" />,
         title: "Level 2 - Subfolder A1",
         subtitle: "Second level folder",
         onNavigate: () => {
@@ -231,7 +231,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
         children: [
           {
             id: "level3-1",
-            icon: <IconFolder className="h-4 w-4" />,
+            icon: <Folder className="h-4 w-4" />,
             title: "Level 3 - Deep Folder",
             subtitle: "Third level folder",
             onNavigate: () => {
@@ -240,7 +240,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
             children: [
               {
                 id: "level4-1",
-                icon: <IconFile className="h-4 w-4" />,
+                icon: <File className="h-4 w-4" />,
                 title: "Level 4 - Deep File",
                 subtitle: "Fourth level file",
                 onNavigate: () => {
@@ -251,7 +251,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
           },
           {
             id: "level3-2",
-            icon: <IconFile className="h-4 w-4" />,
+            icon: <File className="h-4 w-4" />,
             title: "Level 3 - File",
             subtitle: "Third level file",
             onNavigate: () => {
@@ -262,7 +262,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
       },
       {
         id: "level2-2",
-        icon: <IconFile className="h-4 w-4" />,
+        icon: <File className="h-4 w-4" />,
         title: "Level 2 - File A1",
         subtitle: "Second level file",
         onNavigate: () => {
@@ -273,7 +273,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
   },
   {
     id: "level1-2",
-    icon: <IconFile className="h-4 w-4" />,
+    icon: <File className="h-4 w-4" />,
     title: "Level 1 - File B",
     subtitle: "Top level file",
     onNavigate: () => {
@@ -331,14 +331,14 @@ const generateManyItems = (count: number): TreeNavigatorItem[] => {
     if (hasChildren) {
       items.push({
         id: `category-${i}`,
-        icon: <IconFolder className="h-4 w-4" />,
+        icon: <Folder className="h-4 w-4" />,
         title: `Category ${i}`,
         subtitle: `${Math.floor(Math.random() * 50)} items`,
         children: Array.from(
           { length: Math.floor(Math.random() * 8) + 3 },
           (_, j) => ({
             id: `item-${i}-${j + 1}`,
-            icon: <IconFile className="h-4 w-4" />,
+            icon: <File className="h-4 w-4" />,
             title: `Item ${i}.${j + 1}`,
             subtitle: `Subcategory ${j + 1}`,
             onNavigate: () => showToast(`Opened Item ${i}.${j + 1}`),
@@ -348,7 +348,7 @@ const generateManyItems = (count: number): TreeNavigatorItem[] => {
     } else {
       items.push({
         id: `item-${i}`,
-        icon: <IconFile className="h-4 w-4" />,
+        icon: <File className="h-4 w-4" />,
         title: `Navigation Item ${i}`,
         subtitle: `Description for item ${i}`,
         onNavigate: () => showToast(`Opened Item ${i}`),

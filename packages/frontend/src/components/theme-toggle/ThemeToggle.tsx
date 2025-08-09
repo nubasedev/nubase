@@ -1,4 +1,4 @@
-import { IconMoon, IconSun } from "@tabler/icons-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "../buttons/Button/Button";
 import { useNubaseContext } from "../nubase-app/NubaseContextProvider";
 
@@ -22,9 +22,9 @@ export const ThemeToggle = ({ className }: ThemeToggleProps) => {
       aria-label={`Switch to ${context.theming.activeThemeId === "light" ? "dark" : "light"} mode`}
     >
       {context.theming.activeThemeId === "light" ? (
-        <IconMoon size={16} />
+        <Moon size={16} />
       ) : (
-        <IconSun size={16} />
+        <Sun size={16} />
       )}
     </Button>
   );
