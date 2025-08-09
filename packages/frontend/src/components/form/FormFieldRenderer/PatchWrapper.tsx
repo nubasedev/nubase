@@ -1,4 +1,4 @@
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { Check, X } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator } from "../../activity-indicator";
@@ -158,7 +158,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
                 aria-label="Patching..."
               />
             ) : (
-              <IconCheck className="w-4 h-4" aria-label="Apply changes" />
+              <Check className="w-4 h-4" aria-label="Apply changes" />
             )}
           </Button>
           <Button
@@ -166,7 +166,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
             onClick={handleCancel}
             disabled={isPatching}
           >
-            <IconX className="w-4 h-4" aria-label="Cancel changes" />
+            <X className="w-4 h-4" aria-label="Cancel changes" />
           </Button>
         </div>
       </div>

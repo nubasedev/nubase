@@ -1,4 +1,4 @@
-import { IconMoon, IconPalette, IconSun } from "@tabler/icons-react";
+import { Moon, Palette, Sun } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
@@ -7,7 +7,7 @@ import type { CommandDefinition } from "../types";
 export const workbenchSetTheme: CommandDefinition = {
   id: "workbench.setTheme",
   name: "Set Theme",
-  icon: <IconPalette />,
+  icon: <Palette />,
   execute: (context) => {
     // Get available themes from context or use defaults
     const availableThemes = context.config?.themeIds || ["light", "dark"];
@@ -26,7 +26,7 @@ export const workbenchSetTheme: CommandDefinition = {
       const theme = context.theming.themeMap[themeId];
       return {
         id: themeId,
-        icon: theme?.type === "dark" ? <IconMoon /> : <IconSun />,
+        icon: theme?.type === "dark" ? <Moon /> : <Sun />,
         title: theme?.name || themeId,
         subtitle: `Switch to ${themeId} theme`,
         onNavigate: () => {

@@ -1,9 +1,4 @@
-import {
-  IconAlertTriangle,
-  IconCheck,
-  IconInfoCircle,
-  IconX,
-} from "@tabler/icons-react";
+import { AlertTriangle, Check, Info, X } from "lucide-react";
 import type { FC } from "react";
 import { cn } from "../../../utils";
 import { ActivityIndicator } from "../../activity-indicator";
@@ -21,22 +16,22 @@ const typeConfig = {
     className: "bg-background border-border text-foreground",
   },
   success: {
-    icon: IconCheck,
+    icon: Check,
     className:
       "bg-secondary/10 border-secondary/20 text-secondary dark:bg-secondary/20 dark:border-secondary/30 dark:text-secondary",
   },
   error: {
-    icon: IconX,
+    icon: X,
     className:
       "bg-destructive/10 border-destructive/20 text-destructive dark:bg-destructive/20 dark:border-destructive/30 dark:text-destructive",
   },
   warning: {
-    icon: IconAlertTriangle,
+    icon: AlertTriangle,
     className:
       "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
   },
   info: {
-    icon: IconInfoCircle,
+    icon: Info,
     className:
       "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
   },
@@ -71,7 +66,7 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
 
       {toast.closable && (
         <Button variant="secondary" onClick={onClose} className="h-6 w-6 p-0">
-          <IconX className="h-4 w-4" />
+          <X className="h-4 w-4" />
         </Button>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { IconEye } from "@tabler/icons-react";
+import { Eye } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
@@ -7,7 +7,7 @@ import type { CommandDefinition } from "../types";
 export const workbenchOpenView: CommandDefinition = {
   id: "workbench.openView",
   name: "Open View",
-  icon: <IconEye />,
+  icon: <Eye />,
   execute: (context) => {
     const views = context.config?.views || {};
     const viewEntries = Object.entries(views);
@@ -31,7 +31,7 @@ export const workbenchOpenView: CommandDefinition = {
     const viewItems: TreeNavigatorItem[] = viewEntries.map(
       ([viewId, view]) => ({
         id: viewId,
-        icon: <IconEye />,
+        icon: <Eye />,
         title: view.title || viewId,
         subtitle: `Navigate to ${viewId} view`,
         onNavigate: () => {

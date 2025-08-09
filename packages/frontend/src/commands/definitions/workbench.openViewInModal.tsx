@@ -1,4 +1,4 @@
-import { IconEyeCheck } from "@tabler/icons-react";
+import { Eye } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
@@ -9,7 +9,7 @@ import type { CommandDefinition } from "../types";
 export const workbenchOpenViewInModal: CommandDefinition = {
   id: "workbench.openViewInModal",
   name: "Open View in Modal",
-  icon: <IconEyeCheck />,
+  icon: <Eye />,
   execute: (context) => {
     const views = context.config?.views || {};
     const viewEntries = Object.entries(views);
@@ -33,7 +33,7 @@ export const workbenchOpenViewInModal: CommandDefinition = {
     const viewItems: TreeNavigatorItem[] = viewEntries.map(
       ([viewId, view]) => ({
         id: viewId,
-        icon: <IconEyeCheck />,
+        icon: <EyeCheck />,
         title: view.title || viewId,
         subtitle: `Open ${viewId} view in modal`,
         onNavigate: () => {

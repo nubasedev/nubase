@@ -1,5 +1,5 @@
-import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
 import { cn } from "../../../utils";
 
 export interface TreeNavigatorItem {
@@ -70,13 +70,12 @@ export const TreeNavigatorItemComponent = ({
       {item.hasChildren && (
         <div className="flex-shrink-0">
           <div className="w-4 h-4 flex items-center justify-center">
-            <IconChevronRight
+            <ChevronRight
               size={12}
               className={cn(
                 "transition-transform",
                 item.isExpanded ? "rotate-90" : "rotate-0",
               )}
-              title={item.isExpanded ? "Collapse" : "Expand"}
             />
           </div>
         </div>

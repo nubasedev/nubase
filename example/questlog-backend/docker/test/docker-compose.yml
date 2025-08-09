@@ -1,5 +1,6 @@
 services:
   postgresql:
+    container_name: nubase-db-test
     image: "postgres:17.5"
     volumes:
       - ./postgresql-data:/var/lib/postgresql/data

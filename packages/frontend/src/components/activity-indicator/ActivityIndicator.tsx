@@ -1,5 +1,5 @@
-import { IconLoader2 } from "@tabler/icons-react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import type React from "react";
 
 const activityIndicatorVariants = cva("animate-spin", {
@@ -38,7 +38,7 @@ export const ActivityIndicator: React.FC<ActivityIndicatorProps> = ({
   "aria-label": ariaLabel = "Loading...",
 }) => {
   return (
-    <IconLoader2
+    <Loader2
       className={activityIndicatorVariants({ size, color, className })}
       aria-label={ariaLabel}
     />
