@@ -35,9 +35,9 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
-      <Button variant="primary">Primary</Button>
+      <Button variant="default">Primary</Button>
       <Button variant="secondary">Secondary</Button>
-      <Button variant="danger">Danger</Button>
+      <Button variant="destructive">Danger</Button>
     </div>
   ),
 };
@@ -63,7 +63,7 @@ export const WithIcons: Story = {
         <IconFolder size={16} />
         Save File
       </Button>
-      <Button variant="danger">
+      <Button variant="destructive">
         <IconSettings size={16} />
         Settings
       </Button>
@@ -74,13 +74,13 @@ export const WithIcons: Story = {
 export const LoadingStates: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
-      <Button isLoading variant="primary">
+      <Button isLoading variant="default">
         Saving...
       </Button>
       <Button isLoading variant="secondary">
         Loading...
       </Button>
-      <Button isLoading variant="danger">
+      <Button isLoading variant="destructive">
         Deleting...
       </Button>
     </div>
@@ -153,7 +153,7 @@ export const LoadingWithIcons: Story = {
         <IconFolder size={16} />
         Saving File...
       </Button>
-      <Button isLoading variant="danger">
+      <Button isLoading variant="destructive">
         <IconSettings size={16} />
         Updating Settings...
       </Button>

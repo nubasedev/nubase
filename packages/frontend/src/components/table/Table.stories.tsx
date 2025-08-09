@@ -194,7 +194,7 @@ const userColumns: ColumnDef<User>[] = [
     cell: () => (
       <div className="flex gap-1">
         <Button variant="secondary">Edit</Button>
-        <Button variant="danger">Delete</Button>
+        <Button variant="destructive">Delete</Button>
       </div>
     ),
   },

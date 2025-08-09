@@ -123,7 +123,7 @@ const Pagination = forwardRef<HTMLDivElement, PaginationProps>(
                   <span className="px-2 py-1 text-muted-foreground">...</span>
                 ) : (
                   <Button
-                    variant={currentPage === page ? "primary" : "secondary"}
+                    variant={currentPage === page ? "default" : "secondary"}
                     onClick={() => onPageChange(page as number)}
                     className="min-w-[32px]"
                     aria-label={`Go to page ${page}`}

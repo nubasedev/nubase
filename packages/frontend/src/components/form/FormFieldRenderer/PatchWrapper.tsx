@@ -150,7 +150,7 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 mt-2 p-2 bg-muted rounded-lg shadow-xl">
-          <Button variant="primary" onClick={handlePatch} disabled={isPatching}>
+          <Button variant="default" onClick={handlePatch} disabled={isPatching}>
             {isPatching ? (
               <ActivityIndicator
                 size="sm"

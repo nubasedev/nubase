@@ -85,7 +85,7 @@ export const DangerAction: Story = {
           openDialog({
             title: "Delete Item",
             confirmText: "Delete",
-            confirmVariant: "danger",
+            confirmVariant: "destructive",
             content: (
               <div className="space-y-4">
                 <p className="text-text-muted">
@@ -221,7 +221,7 @@ const UseDialogExample = () => {
         </div>
       ),
       confirmText: "Delete",
-      confirmVariant: "danger",
+      confirmVariant: "destructive",
       onConfirm: () => {
         console.log("Item deleted!");
         // Simulate delete action
@@ -245,7 +245,7 @@ const UseDialogExample = () => {
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
         <Button onClick={handleSaveDocument}>Save Document</Button>
-        <Button variant="danger" onClick={handleDeleteItem}>
+        <Button variant="destructive" onClick={handleDeleteItem}>
           Delete Item
         </Button>
         <Button variant="secondary" onClick={showInfo}>
@@ -323,7 +323,7 @@ const StackedDialogsExample = () => {
         </p>
       ),
       confirmText: "Confirm",
-      confirmVariant: "danger",
+      confirmVariant: "destructive",
       onConfirm: () => console.log("Third dialog confirmed"),
     });
   };

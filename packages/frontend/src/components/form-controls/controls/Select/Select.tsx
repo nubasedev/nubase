@@ -5,18 +5,7 @@ import { forwardRef, useMemo, useState } from "react";
 import { cn } from "../../../../utils";
 
 const selectVariants = cva(
-  "w-full appearance-none bg-background border border-border rounded-md text-foreground outline-none transition-all duration-200 cursor-pointer focus:border-primary focus:ring-4 focus:ring-ring/10 disabled:bg-muted disabled:cursor-not-allowed disabled:opacity-60 px-4 py-3 text-sm",
-  {
-    variants: {
-      hasError: {
-        true: "border-destructive focus:border-destructive focus:ring-destructive/10",
-        false: "",
-      },
-    },
-    defaultVariants: {
-      hasError: false,
-    },
-  },
+  "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
 );
 
 const menuVariants = cva(
@@ -220,9 +209,11 @@ const Select = forwardRef<HTMLDivElement, SelectProps<any>>(
           {searchable ? (
             <input
               {...(getInputProps?.({
-                className: cn(selectVariants({ hasError }), "pr-10"),
+                className: cn(selectVariants(), "pr-10"),
                 disabled,
                 placeholder: selectedItem?.label || placeholder,
+                "aria-invalid": hasError,
+                "data-slot": "input",
               }) || {})}
             />
           ) : (
@@ -230,11 +221,13 @@ const Select = forwardRef<HTMLDivElement, SelectProps<any>>(
               type="button"
               {...getToggleButtonProps({
                 className: cn(
-                  selectVariants({ hasError }),
-                  "flex items-center justify-between pr-10",
+                  selectVariants(),
+                  "items-center justify-between pr-10 cursor-pointer",
                   !selectedItem && "text-muted-foreground",
                 ),
                 disabled: disabled || loading,
+                "aria-invalid": hasError,
+                "data-slot": "input",
               })}
             >
               <span className="truncate">

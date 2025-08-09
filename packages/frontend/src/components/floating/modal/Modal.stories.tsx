@@ -41,7 +41,7 @@ export const BasicModalFrame: Story = {
                 default size and behavior of the ModalFrame component.
               </p>
               <div className="flex justify-end">
-                <Button variant="primary">Got it</Button>
+                <Button variant="default">Got it</Button>
               </div>
             </div>
           </ModalFrame>
@@ -98,7 +98,7 @@ export const BasicModalWithScrolling: Story = {
               ))}
 
               <div className="flex justify-end mt-6">
-                <Button variant="primary">Close</Button>
+                <Button variant="default">Close</Button>
               </div>
             </div>
           </ModalFrame>
@@ -138,12 +138,16 @@ export const StructuredModalFrame: Story = {
               </div>
             }
             footer={
-              <ButtonBar alignment="right" className="p-4">
+              <ButtonBar
+                variant={"transparent"}
+                alignment="right"
+                className="p-4"
+              >
                 <Button variant="secondary" onClick={() => closeModal(modalId)}>
                   Cancel
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => {
                     showToast("Form submitted!", "success");
                     closeModal(modalId);
@@ -255,7 +259,7 @@ export const StructuredModalFrameWithScrolling: Story = {
                   Cancel
                 </Button>
                 <Button
-                  variant="primary"
+                  variant="default"
                   onClick={() => {
                     showToast("Action confirmed!", "success");
                     closeModal(modalId);
@@ -449,7 +453,7 @@ export const MultipleModals: Story = {
                               This modal is stacked on top of the first one.
                             </p>
                             <Button
-                              variant="primary"
+                              variant="default"
                               onClick={() => closeModal(secondModalId)}
                             >
                               Close This Modal
@@ -546,7 +550,7 @@ export const TopAlignedModal: Story = {
             }
             footer={
               <ButtonBar alignment="right" className="p-4">
-                <Button variant="primary">Done</Button>
+                <Button variant="default">Done</Button>
               </ButtonBar>
             }
           />
@@ -573,7 +577,7 @@ export const CustomFrameComponent: Story = {
       <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-6 shadow-xl ring-2 ring-primary/20">
         <h2 className="text-2xl font-bold text-primary mb-4">{title}</h2>
         <p className="text-foreground mb-6">{content}</p>
-        <Button variant="primary" onClick={onClose}>
+        <Button variant="default" onClick={onClose}>
           Close Custom Modal
         </Button>
       </div>

@@ -17,7 +17,7 @@ export type DialogProps = {
   alignment?: ModalAlignment;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: "primary" | "danger";
+  confirmVariant?: "default" | "destructive";
   showBackdrop?: boolean;
   zIndex?: number;
 };
@@ -33,7 +33,7 @@ export const Dialog: FC<DialogProps> = ({
   alignment = "center",
   confirmText = "Confirm",
   cancelText = "Cancel",
-  confirmVariant = "primary",
+  confirmVariant = "default",
   showBackdrop = true,
   zIndex,
 }) => {

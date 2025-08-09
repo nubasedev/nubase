@@ -63,24 +63,9 @@
       "      },",
       "    },",
       "  },",
-      "};",
-      "",
-      "export const ${7:Variant}: Story = {",
-      "  args: {",
-      "    ${8:// variant args}",
-      "  },",
-      "  parameters: {",
-      "    docs: {",
-      "      description: {",
-      "        story:",
-      "          \"${9:Variant story description}\",",
-      "      },",
-      "    },",
-      "  },",
-      "};",
-      ""
+      "};"
     ],
-    "description": "Create a Storybook stories file with TypeScript and multiple story variants"
+    "description": "Create a Storybook stories file with TypeScript"
   },
   "Vitest Test File": {
     "prefix": "test",

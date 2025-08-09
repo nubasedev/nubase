@@ -87,7 +87,7 @@ export const DestructiveActions: Story = {
     <div className="w-96 space-y-4">
       <ButtonBar>
         <Button variant="secondary">Cancel</Button>
-        <Button variant="danger">Delete</Button>
+        <Button variant="destructive">Delete</Button>
       </ButtonBar>
     </div>
   ),

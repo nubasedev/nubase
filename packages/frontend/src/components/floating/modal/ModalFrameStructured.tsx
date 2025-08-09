@@ -29,7 +29,7 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
         </div>
       )}
 
-      {footer && <div className="flex-shrink-0 bg-muted">{footer}</div>}
+      {footer && <div className="flex-shrink-0 border-t">{footer}</div>}
     </div>
   );
 };

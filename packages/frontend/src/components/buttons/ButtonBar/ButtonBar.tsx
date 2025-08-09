@@ -3,7 +3,7 @@ import type React from "react";
 import { forwardRef } from "react";
 import { cn } from "../../../utils";
 
-const buttonBarVariants = cva("flex gap-2 p-3", {
+const buttonBarVariants = cva("flex gap-3 p-3", {
   variants: {
     alignment: {
       left: "justify-start",
@@ -11,13 +11,13 @@ const buttonBarVariants = cva("flex gap-2 p-3", {
       right: "justify-end",
     },
     variant: {
-      default: "bg-muted rounded-lg",
       transparent: "",
+      muted: "bg-muted rounded-lg",
     },
   },
   defaultVariants: {
     alignment: "right",
-    variant: "default",
+    variant: "transparent",
   },
 });
 

@@ -15,7 +15,7 @@ type DialogConfig = {
   alignment?: ModalAlignment;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: "primary" | "danger";
+  confirmVariant?: "default" | "destructive";
   showBackdrop?: boolean;
   zIndex?: number;
 };
@@ -42,7 +42,7 @@ export const useDialog = (): UseDialogResult => {
         alignment = "center",
         confirmText = "Confirm",
         cancelText = "Cancel",
-        confirmVariant = "primary",
+        confirmVariant = "default",
         showBackdrop = true,
         zIndex,
       } = dialogConfig;
