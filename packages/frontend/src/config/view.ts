@@ -1,4 +1,4 @@
-import type { Infer, ObjectSchema } from "@nubase/core";
+import type { ArraySchema, Infer, ObjectSchema } from "@nubase/core";
 import type { NubaseContextData } from "../context/types";
 import type { HttpResponse } from "../http/http-client";
 
@@ -63,10 +63,44 @@ export type ResourceViewView<
   }) => Promise<HttpResponse<any>>;
 };
 
+export type ResourceSearchView<
+  TSchema extends ArraySchema<any> = ArraySchema<any>,
+  TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
+> = ViewBase & {
+  type: "resource-search";
+  schema: TSchema;
+  /**
+   * Optional schema for URL parameters this view expects.
+   */
+  schemaParams?: TParamsSchema;
+  /**
+   * Loads the search results data.
+   */
+  onLoad: ({
+    context,
+  }: {
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<Infer<TSchema>>>;
+};
+
 export type View<
-  TSchema extends ObjectSchema<any> = ObjectSchema<any>,
+  TSchema extends ObjectSchema<any> | ArraySchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > =
-  | ResourceCreateView<TSchema, TApiEndpoints, TParamsSchema>
-  | ResourceViewView<TSchema, TApiEndpoints, TParamsSchema>;
+  | ResourceCreateView<
+      TSchema extends ObjectSchema<any> ? TSchema : ObjectSchema<any>,
+      TApiEndpoints,
+      TParamsSchema
+    >
+  | ResourceViewView<
+      TSchema extends ObjectSchema<any> ? TSchema : ObjectSchema<any>,
+      TApiEndpoints,
+      TParamsSchema
+    >
+  | ResourceSearchView<
+      TSchema extends ArraySchema<any> ? TSchema : ArraySchema<any>,
+      TApiEndpoints,
+      TParamsSchema
+    >;

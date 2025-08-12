@@ -4,6 +4,7 @@ import { showToast } from "../../components";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
 import { MaxWidthLayout } from "../../components/page-layouts/MaxWidthLayout/MaxWidthLayout";
 import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/ResourceCreateViewRenderer";
+import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/ResourceSearchViewRenderer";
 import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/ResourceViewViewRenderer";
 
 /**
@@ -136,6 +137,38 @@ export default function ResourceScreen() {
           onError={(error) => {
             showToast(
               `Error updating resource ${resourceName}: ${error.message}`,
+              "error",
+            );
+          }}
+        />
+      );
+      break;
+    }
+    case "resource-search": {
+      // Parse and validate URL search params using schema's built-in coercion
+      let validatedParams: Record<string, any> | undefined;
+      if (resourceOperation.view.schemaParams) {
+        try {
+          validatedParams = resourceOperation.view.schemaParams
+            .toZodWithCoercion()
+            .parse(searchParams);
+        } catch (error) {
+          showToast(
+            `Invalid URL parameters: ${(error as Error).message}`,
+            "error",
+          );
+          return <div>Invalid URL parameters</div>;
+        }
+      }
+
+      element = (
+        <ResourceSearchViewRenderer
+          view={resourceOperation.view}
+          params={validatedParams}
+          resourceName={resourceName}
+          onError={(error) => {
+            showToast(
+              `Error loading search results for ${resourceName}: ${error.message}`,
               "error",
             );
           }}

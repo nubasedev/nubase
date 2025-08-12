@@ -16,10 +16,11 @@ export const handleGetTickets = createHttpHandler({
     const tickets: Ticket[] = await db.select().from(ticketsTable);
     console.log("Fetched tickets:", tickets);
 
-    // Transform database result to match API schema - only return id and title
-    return tickets.map((ticket): { id: number; title: string } => ({
+    // Transform database result to match API schema
+    return tickets.map((ticket) => ({
       id: ticket.id,
       title: ticket.title,
+      description: ticket.description ?? undefined,
     }));
   },
 });

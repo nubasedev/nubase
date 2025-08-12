@@ -8,6 +8,7 @@ import {
   type ErrorListener,
 } from "../../http/typed-api-client";
 import { cleanupKeybindings, registerKeybindings } from "../../keybindings";
+import { NavigationHistoryTracker } from "../../navigation/navigation-history-tracker";
 import { router } from "../../routes/router";
 import { useModal } from "../floating/modal";
 import { showToast } from "../floating/toast";
@@ -47,6 +48,11 @@ export function useCreateNubaseContext({
       baseUrl: config.apiBaseUrl,
     });
   }, [config.apiBaseUrl]);
+
+  // Create navigation history tracker
+  const navigationHistoryTracker = useMemo(() => {
+    return new NavigationHistoryTracker(router);
+  }, []);
 
   const initialize = useCallback(async () => {
     setIsLoading(true);
@@ -125,11 +131,18 @@ export function useCreateNubaseContext({
         },
       },
       router,
+      navigationHistory: navigationHistoryTracker,
       params: undefined,
     };
 
     return nubaseContextDataInternal;
-  }, [initializationData, modal, activeThemeId, httpClient]);
+  }, [
+    initializationData,
+    modal,
+    activeThemeId,
+    httpClient,
+    navigationHistoryTracker,
+  ]);
 
   // Initialize command system and register keybindings when nubaseContextData is available
   useEffect(() => {
@@ -149,7 +162,7 @@ export function useCreateNubaseContext({
     }
   }, [activeThemeId]);
 
-  // Cleanup function to remove theme variables and keybindings when unmounting
+  // Cleanup function to remove theme variables, keybindings, and navigation tracker when unmounting
   useEffect(() => {
     return () => {
       const existingStyle = document.getElementById("nubase-theme-variables");
@@ -157,8 +170,9 @@ export function useCreateNubaseContext({
         existingStyle.remove();
       }
       cleanupKeybindings();
+      navigationHistoryTracker.dispose();
     };
-  }, []);
+  }, [navigationHistoryTracker]);
 
   return {
     data: nubaseContextData,

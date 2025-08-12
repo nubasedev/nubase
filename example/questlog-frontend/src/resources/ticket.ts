@@ -1,5 +1,6 @@
 import { createResource } from "@nubase/frontend";
 import { createTicketView } from "../views/create-ticket";
+import { searchTicketsView } from "../views/search-tickets";
 import { viewTicketView } from "../views/view-ticket";
 
 export const ticketResource = createResource({
@@ -10,6 +11,9 @@ export const ticketResource = createResource({
     },
     view: {
       view: viewTicketView,
+    },
+    search: {
+      view: searchTicketsView,
     },
   },
 });

@@ -6,22 +6,35 @@ import {
   successSchema,
 } from "@nubase/core";
 
-export const ticketBaseSchema = nu.object({
-  id: nu.number(),
-  title: nu.string().withMeta({
-    label: "Ticket Title",
-    description: "Enter the title of the ticket",
-  }), // required by default
-  description: nu.string().optional().withMeta({
-    label: "Ticket Description",
-    description: "Enter the description of the ticket",
-  }),
-});
+export const ticketBaseSchema = nu
+  .object({
+    id: nu.number(),
+    title: nu.string().withMeta({
+      label: "Ticket Title",
+      description: "Enter the title of the ticket",
+    }), // required by default
+    description: nu.string().optional().withMeta({
+      label: "Ticket Description",
+      description: "Enter the description of the ticket",
+    }),
+  })
+  .withTableLayouts({
+    default: {
+      fields: [
+        { name: "id", size: 10 },
+        { name: "title", size: 50 },
+        { name: "description", size: 40 },
+      ],
+      metadata: {
+        linkFields: ["title"],
+      },
+    },
+  });
 
 export const getTicketsSchema = {
   method: "GET" as const,
   path: "/tickets",
-  requestParams: emptySchema,
+  requestParams: ticketBaseSchema.omit("id").partial(),
   requestBody: emptySchema,
   responseBody: nu.array(ticketBaseSchema),
 } satisfies RequestSchema;

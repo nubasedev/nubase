@@ -201,7 +201,7 @@ export interface LayoutGroup<TShape extends ObjectShape> {
  */
 export interface Layout<TShape extends ObjectShape> {
   /** Type of layout */
-  type: "form" | "grid" | "tabs" | "accordion" | "custom";
+  type: "form" | "grid" | "tabs" | "accordion" | "custom" | "table";
   /** Groups of fields within the layout */
   groups: LayoutGroup<TShape>[];
   /** Additional CSS classes for the layout */
@@ -215,6 +215,47 @@ export interface Layout<TShape extends ObjectShape> {
     /** Other layout-specific options */
     [key: string]: any;
   };
+  /** Layout metadata - can contain any metadata, specific layouts may have specific metadata */
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Form layout specific interface
+ */
+export interface FormLayout<TShape extends ObjectShape> extends Layout<TShape> {
+  type: "form";
+  groups: LayoutGroup<TShape>[];
+}
+
+/**
+ * Table layout specific field (no size needed for tables)
+ */
+export interface TableLayoutField<TShape extends ObjectShape> {
+  /** The name of the field - must be a valid property key from the object shape */
+  name: keyof TShape;
+  /** Additional CSS classes for styling */
+  className?: string;
+  /** Whether the field should be hidden */
+  hidden?: boolean;
+  /** Size/width metadata for the column */
+  size?: number;
+}
+
+/**
+ * Table layout specific interface
+ */
+export interface TableLayout<TShape extends ObjectShape>
+  extends Layout<TShape> {
+  type: "table";
+  /** For tables, we only have one group internally but expose fields directly */
+  groups: LayoutGroup<TShape>[];
+  /** Table-specific metadata */
+  metadata?: {
+    /** Fields that should be clickable links to view the entity */
+    linkFields?: (keyof TShape)[];
+    /** Other metadata */
+    [key: string]: any;
+  };
 }
 
 /**
@@ -222,6 +263,20 @@ export interface Layout<TShape extends ObjectShape> {
  */
 export type ObjectLayouts<TShape extends ObjectShape> = {
   [layoutName: string]: Layout<TShape>;
+};
+
+/**
+ * Type representing multiple form layouts
+ */
+export type FormLayouts<TShape extends ObjectShape> = {
+  [layoutName: string]: FormLayout<TShape>;
+};
+
+/**
+ * Type representing multiple table layouts
+ */
+export type TableLayouts<TShape extends ObjectShape> = {
+  [layoutName: string]: TableLayout<TShape>;
 };
 
 export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
@@ -251,9 +306,59 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
    * Add layouts to the object schema.
    * @param layouts Object mapping layout names to layout configurations.
    * @returns The schema instance for chaining.
+   * @deprecated Use withFormLayouts or withTableLayouts instead
    */
   withLayouts(layouts: ObjectLayouts<TShape>): this {
     this._layouts = layouts;
+    return this;
+  }
+
+  /**
+   * Add form layouts to the object schema.
+   * @param layouts Object mapping layout names to form layout configurations.
+   * @returns The schema instance for chaining.
+   */
+  withFormLayouts(layouts: FormLayouts<TShape>): this {
+    // Form layouts are stored directly in _layouts
+    this._layouts = { ...this._layouts, ...layouts };
+    return this;
+  }
+
+  /**
+   * Add table layouts to the object schema.
+   * @param layouts Object mapping layout names to table layout configurations with fields and optional linkFields.
+   * @returns The schema instance for chaining.
+   */
+  withTableLayouts(layouts: {
+    [layoutName: string]: {
+      fields: TableLayoutField<TShape>[];
+      className?: string;
+      config?: Layout<TShape>["config"];
+      metadata?: {
+        linkFields?: (keyof TShape)[];
+        [key: string]: any;
+      };
+    };
+  }): this {
+    // Convert the table-specific format to internal Layout format
+    const tableLayouts: TableLayouts<TShape> = {};
+
+    for (const [name, tableConfig] of Object.entries(layouts)) {
+      // Create a single group with all fields for internal consistency
+      tableLayouts[name] = {
+        type: "table",
+        groups: [
+          {
+            fields: tableConfig.fields,
+          },
+        ],
+        className: tableConfig.className,
+        config: tableConfig.config,
+        metadata: tableConfig.metadata,
+      };
+    }
+
+    this._layouts = { ...this._layouts, ...tableLayouts };
     return this;
   }
 
