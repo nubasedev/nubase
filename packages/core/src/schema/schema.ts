@@ -345,9 +345,13 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     // Start with static metadata for each property
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key)) {
-        const schema = this._shape[key];
+        let schema = this._shape[key];
         if (schema) {
-          result[key] = { ...schema._meta };
+          // If it's an OptionalSchema, get the wrapped schema's metadata
+          if (schema instanceof OptionalSchema) {
+            schema = schema._wrapped;
+          }
+          result[key] = { ...(schema?._meta || {}) };
         }
       }
     }
@@ -362,17 +366,21 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
           if (Object.hasOwn(this._shape, key)) {
             const schema = this._shape[key];
             if (schema) {
+              // If it's an OptionalSchema, use the wrapped schema for type checking
+              const actualSchema =
+                schema instanceof OptionalSchema ? schema._wrapped : schema;
+
               if ((data as any)[key] !== undefined) {
                 completeData[key] = (data as any)[key];
-              } else if (schema._meta.defaultValue !== undefined) {
-                completeData[key] = schema._meta.defaultValue;
+              } else if (actualSchema._meta.defaultValue !== undefined) {
+                completeData[key] = actualSchema._meta.defaultValue;
               } else {
                 // Provide reasonable defaults for computation
-                if (schema instanceof StringSchema) {
+                if (actualSchema instanceof StringSchema) {
                   completeData[key] = "";
-                } else if (schema instanceof NumberSchema) {
+                } else if (actualSchema instanceof NumberSchema) {
                   completeData[key] = 0;
-                } else if (schema instanceof BooleanSchema) {
+                } else if (actualSchema instanceof BooleanSchema) {
                   completeData[key] = false;
                 } else {
                   completeData[key] = null;
@@ -422,11 +430,6 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
     const newSchema = new ObjectSchema(newShape);
 
-    // Preserve partial flag if this schema was partial
-    if ((this as any)._isPartial) {
-      (newSchema as any)._isPartial = true;
-    }
-
     // Copy metadata from parent schema
     newSchema._meta = { ...this._meta };
 
@@ -472,11 +475,6 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     const newShape = { ...this._shape, ...shape } as TShape & TExtend;
     const newSchema = new ObjectSchema(newShape);
 
-    // Preserve partial flag if this schema was partial
-    if ((this as any)._isPartial) {
-      (newSchema as any)._isPartial = true;
-    }
-
     // Copy metadata from parent schema (with proper typing)
     newSchema._meta = { ...this._meta } as any;
 
@@ -491,14 +489,29 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
   /**
    * Create a new ObjectSchema where all top-level properties become optional.
-   * This creates a special ObjectSchema that behaves like a partial object.
+   * This wraps each field in an OptionalSchema, similar to how Zod handles partial.
    * @returns A new ObjectSchema where all properties are optional.
    */
-  partial(): ObjectSchema<TShape> {
-    const partialSchema = new ObjectSchema(this._shape) as any;
+  partial(): ObjectSchema<{ [K in keyof TShape]: OptionalSchema<TShape[K]> }> {
+    const partialShape: any = {};
 
-    // Mark this as a partial schema for special toZod behavior
-    (partialSchema as any)._isPartial = true;
+    // Wrap each field in OptionalSchema if not already optional
+    for (const key in this._shape) {
+      if (Object.hasOwn(this._shape, key)) {
+        const fieldSchema = this._shape[key];
+        if (fieldSchema) {
+          if (fieldSchema instanceof OptionalSchema) {
+            // Already optional, keep as is
+            partialShape[key] = fieldSchema;
+          } else {
+            // Wrap in OptionalSchema to make it optional
+            partialShape[key] = fieldSchema.optional();
+          }
+        }
+      }
+    }
+
+    const partialSchema = new ObjectSchema(partialShape);
 
     // Copy metadata from parent schema
     partialSchema._meta = { ...this._meta };
@@ -517,12 +530,7 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
         const fieldSchema = this._shape[key];
-        // If this is a partial schema, make all fields optional
-        if ((this as any)._isPartial) {
-          zodShape[key] = fieldSchema.toZod().nullable().optional();
-        } else {
-          zodShape[key] = fieldSchema.toZod();
-        }
+        zodShape[key] = fieldSchema.toZod();
       }
     }
     return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
@@ -541,7 +549,6 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
    */
   toZodWithCoercion(): z.ZodSchema<ObjectOutput<TShape>> {
     const zodShape: Record<string, z.ZodTypeAny> = {};
-    const isPartial = (this as any)._isPartial;
 
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
@@ -556,8 +563,8 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
 
         if (fieldSchema.type === "number" || wrappedType === "number") {
           const coercedSchema = z.coerce.number();
-          // For optional fields or partial schemas, preserve the optional nature
-          if (fieldSchema.type === "optional" || isPartial) {
+          // For optional fields, preserve the optional nature
+          if (fieldSchema.type === "optional") {
             zodShape[key] = coercedSchema.nullable().optional();
           } else {
             zodShape[key] = coercedSchema;
@@ -576,19 +583,15 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
             return val;
           }, z.boolean());
 
-          // For optional fields or partial schemas, preserve the optional nature
-          if (fieldSchema.type === "optional" || isPartial) {
+          // For optional fields, preserve the optional nature
+          if (fieldSchema.type === "optional") {
             zodShape[key] = customBooleanCoercion.nullable().optional();
           } else {
             zodShape[key] = customBooleanCoercion;
           }
         } else {
           // For strings and other types, use the original schema
-          if (isPartial && fieldSchema.type !== "optional") {
-            zodShape[key] = baseZodSchema.nullable().optional();
-          } else {
-            zodShape[key] = baseZodSchema;
-          }
+          zodShape[key] = baseZodSchema;
         }
       }
     }

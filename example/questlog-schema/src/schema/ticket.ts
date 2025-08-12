@@ -1,4 +1,10 @@
-import { emptySchema, nu, type RequestSchema } from "@nubase/core";
+import {
+  emptySchema,
+  idNumberSchema,
+  nu,
+  type RequestSchema,
+  successSchema,
+} from "@nubase/core";
 
 export const ticketBaseSchema = nu.object({
   id: nu.number(),
@@ -12,10 +18,6 @@ export const ticketBaseSchema = nu.object({
   }),
 });
 
-export const ticketIdParamsSchema = nu.object({
-  id: nu.number(),
-});
-
 export const getTicketsSchema = {
   method: "GET" as const,
   path: "/tickets",
@@ -27,7 +29,7 @@ export const getTicketsSchema = {
 export const getTicketSchema = {
   method: "GET" as const,
   path: "/tickets/:id",
-  requestParams: ticketIdParamsSchema,
+  requestParams: idNumberSchema,
   requestBody: emptySchema,
   responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
@@ -43,7 +45,7 @@ export const postTicketSchema = {
 export const patchTicketSchema = {
   method: "PATCH" as const,
   path: "/tickets/:id",
-  requestParams: ticketIdParamsSchema,
+  requestParams: idNumberSchema,
   requestBody: ticketBaseSchema.omit("id").partial(),
   responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
@@ -51,7 +53,7 @@ export const patchTicketSchema = {
 export const deleteTicketSchema = {
   method: "DELETE" as const,
   path: "/tickets/:id",
-  requestParams: ticketIdParamsSchema,
+  requestParams: idNumberSchema,
   requestBody: emptySchema,
-  responseBody: nu.object({ success: nu.boolean() }),
+  responseBody: successSchema,
 } satisfies RequestSchema;

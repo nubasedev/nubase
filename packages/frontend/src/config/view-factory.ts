@@ -4,10 +4,10 @@ import type { HttpResponse } from "../http/http-client";
 import type { ResourceCreateView, ResourceViewView } from "./view";
 
 /**
- * Creates a view factory pre-configured with API endpoints type.
- * This eliminates the need to specify the endpoints type for each view.
+ * Creates a view factory pre-configured with API endpoints.
+ * This eliminates the need to import apiEndpoints in each view file.
  */
-export function createViewFactory<TApiEndpoints>() {
+export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
   return {
     createView<
       TSchema extends ObjectSchema<any>,
@@ -15,8 +15,8 @@ export function createViewFactory<TApiEndpoints>() {
     >(config: {
       id: string;
       title: string;
-      schema: TSchema;
-      schemaParams?: TParamsSchema;
+      schema: (api: TApiEndpoints) => TSchema;
+      schemaParams?: (api: TApiEndpoints) => TParamsSchema;
       onLoad: (args: {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<Infer<TSchema>>>;
@@ -25,9 +25,14 @@ export function createViewFactory<TApiEndpoints>() {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<any>>;
     }): ResourceViewView<TSchema, TApiEndpoints, TParamsSchema> {
+      const resolvedSchema = config.schema(apiEndpoints);
+      const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
+
       return {
         type: "resource-view",
         ...config,
+        schema: resolvedSchema,
+        schemaParams: resolvedSchemaParams,
       };
     },
 
@@ -37,16 +42,21 @@ export function createViewFactory<TApiEndpoints>() {
     >(config: {
       id: string;
       title: string;
-      schema: TSchema;
-      schemaParams?: TParamsSchema;
+      schema: (api: TApiEndpoints) => TSchema;
+      schemaParams?: (api: TApiEndpoints) => TParamsSchema;
       onSubmit: (args: {
         data: Infer<TSchema>;
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<any>>;
     }): ResourceCreateView<TSchema, TApiEndpoints, TParamsSchema> {
+      const resolvedSchema = config.schema(apiEndpoints);
+      const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
+
       return {
         type: "resource-create",
         ...config,
+        schema: resolvedSchema,
+        schemaParams: resolvedSchemaParams,
       };
     },
   };

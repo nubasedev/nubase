@@ -1,5 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { nu } from "./nu";
+import { OptionalSchema } from "./schema";
 
 describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   const baseObjectSchema = nu
@@ -47,9 +48,15 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     const partialSchema = baseObjectSchema.partial();
 
     expect(partialSchema).toBeDefined();
-    expect(partialSchema._shape).toEqual(baseObjectSchema._shape);
 
-    // The shape should be the same but parsing behavior should differ
+    // All fields should now be wrapped in OptionalSchema
+    expect(partialSchema._shape.id).toBeInstanceOf(OptionalSchema);
+    expect(partialSchema._shape.name).toBeInstanceOf(OptionalSchema);
+    expect(partialSchema._shape.email).toBeInstanceOf(OptionalSchema);
+    expect(partialSchema._shape.age).toBeInstanceOf(OptionalSchema);
+    expect(partialSchema._shape.isActive).toBeInstanceOf(OptionalSchema);
+
+    // The shape keys should remain the same
     expect(Object.keys(partialSchema._shape)).toEqual([
       "id",
       "name",
@@ -63,9 +70,12 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     const partialSchema = baseObjectSchema.partial();
 
     expect(partialSchema._meta.description).toBe("User Profile");
-    expect(partialSchema._shape.name._meta.label).toBe("Full Name");
-    expect(partialSchema._shape.id._meta.label).toBe("ID");
-    expect(partialSchema._shape.email._meta.label).toBe("Email Address");
+    // Now fields are wrapped in OptionalSchema, so access wrapped schema's metadata
+    expect(partialSchema._shape.name._wrapped._meta.label).toBe("Full Name");
+    expect(partialSchema._shape.id._wrapped._meta.label).toBe("ID");
+    expect(partialSchema._shape.email._wrapped._meta.label).toBe(
+      "Email Address",
+    );
   });
 
   it("should preserve computed metadata when creating partial", () => {
@@ -285,9 +295,11 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
       name: nu.string(),
     });
 
+    // When extending a partial schema, the original fields are optional
+    // but new fields keep their defined optionality
     const partialExtendedSchema = originalSchema.partial().extend({
-      email: nu.string().withMeta({ label: "Email" }),
-      age: nu.number().withMeta({ label: "Age" }),
+      email: nu.string().optional().withMeta({ label: "Email" }),
+      age: nu.number().optional().withMeta({ label: "Age" }),
     });
 
     expect(partialExtendedSchema).toBeDefined();
@@ -296,7 +308,7 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     expect(partialExtendedSchema._shape).toHaveProperty("email");
     expect(partialExtendedSchema._shape).toHaveProperty("age");
 
-    // Test parsing with extended partial schema
+    // Test parsing with extended partial schema - all fields are optional
     const partialData = { name: "John", email: "john@example.com" };
     const parsed = partialExtendedSchema.toZod().parse(partialData);
     expect(parsed).toEqual(partialData);
