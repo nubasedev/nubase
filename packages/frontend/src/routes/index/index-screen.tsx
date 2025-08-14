@@ -7,10 +7,10 @@ export default function IndexScreen() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-onSurface mb-4">
+        <h1 className="text-3xl font-bold text-foreground mb-4">
           Welcome to {config.appName}
         </h1>
-        <p className="text-lg text-onSurfaceVariant max-w-2xl mx-auto">
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
           Your Nubase application is ready. Choose from the quick actions below
           or use the navigation menu to get started.
         </p>

@@ -1,19 +1,28 @@
 import type { ArraySchema, Infer, ObjectSchema } from "@nubase/core";
 import type { NubaseContextData } from "../context/types";
 import type { HttpResponse } from "../http/http-client";
+import type { BreadcrumbDefinition } from "./breadcrumb";
 
 export type ViewType = "object";
 
-export type ViewBase = {
+export type ViewBase<
+  TApiEndpoints = any,
+  TParamsSchema extends ObjectSchema<any> | undefined = undefined,
+  TData = any,
+> = {
   title: string;
   id: string;
+  /**
+   * Optional breadcrumb navigation trail for this view.
+   */
+  breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema, TData>;
 };
 
 export type ResourceCreateView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
-> = ViewBase & {
+> = ViewBase<TApiEndpoints, TParamsSchema> & {
   type: "resource-create";
   schema: TSchema;
   /**
@@ -36,7 +45,7 @@ export type ResourceViewView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
-> = ViewBase & {
+> = ViewBase<TApiEndpoints, TParamsSchema, Infer<TSchema>> & {
   type: "resource-view";
   schema: TSchema;
   /**
@@ -67,7 +76,7 @@ export type ResourceSearchView<
   TSchema extends ArraySchema<any> = ArraySchema<any>,
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
-> = ViewBase & {
+> = ViewBase<TApiEndpoints, TParamsSchema> & {
   type: "resource-search";
   schema: TSchema;
   /**

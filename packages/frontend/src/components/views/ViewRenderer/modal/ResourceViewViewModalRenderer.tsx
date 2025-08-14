@@ -1,24 +1,33 @@
 import type { ObjectOutput } from "@nubase/core";
 import { type FC, useEffect, useState } from "react";
-import type { ResourceViewView } from "../../../config/view";
-import { useSchemaForm } from "../../../hooks";
-import { ActivityIndicator } from "../../activity-indicator/ActivityIndicator";
-import { SchemaForm } from "../../form/SchemaForm/SchemaForm";
-import { SchemaFormBody } from "../../form/SchemaForm/SchemaFormBody";
-import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
+import type { ResourceViewView } from "../../../../config/view";
+import type { NubaseContextData } from "../../../../context/types";
+import { useSchemaForm } from "../../../../hooks";
+import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
+import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
+import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
+import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 
-export type ResourceViewViewRendererProps = {
+export type ResourceViewViewModalRendererProps = {
   view: ResourceViewView;
+  context: NubaseContextData;
   params?: Record<string, any>;
+  onClose?: () => void;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
 };
 
-export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
-  props,
-) => {
-  const { view, params, onPatch: onPatchCallback, onError } = props;
-  const context = useNubaseContext();
+export const ResourceViewViewModalRenderer: FC<
+  ResourceViewViewModalRendererProps
+> = (props) => {
+  const {
+    view,
+    context,
+    params,
+    onClose,
+    onPatch: onPatchCallback,
+    onError,
+  } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [initialData, setInitialData] = useState<Record<string, any> | null>(
     null,
@@ -44,28 +53,40 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     };
 
     loadData();
-  }, [params, context, onError, view.onLoad]); // Re-load if params change
+  }, [params, context, onError, view.onLoad]);
 
-  if (isLoading) {
+  const renderBody = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center py-8">
+          <ActivityIndicator size="lg" aria-label="Loading resource data..." />
+        </div>
+      );
+    }
+
+    if (!initialData) {
+      return <div>Failed to load resource data</div>;
+    }
+
     return (
-      <div className="flex justify-center py-8">
-        <ActivityIndicator size="lg" aria-label="Loading resource data..." />
-      </div>
+      <ResourceViewForm
+        view={view}
+        initialData={initialData}
+        params={params}
+        onPatch={onPatchCallback}
+        onError={onError}
+        context={context}
+      />
     );
-  }
-
-  if (!initialData) {
-    return <div>Failed to load resource data</div>;
-  }
+  };
 
   return (
-    <ResourceViewForm
-      view={view}
-      initialData={initialData}
-      params={params}
-      onPatch={onPatchCallback}
-      onError={onError}
-      context={context}
+    <ModalFrameStructured
+      onClose={onClose}
+      header={
+        <h2 className="text-lg font-semibold text-foreground">{view.title}</h2>
+      }
+      body={renderBody()}
     />
   );
 };
@@ -91,8 +112,6 @@ const ResourceViewForm: FC<{
     mode: "patch",
     initialValues: initialData,
     onPatch: async (fieldName: string, value) => {
-      // Validation now happens in SchemaFormBody
-      // This layer only handles network operations
       try {
         const patchData = { [fieldName]: value };
         const contextWithParams = {
@@ -106,9 +125,8 @@ const ResourceViewForm: FC<{
 
         onPatchCallback?.(result);
       } catch (error) {
-        // Only call onError for actual network/server errors, not validation errors
         onError?.(error as Error);
-        throw error; // Re-throw to let the form handle it
+        throw error;
       }
     },
     onSubmit: async () => {
@@ -120,7 +138,7 @@ const ResourceViewForm: FC<{
     <SchemaForm
       form={form}
       className="space-y-4"
-      data-testid="resource-view-form"
+      data-testid="resource-view-form-modal"
     >
       <SchemaFormBody form={form} />
     </SchemaForm>

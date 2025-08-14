@@ -1,11 +1,12 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { FullScreenLayout } from "@/components/page-layouts/FullScreenLayout";
 import { showToast } from "../../components";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
-import { MaxWidthLayout } from "../../components/page-layouts/MaxWidthLayout/MaxWidthLayout";
-import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/ResourceCreateViewRenderer";
-import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/ResourceSearchViewRenderer";
-import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/ResourceViewViewRenderer";
+import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceCreateViewRenderer";
+import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceSearchViewRenderer";
+import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceViewViewRenderer";
+import type { BreadcrumbItem } from "../../config/breadcrumb";
 
 /**
  * URL Parameter Coercion System
@@ -63,6 +64,35 @@ export default function ResourceScreen() {
   }
 
   let element: ReactNode | null = null;
+  const loadedData: any = null; // Will be set if data is loaded for dynamic breadcrumbs
+  let validatedParams: Record<string, any> | undefined; // Store validated params for breadcrumb evaluation
+
+  // Helper function to evaluate breadcrumbs
+  const evaluateBreadcrumbs = (
+    breadcrumbDefinition: any,
+    params?: Record<string, any>,
+    data?: any,
+  ): BreadcrumbItem[] | null => {
+    if (!breadcrumbDefinition) return null;
+
+    if (Array.isArray(breadcrumbDefinition)) {
+      // Static breadcrumbs
+      return breadcrumbDefinition;
+    }
+
+    if (typeof breadcrumbDefinition === "function") {
+      // Dynamic breadcrumbs
+      return breadcrumbDefinition({
+        context: {
+          ...context,
+          params: params || {},
+        } as any,
+        data,
+      });
+    }
+
+    return null;
+  };
 
   switch (resourceOperation.view.type) {
     case "resource-create":
@@ -109,7 +139,6 @@ export default function ResourceScreen() {
       // Parse and validate URL search params using schema's built-in coercion
       // The toZodWithCoercion() method automatically converts strings to expected types
       // Example: ?id=37&active=true becomes { id: 37, active: true }
-      let validatedParams: Record<string, any> | undefined;
       if (resourceOperation.view.schemaParams) {
         try {
           validatedParams = resourceOperation.view.schemaParams
@@ -146,7 +175,6 @@ export default function ResourceScreen() {
     }
     case "resource-search": {
       // Parse and validate URL search params using schema's built-in coercion
-      let validatedParams: Record<string, any> | undefined;
       if (resourceOperation.view.schemaParams) {
         try {
           validatedParams = resourceOperation.view.schemaParams
@@ -180,10 +208,20 @@ export default function ResourceScreen() {
       return null;
   }
 
+  // Evaluate breadcrumbs based on view definition
+  const breadcrumbs = evaluateBreadcrumbs(
+    resourceOperation.view.breadcrumbs,
+    validatedParams,
+    loadedData,
+  );
+
   // Render the view associated with the operation
   return (
-    <MaxWidthLayout title={resourceOperation.view.title}>
+    <FullScreenLayout
+      title={resourceOperation.view.title}
+      breadcrumbs={breadcrumbs || undefined}
+    >
       {element}
-    </MaxWidthLayout>
+    </FullScreenLayout>
   );
 }

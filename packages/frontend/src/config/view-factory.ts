@@ -1,6 +1,7 @@
 import type { ArraySchema, Infer, ObjectSchema } from "@nubase/core";
 import type { NubaseContextData } from "../context/types";
 import type { HttpResponse } from "../http/http-client";
+import type { BreadcrumbDefinition } from "./breadcrumb";
 import type {
   ResourceCreateView,
   ResourceSearchView,
@@ -21,6 +22,11 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
+      breadcrumbs?: BreadcrumbDefinition<
+        TApiEndpoints,
+        TParamsSchema,
+        Infer<TSchema>
+      >;
       onLoad: (args: {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<Infer<TSchema>>>;
@@ -48,6 +54,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
+      breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
       onSubmit: (args: {
         data: Infer<TSchema>;
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
@@ -72,6 +79,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
+      breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
       onLoad: (args: {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<Infer<TSchema>>>;

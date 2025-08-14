@@ -2,9 +2,9 @@ import { Terminal } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
-import type { CommandDefinition } from "../types";
+import { defineCommand } from "../defineCommand";
 
-export const workbenchRunCommand: CommandDefinition = {
+export const workbenchRunCommand = defineCommand({
   id: "workbench.runCommand",
   name: "Run Command",
   icon: <Terminal />,
@@ -33,4 +33,4 @@ export const workbenchRunCommand: CommandDefinition = {
       showBackdrop: true,
     });
   },
-};
+});

@@ -17,6 +17,7 @@ export class NavigationHistoryTracker {
   private unsubscribe: (() => void) | null = null;
   private router: AnyRouter;
   private lastEntryId: string | null = null;
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Used in addCurrentLocation method
   private historyIdCounter = 0;
 
   constructor(router: AnyRouter) {

@@ -17,7 +17,7 @@ const TreeNavigatorComponent = ({
   items,
   searchInputRef,
 }: TreeNavigatorProps) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -67,30 +67,39 @@ const TreeNavigatorComponent = ({
     (event: KeyboardEvent) => {
       if (!itemsLength) return;
 
-      const currentItem = flatItems[selectedIndex];
-
       if (event.key === "ArrowDown") {
         event.preventDefault();
-        setSelectedIndex((prev) => (prev + 1) % itemsLength);
+        setSelectedIndex((prev) =>
+          prev === -1 ? 0 : (prev + 1) % itemsLength,
+        );
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
-        setSelectedIndex((prev) => (prev - 1 + itemsLength) % itemsLength);
-      } else if (event.key === "ArrowRight") {
-        event.preventDefault();
-        if (currentItem?.hasChildren && !currentItem.isExpanded) {
-          toggleExpanded(currentItem.id);
-        }
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        if (currentItem?.hasChildren && currentItem.isExpanded) {
-          toggleExpanded(currentItem.id);
-        }
-      } else if (event.key === "Enter") {
-        event.preventDefault();
-        if (currentItem?.hasChildren) {
-          toggleExpanded(currentItem.id);
-        } else {
-          currentItem?.onNavigate?.();
+        setSelectedIndex((prev) =>
+          prev === -1
+            ? itemsLength - 1
+            : (prev - 1 + itemsLength) % itemsLength,
+        );
+      } else if (selectedIndex >= 0) {
+        // Only handle other keys if an item is selected
+        const currentItem = flatItems[selectedIndex];
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          if (currentItem?.hasChildren && !currentItem.isExpanded) {
+            toggleExpanded(currentItem.id);
+          }
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          if (currentItem?.hasChildren && currentItem.isExpanded) {
+            toggleExpanded(currentItem.id);
+          }
+        } else if (event.key === "Enter") {
+          event.preventDefault();
+          if (currentItem?.hasChildren) {
+            toggleExpanded(currentItem.id);
+          } else {
+            currentItem?.onNavigate?.();
+          }
         }
       }
     },
@@ -108,20 +117,22 @@ const TreeNavigatorComponent = ({
   }, [handleKeyDown, searchInputRef]);
 
   useEffect(() => {
-    const currentItem = itemRefs.current[selectedIndex];
-    if (currentItem) {
-      currentItem.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
+    if (selectedIndex >= 0) {
+      const currentItem = itemRefs.current[selectedIndex];
+      if (currentItem) {
+        currentItem.scrollIntoView({
+          block: "nearest",
+          behavior: "smooth",
+        });
+      }
+      // Call onFocus when item gets selected via keyboard
+      flatItems[selectedIndex]?.onFocus?.();
     }
-    // Call onFocus when item gets selected via keyboard
-    flatItems[selectedIndex]?.onFocus?.();
   }, [selectedIndex, flatItems]);
 
   useEffect(() => {
-    if (selectedIndex >= itemsLength) {
-      setSelectedIndex(0);
+    if (selectedIndex >= itemsLength && itemsLength > 0) {
+      setSelectedIndex(-1);
     }
   }, [selectedIndex, itemsLength]);
 
@@ -140,7 +151,7 @@ const TreeNavigatorComponent = ({
           key={item.id}
           item={item}
           index={index}
-          isSelected={index === selectedIndex}
+          isSelected={selectedIndex >= 0 && index === selectedIndex}
           onToggleExpanded={toggleExpanded}
           itemRef={(el) => {
             itemRefs.current[index] = el;

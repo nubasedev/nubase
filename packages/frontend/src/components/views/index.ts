@@ -1,4 +1,3 @@
-export * from "./ViewRenderer/ResourceCreateViewRenderer";
-export * from "./ViewRenderer/ResourceSearchViewRenderer";
-export * from "./ViewRenderer/ResourceViewViewRenderer";
+export * from "./ViewRenderer/modal";
+export * from "./ViewRenderer/screen";
 export * from "./ViewRenderer/ViewRenderer";

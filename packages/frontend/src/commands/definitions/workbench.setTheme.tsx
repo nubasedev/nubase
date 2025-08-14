@@ -2,9 +2,9 @@ import { Moon, Palette, Sun } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
-import type { CommandDefinition } from "../types";
+import { defineCommand } from "../defineCommand";
 
-export const workbenchSetTheme: CommandDefinition = {
+export const workbenchSetTheme = defineCommand({
   id: "workbench.setTheme",
   name: "Set Theme",
   icon: <Palette />,
@@ -58,4 +58,4 @@ export const workbenchSetTheme: CommandDefinition = {
       },
     });
   },
-};
+});

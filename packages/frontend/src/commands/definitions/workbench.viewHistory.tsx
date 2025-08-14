@@ -2,9 +2,9 @@ import { Clock } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
-import type { CommandDefinition } from "../types";
+import { defineCommand } from "../defineCommand";
 
-export const workbenchViewHistory: CommandDefinition = {
+export const workbenchViewHistory = defineCommand({
   id: "workbench.viewHistory",
   name: "View Navigation History",
   icon: <Clock />,
@@ -17,7 +17,7 @@ export const workbenchViewHistory: CommandDefinition = {
         content: (
           <ModalFrame>
             <div className="p-4 text-center">
-              <p className="text-onSurface">No navigation history available</p>
+              <p className="text-foreground">No navigation history available</p>
             </div>
           </ModalFrame>
         ),
@@ -57,4 +57,4 @@ export const workbenchViewHistory: CommandDefinition = {
       showBackdrop: true,
     });
   },
-};
+});

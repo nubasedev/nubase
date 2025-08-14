@@ -23,6 +23,13 @@ The schema is defined in example/questlog-schema and both the frontend and backe
 - `npm run typecheck` - Run TypeScript type checking across all packages
 - `npm run lint` - Run linting across all packages
 
+### IMPORTANT: Do NOT run development servers
+- **NEVER** run `npm run dev`, `npm run storybook`, or any development servers
+- **ALWAYS** assume the user is already running the development environment
+- Port conflicts will occur if you try to start servers that are already running
+- **ALWAYS** run `npm run typecheck` and `npm run lint:fix` to verify changes
+- Focus on code changes, type checking, and linting - not running applications
+
 ### Package-Specific Commands
 - `cd packages/core && npm run test` - Run Vitest tests for core package
 - `cd packages/frontend && npm run storybook` - Start Storybook development server
@@ -254,57 +261,19 @@ The Frontend package provides a comprehensive component library organized into t
 
 ## Theming System
 
-### Material Design 3 Implementation
+The theming system uses Tailwind CSS v4 with CSS variables for dynamic color themes.
 
-The theming system implements Google's Material Design 3 color specification with 26 semantic color roles. This provides consistent, accessible color usage across all components.
+#### Available Colors
+
+**IMPORTANT**: For the complete and up-to-date list of available color classes, refer to:
+- `packages/frontend/src/theme/theme.css` - Contains all available color mappings and CSS variables
 
 #### Theme Structure
 
-Each theme (`NubaseTheme`) contains:
-- `id`: Unique theme identifier
+Each theme contains:
+- `id`: Unique theme identifier  
 - `name`: Display name for the theme
 - `type`: Either "light" or "dark" for system preference matching
-- `colors`: 26 Material Design 3 color roles
-
-#### Color Roles
-
-**Primary Colors (4)**
-- `primary` - Main brand color for prominent actions
-- `onPrimary` - Text/icons on primary surfaces
-- `primaryContainer` - Emphasized containers and badges
-- `onPrimaryContainer` - Text/icons on primary containers
-
-**Secondary Colors (4)**
-- `secondary` - Supporting brand color for less prominent actions
-- `onSecondary` - Text/icons on secondary surfaces
-- `secondaryContainer` - Secondary buttons and containers
-- `onSecondaryContainer` - Text/icons on secondary containers
-
-**Tertiary Colors (4)**
-- `tertiary` - Accent color for balance and contrast
-- `onTertiary` - Text/icons on tertiary surfaces
-- `tertiaryContainer` - Tertiary containers and highlights
-- `onTertiaryContainer` - Text/icons on tertiary containers
-
-**Error Colors (4)**
-- `error` - Error states and destructive actions
-- `onError` - Text/icons on error surfaces
-- `errorContainer` - Error containers and alerts
-- `onErrorContainer` - Text/icons on error containers
-
-**Surface Colors (4)**
-- `surface` - Default background surfaces
-- `onSurface` - Primary text color
-- `surfaceVariant` - Subtle background variations
-- `onSurfaceVariant` - Secondary text and placeholders
-
-**Other Colors (6)**
-- `outline` - Borders and dividers
-- `outlineVariant` - Subtle borders
-- `shadow` - Drop shadows
-- `scrim` - Modal backdrops
-- `inverseSurface` - High contrast surfaces
-- `onInverseSurface` - Text on inverse surfaces
 
 #### Available Themes
 
@@ -352,13 +321,13 @@ Each theme (`NubaseTheme`) contains:
 4. Add import and register theme in `packages/frontend/src/theming/themes/index.ts`
 5. **IMPORTANT**: Update `example/questlog-frontend/src/config/config.ts` to include the new theme ID in the `themeIds` array - themes won't be visible in the example application without this step
 
-#### Color Class Reference
+#### Usage
 
-All MD3 colors are available as Tailwind classes:
-- **Backgrounds**: `bg-primary`, `bg-surface`, `bg-errorContainer`
-- **Text**: `text-onPrimary`, `text-onSurface`, `text-error`
-- **Borders**: `border-outline`, `border-primary`, `border-error`
-- **Utilities**: `ring-primary/20`, `bg-scrim/30`
+Refer to `packages/frontend/src/theme/theme.css` for available color classes. Common patterns:
+- **Backgrounds**: `bg-primary`, `bg-secondary`, `bg-accent`
+- **Text**: `text-foreground`, `text-muted-foreground`
+- **Borders**: `border-border`, `border-input`
+- **Utilities**: `ring-ring`, `bg-muted`
 
 ## Documentation
 
@@ -518,6 +487,7 @@ const handlePatch = async (fieldName: string, value: any) => {
 
 ## Development Guidelines
 
+- **NEVER run development servers** (`npm run dev`, `npm run storybook`) - assume user is already running them
 - **ALWAYS run `npm run lint:fix` at the end of every task** to ensure code style compliance
 - **ALWAYS run `npm run typecheck` at the end of every task** to ensure TypeScript compliance
 - Fix any remaining type errors or linting issues before considering a task complete

@@ -1,8 +1,10 @@
 import type { FC } from "react";
 import type { View } from "../../../config/view";
-import { ResourceCreateViewRenderer } from "./ResourceCreateViewRenderer";
-import { ResourceSearchViewRenderer } from "./ResourceSearchViewRenderer";
-import { ResourceViewViewRenderer } from "./ResourceViewViewRenderer";
+import {
+  ResourceCreateViewRenderer,
+  ResourceSearchViewRenderer,
+  ResourceViewViewRenderer,
+} from "./screen";
 
 export type ViewRendererProps = {
   view: View;

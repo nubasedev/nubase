@@ -1,11 +1,11 @@
 import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
-import type { ResourceCreateView } from "../../../config/view";
-import { useSchemaForm } from "../../../hooks";
-import { SchemaForm } from "../../form/SchemaForm/SchemaForm";
-import { SchemaFormBody } from "../../form/SchemaForm/SchemaFormBody";
-import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
-import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
+import type { ResourceCreateView } from "../../../../config/view";
+import { useSchemaForm } from "../../../../hooks";
+import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
+import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
+import { SchemaFormButtonBar } from "../../../form/SchemaForm/SchemaFormButtonBar";
+import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 
 export type ResourceCreateViewRendererProps = {
   view: ResourceCreateView;

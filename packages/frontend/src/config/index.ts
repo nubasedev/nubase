@@ -1,5 +1,6 @@
 export * from "./create-resource-factory";
 export * from "./create-view-factory";
+export * from "./global-action";
 export * from "./nav-item";
 export * from "./nubase-frontend-config";
 export * from "./resource";

@@ -3,10 +3,10 @@ import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
-import type { ResourceSearchView } from "../../../config/view";
-import { ActivityIndicator } from "../../activity-indicator/ActivityIndicator";
-import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
-import { EnhancedTable } from "../../table/Table";
+import type { ResourceSearchView } from "../../../../config/view";
+import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
+import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import { EnhancedTable } from "../../../table/Table";
 
 export type ResourceSearchViewRendererProps = {
   view: ResourceSearchView;
@@ -124,14 +124,12 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   }
 
   return (
-    <div className="space-y-4">
-      <EnhancedTable
-        data={data}
-        columns={columns}
-        loading={isLoading}
-        emptyMessage="No tickets found"
-        enableSorting={true}
-      />
-    </div>
+    <EnhancedTable
+      data={data}
+      columns={columns}
+      loading={isLoading}
+      emptyMessage="No tickets found"
+      enableSorting={true}
+    />
   );
 };
