@@ -6,7 +6,7 @@ export interface ParsedKeybinding {
   /** The command to execute */
   command: string;
   /** Optional arguments for the command */
-  args?: Record<string, unknown>;
+  commandArgs?: Record<string, unknown>;
 }
 
 export interface KeySequence {

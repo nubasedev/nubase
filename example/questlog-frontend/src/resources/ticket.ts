@@ -51,9 +51,7 @@ export const ticketResource = createResource({
         id: "search-tickets",
         title: "Search Tickets",
         schema: (api) => api.getTickets.responseBody,
-        breadcrumbs: ({ context, data }) => [
-          { label: "Tickets", to: "/r/ticket/search" },
-        ],
+        breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
         onLoad: async ({ context }) => {
           return context.http.getTickets({
             params: {},

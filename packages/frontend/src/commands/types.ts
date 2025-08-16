@@ -33,7 +33,7 @@ export interface TypedCommandDefinition<
 export interface Keybinding {
   key: string | string[];
   command: string;
-  args?: Record<string, unknown>;
+  commandArgs?: Record<string, unknown>;
 }
 
 export interface CommandRegistry {

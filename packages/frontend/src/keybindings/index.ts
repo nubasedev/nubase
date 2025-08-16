@@ -1,3 +1,4 @@
+export { defaultKeybindings } from "./defaultKeybindings";
 export { keybindingManager } from "./KeybindingManager";
 export {
   matchesKeySequence,

@@ -1,3 +1,4 @@
+import type { Keybinding } from "../commands/types";
 import type { TreeNavigatorItem } from "../components/navigation/searchable-tree-navigator/TreeNavigatorItem";
 import type { GlobalActionsConfig } from "./global-action";
 import type { ResourceDescriptor } from "./resource";
@@ -26,6 +27,12 @@ export type NubaseFrontendConfig<TApiEndpoints = any> = {
    * Supports nested structure like: { tickets: { createTicket: schema, ... }, users: { ... } }
    */
   apiEndpoints?: TApiEndpoints;
+  /**
+   * Custom keybindings for the application.
+   * If not provided, default keybindings will be used.
+   * Use defaultKeybindings.extend() to extend defaults with custom bindings.
+   */
+  keybindings?: Keybinding[];
   themeIds?: string[];
   defaultThemeId?: "light" | "dark";
 };

@@ -214,7 +214,7 @@ class KeybindingManager {
    */
   private async executeCommand(keybinding: ParsedKeybinding): Promise<void> {
     try {
-      await commandRegistry.execute(keybinding.command, keybinding.args);
+      await commandRegistry.execute(keybinding.command, keybinding.commandArgs);
     } catch (error) {
       console.error(
         `Failed to execute command "${keybinding.command}":`,

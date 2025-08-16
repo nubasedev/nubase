@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -23,7 +23,8 @@
       "!**/bruno/**",
       "!**/.docusaurus/**",
       "!**/.claude/**",
-      "!**/.claude-flow/**"
+      "!**/.claude-flow/**",
+      "!**/theme.css"
     ]
   },
   "formatter": {
@@ -37,7 +38,8 @@
       "recommended": true,
       "suspicious": {
         "noArrayIndexKey": "off",
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noUnknownAtRules": "off"
       },
       "a11y": {
         "noLabelWithoutControl": "off"
@@ -47,6 +49,10 @@
       },
       "complexity": {
         "noBannedTypes": "off"
+      },
+      "correctness": {
+        "useUniqueElementIds": "off",
+        "noNestedComponentDefinitions": "off"
       }
     }
   },

@@ -3,11 +3,13 @@ import type { FC } from "react";
 import type { ResourceCreateView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
 import { useSchemaForm } from "../../../../hooks";
+import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { ModalFrameSchemaForm } from "../../../floating/modal/ModalFrameSchemaForm";
 
 export type ResourceCreateViewModalRendererProps = {
   view: ResourceCreateView;
   context: NubaseContextData;
+  resourceName?: string;
   onClose?: () => void;
   onCreate?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
@@ -16,7 +18,8 @@ export type ResourceCreateViewModalRendererProps = {
 export const ResourceCreateViewModalRenderer: FC<
   ResourceCreateViewModalRendererProps
 > = (props) => {
-  const { view, context, onClose, onCreate, onError } = props;
+  const { view, context, resourceName, onClose, onCreate, onError } = props;
+  const { invalidateResourceSearch } = useResourceInvalidation();
 
   const form = useSchemaForm({
     schema: view.schema,
@@ -27,6 +30,12 @@ export const ResourceCreateViewModalRenderer: FC<
           data,
           context,
         });
+
+        // Invalidate resource search queries to refresh the list
+        if (resourceName) {
+          await invalidateResourceSearch(resourceName);
+        }
+
         onCreate?.(result);
         onClose?.(); // Close modal on successful creation
         console.log("MODAL RENDERER - onCreate callback completed");

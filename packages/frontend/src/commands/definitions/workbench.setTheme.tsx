@@ -1,14 +1,45 @@
+import { nu } from "@nubase/core";
 import { Moon, Palette, Sun } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
+import { showToast } from "../../components/floating/toast";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import { defineCommand } from "../defineCommand";
+
+// Schema for command arguments
+const workbenchSetThemeArgsSchema = nu.object({
+  themeId: nu
+    .string()
+    .withMeta({
+      label: "Theme ID",
+      description: "The ID of the theme to set",
+    })
+    .optional(),
+});
 
 export const workbenchSetTheme = defineCommand({
   id: "workbench.setTheme",
   name: "Set Theme",
   icon: <Palette />,
-  execute: (context) => {
+  argsSchema: workbenchSetThemeArgsSchema.optional(),
+  execute: (context, args) => {
+    // If themeId is provided, set it directly
+    if (args?.themeId) {
+      const { themeId } = args;
+
+      // Validate that the theme exists
+      const availableThemes = context.config?.themeIds || ["light", "dark"];
+      if (availableThemes.includes(themeId)) {
+        context.theming.setActiveThemeId(themeId);
+        return;
+      } else {
+        showToast(
+          `Theme "${themeId}" not found. Available themes: ${availableThemes.join(", ")}`,
+          "warning",
+        );
+        // Fall through to show theme selection modal
+      }
+    }
     // Get available themes from context or use defaults
     const availableThemes = context.config?.themeIds || ["light", "dark"];
 

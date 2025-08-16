@@ -58,7 +58,7 @@ export function parseKeybinding(keybinding: Keybinding): ParsedKeybinding[] {
       key: keyString,
       sequences,
       command: keybinding.command,
-      args: keybinding.args,
+      commandArgs: keybinding.commandArgs,
     };
   });
 }

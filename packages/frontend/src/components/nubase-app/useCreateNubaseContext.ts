@@ -7,7 +7,11 @@ import {
   createTypedApiClient,
   type ErrorListener,
 } from "../../http/typed-api-client";
-import { cleanupKeybindings, registerKeybindings } from "../../keybindings";
+import {
+  cleanupKeybindings,
+  defaultKeybindings,
+  registerKeybindings,
+} from "../../keybindings";
 import { NavigationHistoryTracker } from "../../navigation/navigation-history-tracker";
 import { router } from "../../routes/router";
 import { useModal } from "../floating/modal";
@@ -79,6 +83,7 @@ export function useCreateNubaseContext({
   }, [initialize]);
 
   // Create the mutable, stateful NubaseContextData
+  // biome-ignore lint/correctness/useExhaustiveDependencies: If you inclode modal here it fetches too much data
   const nubaseContextData = useMemo(() => {
     if (!initializationData) return null;
 
@@ -104,18 +109,8 @@ export function useCreateNubaseContext({
     const nubaseContextDataInternal: NubaseContextData = {
       config: initializationData.config,
       commands: commandRegistry,
-      keybindings: [
-        {
-          key: ["meta+k", "ctrl+k"],
-          command: "workbench.runCommand",
-          args: {},
-        },
-        {
-          key: ["meta+/", "ctrl+/"],
-          command: "workbench.setTheme",
-          args: {},
-        },
-      ],
+      keybindings:
+        initializationData.config.keybindings || defaultKeybindings.get(),
       http: typedApiClient,
       modal,
       theming: {
@@ -136,13 +131,7 @@ export function useCreateNubaseContext({
     };
 
     return nubaseContextDataInternal;
-  }, [
-    initializationData,
-    modal,
-    activeThemeId,
-    httpClient,
-    navigationHistoryTracker,
-  ]);
+  }, [initializationData, activeThemeId, httpClient, navigationHistoryTracker]);
 
   // Initialize command system and register keybindings when nubaseContextData is available
   useEffect(() => {

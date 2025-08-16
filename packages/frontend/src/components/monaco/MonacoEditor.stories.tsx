@@ -819,7 +819,7 @@ class UserManager {
     }
 
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^s@]+@[^s@]+.[^s@]+$/;
     if (!emailRegex.test(user.email)) {
       throw new Error('Invalid email format');
     }

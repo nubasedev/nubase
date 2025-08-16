@@ -1,4 +1,5 @@
 import type { NubaseFrontendConfig } from "@nubase/frontend";
+import { defaultKeybindings } from "@nubase/frontend";
 import { Plus } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
 import { mainMenu } from "../main-menu";
@@ -19,6 +20,14 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
       commandArgs: { operation: "create" },
     },
   ],
+  keybindings: defaultKeybindings.extend({
+    add: [
+      {
+        key: ["meta+/", "ctrl+/"],
+        command: "workbench.setTheme",
+      },
+    ],
+  }),
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
   apiEndpoints: apiEndpoints,
   themeIds: ["dark", "light"],

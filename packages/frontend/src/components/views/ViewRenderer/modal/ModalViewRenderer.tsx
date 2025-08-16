@@ -29,6 +29,7 @@ export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
         <ResourceCreateViewModalRenderer
           view={view}
           context={context}
+          resourceName={resourceName}
           onClose={onClose}
           onError={onError}
         />

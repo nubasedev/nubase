@@ -2,10 +2,9 @@ import type { ObjectSchema } from "@nubase/core";
 import { useNavigate } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { FC } from "react";
-import { useEffect, useState } from "react";
 import type { ResourceSearchView } from "../../../../config/view";
+import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
-import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { EnhancedTable } from "../../../table/Table";
 
 export type ResourceSearchViewRendererProps = {
@@ -19,33 +18,22 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   props,
 ) => {
   const { view, params, resourceName, onError } = props;
-  const context = useNubaseContext();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState<any[]>([]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const contextWithParams = {
-          ...context,
-          params: params || undefined,
-        };
-        const response = await view.onLoad({
-          context: contextWithParams as any,
-        });
-        setData(response.data);
-      } catch (error) {
-        onError?.(error as Error);
-        setData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Use React Query for data fetching with caching
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useResourceSearchQuery(resourceName || "unknown", view, params);
 
-    loadData();
-  }, [params, context, onError, view.onLoad]);
+  // Handle errors using React Query's error state
+  if (error) {
+    onError?.(error as Error);
+  }
+
+  // Extract data from the response
+  const data = response?.data || [];
 
   // Get the element schema from the array schema to access table layouts
   const elementSchema = (view.schema as any)?._element as
