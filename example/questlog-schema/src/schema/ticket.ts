@@ -35,7 +35,6 @@ export const getTicketsSchema = {
   method: "GET" as const,
   path: "/tickets",
   requestParams: ticketBaseSchema.omit("id").partial(),
-  requestBody: emptySchema,
   responseBody: nu.array(ticketBaseSchema),
 } satisfies RequestSchema;
 
@@ -43,7 +42,6 @@ export const getTicketSchema = {
   method: "GET" as const,
   path: "/tickets/:id",
   requestParams: idNumberSchema,
-  requestBody: emptySchema,
   responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 
@@ -67,6 +65,5 @@ export const deleteTicketSchema = {
   method: "DELETE" as const,
   path: "/tickets/:id",
   requestParams: idNumberSchema,
-  requestBody: emptySchema,
   responseBody: successSchema,
 } satisfies RequestSchema;

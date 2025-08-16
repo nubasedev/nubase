@@ -2,6 +2,7 @@ import type {
   InferRequestBody,
   InferRequestParams,
   InferResponseBody,
+  ObjectSchema,
   RequestSchema,
 } from "@nubase/core";
 import { ClientNetworkError } from "../utils/network-errors";
@@ -19,14 +20,18 @@ type TypedMethodOptions<T extends RequestSchema> = {
 
 export type ErrorListener = (error: Error) => void;
 
-// Helper type to create method signature based on HTTP method
+// Helper type to create method signature based on HTTP method and request body
 type MethodSignature<T extends RequestSchema> = T["method"] extends "GET"
   ? (
       options?: Omit<TypedMethodOptions<T>, "data">,
     ) => Promise<HttpResponse<InferResponseBody<T>>>
-  : (
-      options?: TypedMethodOptions<T>,
-    ) => Promise<HttpResponse<InferResponseBody<T>>>;
+  : T["requestBody"] extends ObjectSchema
+    ? (
+        options?: TypedMethodOptions<T>,
+      ) => Promise<HttpResponse<InferResponseBody<T>>>
+    : (
+        options?: Omit<TypedMethodOptions<T>, "data">,
+      ) => Promise<HttpResponse<InferResponseBody<T>>>;
 
 // Main typed API client structure - simple flat endpoints
 type TypedApiMethods<T> = {
@@ -110,7 +115,7 @@ export class TypedApiClient<T> {
           response = await this.httpClient.patch(path, data, config);
           break;
         case "DELETE":
-          response = await this.httpClient.delete(path, config);
+          response = await this.httpClient.delete(path, data, config);
           break;
         default:
           throw new Error(`Unsupported HTTP method: ${schema.method}`);
@@ -152,7 +157,6 @@ export class TypedApiClient<T> {
       "method" in obj &&
       "path" in obj &&
       "requestParams" in obj &&
-      "requestBody" in obj &&
       "responseBody" in obj
     );
   }

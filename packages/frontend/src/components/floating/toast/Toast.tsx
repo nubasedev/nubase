@@ -1,4 +1,4 @@
-import { AlertTriangle, Check, Info, X } from "lucide-react";
+import { X } from "lucide-react";
 import type { FC } from "react";
 import { cn } from "../../../utils";
 import { ActivityIndicator } from "../../activity-indicator";
@@ -13,27 +13,11 @@ export interface ToastProps {
 const typeConfig = {
   default: {
     icon: null,
-    className: "bg-background border-border text-foreground",
-  },
-  success: {
-    icon: Check,
-    className:
-      "bg-secondary/10 border-secondary/20 text-secondary dark:bg-secondary/20 dark:border-secondary/30 dark:text-secondary",
+    className: "bg-card border-border text-card-foreground",
   },
   error: {
     icon: X,
-    className:
-      "bg-destructive/10 border-destructive/20 text-destructive dark:bg-destructive/20 dark:border-destructive/30 dark:text-destructive",
-  },
-  warning: {
-    icon: AlertTriangle,
-    className:
-      "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
-  },
-  info: {
-    icon: Info,
-    className:
-      "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary",
+    className: "bg-destructive border-destructive text-background",
   },
 };
 

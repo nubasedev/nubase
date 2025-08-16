@@ -1,11 +1,22 @@
 import type { ObjectSchema } from "@nubase/core";
 import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontalIcon, TrashIcon } from "lucide-react";
 import type { FC } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ResourceSearchView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
+import { useResourceDeleteMutation } from "../../../../hooks/useNubaseMutation";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
+import { Button } from "../../../buttons/Button/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../dropdown-menu/DropdownMenu";
+import { useDialog } from "../../../floating/dialog";
 import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
+import { showToast } from "../../../floating/toast";
 import { EnhancedTable } from "../../../table/Table";
 
 export type ResourceSearchViewModalRendererProps = {
@@ -21,32 +32,71 @@ export type ResourceSearchViewModalRendererProps = {
 export const ResourceSearchViewModalRenderer: FC<
   ResourceSearchViewModalRendererProps
 > = (props) => {
-  const { view, context, params, onClose, onRowClick, onError } = props;
+  const { view, context, params, resourceName, onClose, onRowClick, onError } =
+    props;
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
+  const { openDialog } = useDialog();
+
+  // Load data function that can be called from effects or mutation handlers
+  const loadData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const contextWithParams = {
+        ...context,
+        params: params || undefined,
+      };
+      const response = await view.onLoad({
+        context: contextWithParams as any,
+      });
+      setData(response.data);
+    } catch (error) {
+      onError?.(error as Error);
+      setData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [context, params, onError, view.onLoad]);
+
+  // Set up delete mutation - always call hook but disable if onDelete is not available
+  const deleteMutation = useResourceDeleteMutation(
+    resourceName || "unknown",
+    view as any,
+    {
+      onSuccess: () => {
+        showToast("Item deleted successfully", "default");
+        // Refresh the data after successful deletion
+        loadData();
+      },
+      onError: (error) => {
+        showToast("Failed to delete item", "error");
+        onError?.(error as Error);
+      },
+    },
+  );
+
+  // Only use the mutation if onDelete is available
+  const canDelete = view.onDelete != null;
+
+  // Delete handler function
+  const handleDelete = (item: any) => {
+    if (!canDelete) return;
+
+    openDialog({
+      title: "Delete Item",
+      content:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: "Delete",
+      confirmVariant: "destructive",
+      onConfirm: () => {
+        deleteMutation.mutate(item);
+      },
+    });
+  };
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const contextWithParams = {
-          ...context,
-          params: params || undefined,
-        };
-        const response = await view.onLoad({
-          context: contextWithParams as any,
-        });
-        setData(response.data);
-      } catch (error) {
-        onError?.(error as Error);
-        setData([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadData();
-  }, [params, context, onError, view.onLoad]);
+  }, [loadData]);
 
   // Get the element schema from the array schema to access table layouts
   const elementSchema = (view.schema as any)?._element as
@@ -108,6 +158,39 @@ export const ResourceSearchViewModalRenderer: FC<
     return [];
   })();
 
+  // Create actions column if delete functionality is available
+  const actionsColumn: ColumnDef<any> | undefined = canDelete
+    ? {
+        id: "actions",
+        header: "Actions",
+        size: 80,
+        cell: ({ row }) => {
+          const item = row.original;
+
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontalIcon className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => handleDelete(item)}
+                  disabled={deleteMutation?.isPending}
+                >
+                  <TrashIcon className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      }
+    : undefined;
+
   const renderBody = () => {
     if (isLoading) {
       return (
@@ -122,6 +205,7 @@ export const ResourceSearchViewModalRenderer: FC<
         <EnhancedTable
           data={data}
           columns={columns}
+          actionsColumn={actionsColumn}
           loading={isLoading}
           emptyMessage="No results found"
           enableSorting={true}

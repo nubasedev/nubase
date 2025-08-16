@@ -30,29 +30,10 @@ export const Default: Story = {
         </Button>
 
         <Button
-          onClick={() =>
-            showToast("Operation completed successfully!", "success")
-          }
-          variant="secondary"
-        >
-          Success Toast
-        </Button>
-
-        <Button
           onClick={() => showToast("Something went wrong", "error")}
           variant="destructive"
         >
           Error Toast
-        </Button>
-
-        <Button onClick={() => showToast("Please check your input", "warning")}>
-          Warning Toast
-        </Button>
-
-        <Button
-          onClick={() => showToast("Here's some useful information", "info")}
-        >
-          Info Toast
         </Button>
 
         <Button
@@ -78,8 +59,8 @@ export const MultipleToasts: Story = {
         <Button
           onClick={() => {
             showToast("First toast");
-            setTimeout(() => showToast("Second toast", "success"), 500);
-            setTimeout(() => showToast("Third toast", "warning"), 1000);
+            setTimeout(() => showToast("Second toast"), 500);
+            setTimeout(() => showToast("Third toast"), 1000);
             setTimeout(() => showToast("Fourth toast", "error"), 1500);
           }}
         >
@@ -119,7 +100,7 @@ export const PromiseToasts: Story = {
                 message: result.success
                   ? "Data saved successfully!"
                   : "Failed to save data",
-                type: result.success ? "success" : "error",
+                type: result.success ? "default" : "error",
               }),
               {
                 loadingText: "Saving data...",
@@ -142,7 +123,7 @@ export const PromiseToasts: Story = {
                 message: result.success
                   ? "Request processed successfully!"
                   : "Request processing failed",
-                type: result.success ? "info" : "error",
+                type: result.success ? "default" : "error",
               }),
               {
                 loadingText: "Processing request...",
@@ -164,7 +145,7 @@ export const PromiseToasts: Story = {
                 message: result.success
                   ? "Data fetched successfully!"
                   : "Failed to fetch data",
-                type: result.success ? "success" : "error",
+                type: result.success ? "default" : "error",
               }),
               {
                 loadingText: "Fetching data...",
@@ -188,7 +169,7 @@ export const PromiseToasts: Story = {
                 message: result.success
                   ? "Task completed successfully!"
                   : "Task failed to complete",
-                type: result.success ? "success" : "error",
+                type: result.success ? "default" : "error",
               }),
               {
                 loadingText: "Processing task...",
@@ -209,9 +190,9 @@ export const PromiseToasts: Story = {
               promise,
               (result) => ({
                 message: result.success
-                  ? "Task finished with info status!"
+                  ? "Task finished successfully!"
                   : "Task encountered an error",
-                type: result.success ? "info" : "error",
+                type: result.success ? "default" : "error",
               }),
               {
                 loadingText: "Working on task...",
@@ -220,7 +201,7 @@ export const PromiseToasts: Story = {
           }}
           variant="secondary"
         >
-          Promise with Info Type
+          Promise with Default Type
         </Button>
 
         <Button
@@ -245,7 +226,7 @@ export const PromiseToasts: Story = {
                       data.status === "error"
                         ? data.message
                         : "API call successful",
-                    type: data.status === "error" ? "error" : "success",
+                    type: data.status === "error" ? "error" : "default",
                   };
                 }
                 return {
@@ -294,7 +275,7 @@ export const CustomContent: Story = {
                 <span>✅</span>
                 <span>Task completed with custom styling!</span>
               </div>,
-              "success",
+              "default",
             )
           }
           variant="secondary"
@@ -330,7 +311,7 @@ export const LongDuration: Story = {
           }
           variant="secondary"
         >
-          4 Seconds (Default)
+          4 Seconds
         </Button>
 
         <Button
@@ -340,7 +321,7 @@ export const LongDuration: Story = {
             })
           }
         >
-          10 Seconds
+          10 Seconds (Default)
         </Button>
       </div>
     </div>

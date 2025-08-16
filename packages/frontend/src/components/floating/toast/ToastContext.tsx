@@ -51,7 +51,7 @@ export const ToastProvider = ({ children }: ToastProviderProps) => {
   const addToast = useCallback(
     (message: ReactNode, type: ToastType, options: ToastOptions = {}) => {
       const id = generateId();
-      const { duration = 4000, closable = true } = options;
+      const { duration = 10000, closable = true } = options;
 
       const newToast: ToastData = {
         id,

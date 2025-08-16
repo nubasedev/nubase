@@ -172,7 +172,7 @@ export const StringFieldPatch: Story = {
 
     const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      showToast(`Updated text to: ${newValue}`, "success");
+      showToast(`Updated text to: ${newValue}`, "default");
       return { success: true };
     };
 
@@ -313,7 +313,7 @@ export const NumberFieldPatch: Story = {
 
     const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      showToast(`Updated number to: ${newValue}`, "success");
+      showToast(`Updated number to: ${newValue}`, "default");
       return { success: true };
     };
 
@@ -452,7 +452,7 @@ export const BooleanFieldPatch: Story = {
 
     const handlePatch = async (newValue: any): Promise<PatchResult> => {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      showToast(`Updated boolean to: ${newValue}`, "success");
+      showToast(`Updated boolean to: ${newValue}`, "default");
       return { success: true };
     };
 

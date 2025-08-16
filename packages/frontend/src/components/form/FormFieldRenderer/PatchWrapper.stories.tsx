@@ -32,9 +32,9 @@ export const ViewMode: Story = {
         isEditing={isEditing}
         onStartEdit={() => setIsEditing(true)}
         onPatch={async (): Promise<PatchResult> => {
-          showToast("Applying changes...", "info");
+          showToast("Applying changes...", "default");
           await new Promise((resolve) => setTimeout(resolve, 800));
-          showToast("Changes applied successfully!", "success");
+          showToast("Changes applied successfully!", "default");
           setIsEditing(false);
           return { success: true };
         }}
@@ -102,14 +102,14 @@ export const InteractiveExample: Story = {
     };
 
     const handlePatch = async (): Promise<PatchResult> => {
-      showToast("Updating text...", "info");
+      showToast("Updating text...", "default");
 
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setValue(tempValue);
       setIsEditing(false);
-      showToast("Text updated successfully!", "success");
+      showToast("Text updated successfully!", "default");
 
       return { success: true };
     };
@@ -161,11 +161,11 @@ export const LongTextExample: Story = {
     };
 
     const handlePatch = async (): Promise<PatchResult> => {
-      showToast("Saving changes...", "info");
+      showToast("Saving changes...", "default");
       await new Promise((resolve) => setTimeout(resolve, 800));
       setValue(tempValue);
       setIsEditing(false);
-      showToast("Long text updated!", "success");
+      showToast("Long text updated!", "default");
       return { success: true };
     };
 
@@ -217,7 +217,7 @@ export const ValidationErrorsExample: Story = {
     };
 
     const handlePatch = async (): Promise<PatchResult> => {
-      showToast("Validating...", "info");
+      showToast("Validating...", "default");
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Simulate validation logic
@@ -242,7 +242,7 @@ export const ValidationErrorsExample: Story = {
 
       setValue(tempValue);
       setIsEditing(false);
-      showToast("Text validated and saved!", "success");
+      showToast("Text validated and saved!", "default");
       return { success: true };
     };
 
@@ -301,7 +301,7 @@ export const NetworkErrorExample: Story = {
     };
 
     const handlePatch = async (): Promise<PatchResult> => {
-      showToast("Saving to server...", "info");
+      showToast("Saving to server...", "default");
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
       // Simulate network error on every other attempt
@@ -313,7 +313,7 @@ export const NetworkErrorExample: Story = {
       setShouldFail(true);
       setValue(tempValue);
       setIsEditing(false);
-      showToast("Saved successfully!", "success");
+      showToast("Saved successfully!", "default");
       return { success: true };
     };
 

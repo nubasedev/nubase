@@ -83,6 +83,10 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       onLoad: (args: {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<Infer<TSchema>>>;
+      onDelete?: (args: {
+        data: any;
+        context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+      }) => Promise<HttpResponse<any>>;
     }): ResourceSearchView<TSchema, TApiEndpoints, TParamsSchema> {
       const resolvedSchema = config.schema(apiEndpoints);
       const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);

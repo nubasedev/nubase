@@ -101,13 +101,13 @@ export const InteractiveLoading: Story = {
 
     const handleClick = async () => {
       setIsLoading(true);
-      showToast("Processing request...", "info");
+      showToast("Processing request...", "default");
 
       // Simulate async operation
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       setIsLoading(false);
-      showToast("Operation completed!", "success");
+      showToast("Operation completed!", "default");
     };
 
     return (

@@ -25,7 +25,6 @@ export const ResourceCreateViewModalRenderer: FC<
     schema: view.schema,
     onSubmit: async (data: ObjectOutput<any>) => {
       try {
-        console.log("MODAL RENDERER - Form submitted with data:", data);
         const result = await view.onSubmit({
           data,
           context,
@@ -38,9 +37,7 @@ export const ResourceCreateViewModalRenderer: FC<
 
         onCreate?.(result);
         onClose?.(); // Close modal on successful creation
-        console.log("MODAL RENDERER - onCreate callback completed");
       } catch (error) {
-        console.log("MODAL RENDERER - Error in form submission:", error);
         onError?.(error as Error);
       }
     },

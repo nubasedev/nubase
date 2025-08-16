@@ -9,6 +9,7 @@ export {
   type UseNubaseMutationOptions,
   useNubaseMutation,
   useResourceCreateMutation,
+  useResourceDeleteMutation,
   useResourceInvalidation,
   useResourceUpdateMutation,
 } from "./useNubaseMutation";

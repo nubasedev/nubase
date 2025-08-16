@@ -99,10 +99,11 @@ export default function ResourceScreen() {
       element = (
         <ResourceCreateViewRenderer
           view={resourceOperation.view}
+          resourceName={resourceName}
           onCreate={(data) => {
             showToast(
               `Resource ${resourceName} created successfully`,
-              "success",
+              "default",
             );
 
             // Check if resource has a "view" operation and redirect to it
@@ -160,7 +161,7 @@ export default function ResourceScreen() {
           onPatch={(_data) => {
             showToast(
               `Resource ${resourceName} updated successfully`,
-              "success",
+              "default",
             );
           }}
           onError={(error) => {

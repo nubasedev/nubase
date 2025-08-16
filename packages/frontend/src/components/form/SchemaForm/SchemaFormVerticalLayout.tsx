@@ -36,7 +36,7 @@ export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
                   </div>
                   {fieldIndex < visibleFields.length - 1 && (
                     // This is the separator between fields
-                    <div className="border-t border-border my-3" />
+                    <div className="border-t border-border my-2" />
                   )}
                 </div>
               ))}

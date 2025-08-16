@@ -91,6 +91,16 @@ export type ResourceSearchView<
   }: {
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<Infer<TSchema>>>;
+  /**
+   * Optional handler for deleting a resource item.
+   */
+  onDelete?: ({
+    data,
+    context,
+  }: {
+    data: any;
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<any>>;
 };
 
 export type View<

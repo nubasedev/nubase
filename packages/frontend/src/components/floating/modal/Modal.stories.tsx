@@ -149,7 +149,7 @@ export const StructuredModalFrame: Story = {
                 <Button
                   variant="default"
                   onClick={() => {
-                    showToast("Form submitted!", "success");
+                    showToast("Form submitted!", "default");
                     closeModal(modalId);
                   }}
                 >
@@ -261,7 +261,7 @@ export const StructuredModalFrameWithScrolling: Story = {
                 <Button
                   variant="default"
                   onClick={() => {
-                    showToast("Action confirmed!", "success");
+                    showToast("Action confirmed!", "default");
                     closeModal(modalId);
                   }}
                 >
@@ -295,7 +295,7 @@ export const SchemaFormModalFrame: Story = {
     const form = useSchemaForm({
       schema: ContactSchema,
       onSubmit: async (data) => {
-        showToast("Contact form submitted!", "success");
+        showToast("Contact form submitted!", "default");
         console.log("Form data:", data);
         closeModal();
       },
@@ -401,7 +401,7 @@ export const SchemaFormWithScrolling: Story = {
     const form = useSchemaForm({
       schema: ComprehensiveSchema,
       onSubmit: async (data) => {
-        showToast("Comprehensive form submitted!", "success");
+        showToast("Comprehensive form submitted!", "default");
         console.log("Form data:", data);
         closeModal();
       },

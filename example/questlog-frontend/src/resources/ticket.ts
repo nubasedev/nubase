@@ -57,6 +57,11 @@ export const ticketResource = createResource({
             params: {},
           });
         },
+        onDelete: async ({ data, context }) => {
+          return context.http.deleteTicket({
+            params: { id: data.id },
+          });
+        },
       }),
     },
   },

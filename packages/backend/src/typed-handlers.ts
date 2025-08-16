@@ -80,8 +80,16 @@ function createTypedHandlerInternal<T extends RequestSchema>(
       // Parse and validate request body
       let body: InferRequestBody<T>;
       try {
-        const rawBody = schema.method === "GET" ? {} : await c.req.json();
-        body = schema.requestBody.toZod().parse(rawBody) as InferRequestBody<T>;
+        if (schema.requestBody) {
+          // Only parse body if schema defines one
+          const rawBody = schema.method === "GET" ? {} : await c.req.json();
+          body = schema.requestBody
+            .toZod()
+            .parse(rawBody) as InferRequestBody<T>;
+        } else {
+          // No request body expected
+          body = undefined as InferRequestBody<T>;
+        }
       } catch (error) {
         return c.json(
           {

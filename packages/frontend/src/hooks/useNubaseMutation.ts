@@ -144,6 +144,30 @@ export function useResourceUpdateMutation<TData = any, TVariables = any>(
 }
 
 /**
+ * Hook specifically designed for resource deletion operations
+ * Automatically invalidates related resource queries
+ */
+export function useResourceDeleteMutation<TData = any, TVariables = any>(
+  _resourceId: string,
+  view: {
+    onDelete: (args: {
+      data: TVariables;
+      context: any;
+    }) => Promise<HttpResponse<TData>>;
+  },
+  options?: Omit<
+    UseMutationOptions<HttpResponse<TData>, Error, TVariables>,
+    "mutationFn"
+  >,
+) {
+  return useNubaseMutation({
+    mutationFn: (data, context) => view.onDelete({ data, context }),
+    invalidateQueries: [], // We use manual invalidation in the component
+    options,
+  });
+}
+
+/**
  * Hook for invalidating specific resource queries manually
  * Useful for custom invalidation scenarios
  */
@@ -164,8 +188,19 @@ export function useResourceInvalidation() {
      * Invalidate search queries for a specific resource
      */
     invalidateResourceSearch: async (resourceId: string) => {
+      // Use predicate to match queries that start with ["resource", resourceId, "search"]
+      // This will match both 3-element and 4-element (with params) keys
       await queryClient.invalidateQueries({
-        queryKey: ["resource", resourceId, "search"],
+        predicate: (query) => {
+          const key = query.queryKey;
+          return (
+            Array.isArray(key) &&
+            key.length >= 3 &&
+            key[0] === "resource" &&
+            key[1] === resourceId &&
+            key[2] === "search"
+          );
+        },
       });
     },
 

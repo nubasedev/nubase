@@ -122,6 +122,7 @@ export interface EnhancedTableProps<TData>
   emptyMessage?: string;
   loadingMessage?: string;
   containerClassName?: string;
+  actionsColumn?: ColumnDef<TData>; // Optional actions column
 }
 
 const EnhancedTable = React.forwardRef<
@@ -140,13 +141,23 @@ const EnhancedTable = React.forwardRef<
       enableSorting = true,
       emptyMessage = "No data available",
       loadingMessage = "Loading...",
+      actionsColumn,
       ...props
     }: EnhancedTableProps<TData>,
     ref: React.ForwardedRef<HTMLTableElement>,
   ) => {
+    // Combine regular columns with optional actions column
+    const allColumns = React.useMemo(() => {
+      const cols = [...columns];
+      if (actionsColumn) {
+        cols.push(actionsColumn);
+      }
+      return cols;
+    }, [columns, actionsColumn]);
+
     const table = useReactTable({
       data,
-      columns,
+      columns: allColumns,
       getCoreRowModel: getCoreRowModel(),
       manualSorting: true,
       enableSorting,

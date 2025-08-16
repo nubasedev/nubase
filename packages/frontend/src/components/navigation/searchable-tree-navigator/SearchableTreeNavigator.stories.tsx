@@ -32,7 +32,7 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
     title: "Go to Dashboard",
     subtitle: "View your main dashboard (onNavigate)",
     onNavigate: () => {
-      showToast("Navigated to Dashboard", "info");
+      showToast("Navigated to Dashboard", "default");
     },
   },
   {
@@ -41,7 +41,7 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
     title: "Create New Item",
     subtitle: "Add a new item to your collection (onNavigate)",
     onNavigate: () => {
-      showToast("Creating new item...", "info");
+      showToast("Creating new item...", "default");
     },
   },
   {
@@ -50,7 +50,7 @@ const flatItemsWithCallbacks: TreeNavigatorItem[] = [
     title: "View Settings",
     subtitle: "Configure your preferences (onNavigate)",
     onNavigate: () => {
-      showToast("Settings panel opened", "info");
+      showToast("Settings panel opened", "default");
     },
   },
 ];
@@ -102,7 +102,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
     title: "Projects",
     subtitle: "Project management folder (expandable)",
     onNavigate: () => {
-      showToast("Navigated to Projects", "info");
+      showToast("Navigated to Projects", "default");
     },
     children: [
       {
@@ -118,7 +118,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
         title: "Mobile App",
         subtitle: "React Native project (onNavigate)",
         onNavigate: () => {
-          showToast("Opened Mobile App project", "info");
+          showToast("Opened Mobile App project", "default");
         },
       },
       {
@@ -140,7 +140,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
             title: "Archive",
             subtitle: "Archived projects (onNavigate)",
             onNavigate: () => {
-              showToast("Opened Archive", "info");
+              showToast("Opened Archive", "default");
             },
           },
         ],
@@ -153,7 +153,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
     title: "Team Management",
     subtitle: "Manage team members and roles",
     onNavigate: () => {
-      showToast("Navigated to Team Management", "info");
+      showToast("Navigated to Team Management", "default");
     },
     children: [
       {
@@ -162,7 +162,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
         title: "Developers",
         subtitle: "Development team members",
         onNavigate: () => {
-          showToast("Opened Developers section", "info");
+          showToast("Opened Developers section", "default");
         },
       },
       {
@@ -171,7 +171,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
         title: "Designers",
         subtitle: "Design team members",
         onNavigate: () => {
-          showToast("Opened Designers section", "info");
+          showToast("Opened Designers section", "default");
         },
       },
     ],
@@ -182,7 +182,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
     title: "Settings",
     subtitle: "Application settings and preferences",
     onNavigate: () => {
-      showToast("Navigated to Settings", "info");
+      showToast("Navigated to Settings", "default");
     },
   },
 ];
@@ -217,7 +217,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
     title: "Level 1 - Folder A",
     subtitle: "Top level folder",
     onNavigate: () => {
-      showToast("Navigated to Level 1 - Folder A", "info");
+      showToast("Navigated to Level 1 - Folder A", "default");
     },
     children: [
       {
@@ -226,7 +226,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
         title: "Level 2 - Subfolder A1",
         subtitle: "Second level folder",
         onNavigate: () => {
-          showToast("Navigated to Level 2 - Subfolder A1", "info");
+          showToast("Navigated to Level 2 - Subfolder A1", "default");
         },
         children: [
           {
@@ -235,7 +235,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
             title: "Level 3 - Deep Folder",
             subtitle: "Third level folder",
             onNavigate: () => {
-              showToast("Navigated to Level 3 - Deep Folder", "info");
+              showToast("Navigated to Level 3 - Deep Folder", "default");
             },
             children: [
               {
@@ -244,7 +244,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
                 title: "Level 4 - Deep File",
                 subtitle: "Fourth level file",
                 onNavigate: () => {
-                  showToast("Opened Level 4 - Deep File", "info");
+                  showToast("Opened Level 4 - Deep File", "default");
                 },
               },
             ],
@@ -255,7 +255,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
             title: "Level 3 - File",
             subtitle: "Third level file",
             onNavigate: () => {
-              showToast("Opened Level 3 - File", "info");
+              showToast("Opened Level 3 - File", "default");
             },
           },
         ],
@@ -266,7 +266,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
         title: "Level 2 - File A1",
         subtitle: "Second level file",
         onNavigate: () => {
-          showToast("Opened Level 2 - File A1", "info");
+          showToast("Opened Level 2 - File A1", "default");
         },
       },
     ],
@@ -277,7 +277,7 @@ const deepTreeItems: TreeNavigatorItem[] = [
     title: "Level 1 - File B",
     subtitle: "Top level file",
     onNavigate: () => {
-      showToast("Opened Level 1 - File B", "info");
+      showToast("Opened Level 1 - File B", "default");
     },
   },
 ];

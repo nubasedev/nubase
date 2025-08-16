@@ -35,7 +35,7 @@ export const workbenchSetTheme = defineCommand({
       } else {
         showToast(
           `Theme "${themeId}" not found. Available themes: ${availableThemes.join(", ")}`,
-          "warning",
+          "default",
         );
         // Fall through to show theme selection modal
       }

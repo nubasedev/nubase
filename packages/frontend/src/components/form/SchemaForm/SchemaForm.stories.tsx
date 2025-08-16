@@ -168,7 +168,7 @@ export const Default: Story = {
         try {
           // Simulate API call
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          showToast("Contact form submitted successfully!", "success");
+          showToast("Contact form submitted successfully!", "default");
         } catch (error) {
           console.error("Submission error:", error);
           showToast("Failed to submit form", "error");
@@ -193,7 +193,7 @@ export const WithComputed: Story = {
           // Simulate API call with computed data
           await new Promise((resolve) => setTimeout(resolve, 1200));
           console.log("Contact saved:", data);
-          showToast("Contact saved successfully!", "success");
+          showToast("Contact saved successfully!", "default");
         } catch (error) {
           console.error("Save error:", error);
           showToast("Failed to save contact", "error");
@@ -219,7 +219,7 @@ export const WithLayout: Story = {
           // Simulate message sending with longer delay
           await new Promise((resolve) => setTimeout(resolve, 1500));
           console.log("Message sent:", data);
-          showToast("Message sent successfully!", "success");
+          showToast("Message sent successfully!", "default");
         } catch (error) {
           console.error("Send error:", error);
           showToast("Failed to send message", "error");
@@ -242,7 +242,7 @@ export const ImperativeValueSetting: Story = {
       schema: ContactSchema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        showToast("Form submitted with random values!", "success");
+        showToast("Form submitted with random values!", "default");
       },
     });
 
@@ -314,7 +314,7 @@ export const PatchMode: Story = {
     });
 
     const handlePatch = async (fieldName: string, value: any) => {
-      showToast(`Patching ${fieldName} to: ${value}`, "info");
+      showToast(`Patching ${fieldName} to: ${value}`, "default");
     };
 
     const form = useSchemaForm({
@@ -354,7 +354,7 @@ export const PatchModeWithValidation: Story = {
     });
 
     const handlePatch = async (fieldName: string, value: any) => {
-      showToast(`Validating patch for ${fieldName}`, "info");
+      showToast(`Validating patch for ${fieldName}`, "default");
 
       // Simulate validation - reject invalid emails
       if (fieldName === "email" && !value.includes("@")) {
@@ -438,7 +438,7 @@ export const FieldSyncValidation: Story = {
     const form = useSchemaForm({
       schema,
       onSubmit: async () => {
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 
@@ -499,7 +499,7 @@ export const FieldAsyncValidation: Story = {
     const form = useSchemaForm({
       schema,
       onSubmit: async () => {
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 
@@ -573,7 +573,7 @@ export const FieldCombinedValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 
@@ -608,7 +608,7 @@ export const FormSyncValidation: Story = {
     const form = useSchemaForm({
       schema,
       onSubmit: async () => {
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 
@@ -654,7 +654,7 @@ export const FormAsyncValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 
@@ -713,7 +713,7 @@ export const FormCombinedValidation: Story = {
       schema,
       onSubmit: async (data) => {
         console.log("Form submitted:", data);
-        showToast("Form submitted successfully!", "success");
+        showToast("Form submitted successfully!", "default");
       },
     });
 

@@ -111,8 +111,9 @@ export class HttpClient {
 
   async delete<T>(
     url: string,
+    data?: any,
     config?: HttpRequestConfig,
   ): Promise<HttpResponse<T>> {
-    return this.request<T>(url, "DELETE", undefined, config);
+    return this.request<T>(url, "DELETE", data, config);
   }
 }
