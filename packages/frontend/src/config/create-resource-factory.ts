@@ -35,6 +35,7 @@ export type InlineCreateViewConfig<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
+  type: "resource-create";
   id: string;
   title: string;
   schemaPost: (api: TApiEndpoints) => TSchema;
@@ -56,6 +57,7 @@ export type InlineViewViewConfig<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
+  type: "resource-view";
   id: string;
   title: string;
   schemaGet: (api: TApiEndpoints) => TSchema;
@@ -84,6 +86,7 @@ export type InlineSearchViewConfig<
   TSchema extends ArraySchema<any> = ArraySchema<any>,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
+  type: "resource-search";
   id: string;
   title: string;
   schemaGet: (api: TApiEndpoints) => TSchema;
@@ -105,191 +108,233 @@ export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
   | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any>;
 
 /**
- * Factory function to create a ResourceDescriptor with inline view and action definitions.
- * Views have access to the action keys from the actions object for type safety.
- * Actions have access to the typed API endpoints for statically typed context.http.
+ * Resource builder that enables chained, type-safe resource configuration.
+ *
+ * Usage:
+ * ```typescript
+ * createResource("ticket")
+ *   .withApiEndpoints(apiEndpoints)
+ *   .withActions({ delete: { ... } })
+ *   .withViews({ create: { ... }, view: { ... } })
+ * ```
  */
-export function createResource<
-  TApiEndpoints,
-  TActions extends Record<string, InlineResourceActionConfig<TApiEndpoints>>,
-  TViews extends Record<
+class ResourceBuilder<
+  TId extends string,
+  TApiEndpoints = never,
+  TActions extends Record<
     string,
-    InlineViewConfig<TApiEndpoints, keyof TActions & string>
-  >,
->(descriptor: {
-  id: string;
-  apiEndpoints: TApiEndpoints;
-  actions: TActions;
-  views: TViews;
-}): ResourceDescriptor<
-  {
-    [K in keyof TViews]: TViews[K] extends InlineViewConfig<TApiEndpoints, any>
-      ? TViews[K] extends InlineCreateViewConfig<
-          TApiEndpoints,
-          any,
-          infer TSchema,
-          infer TParamsSchema
-        >
-        ? ResourceCreateView<
-            TSchema,
+    InlineResourceActionConfig<TApiEndpoints>
+  > = Record<string, never>,
+> {
+  private config: {
+    id: TId;
+    apiEndpoints?: TApiEndpoints;
+    actions?: TActions;
+  };
+
+  constructor(id: TId) {
+    this.config = { id };
+  }
+
+  /**
+   * Configure API endpoints for this resource.
+   * This unlocks type-safe HTTP client in actions and views.
+   */
+  withApiEndpoints<T>(
+    apiEndpoints: T,
+  ): ResourceBuilder<TId, T, Record<string, never>> {
+    return new ResourceBuilder<TId, T, Record<string, never>>(
+      this.config.id,
+    ).setApiEndpoints(apiEndpoints);
+  }
+
+  /**
+   * Configure actions for this resource.
+   * Actions can reference the API endpoints for type-safe HTTP calls.
+   */
+  withActions<
+    T extends Record<string, InlineResourceActionConfig<TApiEndpoints>>,
+  >(actions: T): ResourceBuilder<TId, TApiEndpoints, T> {
+    const builder = new ResourceBuilder<TId, TApiEndpoints, T>(this.config.id);
+    if (this.config.apiEndpoints !== undefined) {
+      builder.setApiEndpoints(this.config.apiEndpoints);
+    }
+    builder.setActions(actions);
+    return builder;
+  }
+
+  /**
+   * Configure views for this resource.
+   * Views can reference API endpoints for schemas and action keys for tableActions/rowActions.
+   * This is the final step that produces the ResourceDescriptor.
+   */
+  withViews<
+    TViews extends Record<
+      string,
+      InlineViewConfig<TApiEndpoints, keyof TActions & string>
+    >,
+  >(
+    views: TViews,
+  ): ResourceDescriptor<
+    {
+      [K in keyof TViews]: TViews[K] extends InlineViewConfig<
+        TApiEndpoints,
+        any
+      >
+        ? TViews[K] extends InlineCreateViewConfig<
             TApiEndpoints,
-            TParamsSchema,
-            keyof TActions & string
+            any,
+            infer TSchema,
+            infer TParamsSchema
           >
-        : TViews[K] extends InlineViewViewConfig<
-              TApiEndpoints,
-              any,
-              infer TSchema,
-              infer TParamsSchema
-            >
-          ? ResourceViewView<
+          ? ResourceCreateView<
               TSchema,
               TApiEndpoints,
               TParamsSchema,
               keyof TActions & string
             >
-          : TViews[K] extends InlineSearchViewConfig<
+          : TViews[K] extends InlineViewViewConfig<
                 TApiEndpoints,
                 any,
                 infer TSchema,
                 infer TParamsSchema
               >
-            ? ResourceSearchView<
+            ? ResourceViewView<
                 TSchema,
                 TApiEndpoints,
                 TParamsSchema,
                 keyof TActions & string
               >
-            : never
-      : never;
-  },
-  {
-    [K in keyof TActions]: TActions[K] extends InlineResourceActionConfig<TApiEndpoints>
-      ? {
-          type: "resource";
-          id: string;
-          label?: string;
-          icon?: React.ComponentType<{ size?: number; className?: string }>;
-          disabled?: boolean;
-          variant?: "default" | "destructive";
-          onExecute: (
-            context: ResourceActionExecutionContext,
-          ) => void | Promise<void>;
-        }
-      : never;
-  }
->;
+            : TViews[K] extends InlineSearchViewConfig<
+                  TApiEndpoints,
+                  any,
+                  infer TSchema,
+                  infer TParamsSchema
+                >
+              ? ResourceSearchView<
+                  TSchema,
+                  TApiEndpoints,
+                  TParamsSchema,
+                  keyof TActions & string
+                >
+              : never
+        : never;
+    },
+    {
+      [K in keyof TActions]: TActions[K] extends InlineResourceActionConfig<TApiEndpoints>
+        ? {
+            type: "resource";
+            id: string;
+            label?: string;
+            icon?: React.ComponentType<{
+              size?: number;
+              className?: string;
+            }>;
+            disabled?: boolean;
+            variant?: "default" | "destructive";
+            onExecute: (
+              context: ResourceActionExecutionContext,
+            ) => void | Promise<void>;
+          }
+        : never;
+    }
+  > {
+    // Transform inline view configs to actual view objects
+    const transformedViews: Record<string, any> = {};
 
-/**
- * Overload for resources without actions
- */
-export function createResource<
-  TApiEndpoints,
-  TViews extends Record<string, InlineViewConfig<TApiEndpoints, never>>,
->(descriptor: {
-  id: string;
-  apiEndpoints: TApiEndpoints;
-  views: TViews;
-}): ResourceDescriptor<
-  {
-    [K in keyof TViews]: TViews[K] extends InlineViewConfig<TApiEndpoints, any>
-      ? TViews[K] extends InlineCreateViewConfig<
-          TApiEndpoints,
-          any,
-          infer TSchema,
-          infer TParamsSchema
-        >
-        ? ResourceCreateView<TSchema, TApiEndpoints, TParamsSchema, never>
-        : TViews[K] extends InlineViewViewConfig<
-              TApiEndpoints,
-              any,
-              infer TSchema,
-              infer TParamsSchema
-            >
-          ? ResourceViewView<TSchema, TApiEndpoints, TParamsSchema, never>
-          : TViews[K] extends InlineSearchViewConfig<
-                TApiEndpoints,
-                any,
-                infer TSchema,
-                infer TParamsSchema
-              >
-            ? ResourceSearchView<TSchema, TApiEndpoints, TParamsSchema, never>
-            : never
-      : never;
-  },
-  Record<string, never>
->;
+    for (const [key, viewConfig] of Object.entries(views)) {
+      const config = viewConfig as any;
 
-export function createResource(descriptor: any): any {
-  const { apiEndpoints, views, actions, ...rest } = descriptor;
+      // Resolve schemas from API endpoints
+      const resolvedSchemaGet = config.schemaGet?.(this.config.apiEndpoints);
+      const resolvedSchemaPost = config.schemaPost?.(this.config.apiEndpoints);
+      const resolvedSchemaParams = config.schemaParams?.(
+        this.config.apiEndpoints,
+      );
 
-  // Transform inline view configs to actual view objects
-  const transformedViews: Record<string, any> = {};
-
-  for (const [key, viewConfig] of Object.entries(views)) {
-    const config = viewConfig as any;
-
-    // Resolve schemas from API endpoints
-    const resolvedSchemaGet = config.schemaGet?.(apiEndpoints);
-    const resolvedSchemaPost = config.schemaPost?.(apiEndpoints);
-    const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
-
-    // Determine view type based on properties
-    if (config.schemaPost) {
-      // Create view
+      // Use explicit type from config
       transformedViews[key] = {
-        type: "resource-create" as const,
         ...config,
+        type: config.type,
+        schemaGet: resolvedSchemaGet,
         schemaPost: resolvedSchemaPost,
         schemaParams: resolvedSchemaParams,
       };
-    } else if (config.schemaGet && config.onPatch) {
-      // View view (has both load and patch)
-      transformedViews[key] = {
-        type: "resource-view" as const,
-        ...config,
-        schemaGet: resolvedSchemaGet,
-        schemaParams: resolvedSchemaParams,
-      };
-    } else if (config.schemaGet) {
-      // Search view (has only load, no patch)
-      transformedViews[key] = {
-        type: "resource-search" as const,
-        ...config,
-        schemaGet: resolvedSchemaGet,
-        schemaParams: resolvedSchemaParams,
-      };
     }
+
+    // Transform inline action configs to actual action objects
+    const transformedActions: Record<string, any> = {};
+
+    if (this.config.actions) {
+      for (const [key, actionConfig] of Object.entries(this.config.actions)) {
+        const config = actionConfig as any;
+
+        // Convert inline action config to ResourceAction
+        transformedActions[key] = {
+          type: "resource" as const,
+          id: key,
+          label: config.label,
+          icon: config.icon,
+          disabled: config.disabled,
+          variant: config.variant || "default",
+          onExecute: ({
+            selectedIds,
+            context,
+          }: ResourceActionExecutionContext) => {
+            return config.onExecute({ selectedIds, context });
+          },
+        };
+      }
+    }
+
+    return {
+      id: this.config.id,
+      views: transformedViews,
+      actions: transformedActions,
+    } as any;
   }
 
-  // Transform inline action configs to actual action objects
-  const transformedActions: Record<string, any> = {};
-
-  if (actions) {
-    for (const [key, actionConfig] of Object.entries(actions)) {
-      const config = actionConfig as any;
-
-      // Convert inline action config to ResourceAction
-      transformedActions[key] = {
-        type: "resource" as const,
-        id: key,
-        label: config.label,
-        icon: config.icon,
-        disabled: config.disabled,
-        variant: config.variant || "default",
-        onExecute: ({
-          selectedIds,
-          context,
-        }: ResourceActionExecutionContext) => {
-          return config.onExecute({ selectedIds, context });
-        },
-      };
-    }
+  // Private helper methods for builder pattern
+  private setApiEndpoints(apiEndpoints: TApiEndpoints): this {
+    this.config.apiEndpoints = apiEndpoints;
+    return this;
   }
 
-  return {
-    ...rest,
-    views: transformedViews,
-    actions: transformedActions,
-  };
+  private setActions(actions: TActions): this {
+    this.config.actions = actions;
+    return this;
+  }
+}
+
+/**
+ * Creates a new resource builder with the specified ID.
+ *
+ * The builder pattern enables sequential type inference, solving the circular
+ * dependency problem between API endpoints, actions, and views.
+ *
+ * @example
+ * ```typescript
+ * const ticketResource = createResource("ticket")
+ *   .withApiEndpoints(apiEndpoints)
+ *   .withActions({
+ *     delete: {
+ *       label: "Delete",
+ *       onExecute: async ({ selectedIds, context }) => {
+ *         // context.http is fully typed
+ *       }
+ *     }
+ *   })
+ *   .withViews({
+ *     create: {
+ *       type: "resource-create",
+ *       schemaPost: (api) => api.postTicket.requestBody,
+ *       onSubmit: async ({ data, context }) => context.http.postTicket({ data })
+ *     }
+ *   });
+ * ```
+ */
+export function createResource<TId extends string>(
+  id: TId,
+): ResourceBuilder<TId, never, Record<string, never>> {
+  return new ResourceBuilder(id);
 }
