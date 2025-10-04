@@ -372,19 +372,21 @@ Table layouts integrate seamlessly with Nubase resource operations:
 
 ```typescript
 // In your resource configuration
-const ticketResource = createResource({
-  id: "ticket",
-  operations: {
-    search: { 
-      view: createResourceSearchView({
-        schema: ticketArraySchema,  // Array schema with element having table layout
-        apiEndpoint: "getTickets"
-      })
+const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    search: {
+      type: "resource-search",
+      id: "search-tickets",
+      title: "Search Tickets",
+      schemaGet: (api) => api.getTickets.responseBody,  // Array schema with element having table layout
+      onLoad: async ({ context }) => {
+        return context.http.getTickets({ params: {} });
+      }
     },
-    view: { view: viewTicketView },
-    edit: { view: editTicketView }
-  }
-});
+    view: { /* view view config */ },
+    edit: { /* edit view config */ }
+  });
 
 // The ResourceSearchViewRenderer automatically:
 // 1. Gets the element schema from the array schema
@@ -424,11 +426,20 @@ const ticketBaseSchema = nu.object({
 // Array schema for search results
 const ticketArraySchema = nu.array(ticketBaseSchema);
 
-// Resource view using the array schema
-const ticketSearchView = createResourceSearchView({
-  schema: ticketArraySchema,
-  apiEndpoint: "getTickets"
-});
+// Resource with search view using the array schema
+const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    search: {
+      type: "resource-search",
+      id: "search-tickets",
+      title: "Search Tickets",
+      schemaGet: (api) => api.getTickets.responseBody,  // Uses ticketArraySchema
+      onLoad: async ({ context }) => {
+        return context.http.getTickets({ params: {} });
+      }
+    }
+  });
 ```
 
 ## DataGrid Integration
