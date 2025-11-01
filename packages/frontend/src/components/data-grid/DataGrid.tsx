@@ -114,6 +114,8 @@ export interface DataGridHandle {
   selectCell: (position: Position, options?: SelectCellOptions) => void;
 }
 
+const DEFAULT_VIRTUALIZED_VIEWPORT_HEIGHT = 600;
+
 type SharedDivProps = Pick<
   React.ComponentProps<"div">,
   | "role"
@@ -529,6 +531,11 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(
     totalRowHeight +
     summaryRowsHeight +
     horizontalScrollbarHeight;
+
+  const fallbackViewportHeight =
+    enableVirtualization && style?.height == null
+      ? Math.min(scrollHeight, DEFAULT_VIRTUALIZED_VIEWPORT_HEIGHT)
+      : undefined;
 
   /**
    * The identity of the wrapper function is stable so it won't break memoization
@@ -1278,7 +1285,6 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(
         }),
       );
     }
-
     return rowElements;
   }
 
@@ -1329,6 +1335,9 @@ export function DataGrid<R, SR = unknown, K extends Key = Key>(
       )}
       style={
         {
+          ...(fallbackViewportHeight !== undefined
+            ? { height: `${fallbackViewportHeight}px` }
+            : {}),
           ...style,
           // set scrollPadding to correctly position non-sticky cells after scrolling
           scrollPaddingInlineStart:
