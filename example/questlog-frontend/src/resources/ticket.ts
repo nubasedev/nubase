@@ -2,10 +2,9 @@ import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
 
-export const ticketResource = createResource({
-  id: "ticket",
-  apiEndpoints,
-  actions: {
+export const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withActions({
     delete: {
       label: "Delete",
       icon: TrashIcon,
@@ -57,9 +56,10 @@ export const ticketResource = createResource({
         }
       },
     },
-  },
-  views: {
+  })
+  .withViews({
     create: {
+      type: "resource-create",
       id: "create-ticket",
       title: "Create Ticket",
       schemaPost: (api) => api.postTicket.requestBody,
@@ -72,6 +72,7 @@ export const ticketResource = createResource({
       },
     },
     view: {
+      type: "resource-view",
       id: "view-ticket",
       title: "View Ticket",
       schemaGet: (api) => api.getTicket.responseBody.omit("id"),
@@ -95,6 +96,7 @@ export const ticketResource = createResource({
       },
     },
     search: {
+      type: "resource-search",
       id: "search-tickets",
       title: "Search Tickets",
       schemaGet: (api) => api.getTickets.responseBody,
@@ -107,5 +109,4 @@ export const ticketResource = createResource({
         });
       },
     },
-  },
-});
+  });

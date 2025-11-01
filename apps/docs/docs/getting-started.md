@@ -183,13 +183,11 @@ const createUserView = createView({
 });
 
 // 2. Define your resources
-const userResource = createResource({
-  id: "user",
-  views: {
+const userResource = createResource("user")
+  .withViews({
     create: createUserView,
     // Add more views: view, edit, list, etc.
-  }
-});
+  });
 
 // 3. Configure your application
 const appConfig = {
@@ -425,29 +423,35 @@ const ticketSchema = nu.object({
   status: nu.string().withMeta({ label: "Status" })
 });
 
-const ticketResource = createResource({
-  id: "ticket",
-  operations: {
-    create: { 
-      view: createView({
-        id: "create-ticket",
-        schema: ticketSchema.omit("status"), // Status set by system
-        onSubmit: async (data, { apiClient }) => {
-          await apiClient.createTicket(data);
-        }
-      })
+const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    create: {
+      type: "resource-create",
+      id: "create-ticket",
+      title: "Create Ticket",
+      schemaPost: (api) => api.postTicket.requestBody,
+      onSubmit: async ({ data, context }) => {
+        return context.http.postTicket({ data });
+      }
     },
     edit: {
-      view: createView({
-        id: "edit-ticket", 
-        schema: ticketSchema,
-        onSubmit: async (data, { apiClient, params }) => {
-          await apiClient.updateTicket(params.id, data);
-        }
-      })
+      type: "resource-view",
+      id: "edit-ticket",
+      title: "Edit Ticket",
+      schemaGet: (api) => api.getTicket.responseBody,
+      schemaParams: (api) => api.getTicket.requestParams,
+      onLoad: async ({ context }) => {
+        return context.http.getTicket({ params: { id: context.params.id } });
+      },
+      onPatch: async ({ data, context }) => {
+        return context.http.patchTicket({
+          params: { id: context.params.id },
+          data
+        });
+      }
     }
-  }
-});
+  });
 ```
 
 With these patterns, you can build sophisticated business applications rapidly while maintaining type safety and consistency.
