@@ -32,7 +32,11 @@ function Row<R, SR>({
   style,
   ...props
 }: RenderRowProps<R, SR>) {
-  const renderCell = useDefaultRenderers<R, SR>()?.renderCell!;
+  const defaultRenderers = useDefaultRenderers<R, SR>();
+  if (!defaultRenderers?.renderCell) {
+    throw new Error("DataGrid default renderCell renderer is missing.");
+  }
+  const { renderCell } = defaultRenderers;
 
   const handleRowChange = useLatestFunc(
     (column: CalculatedColumn<R, SR>, newRow: R) => {

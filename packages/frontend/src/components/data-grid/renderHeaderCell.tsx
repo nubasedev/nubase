@@ -30,7 +30,11 @@ function SortableHeaderCell<R, SR>({
   priority,
   children,
 }: SortableHeaderCellProps<R, SR>) {
-  const renderSortStatus = useDefaultRenderers<R, SR>()?.renderSortStatus!;
+  const defaultRenderers = useDefaultRenderers<R, SR>();
+  if (!defaultRenderers?.renderSortStatus) {
+    throw new Error("DataGrid default renderSortStatus renderer is missing.");
+  }
+  const { renderSortStatus } = defaultRenderers;
 
   return (
     <span className={headerSortCellClassname}>

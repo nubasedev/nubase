@@ -24,7 +24,11 @@ export function SelectCellFormatter({
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
 }: SelectCellFormatterProps) {
-  const renderCheckbox = useDefaultRenderers()?.renderCheckbox!;
+  const defaultRenderers = useDefaultRenderers();
+  if (!defaultRenderers?.renderCheckbox) {
+    throw new Error("DataGrid default renderCheckbox renderer is missing.");
+  }
+  const { renderCheckbox } = defaultRenderers;
 
   return renderCheckbox({
     "aria-label": ariaLabel,

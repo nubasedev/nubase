@@ -9,21 +9,21 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!**/build/**",
-      "!**/dist/**",
-      "!**/dist-cli/**",
-      "!**/node_modules/**",
-      "!**/.turbo/**",
-      "!**/coverage/**",
-      "!**/.next/**",
-      "!**/out/**",
-      "!**/.storybook/build/**",
-      "!**/storybook-static/**",
-      "!**/docker/**",
-      "!**/bruno/**",
-      "!**/.docusaurus/**",
-      "!**/.claude/**",
-      "!**/.claude-flow/**",
+      "!**/build",
+      "!**/dist",
+      "!**/dist-cli",
+      "!**/node_modules",
+      "!**/.turbo",
+      "!**/coverage",
+      "!**/.next",
+      "!**/out",
+      "!**/.storybook/build",
+      "!**/storybook-static",
+      "!**/docker",
+      "!**/bruno",
+      "!**/.docusaurus",
+      "!**/.claude",
+      "!**/.claude-flow",
       "!**/theme.css"
     ]
   },
@@ -82,6 +82,11 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "double"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   }
 }
