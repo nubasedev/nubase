@@ -31,6 +31,7 @@ export type UseDialogResult = {
 export const useDialog = (): UseDialogResult => {
   const { openModal, closeModal } = useModal();
   const modalIdRef = useRef<string | null>(null);
+  const dialogApiRef = useRef<UseDialogResult | null>(null);
 
   const openDialog = useCallback(
     (dialogConfig: DialogConfig) => {
@@ -108,10 +109,18 @@ export const useDialog = (): UseDialogResult => {
     }
   }, [closeModal]);
 
-  return {
-    openDialog,
-    hide,
-    isOpen: modalIdRef.current !== null,
-    DialogComponent: null, // No longer needed with modal context
-  };
+  if (!dialogApiRef.current) {
+    dialogApiRef.current = {
+      openDialog,
+      hide,
+      isOpen: false,
+      DialogComponent: null,
+    };
+  } else {
+    dialogApiRef.current.openDialog = openDialog;
+    dialogApiRef.current.hide = hide;
+    dialogApiRef.current.isOpen = modalIdRef.current !== null;
+  }
+
+  return dialogApiRef.current;
 };

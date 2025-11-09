@@ -4,7 +4,7 @@ import {
   type ReactNode,
   useCallback,
   useContext,
-  useMemo,
+  useRef,
   useState,
 } from "react";
 import { Modal } from "./Modal";
@@ -98,15 +98,21 @@ export const useModal = (): UseModalResult => {
   }
 
   const { openModal, closeModal, closeAllModals, modals } = context;
+  const modalApiRef = useRef<UseModalResult | null>(null);
 
-  const result = useMemo(() => {
-    return {
+  if (!modalApiRef.current) {
+    modalApiRef.current = {
       openModal,
       closeModal,
       closeAllModals,
       modalCount: modals.length,
     };
-  }, [openModal, closeModal, closeAllModals, modals.length]);
+  } else {
+    modalApiRef.current.openModal = openModal;
+    modalApiRef.current.closeModal = closeModal;
+    modalApiRef.current.closeAllModals = closeAllModals;
+    modalApiRef.current.modalCount = modals.length;
+  }
 
-  return result;
+  return modalApiRef.current;
 };
