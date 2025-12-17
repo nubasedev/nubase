@@ -14,7 +14,7 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   string: ({ fieldState }) => {
     const value = fieldState.state.value || "";
     return (
-      <div className="px-3 py-2 text-foreground">
+      <div className="flex h-9 w-full min-w-0 px-3 py-1 rounded-md border border-transparent text-base text-foreground">
         {value || <span className="text-muted-foreground italic">Empty</span>}
       </div>
     );
@@ -23,7 +23,7 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   number: ({ fieldState }) => {
     const value = fieldState.state.value;
     return (
-      <div className="px-3 py-2 text-foreground">
+      <div className="flex h-9 w-full min-w-0 px-3 py-1 rounded-md border border-transparent text-base text-foreground">
         {value != null ? (
           value.toString()
         ) : (
@@ -36,7 +36,9 @@ export const viewFieldRenderers: Record<string, ViewFieldRenderer> = {
   boolean: ({ fieldState }) => {
     const value = fieldState.state.value;
     return (
-      <div className="px-3 py-2 text-foreground">{value ? "Yes" : "No"}</div>
+      <div className="flex h-9 w-full min-w-0 px-3 py-1 rounded-md border border-transparent text-base text-foreground">
+        {value ? "Yes" : "No"}
+      </div>
     );
   },
 };
