@@ -14,7 +14,6 @@ export const handleGetTickets = createHttpHandler({
   handler: async () => {
     const db = getDb();
     const tickets: Ticket[] = await db.select().from(ticketsTable);
-    console.log("Fetched tickets:", tickets);
 
     // Transform database result to match API schema
     return tickets.map((ticket) => ({
