@@ -3,6 +3,7 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
 import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
+import { MultilineViewFieldRenderer } from "../renderers/multiline/MultilineViewFieldRenderer";
 import { NumberEditFieldRenderer } from "../renderers/number/NumberEditFieldRenderer";
 import { NumberViewFieldRenderer } from "../renderers/number/NumberViewFieldRenderer";
 import { StringEditFieldRenderer } from "../renderers/string/StringEditFieldRenderer";
@@ -20,7 +21,9 @@ import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 // Renderers by custom renderer name (from metadata.renderer)
 // Note: If a view renderer is not defined for a custom renderer name,
 // the system will fall back to the type-based renderer
-const viewRenderersByName: Record<string, ViewFieldRenderer> = {};
+const viewRenderersByName: Record<string, ViewFieldRenderer> = {
+  multiline: MultilineViewFieldRenderer,
+};
 
 const editRenderersByName: Record<string, EditFieldRenderer> = {
   multiline: MultilineEditFieldRenderer,
