@@ -58,7 +58,7 @@ export const MultilineEditFieldRenderer = ({
       aria-invalid={hasError}
       className={cn(
         textInputVariants(),
-        "min-h-24 py-2 resize-none overflow-hidden",
+        "min-h-24 resize-none overflow-hidden",
       )}
       rows={3}
     />
