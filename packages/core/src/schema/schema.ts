@@ -5,6 +5,11 @@ export interface SchemaMetadata<Output = any> {
   label?: string;
   description?: string;
   defaultValue?: Output;
+  /**
+   * Custom renderer identifier to override the default type-based rendering.
+   * Examples: "multiline", "email", "password", "url"
+   */
+  renderer?: string;
   validateOnSubmit?: (value: any) => string | undefined;
   validateOnSubmitAsync?: (value: any) => Promise<string | undefined>;
   validateOnBlur?: (value: any) => string | undefined;

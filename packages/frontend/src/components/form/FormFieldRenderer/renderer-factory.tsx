@@ -2,6 +2,7 @@ import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
+import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
 import { NumberEditFieldRenderer } from "../renderers/number/NumberEditFieldRenderer";
 import { NumberViewFieldRenderer } from "../renderers/number/NumberViewFieldRenderer";
 import { StringEditFieldRenderer } from "../renderers/string/StringEditFieldRenderer";
@@ -9,12 +10,23 @@ import { StringViewFieldRenderer } from "../renderers/string/StringViewFieldRend
 import type {
   EditFieldRenderer,
   EditFieldRendererMap,
+  ViewFieldRenderer,
   ViewFieldRendererMap,
 } from "../renderers/types";
 import { UnsupportedEditFieldRenderer } from "../renderers/unsupported/UnsupportedEditFieldRenderer";
 import { UnsupportedViewFieldRenderer } from "../renderers/unsupported/UnsupportedViewFieldRenderer";
 import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 
+// Renderers by custom renderer name (from metadata.renderer)
+// Note: If a view renderer is not defined for a custom renderer name,
+// the system will fall back to the type-based renderer
+const viewRenderersByName: Record<string, ViewFieldRenderer> = {};
+
+const editRenderersByName: Record<string, EditFieldRenderer> = {
+  multiline: MultilineEditFieldRenderer,
+};
+
+// Renderers by schema type
 const viewFieldRenderers: ViewFieldRendererMap = {
   string: StringViewFieldRenderer,
   number: NumberViewFieldRenderer,
@@ -29,6 +41,44 @@ const editFieldRenderers: EditFieldRendererMap = {
 
 const unsupportedViewRenderer = UnsupportedViewFieldRenderer;
 const unsupportedEditRenderer: EditFieldRenderer = UnsupportedEditFieldRenderer;
+
+/**
+ * Resolves the appropriate edit renderer based on priority:
+ * 1. Custom renderer from metadata.renderer
+ * 2. Type-based renderer from schema.type
+ * 3. Unsupported fallback
+ */
+const resolveEditRenderer = (
+  rendererName: string | undefined,
+  schemaType: string,
+): EditFieldRenderer => {
+  if (rendererName && editRenderersByName[rendererName]) {
+    return editRenderersByName[rendererName];
+  }
+  if (editFieldRenderers[schemaType]) {
+    return editFieldRenderers[schemaType];
+  }
+  return unsupportedEditRenderer;
+};
+
+/**
+ * Resolves the appropriate view renderer based on priority:
+ * 1. Custom renderer from metadata.renderer
+ * 2. Type-based renderer from schema.type
+ * 3. Unsupported fallback
+ */
+const resolveViewRenderer = (
+  rendererName: string | undefined,
+  schemaType: string,
+): ViewFieldRenderer => {
+  if (rendererName && viewRenderersByName[rendererName]) {
+    return viewRenderersByName[rendererName];
+  }
+  if (viewFieldRenderers[schemaType]) {
+    return viewFieldRenderers[schemaType];
+  }
+  return unsupportedViewRenderer;
+};
 
 export interface EditFieldLifecycle {
   onEnterEdit?: () => void;
@@ -52,8 +102,10 @@ export interface PatchContext extends FormFieldRendererContext {
 }
 
 export const createEditRenderer = (context: FormFieldRendererContext) => {
-  const renderer =
-    editFieldRenderers[context.schema.type] || unsupportedEditRenderer;
+  const renderer = resolveEditRenderer(
+    context.metadata.renderer,
+    context.schema.type,
+  );
   const result = renderer({
     schema: context.schema,
     fieldState: context.fieldState,
@@ -64,8 +116,10 @@ export const createEditRenderer = (context: FormFieldRendererContext) => {
 };
 
 export const createViewRenderer = (context: FormFieldRendererContext) => {
-  const renderer =
-    viewFieldRenderers[context.schema.type] || unsupportedViewRenderer;
+  const renderer = resolveViewRenderer(
+    context.metadata.renderer,
+    context.schema.type,
+  );
   return renderer({
     schema: context.schema,
     fieldState: context.fieldState,

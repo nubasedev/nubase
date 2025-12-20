@@ -16,6 +16,7 @@ export const ticketBaseSchema = nu
     description: nu.string().optional().withMeta({
       label: "Ticket Description",
       description: "Enter the description of the ticket",
+      renderer: "multiline",
     }),
   })
   .withId("id")
