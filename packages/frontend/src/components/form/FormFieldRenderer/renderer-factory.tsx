@@ -1,7 +1,6 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { FormControl } from "../../form-controls/FormControl/FormControl";
-import { Label } from "../../form-controls/Label/Label";
 import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
 import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
@@ -183,32 +182,25 @@ export const createPatchRenderer = (context: PatchContext) => {
   const viewElement = createRawViewRenderer(context);
   const editResult = createRawEditRenderer(context);
 
-  // In patch mode, we handle the layout ourselves
-  // The label is always shown, but hint/validation only appears in the floating bar when editing
+  // Use FormControl for layout (label + field), but don't pass hint/field
+  // so it won't render hint/validation - PatchWrapper handles those in the floating bar
   return (
-    <div className="flex items-start gap-4">
-      <div className="w-32 shrink-0 pt-2">
-        <Label htmlFor={context.fieldState.name} required={context.isRequired}>
-          {context.metadata.label}
-        </Label>
-      </div>
-      <div className="flex-1 min-w-0">
-        <PatchWrapper
-          isEditing={context.isPatching}
-          onStartEdit={context.onStartPatch}
-          onPatch={context.onApplyPatch}
-          onCancel={context.onCancelPatch}
-          editComponent={(_errors) => editResult.element}
-          editFieldLifecycle={editResult.lifecycle}
-          id={context.fieldState.name}
-          hint={context.metadata.description}
-          validationError={context.validationError}
-          isValidating={context.isValidating}
-        >
-          {viewElement}
-        </PatchWrapper>
-      </div>
-    </div>
+    <FormControl label={context.metadata.label} required={context.isRequired}>
+      <PatchWrapper
+        isEditing={context.isPatching}
+        onStartEdit={context.onStartPatch}
+        onPatch={context.onApplyPatch}
+        onCancel={context.onCancelPatch}
+        editComponent={(_errors) => editResult.element}
+        editFieldLifecycle={editResult.lifecycle}
+        id={context.fieldState.name}
+        hint={context.metadata.description}
+        validationError={context.validationError}
+        isValidating={context.isValidating}
+      >
+        {viewElement}
+      </PatchWrapper>
+    </FormControl>
   );
 };
 
