@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "build:cli": "tsup --config tsup.config.cli.js",
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
     "dev:test": "PORT=4001 DB_PORT=5435 NODE_ENV=test tsx watch src/index.ts",
     "dev:cli": "npm run build:cli && node dist-cli/index.cjs",
     "cli": "node dist-cli/index.cjs",
