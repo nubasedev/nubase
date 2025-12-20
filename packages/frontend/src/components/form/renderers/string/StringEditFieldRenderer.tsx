@@ -10,22 +10,14 @@ export const StringEditFieldRenderer = ({
   metadata,
 }: EditFieldRendererProps): EditFieldRendererResult => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const hasSelectedRef = useRef(false);
 
   const lifecycle: EditFieldLifecycle = {
     onEnterEdit: () => {
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
-          if (!hasSelectedRef.current) {
-            inputRef.current.select();
-            hasSelectedRef.current = true;
-          }
         }
       }, 0);
-    },
-    onExitEdit: () => {
-      hasSelectedRef.current = false;
     },
   };
 

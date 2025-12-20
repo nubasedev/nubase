@@ -11,22 +11,14 @@ export const MultilineEditFieldRenderer = ({
   metadata,
 }: EditFieldRendererProps): EditFieldRendererResult => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const hasSelectedRef = useRef(false);
 
   const lifecycle: EditFieldLifecycle = {
     onEnterEdit: () => {
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
-          if (!hasSelectedRef.current) {
-            textareaRef.current.select();
-            hasSelectedRef.current = true;
-          }
         }
       }, 0);
-    },
-    onExitEdit: () => {
-      hasSelectedRef.current = false;
     },
   };
 
