@@ -11,7 +11,7 @@ export type ViewFieldRendererProps = {
 
 export type ViewFieldRenderer = (
   props: ViewFieldRendererProps,
-) => React.ReactElement;
+) => React.ReactElement<{ id?: string }>;
 
 export type EditFieldRendererProps = {
   schema: BaseSchema<any>;

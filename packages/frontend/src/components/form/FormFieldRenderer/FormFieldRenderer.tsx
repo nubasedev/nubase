@@ -3,7 +3,6 @@ import { OptionalSchema } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
 import { useState } from "react";
-import { FormControl } from "../../form-controls/FormControl/FormControl";
 import type { PatchResult } from "./PatchWrapper";
 import {
   createFieldRenderer,
@@ -42,6 +41,16 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
     isRequired,
   };
 
+  // Compute validation error for patch mode
+  const isValidating = fieldState.state.meta.isValidating;
+  let validationError: string | undefined;
+  if (fieldState.state.meta.isTouched && !fieldState.state.meta.isValid) {
+    const uniqueErrors = [...new Set(fieldState.state.meta.errors)].filter(
+      (e): e is string => typeof e === "string" && e !== undefined,
+    );
+    validationError = uniqueErrors.join(", ");
+  }
+
   const patchContext = {
     isPatching,
     onStartPatch: () => {
@@ -63,22 +72,10 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       fieldState.handleChange(originalValue);
       setIsPatching(false);
     },
+    validationError,
+    isValidating,
   };
 
-  const fieldElement = createFieldRenderer(mode, context, patchContext);
-
-  // Show hint in edit mode, or in patch mode when actively patching
-  const showHint = mode === "edit" || (mode === "patch" && isPatching);
-
-  return (
-    <FormControl
-      label={metadata.label}
-      hint={showHint ? metadata.description : undefined}
-      field={fieldState} // Always use TanStack Form validation
-      required={isRequired}
-      layout="horizontal"
-    >
-      {fieldElement}
-    </FormControl>
-  );
+  // Each mode (edit, view, patch) handles its own FormControl wrapping
+  return createFieldRenderer(mode, context, patchContext);
 };

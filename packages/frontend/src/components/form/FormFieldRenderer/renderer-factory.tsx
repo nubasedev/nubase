@@ -1,5 +1,7 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
+import { FormControl } from "../../form-controls/FormControl/FormControl";
+import { Label } from "../../form-controls/Label/Label";
 import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
 import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
@@ -102,23 +104,32 @@ export interface PatchContext extends FormFieldRendererContext {
   onApplyPatch: () => Promise<PatchResult>;
   onCancelPatch: () => void;
   editFieldLifecycle?: EditFieldLifecycle;
+  validationError?: string;
+  isValidating?: boolean;
 }
 
-export const createEditRenderer = (context: FormFieldRendererContext) => {
+/**
+ * Creates the raw edit field element (without FormControl wrapper).
+ * Used internally by the wrapped renderers.
+ */
+const createRawEditRenderer = (context: FormFieldRendererContext) => {
   const renderer = resolveEditRenderer(
     context.metadata.renderer,
     context.schema.type,
   );
-  const result = renderer({
+  return renderer({
     schema: context.schema,
     fieldState: context.fieldState,
     hasError: context.hasError,
     metadata: context.metadata,
   });
-  return result;
 };
 
-export const createViewRenderer = (context: FormFieldRendererContext) => {
+/**
+ * Creates the raw view field element (without FormControl wrapper).
+ * Used internally by the wrapped renderers.
+ */
+const createRawViewRenderer = (context: FormFieldRendererContext) => {
   const renderer = resolveViewRenderer(
     context.metadata.renderer,
     context.schema.type,
@@ -130,22 +141,79 @@ export const createViewRenderer = (context: FormFieldRendererContext) => {
   });
 };
 
-export const createPatchRenderer = (context: PatchContext) => {
-  const viewElement = createViewRenderer(context);
-  const editResult = createEditRenderer(context);
+/**
+ * Creates an edit field wrapped in FormControl with label, hint, and validation.
+ */
+export const createEditRenderer = (context: FormFieldRendererContext) => {
+  const result = createRawEditRenderer(context);
+
+  const element = (
+    <FormControl
+      label={context.metadata.label}
+      hint={context.metadata.description}
+      field={context.fieldState}
+      required={context.isRequired}
+      layout="horizontal"
+    >
+      {result.element}
+    </FormControl>
+  );
+
+  return { element, lifecycle: result.lifecycle };
+};
+
+/**
+ * Creates a view field wrapped in FormControl with label only (no hint/validation).
+ */
+export const createViewRenderer = (context: FormFieldRendererContext) => {
+  const viewElement = createRawViewRenderer(context);
 
   return (
-    <PatchWrapper
-      isEditing={context.isPatching}
-      onStartEdit={context.onStartPatch}
-      onPatch={context.onApplyPatch}
-      onCancel={context.onCancelPatch}
-      editComponent={(_errors) => editResult.element}
-      editFieldLifecycle={editResult.lifecycle}
-      id={context.fieldState.name}
+    <FormControl
+      label={context.metadata.label}
+      required={context.isRequired}
+      layout="horizontal"
     >
       {viewElement}
-    </PatchWrapper>
+    </FormControl>
+  );
+};
+
+/**
+ * Creates a patch field with:
+ * - View mode: Label + view element (no hint)
+ * - Edit mode: Label + edit element + floating action bar with hint/validation
+ */
+export const createPatchRenderer = (context: PatchContext) => {
+  const viewElement = createRawViewRenderer(context);
+  const editResult = createRawEditRenderer(context);
+
+  // In patch mode, we handle the layout ourselves
+  // The label is always shown, but hint/validation only appears in the floating bar when editing
+  return (
+    <div className="flex items-start gap-4">
+      <div className="w-32 shrink-0 pt-2">
+        <Label htmlFor={context.fieldState.name} required={context.isRequired}>
+          {context.metadata.label}
+        </Label>
+      </div>
+      <div className="flex-1 min-w-0">
+        <PatchWrapper
+          isEditing={context.isPatching}
+          onStartEdit={context.onStartPatch}
+          onPatch={context.onApplyPatch}
+          onCancel={context.onCancelPatch}
+          editComponent={(_errors) => editResult.element}
+          editFieldLifecycle={editResult.lifecycle}
+          id={context.fieldState.name}
+          hint={context.metadata.description}
+          validationError={context.validationError}
+          isValidating={context.isValidating}
+        >
+          {viewElement}
+        </PatchWrapper>
+      </div>
+    </div>
   );
 };
 

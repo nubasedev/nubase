@@ -24,6 +24,9 @@ interface PatchWrapperProps {
   editComponent: EditComponentRenderer;
   editFieldLifecycle?: EditFieldLifecycle;
   id?: string;
+  hint?: string;
+  validationError?: string;
+  isValidating?: boolean;
 }
 
 // Threshold in pixels - if mouse moves more than this, it's a selection not a click
@@ -38,6 +41,9 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   editComponent,
   editFieldLifecycle,
   id,
+  hint,
+  validationError,
+  isValidating,
 }) => {
   const [isPatching, setIsPatching] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -146,26 +152,23 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 
   if (isEditing) {
     const errorsToShow = hasUserModified ? [] : validationErrors;
+    // Determine what message to show in the floating bar (priority: network errors > validation > validating > hint)
+    const showNetworkErrors = errorsToShow.length > 0;
+    const showValidationError =
+      !showNetworkErrors && validationError && !hasUserModified;
+    const showValidating =
+      !showNetworkErrors && !showValidationError && isValidating;
+    const showHint =
+      !showNetworkErrors && !showValidationError && !showValidating && hint;
 
     return (
-      <div ref={wrapperRef} id={id}>
+      <div ref={wrapperRef} id={id} className="relative">
         <div onInput={handleUserModification} onChange={handleUserModification}>
           {editComponent(errorsToShow)}
         </div>
 
-        {/* Network errors only - validation errors shown by FormControl */}
-        {errorsToShow.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {errorsToShow.map((error, index) => (
-              <div key={index} className="text-destructive text-sm px-2">
-                {error}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Action buttons */}
-        <div className="flex gap-2 mt-2 p-2 bg-muted rounded-lg shadow-xl">
+        {/* Floating action bar with hint/validation/errors */}
+        <div className="absolute left-0 top-full mt-2 flex items-center gap-2 p-2 bg-muted rounded-lg shadow-xl z-10">
           <Button variant="default" onClick={handlePatch} disabled={isPatching}>
             {isPatching ? (
               <ActivityIndicator
@@ -184,6 +187,22 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
           >
             <X className="w-4 h-4" aria-label="Cancel changes" />
           </Button>
+
+          {/* Hint, validation, or error message */}
+          {showNetworkErrors && (
+            <div className="text-destructive text-xs">
+              {errorsToShow.join(", ")}
+            </div>
+          )}
+          {showValidationError && (
+            <div className="text-destructive text-xs">{validationError}</div>
+          )}
+          {showValidating && (
+            <div className="text-muted-foreground text-xs">Validating...</div>
+          )}
+          {showHint && (
+            <div className="text-muted-foreground text-xs">{hint}</div>
+          )}
         </div>
       </div>
     );
