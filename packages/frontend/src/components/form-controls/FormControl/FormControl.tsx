@@ -1,10 +1,8 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import type React from "react";
 import { forwardRef } from "react";
-import { FormControlHorizontalLayout } from "./FormControlHorizontalLayout";
-import { FormControlVerticalLayout } from "./FormControlVerticalLayout";
-
-export type FormControlLayout = "vertical" | "horizontal";
+import { cn } from "../../../styling/cn";
+import { Label } from "../Label/Label";
 
 export interface FormControlProps extends React.HTMLAttributes<HTMLDivElement> {
   label?: string;
@@ -13,22 +11,11 @@ export interface FormControlProps extends React.HTMLAttributes<HTMLDivElement> {
   required?: boolean;
   children: React.ReactElement<{ id?: string }>;
   field?: AnyFieldApi; // Optional field for TanStack form integration
-  layout?: FormControlLayout; // Layout option, defaults to vertical
 }
 
 const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
   (
-    {
-      className,
-      label,
-      hint,
-      error,
-      required,
-      children,
-      field,
-      layout = "vertical",
-      ...props
-    },
+    { className, label, hint, error, required, children, field, ...props },
     ref,
   ) => {
     // Determine error state - prioritize explicit error, then field errors
@@ -50,24 +37,48 @@ const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
       }
     }
 
-    const layoutProps = {
-      ref,
-      className,
-      label,
-      hint,
-      displayError,
-      hasError,
-      isValidating,
-      required,
-      children,
-      ...props,
-    };
+    const childId = children.props.id;
 
-    if (layout === "horizontal") {
-      return <FormControlHorizontalLayout {...layoutProps} />;
-    }
-
-    return <FormControlVerticalLayout {...layoutProps} />;
+    return (
+      <div
+        ref={ref}
+        className={cn("flex items-start gap-4", className)}
+        data-component="FormControl"
+        {...props}
+      >
+        {label && (
+          <div className="w-32 shrink-0 pt-2">
+            <Label htmlFor={childId} required={required}>
+              {label}
+            </Label>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          {children}
+          {hint && !hasError && !isValidating && (
+            <div
+              id={`${childId}-hint`}
+              className="mt-1 text-xs text-muted-foreground"
+            >
+              {hint}
+            </div>
+          )}
+          {isValidating && (
+            <div className="mt-1 text-xs text-muted-foreground">
+              Validating...
+            </div>
+          )}
+          {hasError && displayError && (
+            <div
+              id={`${childId}-error`}
+              className="mt-1 text-xs text-destructive"
+            >
+              {displayError}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   },
 );
 

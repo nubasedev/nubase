@@ -153,7 +153,6 @@ export const createEditRenderer = (context: FormFieldRendererContext) => {
       hint={context.metadata.description}
       field={context.fieldState}
       required={context.isRequired}
-      layout="horizontal"
     >
       {result.element}
     </FormControl>
@@ -169,11 +168,7 @@ export const createViewRenderer = (context: FormFieldRendererContext) => {
   const viewElement = createRawViewRenderer(context);
 
   return (
-    <FormControl
-      label={context.metadata.label}
-      required={context.isRequired}
-      layout="horizontal"
-    >
+    <FormControl label={context.metadata.label} required={context.isRequired}>
       {viewElement}
     </FormControl>
   );

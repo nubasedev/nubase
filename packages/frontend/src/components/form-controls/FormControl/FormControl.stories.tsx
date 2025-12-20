@@ -13,10 +13,6 @@ const meta: Meta<typeof FormControl> = {
     required: {
       control: "boolean",
     },
-    layout: {
-      control: "select",
-      options: ["vertical", "horizontal"],
-    },
   },
 };
 
@@ -106,64 +102,19 @@ export const Validating: Story = {
   },
 };
 
-export const HorizontalLayout: Story = {
-  args: {
-    label: "Email Address",
-    layout: "horizontal",
-    children: (
-      <TextInput
-        id="email-horizontal"
-        type="email"
-        placeholder="Enter your email"
-      />
-    ),
-  },
-};
-
-export const HorizontalWithError: Story = {
-  args: {
-    label: "Password",
-    layout: "horizontal",
-    required: true,
-    error: "Password must be at least 8 characters",
-    children: (
-      <TextInput
-        id="password-horizontal"
-        type="password"
-        placeholder="Enter your password"
-      />
-    ),
-  },
-};
-
-export const HorizontalWithHint: Story = {
-  args: {
-    label: "Username",
-    layout: "horizontal",
-    hint: "Must be unique and contain only letters and numbers",
-    children: (
-      <TextInput id="username-horizontal" placeholder="Choose a username" />
-    ),
-  },
-};
-
-export const HorizontalFormExample: Story = {
+export const FormExample: Story = {
   render: () => (
     <div className="w-full max-w-md space-y-4">
-      <FormControl label="First Name" layout="horizontal" required>
+      <FormControl label="First Name" required>
         <TextInput id="firstName" placeholder="John" />
       </FormControl>
-      <FormControl label="Last Name" layout="horizontal" required>
+      <FormControl label="Last Name" required>
         <TextInput id="lastName" placeholder="Doe" />
       </FormControl>
-      <FormControl label="Email" layout="horizontal">
+      <FormControl label="Email">
         <TextInput id="email" type="email" placeholder="john@example.com" />
       </FormControl>
-      <FormControl
-        label="Phone"
-        layout="horizontal"
-        hint="Include country code"
-      >
+      <FormControl label="Phone" hint="Include country code">
         <TextInput id="phone" type="tel" placeholder="+1 (555) 123-4567" />
       </FormControl>
     </div>
