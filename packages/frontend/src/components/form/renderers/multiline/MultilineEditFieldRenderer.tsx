@@ -1,9 +1,17 @@
 import type React from "react";
-import { useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/styling/cn";
 import { textInputVariants } from "../../../form-controls/controls/TextInput/TextInput";
 import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
+
+/**
+ * Adjusts the textarea height to fit its content without scrollbars.
+ */
+const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
+  textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+};
 
 export const MultilineEditFieldRenderer = ({
   fieldState,
@@ -12,14 +20,30 @@ export const MultilineEditFieldRenderer = ({
 }: EditFieldRendererProps): EditFieldRendererResult => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Auto-resize on initial render - useLayoutEffect runs synchronously before paint to prevent flicker
+  useLayoutEffect(() => {
+    if (textareaRef.current) {
+      adjustTextareaHeight(textareaRef.current);
+    }
+  }, []);
+
   const lifecycle: EditFieldLifecycle = {
     onEnterEdit: () => {
       setTimeout(() => {
         if (textareaRef.current) {
           textareaRef.current.focus();
+          // Move cursor to the end
+          const length = textareaRef.current.value.length;
+          textareaRef.current.setSelectionRange(length, length);
+          adjustTextareaHeight(textareaRef.current);
         }
       }, 0);
     },
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    fieldState.handleChange(e.target.value);
+    adjustTextareaHeight(e.target);
   };
 
   const element = (
@@ -29,13 +53,14 @@ export const MultilineEditFieldRenderer = ({
       name={fieldState.name}
       onBlur={fieldState.handleBlur}
       value={fieldState.state.value ?? ""}
-      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-        fieldState.handleChange(e.target.value)
-      }
+      onChange={handleChange}
       placeholder={metadata.description}
       aria-invalid={hasError}
-      className={cn(textInputVariants(), "h-auto min-h-24 py-2 resize-y")}
-      rows={4}
+      className={cn(
+        textInputVariants(),
+        "min-h-24 py-2 resize-none overflow-hidden",
+      )}
+      rows={3}
     />
   );
 
