@@ -26,6 +26,9 @@ interface PatchWrapperProps {
   id?: string;
 }
 
+// Threshold in pixels - if mouse moves more than this, it's a selection not a click
+const SELECTION_THRESHOLD = 5;
+
 export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   children,
   isEditing,
@@ -41,7 +44,12 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   const [hasUserModified, setHasUserModified] = useState(false);
   const prevIsEditingRef = useRef(isEditing);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
 
+  /**
+   * Resets the local state and delegates to the parent's cancel handler.
+   * Called when user clicks outside, presses ESC, or clicks the cancel button.
+   */
   const handleCancel = useCallback(() => {
     setValidationErrors([]);
     setHasUserModified(false);
@@ -100,6 +108,10 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
     };
   }, [isEditing, handleCancel]);
 
+  /**
+   * Submits the current field value to the server via the onPatch callback.
+   * Handles loading state, success/error responses, and displays validation errors.
+   */
   const handlePatch = async () => {
     setIsPatching(true);
     setHasUserModified(false);
@@ -121,6 +133,10 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
     }
   };
 
+  /**
+   * Tracks when the user starts modifying the field value.
+   * Clears any existing validation errors to give the user a fresh start.
+   */
   const handleUserModification = () => {
     if (!hasUserModified) {
       setHasUserModified(true);
@@ -173,15 +189,54 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
     );
   }
 
+  /**
+   * Records the mouse position when the user starts pressing.
+   * Used to distinguish between a click and a text selection drag.
+   */
+  const handleMouseDown = (e: React.MouseEvent) => {
+    mouseDownPosRef.current = { x: e.clientX, y: e.clientY };
+  };
+
+  /**
+   * Determines whether the user clicked or dragged to select text.
+   * If the mouse moved less than SELECTION_THRESHOLD pixels, it's a click and we enter edit mode.
+   * If the mouse moved more, the user is selecting text, so we don't enter edit mode.
+   * This mimics Jira's inline edit behavior.
+   */
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!mouseDownPosRef.current) return;
+
+    const deltaX = Math.abs(e.clientX - mouseDownPosRef.current.x);
+    const deltaY = Math.abs(e.clientY - mouseDownPosRef.current.y);
+    const didMove =
+      deltaX > SELECTION_THRESHOLD || deltaY > SELECTION_THRESHOLD;
+
+    mouseDownPosRef.current = null;
+
+    // Only enter edit mode if it was a click (no significant mouse movement)
+    if (!didMove) {
+      onStartEdit();
+    }
+  };
+
+  // Using div instead of button to allow text selection while still supporting click-to-edit
   return (
-    <button
-      type="button"
-      className="w-full text-left cursor-pointer rounded hover:bg-muted transition-colors duration-200 border-none bg-transparent p-0"
-      onClick={onStartEdit}
+    // biome-ignore lint/a11y/useSemanticElements: div required for text selection, button would prevent it
+    <div
+      className="w-full text-left cursor-text rounded hover:bg-muted transition-colors duration-200 select-text"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      role="button"
+      tabIndex={0}
       aria-label="Click to edit"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onStartEdit();
+        }
+      }}
       id={id}
     >
       {children}
-    </button>
+    </div>
   );
 };
