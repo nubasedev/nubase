@@ -8,7 +8,7 @@ test.describe("Ticket Management", () => {
     // Fill in the ticket form
     await page.fill('input[name="title"]', "Test Ticket Title");
     await page.fill(
-      'input[name="description"]',
+      'textarea[name="description"]',
       "This is a test ticket description",
     );
 
@@ -40,7 +40,10 @@ test.describe("Ticket Management", () => {
     await page.goto("/r/ticket/create");
 
     // Leave title empty, fill description
-    await page.fill('input[name="description"]', "Description without title");
+    await page.fill(
+      'textarea[name="description"]',
+      "Description without title",
+    );
 
     // Try to submit
     await page.click('[data-testid="form-submit-button"]');

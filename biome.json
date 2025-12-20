@@ -24,7 +24,9 @@
       "!**/.docusaurus",
       "!**/.claude",
       "!**/.claude-flow",
-      "!**/theme.css"
+      "!**/theme.css",
+      "!**/playwright-report",
+      "!**/test-results"
     ]
   },
   "formatter": {

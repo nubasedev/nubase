@@ -131,7 +131,7 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
             ): Promise<PatchResult> => {
               if (mode === "patch" && onPatch && fieldState) {
                 // Force validation to run on the current value
-                await fieldState.validate();
+                await fieldState.validate("submit");
 
                 // Check TanStack Form's validation state
                 // Don't return validation errors - FormControl already shows them
