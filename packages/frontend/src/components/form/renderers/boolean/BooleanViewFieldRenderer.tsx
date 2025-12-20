@@ -5,7 +5,7 @@ export const BooleanViewFieldRenderer = ({
 }: ViewFieldRendererProps) => {
   const value = fieldState.state.value;
   return (
-    <div className="flex h-9 w-full min-w-0 px-3 py-1 rounded-md border border-transparent text-base text-foreground">
+    <div className="flex w-full min-w-0 px-3 py-1 rounded-md border border-transparent text-base text-foreground">
       {value ? "Yes" : "No"}
     </div>
   );
