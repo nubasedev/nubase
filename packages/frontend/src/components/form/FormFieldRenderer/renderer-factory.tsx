@@ -1,14 +1,34 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import {
-  editFieldRenderers,
-  unsupportedRenderer,
-} from "./edit-field-renderers";
+import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
+import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
+import { NumberEditFieldRenderer } from "../renderers/number/NumberEditFieldRenderer";
+import { NumberViewFieldRenderer } from "../renderers/number/NumberViewFieldRenderer";
+import { StringEditFieldRenderer } from "../renderers/string/StringEditFieldRenderer";
+import { StringViewFieldRenderer } from "../renderers/string/StringViewFieldRenderer";
+import type {
+  EditFieldRenderer,
+  EditFieldRendererMap,
+  ViewFieldRendererMap,
+} from "../renderers/types";
+import { UnsupportedEditFieldRenderer } from "../renderers/unsupported/UnsupportedEditFieldRenderer";
+import { UnsupportedViewFieldRenderer } from "../renderers/unsupported/UnsupportedViewFieldRenderer";
 import { type PatchResult, PatchWrapper } from "./PatchWrapper";
-import {
-  unsupportedViewRenderer,
-  viewFieldRenderers,
-} from "./view-field-renderers";
+
+const viewFieldRenderers: ViewFieldRendererMap = {
+  string: StringViewFieldRenderer,
+  number: NumberViewFieldRenderer,
+  boolean: BooleanViewFieldRenderer,
+};
+
+const editFieldRenderers: EditFieldRendererMap = {
+  string: StringEditFieldRenderer,
+  number: NumberEditFieldRenderer,
+  boolean: BooleanEditFieldRenderer,
+};
+
+const unsupportedViewRenderer = UnsupportedViewFieldRenderer;
+const unsupportedEditRenderer: EditFieldRenderer = UnsupportedEditFieldRenderer;
 
 export interface EditFieldLifecycle {
   onEnterEdit?: () => void;
@@ -33,7 +53,7 @@ export interface PatchContext extends FormFieldRendererContext {
 
 export const createEditRenderer = (context: FormFieldRendererContext) => {
   const renderer =
-    editFieldRenderers[context.schema.type] || unsupportedRenderer;
+    editFieldRenderers[context.schema.type] || unsupportedEditRenderer;
   const result = renderer({
     schema: context.schema,
     fieldState: context.fieldState,

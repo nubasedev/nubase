@@ -406,6 +406,14 @@ Refer to `packages/frontend/src/theme/theme.css` for available color classes. Co
 - Components should have a single, well-designed default size
 - Only implement size variants when there is a clear use case and explicit requirement
 
+### Field Renderers
+
+The field renderers are located in `packages/frontend/src/components/form/renderers/`. This folder has a specific convention:
+
+- Each renderer type has its own subfolder (e.g., `string/`, `number/`, `boolean/`, `unsupported/`)
+- Import renderers directly from their specific files (e.g., `from "../renderers/string/StringEditFieldRenderer"`)
+- The renderer maps are defined in `renderer-factory.tsx`, not in an index file
+
 ## Storybook Guidelines
 
 ### Story Naming Convention
