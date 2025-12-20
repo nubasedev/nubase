@@ -2,7 +2,7 @@ import type { ObjectOutput } from "@nubase/core";
 import { type FC, useEffect, useState } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
-import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
+import { DataState } from "../../../data-state";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
@@ -20,6 +20,7 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
   const { view, params, onPatch: onPatchCallback, onError } = props;
   const context = useNubaseContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const [initialData, setInitialData] = useState<Record<string, any> | null>(
     null,
   );
@@ -28,6 +29,7 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     const loadData = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         const contextWithParams = {
           ...context,
           params: params || undefined,
@@ -36,8 +38,10 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
           context: contextWithParams as any,
         });
         setInitialData(response.data);
-      } catch (error) {
-        onError?.(error as Error);
+      } catch (err) {
+        const loadError = err as Error;
+        setError(loadError);
+        onError?.(loadError);
       } finally {
         setIsLoading(false);
       }
@@ -46,27 +50,25 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     loadData();
   }, [params, context, onError, view.onLoad]); // Re-load if params change
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <ActivityIndicator size="lg" aria-label="Loading resource data..." />
-      </div>
-    );
-  }
-
-  if (!initialData) {
-    return <div>Failed to load resource data</div>;
-  }
-
   return (
-    <ResourceViewForm
-      view={view}
-      initialData={initialData}
-      params={params}
-      onPatch={onPatchCallback}
-      onError={onError}
-      context={context}
-    />
+    <DataState
+      isLoading={isLoading}
+      error={error}
+      isEmpty={!initialData}
+      emptyMessage="Failed to load resource data"
+      loadingLabel="Loading resource data..."
+    >
+      {initialData && (
+        <ResourceViewForm
+          view={view}
+          initialData={initialData}
+          params={params}
+          onPatch={onPatchCallback}
+          onError={onError}
+          context={context}
+        />
+      )}
+    </DataState>
   );
 };
 

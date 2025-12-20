@@ -13,11 +13,11 @@ import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
-import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import type { Column } from "../../../data-grid/types";
+import { DataState } from "../../../data-state";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 
 // Default column widths based on field types
@@ -301,43 +301,33 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     wrapActionsWithInvalidation,
   ]);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <ActivityIndicator size="lg" aria-label="Loading search results..." />
-      </div>
-    );
-  }
-
-  // Show empty state if no data
-  if (data.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-64 text-muted-foreground">
-        No items found
-      </div>
-    );
-  }
-
   return (
-    <div className="h-full w-full">
-      <ResourceContextProvider
-        resourceType={resourceName || "unknown"}
-        selectedIds={selectedRows}
-      >
-        <div className="flex flex-col h-full space-y-2">
-          {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
-          <div className="flex-1">
-            <DataGrid
-              columns={columns}
-              rows={data}
-              className="h-full w-full"
-              selectedRows={selectedRows}
-              onSelectedRowsChange={setSelectedRows}
-              rowKeyGetter={(row) => row[idField] || row}
-            />
+    <DataState
+      isLoading={isLoading}
+      error={error as Error | null}
+      isEmpty={data.length === 0}
+      loadingLabel="Loading search results..."
+    >
+      <div className="h-full w-full">
+        <ResourceContextProvider
+          resourceType={resourceName || "unknown"}
+          selectedIds={selectedRows}
+        >
+          <div className="flex flex-col h-full space-y-2">
+            {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
+            <div className="flex-1">
+              <DataGrid
+                columns={columns}
+                rows={data}
+                className="h-full w-full"
+                selectedRows={selectedRows}
+                onSelectedRowsChange={setSelectedRows}
+                rowKeyGetter={(row) => row[idField] || row}
+              />
+            </div>
           </div>
-        </div>
-      </ResourceContextProvider>
-    </div>
+        </ResourceContextProvider>
+      </div>
+    </DataState>
   );
 };

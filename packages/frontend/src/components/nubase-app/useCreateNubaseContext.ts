@@ -19,7 +19,6 @@ import { NavigationHistoryTracker } from "../../navigation/navigation-history-tr
 import { router } from "../../routes/router";
 import { useDialog } from "../floating/dialog";
 import { useModal } from "../floating/modal";
-import { showToast } from "../floating/toast";
 import {
   initializeNubaseApp,
   type NubaseInitializationData,
@@ -98,7 +97,6 @@ export function useCreateNubaseContext({
       try {
         const errorListener: ErrorListener = (error) => {
           console.error("API request failed:", error);
-          showToast(error.message || "An error occurred", "error");
         };
 
         typedApiClient = createTypedApiClient(
