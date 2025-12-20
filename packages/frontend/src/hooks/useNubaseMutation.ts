@@ -63,7 +63,7 @@ export function useNubaseMutation<TData = any, TVariables = any>({
     mutationFn: async (variables: TVariables) => {
       return mutationFn(variables, context);
     },
-    onSuccess: async (data, variables, mutationContext) => {
+    onSuccess: async (data, variables, onMutateResult, mutationContext) => {
       // Invalidate specified queries
       for (const queryKey of invalidateQueries) {
         if (typeof queryKey === "string") {
@@ -82,7 +82,12 @@ export function useNubaseMutation<TData = any, TVariables = any>({
 
       // Call the original onSuccess if provided
       if (options.onSuccess) {
-        await options.onSuccess(data, variables, mutationContext);
+        await options.onSuccess(
+          data,
+          variables,
+          onMutateResult,
+          mutationContext,
+        );
       }
     },
     ...options,

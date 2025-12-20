@@ -13,7 +13,20 @@ export interface SchemaFormConfiguration<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TData = any,
 > {
-  api: ReactFormExtendedApi<TData, any, any, any, any, any, any, any, any, any>;
+  api: ReactFormExtendedApi<
+    TData,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any,
+    any
+  >;
   schema: TSchema;
   mode: "edit" | "view" | "patch";
   onPatch?: (fieldName: string, value: any) => Promise<void>;

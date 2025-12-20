@@ -22,6 +22,7 @@
     "dist", // This is the key
     "build", // And this one
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "vite.config.ts"
   ]
 }
