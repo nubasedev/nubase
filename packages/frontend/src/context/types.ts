@@ -2,6 +2,7 @@ import type { Infer, ObjectSchema } from "@nubase/core";
 import type { QueryClient } from "@tanstack/react-query";
 import type { AnyRouter } from "@tanstack/react-router";
 import type { ResourceActionsExecutor } from "../actions/ResourceActionsExecutor";
+import type { AuthenticationController } from "../authentication/types";
 import type { CommandRegistry, Keybinding } from "../commands/types";
 import type { UseDialogResult } from "../components/floating/dialog";
 import type { UseModalResult } from "../components/floating/modal";
@@ -50,4 +51,9 @@ export interface NubaseContextData<
   params: TParamsSchema extends ObjectSchema<any>
     ? Infer<TParamsSchema>
     : undefined;
+  /**
+   * Authentication controller for managing user authentication.
+   * Null if no authentication is configured.
+   */
+  authentication: AuthenticationController | null;
 }

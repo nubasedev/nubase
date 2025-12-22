@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
+import { handleGetMe, handleLogin, handleLogout } from "./api/routes/auth";
 import { testUtils } from "./api/routes/test-utils";
 import {
   handleDeleteTicket,
@@ -17,9 +18,19 @@ loadEnvironment();
 
 export const app = new Hono();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+  }),
+);
 
 app.get("/", getRoot);
+
+// Auth routes
+app.post("/auth/login", handleLogin);
+app.post("/auth/logout", handleLogout);
+app.get("/auth/me", handleGetMe);
 
 // Tickets - RESTful routes with type safety
 app.get("/tickets", handleGetTickets);

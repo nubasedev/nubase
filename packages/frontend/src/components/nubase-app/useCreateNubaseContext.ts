@@ -134,6 +134,7 @@ export function useCreateNubaseContext({
       router,
       navigationHistory: navigationHistoryTracker,
       params: undefined,
+      authentication: initializationData.config.authentication || null,
     };
 
     return nubaseContextDataInternal;

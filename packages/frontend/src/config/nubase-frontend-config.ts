@@ -1,3 +1,4 @@
+import type { AuthenticationController } from "../authentication/types";
 import type { Keybinding } from "../commands/types";
 import type { TreeNavigatorItem } from "../components/navigation/searchable-tree-navigator/TreeNavigatorItem";
 import type { GlobalActionsConfig } from "./global-action";
@@ -35,4 +36,15 @@ export type NubaseFrontendConfig<TApiEndpoints = any> = {
   keybindings?: Keybinding[];
   themeIds?: string[];
   defaultThemeId?: "light" | "dark";
+  /**
+   * Authentication controller for managing user authentication.
+   * When provided, enables authentication features like auto-redirect to signin.
+   */
+  authentication?: AuthenticationController;
+  /**
+   * Routes that don't require authentication.
+   * Users can access these routes without being logged in.
+   * Default: ['/signin']
+   */
+  publicRoutes?: string[];
 };

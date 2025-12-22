@@ -1,10 +1,12 @@
 #!/usr/bin/env tsx
 
 import { faker } from "@faker-js/faker";
+import bcrypt from "bcrypt";
 import type { InferInsertModel } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";
 import { getDb } from "./helpers/drizzle";
 import { ticketsTable } from "./schema/ticket";
+import { usersTable } from "./schema/user";
 
 // Load environment variables
 loadEnvironment();
@@ -60,12 +62,43 @@ function generateFakeTicket(): NewTicket {
 }
 
 /**
+ * Seed the users table with a test user
+ */
+async function seedUsers() {
+  console.log("👤 Seeding users...");
+
+  const db = getDb();
+
+  // Clear existing users before seeding
+  await db.delete(usersTable);
+
+  // Create a test user with hashed password
+  const passwordHash = await bcrypt.hash("password123", 12);
+
+  const insertedUsers = await db
+    .insert(usersTable)
+    .values({
+      email: "admin@example.com",
+      username: "admin",
+      passwordHash,
+    })
+    .returning();
+
+  console.log(
+    `✅ Created user: ${insertedUsers[0].username} (password: password123)`,
+  );
+}
+
+/**
  * Seed the database with fake tickets
  */
 async function seedTickets(count: number = DEFAULT_TICKET_COUNT) {
   console.log(`🌱 Starting database seed with ${count} tickets...`);
 
   const db = getDb();
+
+  // Seed users first
+  await seedUsers();
 
   // Clear existing tickets before seeding
   console.log("🗑️  Clearing existing tickets...");

@@ -13,6 +13,14 @@ export type {
 } from "./actions/types";
 export { useActionExecutor } from "./actions/useActionExecutor";
 export * from "./actions/utils";
+// Export authentication types
+export type {
+  AuthenticatedUser,
+  AuthenticationController,
+  AuthenticationState,
+  AuthenticationStateListener,
+  LoginCredentials,
+} from "./authentication";
 export * from "./commands";
 // Export commands namespace for easier importing
 export * as commands from "./commands/definitions";

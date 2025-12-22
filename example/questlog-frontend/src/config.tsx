@@ -6,7 +6,11 @@ import {
 } from "@nubase/frontend";
 import { Home, Plus } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
+import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { ticketResource } from "./resources/ticket";
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const authController = new QuestlogAuthController(apiBaseUrl);
 
 export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   appName: "Questlog",
@@ -39,8 +43,10 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
       },
     ],
   }),
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
+  apiBaseUrl: apiBaseUrl,
   apiEndpoints: apiEndpoints,
   themeIds: ["dark", "light", "dracula", "terminal"],
   defaultThemeId: "dark",
+  authentication: authController,
+  publicRoutes: ["/signin"],
 };
