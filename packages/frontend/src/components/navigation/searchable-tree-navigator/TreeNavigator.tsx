@@ -8,11 +8,14 @@ export interface TreeNavigatorProps {
   searchInputRef?: RefObject<HTMLInputElement>;
   selectedItemId?: string;
   onSelectionChange?: (itemId: string) => void;
+  /** Test ID for the navigator container */
+  "data-testid"?: string;
 }
 
 const TreeNavigatorComponent = ({
   items,
   searchInputRef,
+  "data-testid": testId,
 }: TreeNavigatorProps) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -142,7 +145,7 @@ const TreeNavigatorComponent = ({
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1" data-testid={testId}>
       {flatItems.map((item, index) => (
         <MenuItemComponent
           key={item.id}
@@ -153,6 +156,7 @@ const TreeNavigatorComponent = ({
           itemRef={(el) => {
             itemRefs.current[index] = el;
           }}
+          data-testid={testId ? `${testId}-item-${item.id}` : undefined}
         />
       ))}
     </div>

@@ -72,10 +72,11 @@ export const workbenchSetTheme = createCommand({
 
     context.modal.openModal({
       content: (
-        <ModalFrame>
+        <ModalFrame data-testid="theme-picker">
           <SearchableTreeNavigator
             items={themeItems}
             placeHolder="Search themes..."
+            data-testid="theme-picker-navigator"
           />
         </ModalFrame>
       ),

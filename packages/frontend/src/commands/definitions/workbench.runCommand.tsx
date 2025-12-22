@@ -21,10 +21,11 @@ export const workbenchRunCommand = createCommand({
     }));
     context.modal.openModal({
       content: (
-        <ModalFrame>
+        <ModalFrame data-testid="command-palette">
           <SearchableTreeNavigator
             items={commandItems}
             placeHolder="Search in commands..."
+            data-testid="command-palette-navigator"
           />
         </ModalFrame>
       ),

@@ -27,6 +27,7 @@ const SearchBar = forwardRef<HTMLButtonElement, SearchBarProps>(
       <button
         ref={ref}
         type="button"
+        data-testid="command-palette-trigger"
         className={cn(
           "flex items-center gap-2 px-3 py-2 min-w-0 flex-1 max-w-md cursor-pointer transition-colors",
           "bg-background border border-border rounded-md",

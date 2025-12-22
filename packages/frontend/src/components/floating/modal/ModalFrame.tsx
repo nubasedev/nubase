@@ -4,11 +4,13 @@ export type ModalFrameProps = {
   onClose?: () => void;
   children: ReactNode;
   className?: string;
+  "data-testid"?: string;
 };
 
 export const ModalFrame: FC<ModalFrameProps> = ({
   children,
   className = "",
+  "data-testid": testId,
 }) => {
   return (
     <div
@@ -17,6 +19,7 @@ export const ModalFrame: FC<ModalFrameProps> = ({
         minHeight: "100px",
         maxHeight: "min(600px, calc(100vh - 2rem))",
       }}
+      data-testid={testId}
     >
       {children}
     </div>

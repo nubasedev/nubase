@@ -20,6 +20,7 @@ interface MenuItemComponentProps {
   isSelected: boolean;
   onToggleExpanded: (itemId: string) => void;
   itemRef: (el: HTMLButtonElement | null) => void;
+  "data-testid"?: string;
 }
 
 export const MenuItemComponent = ({
@@ -27,6 +28,7 @@ export const MenuItemComponent = ({
   isSelected,
   onToggleExpanded,
   itemRef,
+  "data-testid": testId,
 }: MenuItemComponentProps) => {
   const handleClick = () => {
     if (item.hasChildren) {
@@ -92,6 +94,7 @@ export const MenuItemComponent = ({
         to={item.href}
         className={commonClassName}
         style={commonStyle}
+        data-testid={testId}
       >
         {content}
       </Link>
@@ -106,6 +109,7 @@ export const MenuItemComponent = ({
       className={commonClassName}
       style={commonStyle}
       onClick={handleClick}
+      data-testid={testId}
     >
       {content}
     </button>

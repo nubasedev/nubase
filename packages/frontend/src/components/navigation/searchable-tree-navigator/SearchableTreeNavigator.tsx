@@ -15,6 +15,8 @@ export type SearchableTreeNavigatorProps = {
   items: MenuItem[];
   placeHolder: string;
   height?: "full" | number | string;
+  /** Test ID for the navigator container */
+  "data-testid"?: string;
 };
 
 export const SearchableTreeNavigator = forwardRef<
@@ -96,10 +98,13 @@ export const SearchableTreeNavigator = forwardRef<
     return {};
   };
 
+  const testId = props["data-testid"];
+
   return (
     <div
       className={props.height ? "flex flex-col gap-2" : "space-y-2"}
       style={getContainerStyle()}
+      data-testid={testId}
     >
       {/* Search Input - Always visible */}
       <div className="flex-shrink-0">
@@ -108,6 +113,7 @@ export const SearchableTreeNavigator = forwardRef<
           placeholder={props.placeHolder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          data-testid={testId ? `${testId}-search` : undefined}
         />
       </div>
 
@@ -116,6 +122,7 @@ export const SearchableTreeNavigator = forwardRef<
         <TreeNavigator
           items={filteredItems}
           searchInputRef={internalRef as RefObject<HTMLInputElement>}
+          data-testid={testId ? `${testId}-list` : undefined}
         />
       </div>
     </div>
