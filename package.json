@@ -14,7 +14,6 @@
     "test": "turbo run test",
     "format-and-lint": "biome check .",
     "format-and-lint:fix": "biome check . --write",
-    "storybook": "turbo run storybook",
     "build:core": "cd packages/core && npm run build",
     "build:frontend": "cd packages/frontend && npm run build",
     "build:backend": "cd packages/backend && npm run build",
