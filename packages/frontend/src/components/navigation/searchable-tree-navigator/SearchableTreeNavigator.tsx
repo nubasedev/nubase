@@ -26,11 +26,28 @@ export const SearchableTreeNavigator = forwardRef<
   // Expose the internal ref through the forwarded ref
   useImperativeHandle(ref, () => internalRef.current as HTMLInputElement, []);
 
-  // Focus the search input when the component comes into view
+  // Focus the search input when the component comes into view.
+  // We use a double requestAnimationFrame to ensure focus happens after any
+  // HeadlessUI focus restoration from a previous modal closing.
+  //
+  // The problem: When a user clicks an item in a modal (e.g., "Set Theme" in the
+  // command palette), the click handler closes the current modal and opens a new one.
+  // HeadlessUI's Dialog restores focus to where it was before the modal opened,
+  // which can race with our focus() call. A single rAF isn't enough because:
+  //   1st rAF: React has rendered, but HeadlessUI focus trap may still be initializing
+  //   2nd rAF: HeadlessUI has completed its focus management, we can safely focus
+  //
+  // This ensures keyboard navigation works whether the modal was opened via
+  // keyboard shortcut (Cmd+K) or mouse click.
   useEffect(() => {
-    if (internalRef.current) {
-      internalRef.current.focus();
-    }
+    const focusInput = () => {
+      if (internalRef.current) {
+        internalRef.current.focus();
+      }
+    };
+    requestAnimationFrame(() => {
+      requestAnimationFrame(focusInput);
+    });
   }, []);
 
   // Filter items based on search query (flattens tree structure for search)
