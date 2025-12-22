@@ -2,7 +2,7 @@ import { nu } from "@nubase/core";
 import { Database, Folder } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
+import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
 // Schema for command arguments
@@ -26,7 +26,7 @@ const workbenchOpenResourceOperationArgsSchema = nu.object({
 export const workbenchOpenResourceOperation = createCommand({
   id: "workbench.openResourceOperation",
   name: "Open Resource Operation",
-  icon: <Database />,
+  icon: Database,
   argsSchema: workbenchOpenResourceOperationArgsSchema.optional(),
   execute: (context, args) => {
     // If both resourceId and operation are provided, navigate directly
@@ -44,11 +44,8 @@ export const workbenchOpenResourceOperation = createCommand({
           },
         });
         return;
-      } else {
-        console.warn(
-          `Resource "${resourceId}" or view "${operation}" not found`,
-        );
       }
+      console.warn(`Resource "${resourceId}" or view "${operation}" not found`);
     }
     const resources = context.config?.resources || {};
     const resourceEntries = Object.entries(resources);
@@ -70,7 +67,7 @@ export const workbenchOpenResourceOperation = createCommand({
     }
 
     // Create flat list of resource operations
-    const resourceItems: TreeNavigatorItem[] = [];
+    const resourceItems: MenuItem[] = [];
     const filterOperation = args?.operation; // Filter by operation if provided
 
     for (const [resourceId, resource] of resourceEntries) {
@@ -81,8 +78,8 @@ export const workbenchOpenResourceOperation = createCommand({
         if (!filterOperation) {
           resourceItems.push({
             id: resourceId,
-            icon: <Database />,
-            title: resourceId,
+            icon: Database,
+            label: resourceId,
             subtitle: "No views available",
           });
         }
@@ -93,10 +90,10 @@ export const workbenchOpenResourceOperation = createCommand({
           if (!filterOperation || viewId === filterOperation) {
             resourceItems.push({
               id: `${resourceId}.${viewId}`,
-              icon: <Folder />,
-              title: `${resourceId} - ${viewId}`,
+              icon: Folder,
+              label: `${resourceId} - ${viewId}`,
               subtitle: `${viewId} view for ${resourceId}`,
-              onNavigate: () => {
+              onExecute: () => {
                 context.modal.closeModal();
                 context.router.navigate({
                   to: "/r/$resourceName/$operation",
@@ -119,7 +116,7 @@ export const workbenchOpenResourceOperation = createCommand({
           <ModalFrame>
             <div className="p-4 text-center">
               <p className="text-foreground">
-                No "${filterOperation}" views available
+                No "{filterOperation}" views available
               </p>
             </div>
           </ModalFrame>

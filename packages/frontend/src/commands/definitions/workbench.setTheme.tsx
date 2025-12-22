@@ -3,7 +3,7 @@ import { Moon, Palette, Sun } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { showToast } from "../../components/floating/toast";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
+import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
 // Schema for command arguments
@@ -20,7 +20,7 @@ const workbenchSetThemeArgsSchema = nu.object({
 export const workbenchSetTheme = createCommand({
   id: "workbench.setTheme",
   name: "Set Theme",
-  icon: <Palette />,
+  icon: Palette,
   argsSchema: workbenchSetThemeArgsSchema.optional(),
   execute: (context, args) => {
     // If themeId is provided, set it directly
@@ -32,13 +32,12 @@ export const workbenchSetTheme = createCommand({
       if (availableThemes.includes(themeId)) {
         context.theming.setActiveThemeId(themeId);
         return;
-      } else {
-        showToast(
-          `Theme "${themeId}" not found. Available themes: ${availableThemes.join(", ")}`,
-          "default",
-        );
-        // Fall through to show theme selection modal
       }
+      showToast(
+        `Theme "${themeId}" not found. Available themes: ${availableThemes.join(", ")}`,
+        "default",
+      );
+      // Fall through to show theme selection modal
     }
     // Get available themes from context or use defaults
     const availableThemes = context.config?.themeIds || ["light", "dark"];
@@ -53,14 +52,14 @@ export const workbenchSetTheme = createCommand({
       .sort((a, b) => a.localeCompare(b));
     const sortedThemes = [currentTheme, ...otherThemes];
 
-    const themeItems: TreeNavigatorItem[] = sortedThemes.map((themeId) => {
+    const themeItems: MenuItem[] = sortedThemes.map((themeId) => {
       const theme = context.theming.themeMap[themeId];
       return {
         id: themeId,
-        icon: theme?.type === "dark" ? <Moon /> : <Sun />,
-        title: theme?.name || themeId,
+        icon: theme?.type === "dark" ? Moon : Sun,
+        label: theme?.name || themeId,
         subtitle: `Switch to ${themeId} theme`,
-        onNavigate: () => {
+        onExecute: () => {
           context.modal.closeModal();
           context.theming.setActiveThemeId(themeId);
         },

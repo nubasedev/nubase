@@ -1,13 +1,13 @@
 import { Clock } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
+import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
 export const workbenchViewHistory = createCommand({
   id: "workbench.viewHistory",
   name: "View Navigation History",
-  icon: <Clock />,
+  icon: Clock,
   execute: (context) => {
     const navigationHistory = context.navigationHistory;
     const history = navigationHistory.getHistory();
@@ -28,16 +28,16 @@ export const workbenchViewHistory = createCommand({
       return;
     }
 
-    // Create tree items from history
-    const historyItems: TreeNavigatorItem[] = history.map((entry, index) => ({
+    // Create menu items from history
+    const historyItems: MenuItem[] = history.map((entry, index) => ({
       id: entry.id,
-      icon: <Clock />,
-      title: entry.title,
+      icon: Clock,
+      label: entry.title,
       subtitle:
         index === 0
           ? "Current page"
           : navigationHistory.formatTimeAgo(entry.timestamp),
-      onNavigate: () => {
+      onExecute: () => {
         context.modal.closeModal();
         navigationHistory.navigateToEntry(entry);
       },

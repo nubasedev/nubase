@@ -1,12 +1,16 @@
 import type { AuthenticationController } from "../authentication/types";
 import type { Keybinding } from "../commands/types";
-import type { TreeNavigatorItem } from "../components/navigation/searchable-tree-navigator/TreeNavigatorItem";
+import type { MenuItem } from "../menu/types";
 import type { GlobalActionsConfig } from "./global-action";
 import type { ResourceDescriptor } from "./resource";
 
 export type NubaseFrontendConfig<TApiEndpoints = any> = {
   appName: string;
-  mainMenu: TreeNavigatorItem[];
+  /**
+   * Main navigation menu items.
+   * Supports hierarchical structure with commands, links, or direct handlers.
+   */
+  mainMenu: MenuItem[];
   /**
    * Maps a resource-id to a resource descriptor configuration.
    * Resources define all available operations (create, view, edit, etc.) for entities.

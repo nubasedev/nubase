@@ -1,20 +1,20 @@
 import { Terminal } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
+import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
 export const workbenchRunCommand = createCommand({
   id: "workbench.runCommand",
   name: "Run Command",
-  icon: <Terminal />,
+  icon: Terminal,
   execute: (context) => {
     const commands = context.commands.getAllCommands();
-    const commandItems: TreeNavigatorItem[] = commands.map((command) => ({
+    const commandItems: MenuItem[] = commands.map((command) => ({
       id: command.id,
-      icon: command.icon || <Terminal className="h-4 w-4" />,
-      title: command.name,
-      onNavigate: () => {
+      icon: command.icon || Terminal,
+      label: command.name,
+      onExecute: () => {
         context.modal.closeModal();
         context.commands.execute(command.id);
       },

@@ -8,9 +8,9 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import type { MenuItem } from "../../../menu/types";
 import { showToast } from "../../floating/toast";
 import { SearchableTreeNavigator } from "./SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "./TreeNavigator";
 
 const meta: Meta<typeof SearchableTreeNavigator> = {
   title: "Navigation/SearchableTreeNavigator",
@@ -24,122 +24,122 @@ const meta: Meta<typeof SearchableTreeNavigator> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Flat structure items (no hierarchy) - using onNavigate callbacks
-const flatItemsWithCallbacks: TreeNavigatorItem[] = [
+// Flat structure items (no hierarchy) - using onExecute callbacks
+const flatItemsWithCallbacks: MenuItem[] = [
   {
     id: "dashboard",
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    title: "Go to Dashboard",
-    subtitle: "View your main dashboard (onNavigate)",
-    onNavigate: () => {
+    icon: LayoutDashboard,
+    label: "Go to Dashboard",
+    subtitle: "View your main dashboard (onExecute)",
+    onExecute: () => {
       showToast("Navigated to Dashboard", "default");
     },
   },
   {
     id: "create",
-    icon: <Plus className="h-4 w-4" />,
-    title: "Create New Item",
-    subtitle: "Add a new item to your collection (onNavigate)",
-    onNavigate: () => {
+    icon: Plus,
+    label: "Create New Item",
+    subtitle: "Add a new item to your collection (onExecute)",
+    onExecute: () => {
       showToast("Creating new item...", "default");
     },
   },
   {
     id: "settings",
-    icon: <Settings className="h-4 w-4" />,
-    title: "View Settings",
-    subtitle: "Configure your preferences (onNavigate)",
-    onNavigate: () => {
+    icon: Settings,
+    label: "View Settings",
+    subtitle: "Configure your preferences (onExecute)",
+    onExecute: () => {
       showToast("Settings panel opened", "default");
     },
   },
 ];
 
 // Flat structure items using href navigation
-const flatItemsWithHrefs: TreeNavigatorItem[] = [
+const flatItemsWithHrefs: MenuItem[] = [
   {
     id: "dashboard-href",
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    title: "Dashboard Page",
+    icon: LayoutDashboard,
+    label: "Dashboard Page",
     subtitle: "Navigate to dashboard page (href)",
     href: "/dashboard",
   },
   {
     id: "docs-href",
-    icon: <Book className="h-4 w-4" />,
-    title: "Documentation",
+    icon: Book,
+    label: "Documentation",
     subtitle: "Read the documentation (href)",
     href: "/docs",
   },
   {
     id: "team-href",
-    icon: <Users className="h-4 w-4" />,
-    title: "Team Page",
+    icon: Users,
+    label: "Team Page",
     subtitle: "View team members (href)",
     href: "/team",
   },
   {
     id: "files-href",
-    icon: <File className="h-4 w-4" />,
-    title: "File Manager",
+    icon: File,
+    label: "File Manager",
     subtitle: "Browse files (href)",
     href: "/files",
   },
 ];
 
-// Mixed tree with both href and onNavigate navigation
-const treeItemsMixed: TreeNavigatorItem[] = [
+// Mixed tree with both href and onExecute navigation
+const treeItemsMixed: MenuItem[] = [
   {
     id: "dashboard",
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    title: "Dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
     subtitle: "Main application dashboard (href)",
     href: "/dashboard",
   },
   {
     id: "projects",
-    icon: <Folder className="h-4 w-4" />,
-    title: "Projects",
+    icon: Folder,
+    label: "Projects",
     subtitle: "Project management folder (expandable)",
-    onNavigate: () => {
+    onExecute: () => {
       showToast("Navigated to Projects", "default");
     },
     children: [
       {
         id: "project-1",
-        icon: <File className="h-4 w-4" />,
-        title: "Website Redesign",
+        icon: File,
+        label: "Website Redesign",
         subtitle: "Frontend project (href)",
         href: "/projects/website-redesign",
       },
       {
         id: "project-2",
-        icon: <File className="h-4 w-4" />,
-        title: "Mobile App",
-        subtitle: "React Native project (onNavigate)",
-        onNavigate: () => {
+        icon: File,
+        label: "Mobile App",
+        subtitle: "React Native project (onExecute)",
+        onExecute: () => {
           showToast("Opened Mobile App project", "default");
         },
       },
       {
         id: "project-3",
-        icon: <Folder className="h-4 w-4" />,
-        title: "Legacy Projects",
+        icon: Folder,
+        label: "Legacy Projects",
         subtitle: "Older projects (expandable)",
         children: [
           {
             id: "legacy-1",
-            icon: <File className="h-4 w-4" />,
-            title: "Old Website",
+            icon: File,
+            label: "Old Website",
             subtitle: "Previous version (href)",
             href: "/projects/legacy/old-website",
           },
           {
             id: "legacy-2",
-            icon: <File className="h-4 w-4" />,
-            title: "Archive",
-            subtitle: "Archived projects (onNavigate)",
-            onNavigate: () => {
+            icon: File,
+            label: "Archive",
+            subtitle: "Archived projects (onExecute)",
+            onExecute: () => {
               showToast("Opened Archive", "default");
             },
           },
@@ -149,28 +149,28 @@ const treeItemsMixed: TreeNavigatorItem[] = [
   },
   {
     id: "team",
-    icon: <Users className="h-4 w-4" />,
-    title: "Team Management",
+    icon: Users,
+    label: "Team Management",
     subtitle: "Manage team members and roles",
-    onNavigate: () => {
+    onExecute: () => {
       showToast("Navigated to Team Management", "default");
     },
     children: [
       {
         id: "developers",
-        icon: <Users className="h-4 w-4" />,
-        title: "Developers",
+        icon: Users,
+        label: "Developers",
         subtitle: "Development team members",
-        onNavigate: () => {
+        onExecute: () => {
           showToast("Opened Developers section", "default");
         },
       },
       {
         id: "designers",
-        icon: <Users className="h-4 w-4" />,
-        title: "Designers",
+        icon: Users,
+        label: "Designers",
         subtitle: "Design team members",
-        onNavigate: () => {
+        onExecute: () => {
           showToast("Opened Designers section", "default");
         },
       },
@@ -178,10 +178,10 @@ const treeItemsMixed: TreeNavigatorItem[] = [
   },
   {
     id: "settings",
-    icon: <Settings className="h-4 w-4" />,
-    title: "Settings",
+    icon: Settings,
+    label: "Settings",
     subtitle: "Application settings and preferences",
-    onNavigate: () => {
+    onExecute: () => {
       showToast("Navigated to Settings", "default");
     },
   },
@@ -191,7 +191,7 @@ const treeItemsMixed: TreeNavigatorItem[] = [
 export const FlatWithCallbacks: Story = {
   args: {
     items: flatItemsWithCallbacks,
-    placeHolder: "Search actions (onNavigate)...",
+    placeHolder: "Search actions (onExecute)...",
   },
 };
 
@@ -210,40 +210,40 @@ export const TreeStructureMixed: Story = {
   },
 };
 
-const deepTreeItems: TreeNavigatorItem[] = [
+const deepTreeItems: MenuItem[] = [
   {
     id: "level1-1",
-    icon: <Folder className="h-4 w-4" />,
-    title: "Level 1 - Folder A",
+    icon: Folder,
+    label: "Level 1 - Folder A",
     subtitle: "Top level folder",
-    onNavigate: () => {
+    onExecute: () => {
       showToast("Navigated to Level 1 - Folder A", "default");
     },
     children: [
       {
         id: "level2-1",
-        icon: <Folder className="h-4 w-4" />,
-        title: "Level 2 - Subfolder A1",
+        icon: Folder,
+        label: "Level 2 - Subfolder A1",
         subtitle: "Second level folder",
-        onNavigate: () => {
+        onExecute: () => {
           showToast("Navigated to Level 2 - Subfolder A1", "default");
         },
         children: [
           {
             id: "level3-1",
-            icon: <Folder className="h-4 w-4" />,
-            title: "Level 3 - Deep Folder",
+            icon: Folder,
+            label: "Level 3 - Deep Folder",
             subtitle: "Third level folder",
-            onNavigate: () => {
+            onExecute: () => {
               showToast("Navigated to Level 3 - Deep Folder", "default");
             },
             children: [
               {
                 id: "level4-1",
-                icon: <File className="h-4 w-4" />,
-                title: "Level 4 - Deep File",
+                icon: File,
+                label: "Level 4 - Deep File",
                 subtitle: "Fourth level file",
-                onNavigate: () => {
+                onExecute: () => {
                   showToast("Opened Level 4 - Deep File", "default");
                 },
               },
@@ -251,10 +251,10 @@ const deepTreeItems: TreeNavigatorItem[] = [
           },
           {
             id: "level3-2",
-            icon: <File className="h-4 w-4" />,
-            title: "Level 3 - File",
+            icon: File,
+            label: "Level 3 - File",
             subtitle: "Third level file",
-            onNavigate: () => {
+            onExecute: () => {
               showToast("Opened Level 3 - File", "default");
             },
           },
@@ -262,10 +262,10 @@ const deepTreeItems: TreeNavigatorItem[] = [
       },
       {
         id: "level2-2",
-        icon: <File className="h-4 w-4" />,
-        title: "Level 2 - File A1",
+        icon: File,
+        label: "Level 2 - File A1",
         subtitle: "Second level file",
-        onNavigate: () => {
+        onExecute: () => {
           showToast("Opened Level 2 - File A1", "default");
         },
       },
@@ -273,10 +273,10 @@ const deepTreeItems: TreeNavigatorItem[] = [
   },
   {
     id: "level1-2",
-    icon: <File className="h-4 w-4" />,
-    title: "Level 1 - File B",
+    icon: File,
+    label: "Level 1 - File B",
     subtitle: "Top level file",
-    onNavigate: () => {
+    onExecute: () => {
       showToast("Opened Level 1 - File B", "default");
     },
   },
@@ -322,8 +322,8 @@ export const WithStringHeight: Story = {
 };
 
 // Generate many items for scroll testing with height
-const generateManyItems = (count: number): TreeNavigatorItem[] => {
-  const items: TreeNavigatorItem[] = [];
+const generateManyItems = (count: number): MenuItem[] => {
+  const items: MenuItem[] = [];
 
   for (let i = 1; i <= count; i++) {
     const hasChildren = i % 5 === 0;
@@ -331,27 +331,31 @@ const generateManyItems = (count: number): TreeNavigatorItem[] => {
     if (hasChildren) {
       items.push({
         id: `category-${i}`,
-        icon: <Folder className="h-4 w-4" />,
-        title: `Category ${i}`,
+        icon: Folder,
+        label: `Category ${i}`,
         subtitle: `${Math.floor(Math.random() * 50)} items`,
         children: Array.from(
           { length: Math.floor(Math.random() * 8) + 3 },
           (_, j) => ({
             id: `item-${i}-${j + 1}`,
-            icon: <File className="h-4 w-4" />,
-            title: `Item ${i}.${j + 1}`,
+            icon: File,
+            label: `Item ${i}.${j + 1}`,
             subtitle: `Subcategory ${j + 1}`,
-            onNavigate: () => showToast(`Opened Item ${i}.${j + 1}`),
+            onExecute: () => {
+              showToast(`Opened Item ${i}.${j + 1}`);
+            },
           }),
         ),
       });
     } else {
       items.push({
         id: `item-${i}`,
-        icon: <File className="h-4 w-4" />,
-        title: `Navigation Item ${i}`,
+        icon: File,
+        label: `Navigation Item ${i}`,
         subtitle: `Description for item ${i}`,
-        onNavigate: () => showToast(`Opened Item ${i}`),
+        onExecute: () => {
+          showToast(`Opened Item ${i}`);
+        },
       });
     }
   }

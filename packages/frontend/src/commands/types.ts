@@ -1,7 +1,7 @@
 import type { BaseSchema, Infer } from "@nubase/core";
-import type { ReactNode } from "react";
 import type { Action } from "../actions/types";
 import type { NubaseContextData } from "../context/types";
+import type { IconComponent } from "../menu/types";
 
 export type { NubaseContextData };
 
@@ -15,7 +15,11 @@ export interface TypedCommandDefinition<
 > {
   id: string;
   name: string;
-  icon?: ReactNode;
+  /**
+   * Icon component (not instantiated) for this command.
+   * Used in command palettes, menus, and anywhere the command is displayed.
+   */
+  icon?: IconComponent;
   /**
    * Optional schema for validating command arguments.
    * If provided, arguments will be validated at runtime.

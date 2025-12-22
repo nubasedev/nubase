@@ -39,6 +39,8 @@ export * from "./http/http-client";
 export * from "./http/typed-api-client";
 // Export keybinding utilities
 export * from "./keybindings";
+// Export menu types
+export * from "./menu";
 // Export utilities
 export * from "./utils/network-errors";
 

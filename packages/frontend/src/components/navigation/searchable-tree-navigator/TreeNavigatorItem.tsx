@@ -1,44 +1,38 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import type { MenuItem } from "../../../menu/types";
 import { cn } from "../../../styling/cn";
 
-export interface TreeNavigatorItem {
-  id: string;
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  onNavigate?: () => void;
-  href?: string;
-  onFocus?: () => void;
-  children?: TreeNavigatorItem[];
-}
-
-export interface FlatItem extends TreeNavigatorItem {
+/**
+ * Internal flattened representation of a MenuItem for rendering.
+ * Adds hierarchy metadata needed for tree display.
+ */
+export interface FlatMenuItem extends MenuItem {
   level: number;
   parentId?: string;
   isExpanded?: boolean;
   hasChildren: boolean;
 }
 
-interface TreeNavigatorItemComponentProps {
-  item: FlatItem;
+interface MenuItemComponentProps {
+  item: FlatMenuItem;
   index: number;
   isSelected: boolean;
   onToggleExpanded: (itemId: string) => void;
   itemRef: (el: HTMLButtonElement | null) => void;
 }
 
-export const TreeNavigatorItemComponent = ({
+export const MenuItemComponent = ({
   item,
   isSelected,
   onToggleExpanded,
   itemRef,
-}: TreeNavigatorItemComponentProps) => {
+}: MenuItemComponentProps) => {
   const handleClick = () => {
     if (item.hasChildren) {
       onToggleExpanded(item.id);
-    } else if (item.onNavigate) {
-      item.onNavigate();
+    } else if (item.onExecute) {
+      item.onExecute();
     }
   };
 
@@ -51,11 +45,17 @@ export const TreeNavigatorItemComponent = ({
 
   const commonStyle = { paddingLeft: `${12 + item.level * 16}px` };
 
+  // Instantiate icon if it's a component type
+  const IconComponent = item.icon;
+  const iconElement = IconComponent ? (
+    <IconComponent size={16} className="flex-shrink-0" />
+  ) : null;
+
   const content = (
     <>
-      <div className="flex-shrink-0">{item.icon}</div>
+      {iconElement && <div className="flex-shrink-0">{iconElement}</div>}
       <div className="flex-1 min-w-0">
-        <div className="font-medium truncate">{item.title}</div>
+        <div className="font-medium truncate">{item.label}</div>
         {item.subtitle && (
           <div
             className={cn(
@@ -111,3 +111,12 @@ export const TreeNavigatorItemComponent = ({
     </button>
   );
 };
+
+// Legacy exports for backward compatibility during migration
+// TODO: Remove these after full migration
+/** @deprecated Use MenuItem from '../../menu/types' instead */
+export type TreeNavigatorItem = MenuItem;
+/** @deprecated Use FlatMenuItem instead */
+export type FlatItem = FlatMenuItem;
+/** @deprecated Use MenuItemComponent instead */
+export const TreeNavigatorItemComponent = MenuItemComponent;

@@ -1,10 +1,10 @@
 import { forwardRef } from "react";
+import type { MenuItem } from "../../../menu/types";
 import { cn } from "../../../styling/cn";
 import { SearchableTreeNavigator } from "../searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../searchable-tree-navigator/TreeNavigatorItem";
 
 export interface MainNavProps extends React.HTMLAttributes<HTMLElement> {
-  items: TreeNavigatorItem[];
+  items: MenuItem[];
   searchPlaceholder?: string;
 }
 

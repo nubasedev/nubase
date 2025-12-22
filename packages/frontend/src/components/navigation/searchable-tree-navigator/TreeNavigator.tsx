@@ -1,13 +1,10 @@
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  type FlatItem,
-  type TreeNavigatorItem,
-  TreeNavigatorItemComponent,
-} from "./TreeNavigatorItem";
+import type { MenuItem } from "../../../menu/types";
+import { type FlatMenuItem, MenuItemComponent } from "./TreeNavigatorItem";
 
 export interface TreeNavigatorProps {
-  items: TreeNavigatorItem[];
+  items: MenuItem[];
   searchInputRef?: RefObject<HTMLInputElement>;
   selectedItemId?: string;
   onSelectionChange?: (itemId: string) => void;
@@ -23,8 +20,8 @@ const TreeNavigatorComponent = ({
 
   // Flatten tree structure for keyboard navigation
   const flattenItems = useCallback(
-    (items: TreeNavigatorItem[], level = 0, parentId?: string): FlatItem[] => {
-      const result: FlatItem[] = [];
+    (items: MenuItem[], level = 0, parentId?: string): FlatMenuItem[] => {
+      const result: FlatMenuItem[] = [];
 
       for (const item of items) {
         const hasChildren = Boolean(item.children?.length);
@@ -98,7 +95,7 @@ const TreeNavigatorComponent = ({
           if (currentItem?.hasChildren) {
             toggleExpanded(currentItem.id);
           } else {
-            currentItem?.onNavigate?.();
+            currentItem?.onExecute?.();
           }
         }
       }
@@ -147,7 +144,7 @@ const TreeNavigatorComponent = ({
   return (
     <div className="space-y-1">
       {flatItems.map((item, index) => (
-        <TreeNavigatorItemComponent
+        <MenuItemComponent
           key={item.id}
           item={item}
           index={index}
@@ -164,9 +161,15 @@ const TreeNavigatorComponent = ({
 
 // Export both names for backward compatibility and new functionality
 export const TreeNavigator = TreeNavigatorComponent;
+/** @deprecated Use TreeNavigator instead */
 export const ListNavigator = TreeNavigatorComponent;
-export type ListNavigatorItem = TreeNavigatorItem;
+/** @deprecated Use MenuItem from '../../menu/types' instead */
+export type ListNavigatorItem = MenuItem;
 export type ListNavigatorProps = TreeNavigatorProps;
 
-// Re-export types from TreeNavigatorItem
-export type { FlatItem, TreeNavigatorItem } from "./TreeNavigatorItem";
+// Re-export types from TreeNavigatorItem for backward compatibility
+export type {
+  FlatItem,
+  FlatMenuItem,
+  TreeNavigatorItem,
+} from "./TreeNavigatorItem";

@@ -7,11 +7,12 @@ import {
   useRef,
   useState,
 } from "react";
+import type { MenuItem } from "../../../menu/types";
 import { SearchTextInput } from "../../form-controls/controls/SearchTextInput/SearchTextInput";
-import { TreeNavigator, type TreeNavigatorItem } from "./TreeNavigator";
+import { TreeNavigator } from "./TreeNavigator";
 
 export type SearchableTreeNavigatorProps = {
-  items: TreeNavigatorItem[];
+  items: MenuItem[];
   placeHolder: string;
   height?: "full" | number | string;
 };
@@ -58,14 +59,12 @@ export const SearchableTreeNavigator = forwardRef<
 
     const query = searchQuery.toLowerCase();
 
-    const flattenAndFilter = (
-      items: TreeNavigatorItem[],
-    ): TreeNavigatorItem[] => {
-      const result: TreeNavigatorItem[] = [];
+    const flattenAndFilter = (items: MenuItem[]): MenuItem[] => {
+      const result: MenuItem[] = [];
 
       for (const item of items) {
         const matchesSearch =
-          item.title.toLowerCase().includes(query) ||
+          item.label?.toLowerCase().includes(query) ||
           item.subtitle?.toLowerCase().includes(query);
 
         if (matchesSearch) {

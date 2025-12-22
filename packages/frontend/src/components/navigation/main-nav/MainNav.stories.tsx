@@ -7,8 +7,8 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import type { MenuItem } from "../../../menu/types";
 import { Dock } from "../../dock/Dock";
-import type { TreeNavigatorItem } from "../searchable-tree-navigator/TreeNavigatorItem";
 import { MainNav } from "./MainNav";
 
 const meta: Meta<typeof MainNav> = {
@@ -32,36 +32,36 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Sample navigation data
-const sampleNavItems: TreeNavigatorItem[] = [
+const sampleNavItems: MenuItem[] = [
   {
     id: "dashboard",
-    icon: <LayoutDashboard size={16} />,
-    title: "Dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
     href: "/dashboard",
   },
   {
     id: "projects",
-    icon: <Folder size={16} />,
-    title: "Projects",
+    icon: Folder,
+    label: "Projects",
     children: [
       {
         id: "project-1",
-        icon: <Folder size={16} />,
-        title: "Project Alpha",
+        icon: Folder,
+        label: "Project Alpha",
         subtitle: "Active project",
         href: "/projects/alpha",
       },
       {
         id: "project-2",
-        icon: <Folder size={16} />,
-        title: "Project Beta",
+        icon: Folder,
+        label: "Project Beta",
         subtitle: "3 tasks pending",
         href: "/projects/beta",
       },
       {
         id: "project-3",
-        icon: <Folder size={16} />,
-        title: "Project Gamma",
+        icon: Folder,
+        label: "Project Gamma",
         subtitle: "Archived",
         href: "/projects/gamma",
       },
@@ -69,45 +69,45 @@ const sampleNavItems: TreeNavigatorItem[] = [
   },
   {
     id: "team",
-    icon: <Users size={16} />,
-    title: "Team",
+    icon: Users,
+    label: "Team",
     children: [
       {
         id: "members",
-        icon: <Users size={16} />,
-        title: "Members",
+        icon: Users,
+        label: "Members",
         subtitle: "12 active members",
         href: "/team/members",
       },
       {
         id: "roles",
-        icon: <Settings size={16} />,
-        title: "Roles & Permissions",
+        icon: Settings,
+        label: "Roles & Permissions",
         href: "/team/roles",
       },
       {
         id: "departments",
-        icon: <Folder size={16} />,
-        title: "Departments",
+        icon: Folder,
+        label: "Departments",
         children: [
           {
             id: "engineering",
-            icon: <Folder size={16} />,
-            title: "Engineering",
+            icon: Folder,
+            label: "Engineering",
             subtitle: "8 developers",
             href: "/team/departments/engineering",
           },
           {
             id: "design",
-            icon: <Folder size={16} />,
-            title: "Design",
+            icon: Folder,
+            label: "Design",
             subtitle: "3 designers",
             href: "/team/departments/design",
           },
           {
             id: "product",
-            icon: <Folder size={16} />,
-            title: "Product",
+            icon: Folder,
+            label: "Product",
             subtitle: "2 managers",
             href: "/team/departments/product",
           },
@@ -117,92 +117,92 @@ const sampleNavItems: TreeNavigatorItem[] = [
   },
   {
     id: "analytics",
-    icon: <LayoutDashboard size={16} />,
-    title: "Analytics",
+    icon: LayoutDashboard,
+    label: "Analytics",
     children: [
       {
         id: "reports",
-        icon: <LayoutDashboard size={16} />,
-        title: "Reports",
+        icon: LayoutDashboard,
+        label: "Reports",
         href: "/analytics/reports",
       },
       {
         id: "insights",
-        icon: <LayoutDashboard size={16} />,
-        title: "Insights",
+        icon: LayoutDashboard,
+        label: "Insights",
         href: "/analytics/insights",
       },
     ],
   },
   {
     id: "settings",
-    icon: <Settings size={16} />,
-    title: "Settings",
+    icon: Settings,
+    label: "Settings",
     children: [
       {
         id: "general",
-        icon: <Settings size={16} />,
-        title: "General",
+        icon: Settings,
+        label: "General",
         href: "/settings/general",
       },
       {
         id: "integrations",
-        icon: <Settings size={16} />,
-        title: "Integrations",
+        icon: Settings,
+        label: "Integrations",
         subtitle: "New features available",
         href: "/settings/integrations",
       },
       {
         id: "billing",
-        icon: <Settings size={16} />,
-        title: "Billing",
+        icon: Settings,
+        label: "Billing",
         href: "/settings/billing",
       },
     ],
   },
 ];
 
-const minimalNavItems: TreeNavigatorItem[] = [
+const minimalNavItems: MenuItem[] = [
   {
     id: "home",
-    icon: <Home size={16} />,
-    title: "Home",
+    icon: Home,
+    label: "Home",
     href: "/home",
   },
   {
     id: "about",
-    icon: <Home size={16} />,
-    title: "About",
+    icon: Home,
+    label: "About",
     href: "/about",
   },
   {
     id: "contact",
-    icon: <Home size={16} />,
-    title: "Contact",
+    icon: Home,
+    label: "Contact",
     href: "/contact",
   },
 ];
 
-const deepNavItems: TreeNavigatorItem[] = [
+const deepNavItems: MenuItem[] = [
   {
     id: "level1",
-    icon: <Folder size={16} />,
-    title: "Level 1",
+    icon: Folder,
+    label: "Level 1",
     children: [
       {
         id: "level2",
-        icon: <Folder size={16} />,
-        title: "Level 2",
+        icon: Folder,
+        label: "Level 2",
         children: [
           {
             id: "level3",
-            icon: <Folder size={16} />,
-            title: "Level 3",
+            icon: Folder,
+            label: "Level 3",
             children: [
               {
                 id: "level4",
-                icon: <Folder size={16} />,
-                title: "Level 4 Item",
+                icon: Folder,
+                label: "Level 4 Item",
                 href: "/deep/item",
               },
             ],
@@ -214,8 +214,8 @@ const deepNavItems: TreeNavigatorItem[] = [
 ];
 
 // Generate many items for scroll testing
-const generateManyItems = (count: number): TreeNavigatorItem[] => {
-  const items: TreeNavigatorItem[] = [];
+const generateManyItems = (count: number): MenuItem[] => {
+  const items: MenuItem[] = [];
 
   for (let i = 1; i <= count; i++) {
     const hasChildren = i % 5 === 0; // Every 5th item has children
@@ -223,15 +223,15 @@ const generateManyItems = (count: number): TreeNavigatorItem[] => {
     if (hasChildren) {
       items.push({
         id: `category-${i}`,
-        icon: <Folder size={16} />,
-        title: `Category ${i}`,
+        icon: Folder,
+        label: `Category ${i}`,
         subtitle: `${Math.floor(Math.random() * 50)} items`,
         children: Array.from(
           { length: Math.floor(Math.random() * 8) + 3 },
           (_, j) => ({
             id: `item-${i}-${j + 1}`,
-            icon: <ChevronRight size={16} />,
-            title: `Item ${i}.${j + 1}`,
+            icon: ChevronRight,
+            label: `Item ${i}.${j + 1}`,
             subtitle: `Subcategory ${j + 1}`,
             href: `/category/${i}/item/${j + 1}`,
           }),
@@ -240,8 +240,8 @@ const generateManyItems = (count: number): TreeNavigatorItem[] => {
     } else {
       items.push({
         id: `item-${i}`,
-        icon: <Home size={16} />,
-        title: `Navigation Item ${i}`,
+        icon: Home,
+        label: `Navigation Item ${i}`,
         subtitle: `Description for item ${i}`,
         href: `/item/${i}`,
       });

@@ -17,8 +17,8 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   mainMenu: [
     {
       id: "home",
-      icon: <Home size={16} />,
-      title: "Home",
+      icon: Home,
+      label: "Home",
       href: "/",
     },
   ],

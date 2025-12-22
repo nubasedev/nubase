@@ -1,10 +1,10 @@
-import type { TreeNavigatorItem } from "@nubase/frontend";
+import type { MenuItem } from "@nubase/frontend";
 import { Home } from "lucide-react";
 
-export const mainMenu: TreeNavigatorItem[] = [
+export const mainMenu: MenuItem[] = [
   {
     id: "home",
-    icon: <Home size={16} />,
-    title: "Home",
+    icon: Home,
+    label: "Home",
   },
 ];

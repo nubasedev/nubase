@@ -3,9 +3,9 @@ import { Settings } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { showToast } from "../../components/floating/toast";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import type { TreeNavigatorItem } from "../../components/navigation/searchable-tree-navigator/TreeNavigator";
 import { ModalViewRenderer } from "../../components/views/ViewRenderer/modal";
 import type { View } from "../../config/view";
+import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
 // Schema for command arguments
@@ -29,7 +29,7 @@ const workbenchOpenResourceOperationInModalArgsSchema = nu.object({
 export const workbenchOpenResourceOperationInModal = createCommand({
   id: "workbench.openResourceOperationInModal",
   name: "Open Resource Operation in Modal",
-  icon: <Settings />,
+  icon: Settings,
   argsSchema: workbenchOpenResourceOperationInModalArgsSchema.optional(),
   execute: (context, args) => {
     // If both resourceId and operation are provided, open the specific operation directly
@@ -61,11 +61,8 @@ export const workbenchOpenResourceOperationInModal = createCommand({
           showBackdrop: true,
         });
         return;
-      } else {
-        console.warn(
-          `Resource "${resourceId}" or view "${operation}" not found`,
-        );
       }
+      console.warn(`Resource "${resourceId}" or view "${operation}" not found`);
     }
     const resources = context.config?.resources || {};
     const resourceEntries = Object.entries(resources);
@@ -87,7 +84,7 @@ export const workbenchOpenResourceOperationInModal = createCommand({
     }
 
     // Create flat list of resource views
-    const viewItems: TreeNavigatorItem[] = [];
+    const viewItems: MenuItem[] = [];
     const filterView = args?.operation; // Filter by view if provided
 
     for (const [resourceId, resource] of resourceEntries) {
@@ -98,10 +95,10 @@ export const workbenchOpenResourceOperationInModal = createCommand({
         if (!filterView || viewId === filterView) {
           viewItems.push({
             id: `${resourceId}-${viewId}`,
-            icon: <Settings />,
-            title: `${resource.id} → ${view.title}`,
+            icon: Settings,
+            label: `${resource.id} → ${view.title}`,
             subtitle: `Open ${resourceId} ${viewId} view in modal`,
-            onNavigate: () => {
+            onExecute: () => {
               // Close the current modal (the resource selector)
               context.modal.closeModal();
 
@@ -138,7 +135,7 @@ export const workbenchOpenResourceOperationInModal = createCommand({
           <ModalFrame>
             <div className="p-4 text-center">
               <p className="text-foreground">
-                No "${filterView}" views available
+                No "{filterView}" views available
               </p>
             </div>
           </ModalFrame>
