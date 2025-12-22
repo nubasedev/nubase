@@ -4,6 +4,7 @@ import type {
   TokenPayload,
   VerifyTokenResult,
 } from "@nubase/backend";
+import { getCookie } from "@nubase/backend";
 import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
 import { eq } from "drizzle-orm";
@@ -51,8 +52,7 @@ export class QuestlogBackendAuthController
    */
   extractToken(ctx: Context): string | null {
     const cookieHeader = ctx.req.header("Cookie") || "";
-    const cookies = this.parseCookies(cookieHeader);
-    return cookies[COOKIE_NAME] || null;
+    return getCookie(cookieHeader, COOKIE_NAME);
   }
 
   /**
@@ -167,20 +167,6 @@ export class QuestlogBackendAuthController
       email: dbUser.email,
       username: dbUser.username,
     };
-  }
-
-  /**
-   * Simple cookie parser helper.
-   */
-  private parseCookies(cookieHeader: string): Record<string, string> {
-    const cookies: Record<string, string> = {};
-    cookieHeader.split(";").forEach((cookie) => {
-      const [name, ...rest] = cookie.split("=");
-      if (name) {
-        cookies[name.trim()] = rest.join("=").trim();
-      }
-    });
-    return cookies;
   }
 }
 

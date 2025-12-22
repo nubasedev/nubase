@@ -535,6 +535,7 @@ class MyAuthController implements AuthenticationController {
 
 ```typescript
 import type { BackendAuthController, VerifyTokenResult } from "@nubase/backend";
+import { getCookie } from "@nubase/backend";
 import type { Context } from "hono";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -552,8 +553,7 @@ const COOKIE_NAME = "nubase_auth";
 class MyBackendAuthController implements BackendAuthController<MyUser> {
   extractToken(ctx: Context): string | null {
     const cookieHeader = ctx.req.header("Cookie") || "";
-    const match = cookieHeader.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
-    return match ? match[1] : null;
+    return getCookie(cookieHeader, COOKIE_NAME);
   }
 
   async verifyToken(token: string): Promise<VerifyTokenResult<MyUser>> {
