@@ -6,6 +6,8 @@ import type {
 } from "@nubase/core";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { AUTH_USER_KEY } from "./auth/middleware";
+import type { AuthLevel, BackendUser } from "./auth/types";
 
 /**
  * Custom HTTP error class that allows handlers to throw errors with specific status codes.
@@ -43,15 +45,35 @@ export class HttpError extends Error {
  * - toZodWithCoercion() converts: { id: 37 }
  */
 
-export type TypedHandlerContext<T extends RequestSchema> = {
+/**
+ * Context provided to typed handlers.
+ *
+ * @template T - The request schema type
+ * @template TUser - The user type (when auth is required/optional)
+ */
+export type TypedHandlerContext<
+  T extends RequestSchema,
+  TUser extends BackendUser | null = null,
+> = {
   params: InferRequestParams<T>;
   body: InferRequestBody<T>;
   ctx: Context;
+  /**
+   * The authenticated user.
+   * - When auth is 'required': TUser (guaranteed to exist)
+   * - When auth is 'optional': TUser | null
+   * - When auth is 'none': not present (null)
+   */
+  user: TUser;
 };
 
-export type TypedHandler<T extends RequestSchema> = (
-  context: TypedHandlerContext<T>,
-) => Promise<InferResponseBody<T>>;
+/**
+ * Handler function type for typed HTTP handlers.
+ */
+export type TypedHandler<
+  T extends RequestSchema,
+  TUser extends BackendUser | null = null,
+> = (context: TypedHandlerContext<T, TUser>) => Promise<InferResponseBody<T>>;
 
 // Overloaded function signatures for better ergonomics
 export function createTypedHandler<T extends RequestSchema>(
@@ -72,12 +94,21 @@ export function createTypedHandler<T extends RequestSchema>(
 }
 
 // Internal implementation
-function createTypedHandlerInternal<T extends RequestSchema>(
-  schema: T,
-  handler: TypedHandler<T>,
-) {
+function createTypedHandlerInternal<
+  T extends RequestSchema,
+  TUser extends BackendUser | null = null,
+>(schema: T, handler: TypedHandler<T, TUser>, options?: { auth?: AuthLevel }) {
+  const authLevel = options?.auth ?? "none";
+
   return async (c: Context) => {
     try {
+      // Check authentication if required
+      const user = c.get(AUTH_USER_KEY) as TUser | null;
+
+      if (authLevel === "required" && !user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
       // Parse and validate request parameters using schema's built-in coercion
       let params: InferRequestParams<T>;
       try {
@@ -121,10 +152,14 @@ function createTypedHandlerInternal<T extends RequestSchema>(
       }
 
       // Call the handler with typed context
+      // For 'required' auth, user is guaranteed to be non-null
+      // For 'optional' auth, user may be null
+      // For 'none' auth, user is null
       const result = await handler({
         params,
         body,
         ctx: c,
+        user: (authLevel === "required" ? user : (user ?? null)) as TUser,
       });
 
       // Validate response body (optional, for development safety)
@@ -189,13 +224,88 @@ export function createTypedRoutes<T extends TypedRoutes>(routes: T) {
   return honoHandlers;
 }
 
-// New improved API with object parameters
-export function createHttpHandler<T extends RequestSchema>({
-  endpoint,
-  handler,
-}: {
+/**
+ * Options for createHttpHandler.
+ */
+export type CreateHttpHandlerOptions<
+  T extends RequestSchema,
+  TAuth extends AuthLevel = "none",
+  TUser extends BackendUser = BackendUser,
+> = {
+  /**
+   * The endpoint schema defining request/response types.
+   */
   endpoint: T;
-  handler: TypedHandler<T>;
-}): ReturnType<typeof createTypedHandlerInternal> {
-  return createTypedHandlerInternal(endpoint, handler);
+
+  /**
+   * Authentication level for this route.
+   * - 'required': Request must be authenticated. Returns 401 if not. User is guaranteed in handler.
+   * - 'optional': Authentication is optional. User may be null in handler.
+   * - 'none': No authentication check. User is always null. (default)
+   */
+  auth?: TAuth;
+
+  /**
+   * The handler function.
+   * When auth is 'required', user is guaranteed to be non-null.
+   * When auth is 'optional', user may be null.
+   * When auth is 'none', user is null.
+   */
+  handler: TypedHandler<
+    T,
+    TAuth extends "required"
+      ? TUser
+      : TAuth extends "optional"
+        ? TUser | null
+        : null
+  >;
+};
+
+/**
+ * Create a typed HTTP handler with optional authentication.
+ *
+ * @example
+ * ```typescript
+ * // No auth (default)
+ * export const handleGetPublicData = createHttpHandler({
+ *   endpoint: apiEndpoints.getPublicData,
+ *   handler: async ({ body }) => {
+ *     return { data: 'public' };
+ *   },
+ * });
+ *
+ * // Required auth - user is guaranteed
+ * export const handleGetProfile = createHttpHandler({
+ *   endpoint: apiEndpoints.getProfile,
+ *   auth: 'required',
+ *   handler: async ({ body, user }) => {
+ *     // user is guaranteed to exist here
+ *     return { userId: user.id };
+ *   },
+ * });
+ *
+ * // Optional auth - user may be null
+ * export const handleGetContent = createHttpHandler({
+ *   endpoint: apiEndpoints.getContent,
+ *   auth: 'optional',
+ *   handler: async ({ body, user }) => {
+ *     if (user) {
+ *       return { content: 'personalized', userId: user.id };
+ *     }
+ *     return { content: 'generic' };
+ *   },
+ * });
+ * ```
+ */
+export function createHttpHandler<
+  T extends RequestSchema,
+  TAuth extends AuthLevel = "none",
+  TUser extends BackendUser = BackendUser,
+>(
+  options: CreateHttpHandlerOptions<T, TAuth, TUser>,
+): ReturnType<typeof createTypedHandlerInternal> {
+  const { endpoint, handler, auth } = options;
+  return createTypedHandlerInternal(endpoint, handler as TypedHandler<T, any>, {
+    auth,
+  });
 }

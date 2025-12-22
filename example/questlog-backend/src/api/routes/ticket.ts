@@ -2,6 +2,7 @@ import { createHttpHandler } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
+import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
 
@@ -9,9 +10,18 @@ import { ticketsTable } from "../../db/schema/ticket";
 type Ticket = InferSelectModel<typeof ticketsTable>;
 type NewTicket = InferInsertModel<typeof ticketsTable>;
 
-export const handleGetTickets = createHttpHandler({
+/**
+ * Get all tickets - requires authentication.
+ */
+export const handleGetTickets = createHttpHandler<
+  typeof apiEndpoints.getTickets,
+  "required",
+  QuestlogUser
+>({
   endpoint: apiEndpoints.getTickets,
-  handler: async () => {
+  auth: "required",
+  handler: async ({ user }) => {
+    console.log(`User ${user.username} fetching tickets`);
     const db = getDb();
     const tickets: Ticket[] = await db.select().from(ticketsTable);
 
@@ -24,9 +34,18 @@ export const handleGetTickets = createHttpHandler({
   },
 });
 
-export const handleGetTicket = createHttpHandler({
+/**
+ * Get a single ticket - requires authentication.
+ */
+export const handleGetTicket = createHttpHandler<
+  typeof apiEndpoints.getTicket,
+  "required",
+  QuestlogUser
+>({
   endpoint: apiEndpoints.getTicket,
-  handler: async ({ params }) => {
+  auth: "required",
+  handler: async ({ params, user }) => {
+    console.log(`User ${user.username} fetching ticket ${params.id}`);
     const db = getDb();
     const tickets: Ticket[] = await db
       .select()
@@ -46,10 +65,18 @@ export const handleGetTicket = createHttpHandler({
   },
 });
 
-export const handlePostTicket = createHttpHandler({
+/**
+ * Create a new ticket - requires authentication.
+ */
+export const handlePostTicket = createHttpHandler<
+  typeof apiEndpoints.postTicket,
+  "required",
+  QuestlogUser
+>({
   endpoint: apiEndpoints.postTicket,
-  handler: async ({ body }) => {
-    console.log("Received ticket data:", body);
+  auth: "required",
+  handler: async ({ body, user }) => {
+    console.log(`User ${user.username} creating ticket:`, body);
     const db = getDb();
 
     // Type-safe insert data - only include fields that can be inserted
@@ -76,9 +103,18 @@ export const handlePostTicket = createHttpHandler({
   },
 });
 
-export const handlePatchTicket = createHttpHandler({
+/**
+ * Update a ticket - requires authentication.
+ */
+export const handlePatchTicket = createHttpHandler<
+  typeof apiEndpoints.patchTicket,
+  "required",
+  QuestlogUser
+>({
   endpoint: apiEndpoints.patchTicket,
-  handler: async ({ params, body }) => {
+  auth: "required",
+  handler: async ({ params, body, user }) => {
+    console.log(`User ${user.username} updating ticket ${params.id}:`, body);
     const db = getDb();
 
     // Type-safe partial update - only include fields that exist and are not undefined
@@ -109,9 +145,18 @@ export const handlePatchTicket = createHttpHandler({
   },
 });
 
-export const handleDeleteTicket = createHttpHandler({
+/**
+ * Delete a ticket - requires authentication.
+ */
+export const handleDeleteTicket = createHttpHandler<
+  typeof apiEndpoints.deleteTicket,
+  "required",
+  QuestlogUser
+>({
   endpoint: apiEndpoints.deleteTicket,
-  handler: async ({ params }) => {
+  auth: "required",
+  handler: async ({ params, user }) => {
+    console.log(`User ${user.username} deleting ticket ${params.id}`);
     const db = getDb();
 
     const result: Ticket[] = await db

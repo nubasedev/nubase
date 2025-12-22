@@ -1,8 +1,8 @@
 import { serve } from "@hono/node-server";
+import { createAuthHandlers, createAuthMiddleware } from "@nubase/backend";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
-import { handleGetMe, handleLogin, handleLogout } from "./api/routes/auth";
 import { testUtils } from "./api/routes/test-utils";
 import {
   handleDeleteTicket,
@@ -11,6 +11,7 @@ import {
   handlePatchTicket,
   handlePostTicket,
 } from "./api/routes/ticket";
+import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 
 // Load environment variables
@@ -18,6 +19,7 @@ loadEnvironment();
 
 export const app = new Hono();
 
+// CORS middleware
 app.use(
   cors({
     origin: [
@@ -29,12 +31,16 @@ app.use(
   }),
 );
 
+// Auth middleware - extracts and verifies JWT, sets user in context
+app.use("*", createAuthMiddleware({ controller: questlogAuthController }));
+
+// Create auth handlers from the controller
+const authHandlers = createAuthHandlers({ controller: questlogAuthController });
+
 app.get("/", getRoot);
 
-// Auth routes
-app.post("/auth/login", handleLogin);
-app.post("/auth/logout", handleLogout);
-app.get("/auth/me", handleGetMe);
+// Auth routes - using the pre-configured router
+app.route("/auth", authHandlers.routes);
 
 // Tickets - RESTful routes with type safety
 app.get("/tickets", handleGetTickets);

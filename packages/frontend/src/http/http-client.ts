@@ -38,6 +38,7 @@ export class HttpClient {
         headers: config.headers,
         timeout: config.timeout,
         params: config.params,
+        withCredentials: true, // Required for sending cookies in cross-origin requests
       });
 
       return {

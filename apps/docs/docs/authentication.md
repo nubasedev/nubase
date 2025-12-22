@@ -4,20 +4,25 @@ sidebar_position: 11
 
 # Authentication
 
-This guide explains how to add authentication to your Nubase application. The authentication system is designed to be flexible and extensible, supporting username/password login with the architecture to add social login, forgot password, and other features in the future.
+This guide explains how to add authentication to your Nubase application. The authentication system is designed to be flexible and extensible, supporting username/password login with the architecture to add social login, 2FA, and SSO in the future.
 
 ## Overview
 
-Nubase authentication works through an `AuthenticationController` interface that you implement in your application. This design allows you to:
+Nubase authentication works through controller interfaces on both frontend and backend:
+
+- **Frontend `AuthenticationController`** - Manages login UI, state, and cookie handling
+- **Backend `BackendAuthController`** - Handles JWT tokens, route protection, and user verification
+
+This design allows you to:
 
 - Connect to any backend authentication system
-- Use any token storage strategy (cookies, localStorage, etc.)
-- Customize login/logout behavior
+- Use secure HttpOnly cookies for token storage
+- Protect backend routes with type-safe auth levels
 - Add additional authentication methods as needed
 
 ## Quick Start
 
-### 1. Create Your Authentication Controller
+### 1. Create Your Frontend Authentication Controller
 
 Create a class that implements the `AuthenticationController` interface:
 
@@ -28,7 +33,6 @@ import type {
   AuthenticationState,
   AuthenticationStateListener,
   LoginCredentials,
-  AuthenticatedUser,
 } from "@nubase/frontend";
 
 export class MyAuthController implements AuthenticationController {
@@ -127,7 +131,7 @@ export class MyAuthController implements AuthenticationController {
 }
 ```
 
-### 2. Configure Your Application
+### 2. Configure Your Frontend Application
 
 Pass the authentication controller to your `NubaseFrontendConfig`:
 
@@ -152,45 +156,233 @@ export const config: NubaseFrontendConfig = {
 };
 ```
 
-### 3. Set Up Backend Endpoints
+### 3. Create Your Backend Authentication Controller
 
-Your backend needs three endpoints:
-
-#### POST /auth/login
-
-Validates credentials and sets an authentication cookie:
+Create a class that implements the `BackendAuthController` interface:
 
 ```typescript
-// Request body
-{ username: string; password: string }
+// src/auth/MyBackendAuthController.ts
+import type {
+  BackendAuthController,
+  BackendUser,
+  TokenPayload,
+  VerifyTokenResult,
+} from "@nubase/backend";
+import bcrypt from "bcrypt";
+import type { Context } from "hono";
+import jwt from "jsonwebtoken";
 
-// Response body
-{ user: { id: number; email: string; username: string } }
+// Define your user type
+interface MyUser extends BackendUser {
+  id: number;
+  email: string;
+  username: string;
+}
 
-// Also sets HttpOnly cookie with JWT token
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+const JWT_EXPIRY = "1h";
+const COOKIE_NAME = "app_auth";
+
+export class MyBackendAuthController implements BackendAuthController<MyUser> {
+  extractToken(ctx: Context): string | null {
+    const cookieHeader = ctx.req.header("Cookie") || "";
+    const cookies = this.parseCookies(cookieHeader);
+    return cookies[COOKIE_NAME] || null;
+  }
+
+  async verifyToken(token: string): Promise<VerifyTokenResult<MyUser>> {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+      const user = await db.users.findById(decoded.userId);
+
+      if (!user) {
+        return { valid: false, error: "User not found" };
+      }
+
+      return {
+        valid: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        },
+      };
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return { valid: false, error: "Token expired" };
+      }
+      return { valid: false, error: "Invalid token" };
+    }
+  }
+
+  async createToken(user: MyUser): Promise<string> {
+    return jwt.sign(
+      { userId: user.id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRY }
+    );
+  }
+
+  setTokenInResponse(ctx: Context, token: string): void {
+    ctx.header(
+      "Set-Cookie",
+      `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=3600`
+    );
+  }
+
+  clearTokenFromResponse(ctx: Context): void {
+    ctx.header(
+      "Set-Cookie",
+      `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`
+    );
+  }
+
+  async validateCredentials(username: string, password: string): Promise<MyUser | null> {
+    const user = await db.users.findByUsername(username);
+    if (!user) return null;
+
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) return null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+    };
+  }
+
+  private parseCookies(cookieHeader: string): Record<string, string> {
+    const cookies: Record<string, string> = {};
+    cookieHeader.split(";").forEach((cookie) => {
+      const [name, ...rest] = cookie.split("=");
+      if (name) {
+        cookies[name.trim()] = rest.join("=").trim();
+      }
+    });
+    return cookies;
+  }
+}
+
+// Export singleton instance
+export const myAuthController = new MyBackendAuthController();
 ```
 
-#### POST /auth/logout
+### 4. Set Up Backend Middleware and Routes
 
-Clears the authentication cookie:
+Apply the auth middleware and create auth routes using the `createAuthHandlers` utility:
 
 ```typescript
-// Response body
-{ success: boolean }
+// src/index.ts
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { createAuthHandlers, createAuthMiddleware } from "@nubase/backend";
+import { myAuthController } from "./auth/MyBackendAuthController";
+
+const app = new Hono();
+
+// CORS - must come first
+app.use(cors({
+  origin: ["http://localhost:3000"],
+  credentials: true,
+}));
+
+// Auth middleware - extracts and verifies JWT on all routes
+app.use("*", createAuthMiddleware({ controller: myAuthController }));
+
+// Create auth handlers from the controller
+const authHandlers = createAuthHandlers({ controller: myAuthController });
+
+// Mount auth routes - provides /auth/login, /auth/logout, /auth/me
+app.route("/auth", authHandlers.routes);
+
+// ... register other routes
 ```
 
-#### GET /auth/me
+The `createAuthHandlers` utility generates standard login, logout, and getMe handlers from your `BackendAuthController`. It uses the `validateCredentials` method you implemented to verify username/password during login.
 
-Returns the current user from the cookie token:
+**Alternative: Manual Handler Registration**
+
+If you need more control over individual handlers, you can register them separately:
 
 ```typescript
-// Response body
-{ user?: { id: number; email: string; username: string } }
+app.post("/auth/login", authHandlers.login);
+app.post("/auth/logout", authHandlers.logout);
+app.get("/auth/me", authHandlers.getMe);
+```
+
+**Custom Auth Endpoints**
+
+For completely custom auth logic, you can still create handlers manually:
+
+```typescript
+// src/api/routes/auth.ts
+import { createHttpHandler, getAuthController, HttpError } from "@nubase/backend";
+import { apiEndpoints } from "your-schema";
+
+export const handleLogin = createHttpHandler({
+  endpoint: apiEndpoints.login,
+  handler: async ({ body, ctx }) => {
+    const authController = getAuthController(ctx);
+
+    // Custom credential validation
+    const user = await authController.validateCredentials(body.username, body.password);
+    if (!user) {
+      throw new HttpError(401, "Invalid username or password");
+    }
+
+    // Create and set token
+    const token = await authController.createToken(user);
+    authController.setTokenInResponse(ctx, token);
+
+    return { user };
+  },
+});
+```
+
+### 5. Protect Your Routes
+
+Use the `auth` option in `createHttpHandler` to protect routes:
+
+```typescript
+// src/api/routes/tickets.ts
+import { createHttpHandler } from "@nubase/backend";
+
+// Protected route - returns 401 if not authenticated
+export const handleGetTickets = createHttpHandler({
+  endpoint: apiEndpoints.getTickets,
+  auth: "required",
+  handler: async ({ user }) => {
+    // user is guaranteed to exist here
+    console.log(`User ${user.username} fetching tickets`);
+    return await fetchTicketsForUser(user.id);
+  },
+});
+
+// Optional auth - user may be null
+export const handleGetPublicContent = createHttpHandler({
+  endpoint: apiEndpoints.getPublicContent,
+  auth: "optional",
+  handler: async ({ user }) => {
+    if (user) {
+      return { content: "personalized content", userId: user.id };
+    }
+    return { content: "generic content" };
+  },
+});
+
+// No auth (default) - for public endpoints
+export const handleHealthCheck = createHttpHandler({
+  endpoint: apiEndpoints.healthCheck,
+  // auth: "none" is the default
+  handler: async () => {
+    return { status: "ok" };
+  },
+});
 ```
 
 ## Configuration Options
 
-### publicRoutes
+### Frontend: publicRoutes
 
 An array of route prefixes that don't require authentication:
 
@@ -203,11 +395,13 @@ const config: NubaseFrontendConfig = {
 
 Routes not in this list will automatically redirect to `/signin` when the user is not authenticated.
 
-### Default Behavior
+### Backend: Auth Levels
 
-- **Default public routes**: `["/signin"]`
-- **Redirect target**: `/signin` (when unauthenticated)
-- **Cookie handling**: Uses `credentials: "include"` for cross-origin requests
+| Auth Level | Behavior | Handler user Type |
+|------------|----------|-------------------|
+| `"required"` | Returns 401 if not authenticated | `TUser` (guaranteed non-null) |
+| `"optional"` | Allows both authenticated and unauthenticated | `TUser \| null` |
+| `"none"` | No authentication check (default) | `null` |
 
 ## Using Authentication in Components
 
@@ -246,101 +440,6 @@ Nubase provides a built-in sign-in page at `/signin`. It automatically:
 
 You can customize the sign-in experience by creating your own route if needed.
 
-## Backend Implementation Example
-
-Here's a complete backend implementation using Hono and JWT:
-
-```typescript
-// src/api/routes/auth.ts
-import { createHttpHandler } from "@nubase/backend";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { apiEndpoints } from "your-schema";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret";
-const COOKIE_NAME = "app_auth";
-
-export const handleLogin = createHttpHandler({
-  endpoint: apiEndpoints.login,
-  handler: async ({ body, ctx }) => {
-    // Find user in database
-    const user = await findUserByUsername(body.username);
-    if (!user) {
-      throw new Error("Invalid username or password");
-    }
-
-    // Verify password
-    const isValid = await bcrypt.compare(body.password, user.passwordHash);
-    if (!isValid) {
-      throw new Error("Invalid username or password");
-    }
-
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    // Set HttpOnly cookie
-    ctx.header(
-      "Set-Cookie",
-      `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=3600`
-    );
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-      },
-    };
-  },
-});
-
-export const handleLogout = createHttpHandler({
-  endpoint: apiEndpoints.logout,
-  handler: async ({ ctx }) => {
-    ctx.header(
-      "Set-Cookie",
-      `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`
-    );
-    return { success: true };
-  },
-});
-
-export const handleGetMe = createHttpHandler({
-  endpoint: apiEndpoints.getMe,
-  handler: async ({ ctx }) => {
-    const cookieHeader = ctx.req.header("Cookie") || "";
-    const token = parseCookies(cookieHeader)[COOKIE_NAME];
-
-    if (!token) {
-      return { user: undefined };
-    }
-
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-      const user = await findUserById(decoded.userId);
-
-      if (!user) {
-        return { user: undefined };
-      }
-
-      return {
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-        },
-      };
-    } catch {
-      return { user: undefined };
-    }
-  },
-});
-```
-
 ## Security Best Practices
 
 1. **Use HttpOnly cookies** - Prevents JavaScript access to tokens, protecting against XSS
@@ -349,10 +448,13 @@ export const handleGetMe = createHttpHandler({
 4. **Hash passwords properly** - Use bcrypt with a cost factor of 12 or higher
 5. **Use short token expiry** - 1 hour is recommended, with refresh token support
 6. **Configure CORS correctly** - Enable credentials and whitelist your frontend origin
+7. **Use environment variables** - Never hardcode secrets in your code
 
 ## Future Extensibility
 
-The `AuthenticationController` interface is designed to support additional features:
+Both the frontend and backend controller interfaces are designed to support additional features:
+
+### Frontend Extensions
 
 ```typescript
 interface AuthenticationController {
@@ -371,7 +473,28 @@ interface AuthenticationController {
 }
 ```
 
-You can extend your controller implementation to add these methods as your application requirements grow.
+### Backend Extensions
+
+```typescript
+interface BackendAuthController<TUser> {
+  // Current required methods
+  extractToken(ctx: Context): string | null;
+  verifyToken(token: string): Promise<VerifyTokenResult<TUser>>;
+  createToken(user: TUser): Promise<string>;
+  setTokenInResponse(ctx: Context, token: string): void;
+  clearTokenFromResponse(ctx: Context): void;
+  validateCredentials(username: string, password: string): Promise<TUser | null>;
+
+  // Optional methods for future features
+  refreshToken?(token: string): Promise<string | null>;
+  revokeToken?(token: string): Promise<void>;
+  verify2FA?(userId: string | number, code: string): Promise<boolean>;
+  requires2FA?(user: TUser): boolean;
+  validateExternalToken?(provider: string, token: string): Promise<TUser | null>;
+}
+```
+
+You can extend your controller implementations to add these methods as your application requirements grow.
 
 ## Next Steps
 

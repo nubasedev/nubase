@@ -32,6 +32,10 @@ async function globalSetup(_config: FullConfig) {
       "http://localhost:4001/api/test/clear-database",
       {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
       },
     );
 
