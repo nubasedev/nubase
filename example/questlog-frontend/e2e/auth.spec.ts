@@ -101,6 +101,8 @@ test.describe("Authentication", () => {
     await expect(
       authenticatedPage.getByRole("navigation", { name: "Main navigation" }),
     ).toBeVisible();
-    await expect(authenticatedPage.locator("h1")).toContainText("Create Ticket");
+    await expect(authenticatedPage.locator("h1")).toContainText(
+      "Create Ticket",
+    );
   });
 });
