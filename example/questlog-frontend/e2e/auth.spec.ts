@@ -105,4 +105,58 @@ test.describe("Authentication", () => {
       "Create Ticket",
     );
   });
+
+  test("should display user avatar when logged in", async ({
+    authenticatedPage,
+  }) => {
+    // authenticatedPage is already logged in and at home page
+    // Check that the user avatar is visible
+    const userAvatar = authenticatedPage.getByTestId("user-avatar");
+    await expect(userAvatar).toBeVisible();
+
+    // Avatar should show the user's initials (TE for "testuser")
+    await expect(userAvatar).toContainText("TE");
+  });
+
+  test("should sign out successfully when clicking sign out", async ({
+    authenticatedPage,
+  }) => {
+    // authenticatedPage is already logged in and at home page
+    // Click the user avatar to open the dropdown
+    const userAvatar = authenticatedPage.getByTestId("user-avatar");
+    await userAvatar.click();
+
+    // Click the sign out button
+    const signOutButton = authenticatedPage.getByTestId("sign-out-button");
+    await expect(signOutButton).toBeVisible();
+    await signOutButton.click();
+
+    // Should be redirected to signin page
+    await authenticatedPage.waitForURL("/signin");
+    expect(authenticatedPage.url()).toContain("/signin");
+
+    // User avatar should no longer be visible (we're on signin page)
+    await expect(userAvatar).not.toBeVisible();
+  });
+
+  test("should redirect to signin after sign out when accessing protected route", async ({
+    authenticatedPage,
+  }) => {
+    // Sign out first
+    const userAvatar = authenticatedPage.getByTestId("user-avatar");
+    await userAvatar.click();
+
+    const signOutButton = authenticatedPage.getByTestId("sign-out-button");
+    await signOutButton.click();
+
+    // Wait for redirect to signin
+    await authenticatedPage.waitForURL("/signin");
+
+    // Try to access a protected route
+    await authenticatedPage.goto("/r/ticket/create");
+
+    // Should be redirected back to signin
+    await authenticatedPage.waitForURL("/signin");
+    expect(authenticatedPage.url()).toContain("/signin");
+  });
 });

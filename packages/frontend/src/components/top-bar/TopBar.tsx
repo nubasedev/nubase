@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import type { NubaseContextData } from "../../context/types";
 import { cn } from "../../styling/cn";
 import { ActionBar } from "../buttons/ActionBar";
+import { UserMenu } from "../user-avatar";
 import { SearchBar } from "./SearchBar";
 
 export interface TopBarProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -17,6 +18,13 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
   ({ className, context, ...props }, ref) => {
     const globalActions = context.config.globalActions || [];
     const hasGlobalActions = globalActions.length > 0;
+    const { authentication } = context;
+    const authState = authentication?.getState();
+    const user = authState?.user;
+
+    const handleSignOut = async () => {
+      await authentication?.logout();
+    };
 
     return (
       <div
@@ -49,6 +57,18 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
           <div className="flex items-center">
             <ActionBar actions={globalActions} />
           </div>
+        )}
+
+        {/* Spacer to push user avatar to the right */}
+        <div className="flex-1" />
+
+        {/* User Menu */}
+        {user && (
+          <UserMenu
+            name={user.username}
+            email={user.email}
+            onSignOut={handleSignOut}
+          />
         )}
       </div>
     );
