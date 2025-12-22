@@ -73,6 +73,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* Prevent scrollbars from browser extension injections (e.g., 1Password dropdowns) */
+  html,
+  body {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
