@@ -55,7 +55,10 @@ export default function SignInScreen() {
 
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+            <div
+              data-testid="signin-error"
+              className="p-3 text-sm text-destructive bg-destructive/10 rounded-md"
+            >
               {error}
             </div>
           )}

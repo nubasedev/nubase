@@ -1,9 +1,11 @@
 import { createHttpHandler } from "@nubase/backend";
 import { emptySchema, nu } from "@nubase/core";
+import bcrypt from "bcrypt";
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
+import { usersTable } from "../../db/schema/user";
 
 // Test utility endpoints - only enabled in test environment
 const testUtils = new Hono();
@@ -34,9 +36,23 @@ export const handleClearDatabase = createHttpHandler({
     // Reset the ID sequence to start from 1
     await db.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
 
+    // Clear all users
+    await db.delete(usersTable);
+
+    // Reset the users ID sequence
+    await db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
+
+    // Seed a default test user
+    const passwordHash = await bcrypt.hash("password123", 12);
+    await db.insert(usersTable).values({
+      email: "testuser@example.com",
+      username: "testuser",
+      passwordHash,
+    });
+
     return {
       success: true,
-      message: "Database cleared successfully",
+      message: "Database cleared and test user seeded successfully",
     };
   },
 });

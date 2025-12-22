@@ -35,10 +35,10 @@ import type { BreadcrumbItem } from "../../config/breadcrumb";
  */
 
 export default function ResourceScreen() {
-  const { resourceName, operation } = useParams({
-    from: "/r/$resourceName/$operation",
-  });
-  const searchParams = useSearch({ from: "/r/$resourceName/$operation" });
+  const params = useParams({ strict: false });
+  const resourceName = params.resourceName as string;
+  const operation = params.operation as string;
+  const searchParams = useSearch({ strict: false });
   const context = useNubaseContext();
   const navigate = useNavigate();
 

@@ -5,6 +5,26 @@ import type {
   RequestSchema,
 } from "@nubase/core";
 import type { Context } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
+/**
+ * Custom HTTP error class that allows handlers to throw errors with specific status codes.
+ * Use this to return proper HTTP error responses instead of generic 500 errors.
+ *
+ * @example
+ * throw new HttpError(401, "Invalid username or password");
+ * throw new HttpError(404, "Resource not found");
+ * throw new HttpError(403, "Access denied");
+ */
+export class HttpError extends Error {
+  constructor(
+    public statusCode: ContentfulStatusCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = "HttpError";
+  }
+}
 
 /**
  * URL Parameter Coercion System (Backend)
@@ -127,6 +147,16 @@ function createTypedHandlerInternal<T extends RequestSchema>(
         );
       }
     } catch (error) {
+      // Check if it's an HttpError with a specific status code
+      if (error instanceof HttpError) {
+        return c.json(
+          {
+            error: error.message,
+          },
+          error.statusCode,
+        );
+      }
+
       console.error("Handler error:", error);
       return c.json(
         {

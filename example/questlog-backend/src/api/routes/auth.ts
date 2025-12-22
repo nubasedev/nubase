@@ -1,4 +1,4 @@
-import { createHttpHandler } from "@nubase/backend";
+import { createHttpHandler, HttpError } from "@nubase/backend";
 import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
 import { eq } from "drizzle-orm";
@@ -30,7 +30,7 @@ export const handleLogin = createHttpHandler({
       .where(eq(usersTable.username, body.username));
 
     if (users.length === 0) {
-      throw new Error("Invalid username or password");
+      throw new HttpError(401, "Invalid username or password");
     }
 
     const user = users[0];
@@ -41,7 +41,7 @@ export const handleLogin = createHttpHandler({
       user.passwordHash,
     );
     if (!isValidPassword) {
-      throw new Error("Invalid username or password");
+      throw new HttpError(401, "Invalid username or password");
     }
 
     // Generate JWT token

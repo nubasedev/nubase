@@ -68,8 +68,15 @@ function RootComponent() {
     publicRoutes,
   ]);
 
+  // Check if current route is public
+  const currentPath = location.pathname;
+  const isPublicRoute = publicRoutes.some((route) =>
+    currentPath.startsWith(route),
+  );
+
   // If authentication is configured, show loading while initializing
-  if (authentication) {
+  // But only for non-public routes - public routes (like signin) should render immediately
+  if (authentication && !isPublicRoute) {
     if (!isInitialized || authState?.status === "loading") {
       return (
         <div className="bg-background text-text h-screen w-screen flex items-center justify-center">
@@ -82,14 +89,8 @@ function RootComponent() {
       );
     }
 
-    // Check if current route is public
-    const currentPath = location.pathname;
-    const isPublicRoute = publicRoutes.some((route) =>
-      currentPath.startsWith(route),
-    );
-
     // If unauthenticated and not on a public route, show loading (redirect will happen)
-    if (authState?.status === "unauthenticated" && !isPublicRoute) {
+    if (authState?.status === "unauthenticated") {
       return (
         <div className="bg-background text-text h-screen w-screen flex items-center justify-center">
           <ActivityIndicator

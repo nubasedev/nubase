@@ -1,16 +1,41 @@
+import type { Page } from "@playwright/test";
 import { test as base } from "@playwright/test";
 import { TestReporter } from "../utils/test-reporter";
-import { TestAPI } from "./test-api";
+import { TEST_USER, TestAPI } from "./test-api";
+
+/**
+ * Helper function to perform login via the UI.
+ * Can be used directly in tests that need to test login functionality.
+ */
+export async function performLogin(
+  page: Page,
+  username: string = TEST_USER.username,
+  password: string = TEST_USER.password,
+) {
+  // Navigate to signin page
+  await page.goto("/signin");
+
+  // Fill in credentials
+  await page.fill("#username", username);
+  await page.fill("#password", password);
+
+  // Submit the form
+  await page.click('button[type="submit"]');
+
+  // Wait for redirect to home page (successful login)
+  await page.waitForURL("/");
+}
 
 // Extend basic test by providing enhanced fixtures
 export const test = base.extend<{
   testAPI: TestAPI;
   reporter: TestReporter;
+  authenticatedPage: Page;
 }>({
   testAPI: async ({ request }, use) => {
     const testAPI = new TestAPI(request);
 
-    // Clear database before each test
+    // Clear database before each test (this also seeds the test user)
     await testAPI.clearDatabase();
 
     // Use the fixture in the test
@@ -18,6 +43,19 @@ export const test = base.extend<{
 
     // Optional: Clear database after each test (already cleared before next test)
     // await testAPI.clearDatabase();
+  },
+
+  /**
+   * Provides a page that is already authenticated with the test user.
+   * Use this fixture for tests that require an authenticated session.
+   */
+  authenticatedPage: async ({ page, testAPI: _testAPI }, use) => {
+    // testAPI fixture runs first and clears/seeds the database with test user
+    // Now perform login via the UI
+    await performLogin(page);
+
+    // Provide the authenticated page to the test
+    await use(page);
   },
 
   reporter: async ({ page }, use, testInfo) => {
@@ -94,3 +132,4 @@ export const test = base.extend<{
 });
 
 export { expect } from "@playwright/test";
+export { TEST_USER } from "./test-api";
