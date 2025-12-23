@@ -23,7 +23,7 @@ export type {
   LoginCredentials,
   LoginStartResponse,
   SignupCredentials,
-  TenantInfo,
+  WorkspaceInfo,
 } from "./authentication";
 export * from "./commands";
 // Export commands namespace for easier importing
@@ -33,15 +33,15 @@ export type { Keybinding } from "./commands/types";
 export * from "./components";
 // Export NubaseFrontendConfig
 export * from "./config";
-// Export tenant hooks for path-based multi-tenancy
-export {
-  getTenantFromRouter,
-  type TenantContext,
-  useTenant,
-  useTenantOptional,
-} from "./context/TenantContext";
 // Export context types
 export * from "./context/types";
+// Export workspace hooks for path-based multi-workspace
+export {
+  getWorkspaceFromRouter,
+  useWorkspace,
+  useWorkspaceOptional,
+  type WorkspaceContext,
+} from "./context/WorkspaceContext";
 // Export all hooks
 export * from "./hooks";
 export * from "./http/api-client-factory";

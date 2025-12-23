@@ -7,7 +7,7 @@ import type {
   LoginCredentials,
   LoginStartResponse,
   SignupCredentials,
-  TenantInfo,
+  WorkspaceInfo,
 } from "@nubase/frontend";
 
 /**
@@ -50,7 +50,7 @@ export class QuestlogAuthController implements AuthenticationController {
     this.setState({ status: "loading", error: null });
 
     try {
-      // Include tenant in the login request body for path-based multi-tenancy
+      // Include workspace in the login request body for path-based multi-workspace
       const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
         method: "POST",
         headers: {
@@ -60,7 +60,7 @@ export class QuestlogAuthController implements AuthenticationController {
         body: JSON.stringify({
           username: credentials.username,
           password: credentials.password,
-          tenant: credentials.tenant,
+          workspace: credentials.workspace,
         }),
       });
 
@@ -150,7 +150,7 @@ export class QuestlogAuthController implements AuthenticationController {
 
   /**
    * Start the two-step login process.
-   * Step 1: Validates credentials and returns list of tenants user belongs to.
+   * Step 1: Validates credentials and returns list of workspaces user belongs to.
    */
   async loginStart(credentials: {
     username: string;
@@ -178,11 +178,11 @@ export class QuestlogAuthController implements AuthenticationController {
 
   /**
    * Complete the two-step login process.
-   * Step 2: Select a tenant and complete authentication.
+   * Step 2: Select a workspace and complete authentication.
    */
   async loginComplete(
     credentials: LoginCompleteCredentials,
-  ): Promise<TenantInfo> {
+  ): Promise<WorkspaceInfo> {
     this.setState({ status: "loading", error: null });
 
     try {
@@ -194,7 +194,7 @@ export class QuestlogAuthController implements AuthenticationController {
         credentials: "include",
         body: JSON.stringify({
           loginToken: credentials.loginToken,
-          tenant: credentials.tenant,
+          workspace: credentials.workspace,
         }),
       });
 
@@ -212,7 +212,7 @@ export class QuestlogAuthController implements AuthenticationController {
         error: null,
       });
 
-      return data.tenant;
+      return data.workspace;
     } catch (error) {
       const err = error instanceof Error ? error : new Error("Login failed");
       this.setState({
@@ -225,7 +225,7 @@ export class QuestlogAuthController implements AuthenticationController {
   }
 
   /**
-   * Sign up a new user and create a new tenant.
+   * Sign up a new user and create a new workspace.
    * After successful signup, the user is automatically logged in.
    */
   async signup(credentials: SignupCredentials): Promise<void> {

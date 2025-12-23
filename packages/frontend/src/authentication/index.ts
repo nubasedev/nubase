@@ -7,5 +7,5 @@ export type {
   LoginCredentials,
   LoginStartResponse,
   SignupCredentials,
-  TenantInfo,
+  WorkspaceInfo,
 } from "./types";

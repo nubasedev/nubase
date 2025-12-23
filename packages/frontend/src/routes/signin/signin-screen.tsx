@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import type { TenantInfo } from "../../authentication";
+import type { WorkspaceInfo } from "../../authentication";
 import { Button } from "../../components/buttons/Button/Button";
 import { showToast } from "../../components/floating/toast";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
@@ -10,10 +10,10 @@ import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvi
 /**
  * Sign-in screen with Shortcut-like two-step flow:
  * 1. Enter username and password
- * 2. If user belongs to multiple tenants, select one
+ * 2. If user belongs to multiple workspaces, select one
  *
  * This is the root-level signin at /signin.
- * After successful login, redirects to /$tenant.
+ * After successful login, redirects to /$workspace.
  */
 export default function SignInScreen() {
   const [username, setUsername] = useState("");
@@ -25,7 +25,7 @@ export default function SignInScreen() {
 
   // Two-step login state
   const [loginToken, setLoginToken] = useState<string | null>(null);
-  const [tenants, setTenants] = useState<TenantInfo[]>([]);
+  const [workspaces, setWorkspaces] = useState<WorkspaceInfo[]>([]);
 
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,26 +48,29 @@ export default function SignInScreen() {
       if (authentication.loginStart) {
         const result = await authentication.loginStart({ username, password });
 
-        if (result.tenants.length === 1 && result.tenants[0]) {
-          // Single tenant - auto-complete login
+        if (result.workspaces.length === 1 && result.workspaces[0]) {
+          // Single workspace - auto-complete login
           if (!authentication.loginComplete) {
             setError("Authentication not properly configured");
             return;
           }
-          const singleTenant = result.tenants[0];
-          const tenant = await authentication.loginComplete({
+          const singleWorkspace = result.workspaces[0];
+          const workspace = await authentication.loginComplete({
             loginToken: result.loginToken,
-            tenant: singleTenant.slug,
+            workspace: singleWorkspace.slug,
           });
           showToast("Successfully signed in!");
-          navigate({ to: "/$tenant", params: { tenant: tenant.slug } });
-        } else if (result.tenants.length > 1) {
-          // Multiple tenants - show selection
+          navigate({
+            to: "/$workspace",
+            params: { workspace: workspace.slug },
+          });
+        } else if (result.workspaces.length > 1) {
+          // Multiple workspaces - show selection
           setLoginToken(result.loginToken);
-          setTenants(result.tenants);
+          setWorkspaces(result.workspaces);
         }
       } else {
-        // Fallback to legacy single-step login (requires tenant)
+        // Fallback to legacy single-step login (requires workspace)
         setError("Please enter your organization slug");
       }
     } catch (err) {
@@ -79,7 +82,7 @@ export default function SignInScreen() {
     }
   };
 
-  const handleTenantSelect = async (tenant: TenantInfo) => {
+  const handleWorkspaceSelect = async (workspace: WorkspaceInfo) => {
     if (!authentication?.loginComplete || !loginToken) {
       setError("Session expired. Please try again.");
       return;
@@ -89,12 +92,15 @@ export default function SignInScreen() {
     setError(null);
 
     try {
-      const selectedTenant = await authentication.loginComplete({
+      const selectedWorkspace = await authentication.loginComplete({
         loginToken,
-        tenant: tenant.slug,
+        workspace: workspace.slug,
       });
       showToast("Successfully signed in!");
-      navigate({ to: "/$tenant", params: { tenant: selectedTenant.slug } });
+      navigate({
+        to: "/$workspace",
+        params: { workspace: selectedWorkspace.slug },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
       setError(message);
@@ -106,12 +112,12 @@ export default function SignInScreen() {
 
   const handleBackToCredentials = () => {
     setLoginToken(null);
-    setTenants([]);
+    setWorkspaces([]);
     setError(null);
   };
 
-  // Tenant selection screen
-  if (loginToken && tenants.length > 0) {
+  // Workspace selection screen
+  if (loginToken && workspaces.length > 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md p-8">
@@ -134,17 +140,19 @@ export default function SignInScreen() {
           )}
 
           <div className="space-y-3">
-            {tenants.map((tenant) => (
+            {workspaces.map((workspace) => (
               <button
-                key={tenant.id}
+                key={workspace.id}
                 type="button"
-                onClick={() => handleTenantSelect(tenant)}
+                onClick={() => handleWorkspaceSelect(workspace)}
                 disabled={isLoading}
                 className="w-full p-4 text-left rounded-lg border border-outline bg-surface hover:bg-surfaceContainer transition-colors disabled:opacity-50"
               >
-                <div className="font-medium text-foreground">{tenant.name}</div>
+                <div className="font-medium text-foreground">
+                  {workspace.name}
+                </div>
                 <div className="text-sm text-muted-foreground">
-                  {tenant.slug}
+                  {workspace.slug}
                 </div>
               </button>
             ))}

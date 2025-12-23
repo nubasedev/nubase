@@ -21,12 +21,12 @@ import {
  */
 export const apiEndpoints = {
   // Auth endpoints - Two-step login flow
-  loginStart: loginStartSchema, // POST /auth/login/start - Step 1: validate credentials, get tenants
-  loginComplete: loginCompleteSchema, // POST /auth/login/complete - Step 2: select tenant, get token
+  loginStart: loginStartSchema, // POST /auth/login/start - Step 1: validate credentials, get workspaces
+  loginComplete: loginCompleteSchema, // POST /auth/login/complete - Step 2: select workspace, get token
   login: loginSchema, // POST /auth/login (legacy - deprecated)
   logout: logoutSchema, // POST /auth/logout
   getMe: getMeSchema, // GET /auth/me
-  signup: signupSchema, // POST /auth/signup - Create new tenant and admin user
+  signup: signupSchema, // POST /auth/signup - Create new workspace and admin user
 
   // Ticket endpoints
   getTickets: getTicketsSchema, // GET /tickets

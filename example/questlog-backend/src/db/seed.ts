@@ -6,10 +6,10 @@ import type { InferInsertModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";
 import { getAdminDb } from "./helpers/drizzle";
-import { tenantsTable } from "./schema/tenant";
 import { ticketsTable } from "./schema/ticket";
 import { usersTable } from "./schema/user";
-import { userTenantsTable } from "./schema/user-tenant";
+import { userWorkspacesTable } from "./schema/user-workspace";
+import { workspacesTable } from "./schema/workspace";
 
 // Load environment variables
 loadEnvironment();
@@ -19,8 +19,8 @@ type NewTicket = InferInsertModel<typeof ticketsTable>;
 // Default number of tickets to generate
 const DEFAULT_TICKET_COUNT = 10;
 
-// Default tenant configuration
-const DEFAULT_TENANT = {
+// Default workspace configuration
+const DEFAULT_WORKSPACE = {
   slug: "tavern",
   name: "The Tavern",
 };
@@ -28,7 +28,7 @@ const DEFAULT_TENANT = {
 /**
  * Generate fake ticket data using faker.js
  */
-function generateFakeTicket(tenantId: number): NewTicket {
+function generateFakeTicket(workspaceId: number): NewTicket {
   const ticketTypes = [
     "Bug Report",
     "Feature Request",
@@ -65,51 +65,51 @@ function generateFakeTicket(tenantId: number): NewTicket {
     : null;
 
   return {
-    tenantId,
+    workspaceId,
     title,
     description,
   };
 }
 
 /**
- * Seed the tenants table with the default tenant
+ * Seed the workspaces table with the default workspace
  */
-async function seedTenants() {
-  console.log("🏠 Seeding tenants...");
+async function seedWorkspaces() {
+  console.log("🏠 Seeding workspaces...");
 
   const db = getAdminDb();
 
   // Clear existing data using TRUNCATE (bypasses RLS, respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
   await db.execute(
-    sql`TRUNCATE TABLE tickets, user_tenants, users, tenants RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`,
   );
 
-  // Create default tenant
-  const insertedTenants = await db
-    .insert(tenantsTable)
+  // Create default workspace
+  const insertedWorkspaces = await db
+    .insert(workspacesTable)
     .values({
-      slug: DEFAULT_TENANT.slug,
-      name: DEFAULT_TENANT.name,
+      slug: DEFAULT_WORKSPACE.slug,
+      name: DEFAULT_WORKSPACE.name,
     })
     .returning();
 
   console.log(
-    `✅ Created tenant: ${insertedTenants[0].name} (${insertedTenants[0].slug})`,
+    `✅ Created workspace: ${insertedWorkspaces[0].name} (${insertedWorkspaces[0].slug})`,
   );
 
-  return insertedTenants[0];
+  return insertedWorkspaces[0];
 }
 
 /**
- * Seed the users table with a test user and link to the given tenant
+ * Seed the users table with a test user and link to the given workspace
  */
-async function seedUsers(tenantId: number) {
+async function seedUsers(workspaceId: number) {
   console.log("👤 Seeding users...");
 
   const db = getAdminDb();
 
-  // Create a test user with hashed password (root-level, no tenantId)
+  // Create a test user with hashed password (root-level, no workspaceId)
   const passwordHash = await bcrypt.hash("password123", 12);
 
   const insertedUsers = await db
@@ -121,10 +121,10 @@ async function seedUsers(tenantId: number) {
     })
     .returning();
 
-  // Link user to tenant via user_tenants table
-  await db.insert(userTenantsTable).values({
+  // Link user to workspace via user_workspaces table
+  await db.insert(userWorkspacesTable).values({
     userId: insertedUsers[0].id,
-    tenantId,
+    workspaceId,
   });
 
   console.log(
@@ -133,16 +133,16 @@ async function seedUsers(tenantId: number) {
 }
 
 /**
- * Seed the database with fake tickets for the given tenant
+ * Seed the database with fake tickets for the given workspace
  */
-async function seedTickets(count: number, tenantId: number) {
+async function seedTickets(count: number, workspaceId: number) {
   console.log(`📝 Generating ${count} fake tickets...`);
 
   const db = getAdminDb();
 
   // Generate and insert fake tickets
   const fakeTickets = Array.from({ length: count }, () =>
-    generateFakeTicket(tenantId),
+    generateFakeTicket(workspaceId),
   );
 
   console.log("💾 Inserting tickets into database...");
@@ -173,19 +173,21 @@ async function seedTickets(count: number, tenantId: number) {
  */
 async function main(ticketCount: number = DEFAULT_TICKET_COUNT) {
   console.log(`🌱 Starting database seed...`);
-  console.log(`   Tenant: ${DEFAULT_TENANT.name} (${DEFAULT_TENANT.slug})`);
+  console.log(
+    `   Workspace: ${DEFAULT_WORKSPACE.name} (${DEFAULT_WORKSPACE.slug})`,
+  );
   console.log(`   Tickets: ${ticketCount}`);
   console.log("");
 
-  // Seed tenants first (clears all data)
+  // Seed workspaces first (clears all data)
   // Note: Using admin connection which bypasses RLS
-  const tenant = await seedTenants();
+  const workspace = await seedWorkspaces();
 
-  // Seed users for the tenant
-  await seedUsers(tenant.id);
+  // Seed users for the workspace
+  await seedUsers(workspace.id);
 
-  // Seed tickets for the tenant
-  await seedTickets(ticketCount, tenant.id);
+  // Seed tickets for the workspace
+  await seedTickets(ticketCount, workspace.id);
 
   console.log("\n🎉 Database seeding complete!");
   process.exit(0);

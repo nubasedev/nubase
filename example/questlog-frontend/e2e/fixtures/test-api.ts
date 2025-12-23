@@ -7,8 +7,8 @@ export const TEST_USER = {
   email: "testuser@example.com",
 };
 
-// Test tenant for path-based multi-tenancy
-export const TEST_TENANT = "tavern";
+// Test workspace for path-based multi-workspace
+export const TEST_WORKSPACE = "tavern";
 
 // Backend API base URL (no subdomain for path-based tenancy)
 const API_BASE_URL = "http://localhost:4001";
@@ -17,11 +17,11 @@ export class TestAPI {
   constructor(private request: APIRequestContext) {}
 
   /**
-   * Ensure the tenant exists before running tests
+   * Ensure the workspace exists before running tests
    */
-  async ensureTenant() {
+  async ensureWorkspace() {
     const response = await this.request.post(
-      `${API_BASE_URL}/api/test/ensure-tenant`,
+      `${API_BASE_URL}/api/test/ensure-workspace`,
       {
         data: {},
       },
@@ -30,7 +30,7 @@ export class TestAPI {
     if (!response.ok()) {
       const body = await response.text();
       throw new Error(
-        `Failed to ensure tenant: ${response.status()} - ${body}`,
+        `Failed to ensure workspace: ${response.status()} - ${body}`,
       );
     }
 
@@ -43,10 +43,10 @@ export class TestAPI {
   async login(
     username: string = TEST_USER.username,
     password: string = TEST_USER.password,
-    tenant: string = TEST_TENANT,
+    workspace: string = TEST_WORKSPACE,
   ) {
     const response = await this.request.post(`${API_BASE_URL}/auth/login`, {
-      data: { username, password, tenant },
+      data: { username, password, workspace },
     });
 
     if (!response.ok()) {
@@ -105,16 +105,16 @@ export class TestAPI {
   }
 
   /**
-   * Seed a user with multiple tenants for testing tenant selection flow
+   * Seed a user with multiple workspaces for testing workspace selection flow
    */
-  async seedMultiTenantUser(data: {
+  async seedMultiWorkspaceUser(data: {
     username: string;
     password: string;
     email: string;
-    tenants: Array<{ slug: string; name: string }>;
+    workspaces: Array<{ slug: string; name: string }>;
   }) {
     const response = await this.request.post(
-      `${API_BASE_URL}/api/test/seed-multi-tenant-user`,
+      `${API_BASE_URL}/api/test/seed-multi-workspace-user`,
       {
         data,
       },
@@ -123,7 +123,7 @@ export class TestAPI {
     if (!response.ok()) {
       const body = await response.text();
       throw new Error(
-        `Failed to seed multi-tenant user: ${response.status()} - ${body}`,
+        `Failed to seed multi-workspace user: ${response.status()} - ${body}`,
       );
     }
 

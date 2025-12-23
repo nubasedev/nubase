@@ -10,9 +10,9 @@ export const userSchema = nu.object({
 });
 
 /**
- * Tenant info returned during login
+ * Workspace info returned during login
  */
-export const tenantInfoSchema = nu.object({
+export const workspaceInfoSchema = nu.object({
   id: nu.number(),
   slug: nu.string(),
   name: nu.string(),
@@ -22,9 +22,9 @@ export const tenantInfoSchema = nu.object({
  * Login start request schema - Step 1 of two-step auth
  * POST /auth/login/start
  *
- * Validates credentials and returns list of tenants the user belongs to.
- * If user has multiple tenants, frontend should show selection.
- * If user has one tenant, frontend can auto-complete login.
+ * Validates credentials and returns list of workspaces the user belongs to.
+ * If user has multiple workspaces, frontend should show selection.
+ * If user has one workspace, frontend can auto-complete login.
  */
 export const loginStartSchema = {
   method: "POST" as const,
@@ -39,8 +39,8 @@ export const loginStartSchema = {
     loginToken: nu.string(),
     /** User's username (for display) */
     username: nu.string(),
-    /** List of tenants the user belongs to */
-    tenants: nu.array(tenantInfoSchema),
+    /** List of workspaces the user belongs to */
+    workspaces: nu.array(workspaceInfoSchema),
   }),
 } satisfies RequestSchema;
 
@@ -48,7 +48,7 @@ export const loginStartSchema = {
  * Login complete request schema - Step 2 of two-step auth
  * POST /auth/login/complete
  *
- * Completes login by selecting a tenant and issuing the full auth token.
+ * Completes login by selecting a workspace and issuing the full auth token.
  */
 export const loginCompleteSchema = {
   method: "POST" as const,
@@ -57,12 +57,12 @@ export const loginCompleteSchema = {
   requestBody: nu.object({
     /** Temporary login token from login/start */
     loginToken: nu.string(),
-    /** Selected tenant slug */
-    tenant: nu.string(),
+    /** Selected workspace slug */
+    workspace: nu.string(),
   }),
   responseBody: nu.object({
     user: userSchema,
-    tenant: tenantInfoSchema,
+    workspace: workspaceInfoSchema,
   }),
 } satisfies RequestSchema;
 
@@ -70,7 +70,7 @@ export const loginCompleteSchema = {
  * Legacy login request schema (kept for backwards compatibility)
  * POST /auth/login
  *
- * For path-based multi-tenancy, the tenant slug is required in the request body.
+ * For path-based multi-workspace, the workspace slug is required in the request body.
  * @deprecated Use loginStartSchema and loginCompleteSchema for two-step flow
  */
 export const loginSchema = {
@@ -80,8 +80,8 @@ export const loginSchema = {
   requestBody: nu.object({
     username: nu.string(),
     password: nu.string(),
-    /** Tenant slug for path-based multi-tenancy */
-    tenant: nu.string(),
+    /** Workspace slug for path-based multi-workspace */
+    workspace: nu.string(),
   }),
   responseBody: nu.object({
     user: userSchema,
@@ -118,7 +118,7 @@ export const getMeSchema = {
  * Signup request schema
  * POST /auth/signup
  *
- * Creates a new tenant and the initial admin user.
+ * Creates a new workspace and the initial admin user.
  * After successful signup, the user is automatically logged in.
  */
 export const signupSchema = {
@@ -126,10 +126,10 @@ export const signupSchema = {
   path: "/auth/signup",
   requestParams: emptySchema,
   requestBody: nu.object({
-    /** Tenant slug (unique identifier) */
-    tenant: nu.string(),
-    /** Display name for the tenant */
-    tenantName: nu.string(),
+    /** Workspace slug (unique identifier) */
+    workspace: nu.string(),
+    /** Display name for the workspace */
+    workspaceName: nu.string(),
     /** Username for the admin user */
     username: nu.string(),
     /** Email for the admin user */
@@ -139,6 +139,6 @@ export const signupSchema = {
   }),
   responseBody: nu.object({
     user: userSchema,
-    tenant: tenantInfoSchema,
+    workspace: workspaceInfoSchema,
   }),
 } satisfies RequestSchema;

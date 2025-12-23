@@ -58,23 +58,23 @@ export function getAdminDb() {
 }
 
 /**
- * Set the current tenant context for Row Level Security (RLS).
+ * Set the current workspace context for Row Level Security (RLS).
  * This must be called before any database operations that involve
- * tenant-scoped tables (tickets, users).
+ * workspace-scoped tables (tickets, user_workspaces).
  */
-export async function setTenantContext(tenantId: number) {
+export async function setWorkspaceContext(workspaceId: number) {
   const db = getDb();
   // Use sql.raw for the value since SET doesn't support parameterized queries
   await db.execute(
-    sql`SELECT set_config('app.current_tenant_id', ${tenantId.toString()}, false)`,
+    sql`SELECT set_config('app.current_workspace_id', ${workspaceId.toString()}, false)`,
   );
 }
 
 /**
- * Clear the tenant context. Call this after completing tenant-scoped operations
+ * Clear the workspace context. Call this after completing workspace-scoped operations
  * to prevent context leakage between requests.
  */
-export async function clearTenantContext() {
+export async function clearWorkspaceContext() {
   const db = getDb();
-  await db.execute(sql`RESET app.current_tenant_id`);
+  await db.execute(sql`RESET app.current_workspace_id`);
 }

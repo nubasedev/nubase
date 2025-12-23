@@ -49,10 +49,10 @@ SET default_table_access_method = heap;
 -- ============================================================================
 
 --
--- Tenants
+-- Workspaces
 --
 
-CREATE TABLE public.tenants (
+CREATE TABLE public.workspaces (
     id integer NOT NULL,
     slug character varying(100) NOT NULL,
     name character varying(255) NOT NULL,
@@ -60,17 +60,17 @@ CREATE TABLE public.tenants (
     updated_at timestamp without time zone DEFAULT now()
 );
 
-ALTER TABLE public.tenants ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.tenants_id_seq
+ALTER TABLE public.workspaces ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.workspaces_id_seq
     START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
-ALTER TABLE ONLY public.tenants ADD CONSTRAINT tenants_pk PRIMARY KEY (id);
-ALTER TABLE ONLY public.tenants ADD CONSTRAINT tenants_slug_unique UNIQUE (slug);
+ALTER TABLE ONLY public.workspaces ADD CONSTRAINT workspaces_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.workspaces ADD CONSTRAINT workspaces_slug_unique UNIQUE (slug);
 
 
 --
--- Users (root-level, no tenant association - users can belong to multiple tenants)
+-- Users (root-level, no workspace association - users can belong to multiple workspaces)
 --
 
 CREATE TABLE public.users (
@@ -93,18 +93,18 @@ ALTER TABLE ONLY public.users ADD CONSTRAINT users_username_unique UNIQUE (usern
 
 
 --
--- User-Tenant Association (links users to tenants - a user can belong to multiple tenants)
+-- User-Workspace Association (links users to workspaces - a user can belong to multiple workspaces)
 --
 
-CREATE TABLE public.user_tenants (
+CREATE TABLE public.user_workspaces (
     user_id integer NOT NULL,
-    tenant_id integer NOT NULL,
+    workspace_id integer NOT NULL,
     created_at timestamp without time zone DEFAULT now()
 );
 
-ALTER TABLE ONLY public.user_tenants ADD CONSTRAINT user_tenants_pk PRIMARY KEY (user_id, tenant_id);
-ALTER TABLE ONLY public.user_tenants ADD CONSTRAINT user_tenants_user_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-ALTER TABLE ONLY public.user_tenants ADD CONSTRAINT user_tenants_tenant_fk FOREIGN KEY (tenant_id) REFERENCES public.tenants(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.user_workspaces ADD CONSTRAINT user_workspaces_pk PRIMARY KEY (user_id, workspace_id);
+ALTER TABLE ONLY public.user_workspaces ADD CONSTRAINT user_workspaces_user_fk FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+ALTER TABLE ONLY public.user_workspaces ADD CONSTRAINT user_workspaces_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
 
 
 --
@@ -113,7 +113,7 @@ ALTER TABLE ONLY public.user_tenants ADD CONSTRAINT user_tenants_tenant_fk FOREI
 
 CREATE TABLE public.tickets (
     id integer NOT NULL,
-    tenant_id integer NOT NULL,
+    workspace_id integer NOT NULL,
     title character varying(255) NOT NULL,
     description character varying(1000)
 );
@@ -124,7 +124,7 @@ ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 );
 
 ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_pk PRIMARY KEY (id);
-ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_tenant_fk FOREIGN KEY (tenant_id) REFERENCES public.tenants(id);
+ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id);
 
 
 -- ============================================================================
@@ -139,27 +139,27 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO questlog_app;
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================================
 
--- Tickets: only visible/modifiable for the current tenant
+-- Tickets: only visible/modifiable for the current workspace
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY tickets_tenant_isolation ON public.tickets
+CREATE POLICY tickets_workspace_isolation ON public.tickets
     TO questlog_app
-    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer)
-    WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
+    USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
 
 
--- User-Tenants: only visible/modifiable for the current tenant
--- This allows users to see which users belong to their tenant
-ALTER TABLE public.user_tenants ENABLE ROW LEVEL SECURITY;
+-- User-Workspaces: only visible/modifiable for the current workspace
+-- This allows users to see which users belong to their workspace
+ALTER TABLE public.user_workspaces ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY user_tenants_tenant_isolation ON public.user_tenants
+CREATE POLICY user_workspaces_workspace_isolation ON public.user_workspaces
     TO questlog_app
-    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer)
-    WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
+    USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
+    WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
 
 
--- Note: tenants table does NOT have RLS - it must be queried to look up tenant
--- by slug before the tenant context is established.
+-- Note: workspaces table does NOT have RLS - it must be queried to look up workspace
+-- by slug before the workspace context is established.
 
 -- Note: users table does NOT have RLS - users exist at root level and can
--- belong to multiple tenants. Access control is managed through user_tenants.
+-- belong to multiple workspaces. Access control is managed through user_workspaces.

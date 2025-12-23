@@ -1,4 +1,4 @@
-import { expect, TENANT_PREFIX, TEST_USER, test } from "./fixtures/base";
+import { expect, TEST_USER, test, WORKSPACE_PREFIX } from "./fixtures/base";
 
 test.describe("Authentication", () => {
   test("should successfully sign in with valid credentials", async ({
@@ -20,8 +20,8 @@ test.describe("Authentication", () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Wait for redirect to tenant home page (auto-completes for single tenant)
-    await page.waitForURL(`${TENANT_PREFIX}`);
+    // Wait for redirect to workspace home page (auto-completes for single workspace)
+    await page.waitForURL(`${WORKSPACE_PREFIX}`);
 
     // Verify we're logged in (should see the app shell with main navigation)
     await expect(
@@ -83,7 +83,7 @@ test.describe("Authentication", () => {
     testAPI: _testAPI,
   }) => {
     // Try to access a protected route directly
-    await page.goto(`${TENANT_PREFIX}/r/ticket/create`);
+    await page.goto(`${WORKSPACE_PREFIX}/r/ticket/create`);
 
     // Should be redirected to root-level signin
     await page.waitForURL("/signin");
@@ -95,7 +95,7 @@ test.describe("Authentication", () => {
   }) => {
     // authenticatedPage is already logged in and at home page
     // Navigate to the protected route
-    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
+    await authenticatedPage.goto(`${WORKSPACE_PREFIX}/r/ticket/create`);
 
     // Wait for the page to be ready and check for the heading
     await expect(
@@ -153,53 +153,53 @@ test.describe("Authentication", () => {
     await authenticatedPage.waitForURL("/signin");
 
     // Try to access a protected route
-    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
+    await authenticatedPage.goto(`${WORKSPACE_PREFIX}/r/ticket/create`);
 
     // Should be redirected back to root-level signin
     await authenticatedPage.waitForURL("/signin");
     expect(authenticatedPage.url()).toContain("/signin");
   });
 
-  test("should show tenant selection when user belongs to multiple tenants", async ({
+  test("should show workspace selection when user belongs to multiple workspaces", async ({
     page,
     testAPI,
   }) => {
-    // Seed a user with multiple tenants
-    const multiTenantUser = {
-      username: "multitenant",
+    // Seed a user with multiple workspaces
+    const multiWorkspaceUser = {
+      username: "multiworkspace",
       password: "password123",
-      email: "multitenant@example.com",
-      tenants: [
+      email: "multiworkspace@example.com",
+      workspaces: [
         { slug: "guild-alpha", name: "Guild Alpha" },
         { slug: "guild-beta", name: "Guild Beta" },
       ],
     };
 
-    await testAPI.seedMultiTenantUser(multiTenantUser);
+    await testAPI.seedMultiWorkspaceUser(multiWorkspaceUser);
 
     // Navigate to signin page
     await page.goto("/signin");
 
     // Fill in credentials
-    await page.fill("#username", multiTenantUser.username);
-    await page.fill("#password", multiTenantUser.password);
+    await page.fill("#username", multiWorkspaceUser.username);
+    await page.fill("#password", multiWorkspaceUser.password);
 
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Should see tenant selection screen
+    // Should see workspace selection screen
     await expect(page.locator("h1")).toContainText("Select Organization");
 
-    // Verify both tenants are shown
+    // Verify both workspaces are shown
     await expect(page.getByText("Guild Alpha")).toBeVisible();
     await expect(page.getByText("guild-alpha")).toBeVisible();
     await expect(page.getByText("Guild Beta")).toBeVisible();
     await expect(page.getByText("guild-beta")).toBeVisible();
 
-    // Select the first tenant (Guild Alpha)
+    // Select the first workspace (Guild Alpha)
     await page.getByText("Guild Alpha").click();
 
-    // Should redirect to the selected tenant's home page
+    // Should redirect to the selected workspace's home page
     await page.waitForURL("**/guild-alpha");
     expect(page.url()).toContain("/guild-alpha");
 

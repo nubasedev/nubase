@@ -2,8 +2,8 @@ import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Users table - stores user credentials at root level (no RLS).
- * Users can belong to multiple tenants via the user_tenants association table.
- * Authentication happens at root level, then user selects a tenant.
+ * Users can belong to multiple workspaces via the user_workspaces association table.
+ * Authentication happens at root level, then user selects a workspace.
  */
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
-import { useTenantOptional } from "../../../context/TenantContext";
+import { useWorkspaceOptional } from "../../../context/WorkspaceContext";
 import type { MenuItem } from "../../../menu/types";
 import { cn } from "../../../styling/cn";
 
@@ -31,7 +31,7 @@ export const MenuItemComponent = ({
   itemRef,
   "data-testid": testId,
 }: MenuItemComponentProps) => {
-  const tenant = useTenantOptional();
+  const workspace = useWorkspaceOptional();
 
   const handleClick = () => {
     if (item.hasChildren) {
@@ -41,15 +41,15 @@ export const MenuItemComponent = ({
     }
   };
 
-  // Build tenant-aware href if tenant is available and href doesn't already include it
+  // Build workspace-aware href if workspace is available and href doesn't already include it
   const resolvedHref = (() => {
     if (!item.href) return undefined;
-    if (!tenant?.slug) return item.href;
-    // If href already starts with /$tenant pattern, use as-is
-    if (item.href.startsWith(`/${tenant.slug}`)) return item.href;
-    // Prepend tenant to relative paths
+    if (!workspace?.slug) return item.href;
+    // If href already starts with /$workspace pattern, use as-is
+    if (item.href.startsWith(`/${workspace.slug}`)) return item.href;
+    // Prepend workspace to relative paths
     if (item.href.startsWith("/")) {
-      return `/${tenant.slug}${item.href}`;
+      return `/${workspace.slug}${item.href}`;
     }
     return item.href;
   })();

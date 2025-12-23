@@ -22,9 +22,9 @@ import {
 import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 import {
-  createPostAuthTenantMiddleware,
-  createTenantMiddleware,
-} from "./middleware/tenant-middleware";
+  createPostAuthWorkspaceMiddleware,
+  createWorkspaceMiddleware,
+} from "./middleware/workspace-middleware";
 
 // Load environment variables
 loadEnvironment();
@@ -45,25 +45,25 @@ app.use(
   }),
 );
 
-// Tenant middleware - handles login path (gets tenant from body)
-// For other paths, tenant will be set from JWT by post-auth middleware
-app.use("*", createTenantMiddleware());
+// Workspace middleware - handles login path (gets workspace from body)
+// For other paths, workspace will be set from JWT by post-auth middleware
+app.use("*", createWorkspaceMiddleware());
 
 // Auth middleware - extracts and verifies JWT, sets user in context
 app.use("*", createAuthMiddleware({ controller: questlogAuthController }));
 
-// Post-auth tenant middleware - sets RLS context from authenticated user's tenant
-app.use("*", createPostAuthTenantMiddleware());
+// Post-auth workspace middleware - sets RLS context from authenticated user's workspace
+app.use("*", createPostAuthWorkspaceMiddleware());
 
 app.get("/", getRoot);
 
 // Auth routes - Two-step login flow
-app.post("/auth/login/start", handleLoginStart); // Step 1: validate credentials, get tenants
-app.post("/auth/login/complete", handleLoginComplete); // Step 2: select tenant, get token
+app.post("/auth/login/start", handleLoginStart); // Step 1: validate credentials, get workspaces
+app.post("/auth/login/complete", handleLoginComplete); // Step 2: select workspace, get token
 app.post("/auth/login", handleLogin); // Legacy single-step login (deprecated)
 app.post("/auth/logout", handleLogout);
 app.get("/auth/me", handleGetMe);
-app.post("/auth/signup", handleSignup); // Create new tenant and admin user
+app.post("/auth/signup", handleSignup); // Create new workspace and admin user
 
 // Tickets - RESTful routes with type safety
 app.get("/tickets", handleGetTickets);

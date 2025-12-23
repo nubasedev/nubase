@@ -12,7 +12,7 @@ import type { Context } from "hono";
 import jwt from "jsonwebtoken";
 import { getAdminDb } from "../db/helpers/drizzle";
 import { usersTable } from "../db/schema/user";
-import { userTenantsTable } from "../db/schema/user-tenant";
+import { userWorkspacesTable } from "../db/schema/user-workspace";
 
 type DbUser = InferSelectModel<typeof usersTable>;
 
@@ -20,14 +20,14 @@ type DbUser = InferSelectModel<typeof usersTable>;
  * User type for Questlog application.
  * This is what gets passed to handlers when auth is required/optional.
  *
- * Note: Users exist at root level (no tenant). The tenantId here represents
- * the currently selected tenant for this session.
+ * Note: Users exist at root level (no workspace). The workspaceId here represents
+ * the currently selected workspace for this session.
  */
 export interface QuestlogUser extends BackendUser {
   id: number;
   email: string;
   username: string;
-  tenantId: number; // The selected tenant for this session
+  workspaceId: number; // The selected workspace for this session
 }
 
 /**
@@ -36,7 +36,7 @@ export interface QuestlogUser extends BackendUser {
 export interface QuestlogTokenPayload extends TokenPayload {
   userId: number;
   username: string;
-  tenantId: number; // The selected tenant for this session
+  workspaceId: number; // The selected workspace for this session
 }
 
 // Configuration
@@ -50,7 +50,7 @@ const COOKIE_NAME = "nubase_auth";
  * Read lazily to ensure environment variables are loaded.
  *
  * When set, enables debug authentication via Bearer tokens in the format:
- *   debug:<userId>:<tenantId>:<secret>
+ *   debug:<userId>:<workspaceId>:<secret>
  *
  * Set DEBUG_AUTH_TOKEN in your .env file to enable this feature.
  * Example: DEBUG_AUTH_TOKEN=dev-secret-123
@@ -58,10 +58,10 @@ const COOKIE_NAME = "nubase_auth";
  * Usage with curl:
  *   curl -H "Authorization: Bearer debug:1:1:dev-secret-123" http://localhost:3001/tickets
  *
- * To authenticate as different users/tenants, change the IDs:
- *   debug:1:1:dev-secret-123  -> User ID 1, Tenant ID 1
- *   debug:2:1:dev-secret-123  -> User ID 2, Tenant ID 1
- *   debug:1:2:dev-secret-123  -> User ID 1, Tenant ID 2
+ * To authenticate as different users/workspaces, change the IDs:
+ *   debug:1:1:dev-secret-123  -> User ID 1, Workspace ID 1
+ *   debug:2:1:dev-secret-123  -> User ID 2, Workspace ID 1
+ *   debug:1:2:dev-secret-123  -> User ID 1, Workspace ID 2
  */
 function getDebugAuthToken(): string | undefined {
   return process.env.DEBUG_AUTH_TOKEN;
@@ -81,7 +81,7 @@ export class QuestlogBackendAuthController
    * 1. Authorization header (Bearer token) - for API-first apps and curl testing
    * 2. Cookie header (nubase_auth) - for browser-based auth
    *
-   * Debug token format: debug:<userId>:<tenantId>:<secret>
+   * Debug token format: debug:<userId>:<workspaceId>:<secret>
    * Example: debug:1:1:dev-secret-123
    */
   extractToken(ctx: Context): string | null {
@@ -90,16 +90,16 @@ export class QuestlogBackendAuthController
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7); // Remove "Bearer " prefix
 
-      // Check if this is a debug token (format: debug:<userId>:<tenantId>:<secret>)
+      // Check if this is a debug token (format: debug:<userId>:<workspaceId>:<secret>)
       const debugToken = getDebugAuthToken();
       if (debugToken && token.startsWith("debug:")) {
         const parts = token.split(":");
-        // Expected: ["debug", "<userId>", "<tenantId>", "<secret>"]
+        // Expected: ["debug", "<userId>", "<workspaceId>", "<secret>"]
         if (parts.length === 4) {
-          const [, userId, tenantId, secret] = parts;
+          const [, userId, workspaceId, secret] = parts;
           if (secret === debugToken) {
             // Return internal format for verifyToken to process
-            return `debug:${userId}:${tenantId}`;
+            return `debug:${userId}:${workspaceId}`;
           }
         }
       }
@@ -114,41 +114,47 @@ export class QuestlogBackendAuthController
 
   /**
    * Verify a JWT token and return the authenticated user.
-   * Optionally validates that the user belongs to the specified tenant.
+   * Optionally validates that the user belongs to the specified workspace.
    *
-   * Special handling for debug tokens (prefixed with "debug:<userId>:<tenantId>"):
-   * - Authenticates as the specified user ID with the specified tenant
+   * Special handling for debug tokens (prefixed with "debug:<userId>:<workspaceId>"):
+   * - Authenticates as the specified user ID with the specified workspace
    * - Only works when DEBUG_AUTH_TOKEN is set in environment
    */
   async verifyToken(
     token: string,
-    requestTenantId?: number,
+    requestWorkspaceId?: number,
   ): Promise<VerifyTokenResult<QuestlogUser>> {
-    // Handle debug token (format: "debug:<userId>:<tenantId>")
+    // Handle debug token (format: "debug:<userId>:<workspaceId>")
     if (token.startsWith("debug:") && getDebugAuthToken()) {
       const parts = token.slice(6).split(":"); // Remove "debug:" prefix
       if (parts.length !== 2) {
         return { valid: false, error: "Invalid debug token format" };
       }
-      const [userIdStr, tenantIdStr] = parts;
+      const [userIdStr, workspaceIdStr] = parts;
       const userId = Number.parseInt(userIdStr, 10);
-      const tenantId = Number.parseInt(tenantIdStr, 10);
-      if (Number.isNaN(userId) || Number.isNaN(tenantId)) {
-        return { valid: false, error: "Invalid user/tenant ID in debug token" };
+      const workspaceId = Number.parseInt(workspaceIdStr, 10);
+      if (Number.isNaN(userId) || Number.isNaN(workspaceId)) {
+        return {
+          valid: false,
+          error: "Invalid user/workspace ID in debug token",
+        };
       }
-      return this.authenticateAsUserId(userId, tenantId);
+      return this.authenticateAsUserId(userId, workspaceId);
     }
 
     try {
       // Verify JWT signature and expiration
       const decoded = jwt.verify(token, JWT_SECRET) as QuestlogTokenPayload;
 
-      // Validate tenant if provided
+      // Validate workspace if provided
       if (
-        requestTenantId !== undefined &&
-        decoded.tenantId !== requestTenantId
+        requestWorkspaceId !== undefined &&
+        decoded.workspaceId !== requestWorkspaceId
       ) {
-        return { valid: false, error: "User does not belong to this tenant" };
+        return {
+          valid: false,
+          error: "User does not belong to this workspace",
+        };
       }
 
       // Fetch user from database to ensure they still exist
@@ -163,21 +169,21 @@ export class QuestlogBackendAuthController
         return { valid: false, error: "User not found" };
       }
 
-      // Verify user still has access to the tenant in the token
-      const userTenants = await adminDb
+      // Verify user still has access to the workspace in the token
+      const userWorkspaces = await adminDb
         .select()
-        .from(userTenantsTable)
+        .from(userWorkspacesTable)
         .where(
           and(
-            eq(userTenantsTable.userId, decoded.userId),
-            eq(userTenantsTable.tenantId, decoded.tenantId),
+            eq(userWorkspacesTable.userId, decoded.userId),
+            eq(userWorkspacesTable.workspaceId, decoded.workspaceId),
           ),
         );
 
-      if (userTenants.length === 0) {
+      if (userWorkspaces.length === 0) {
         return {
           valid: false,
-          error: "User no longer has access to this tenant",
+          error: "User no longer has access to this workspace",
         };
       }
 
@@ -188,7 +194,7 @@ export class QuestlogBackendAuthController
           id: dbUser.id,
           email: dbUser.email,
           username: dbUser.username,
-          tenantId: decoded.tenantId, // Use tenant from token
+          workspaceId: decoded.workspaceId, // Use workspace from token
         },
       };
     } catch (error) {
@@ -207,12 +213,12 @@ export class QuestlogBackendAuthController
   }
 
   /**
-   * Authenticate as a specific user ID with a specific tenant.
+   * Authenticate as a specific user ID with a specific workspace.
    * Used for debug token authentication.
    */
   private async authenticateAsUserId(
     userId: number,
-    tenantId: number,
+    workspaceId: number,
   ): Promise<VerifyTokenResult<QuestlogUser>> {
     const adminDb = getAdminDb();
 
@@ -226,21 +232,21 @@ export class QuestlogBackendAuthController
       return { valid: false, error: "User not found" };
     }
 
-    // Verify user has access to the tenant
-    const userTenants = await adminDb
+    // Verify user has access to the workspace
+    const userWorkspaces = await adminDb
       .select()
-      .from(userTenantsTable)
+      .from(userWorkspacesTable)
       .where(
         and(
-          eq(userTenantsTable.userId, userId),
-          eq(userTenantsTable.tenantId, tenantId),
+          eq(userWorkspacesTable.userId, userId),
+          eq(userWorkspacesTable.workspaceId, workspaceId),
         ),
       );
 
-    if (userTenants.length === 0) {
+    if (userWorkspaces.length === 0) {
       return {
         valid: false,
-        error: "User does not have access to this tenant",
+        error: "User does not have access to this workspace",
       };
     }
 
@@ -251,7 +257,7 @@ export class QuestlogBackendAuthController
         id: dbUser.id,
         email: dbUser.email,
         username: dbUser.username,
-        tenantId: tenantId,
+        workspaceId: workspaceId,
       },
     };
   }
@@ -266,7 +272,7 @@ export class QuestlogBackendAuthController
     const payload: QuestlogTokenPayload = {
       userId: user.id,
       username: user.username,
-      tenantId: user.tenantId,
+      workspaceId: user.workspaceId,
       ...additionalPayload,
     };
 
@@ -275,8 +281,8 @@ export class QuestlogBackendAuthController
 
   /**
    * Set the authentication token in an HttpOnly cookie.
-   * For path-based multi-tenancy, the cookie is set without a Domain attribute.
-   * The tenant is identified from the URL path in the frontend and from the
+   * For path-based multi-workspace, the cookie is set without a Domain attribute.
+   * The workspace is identified from the URL path in the frontend and from the
    * JWT token in the backend.
    *
    * Cookie settings:
@@ -305,19 +311,21 @@ export class QuestlogBackendAuthController
   /**
    * Validate user credentials during login.
    * Looks up the user by username (root-level) and verifies the password.
-   * Then checks if user has access to the specified tenant.
+   * Then checks if user has access to the specified workspace.
    */
   async validateCredentials(
     username: string,
     password: string,
-    tenantId?: number,
+    workspaceId?: number,
   ): Promise<QuestlogUser | null> {
-    if (tenantId === undefined) {
-      throw new Error("tenantId is required for multi-tenant authentication");
+    if (workspaceId === undefined) {
+      throw new Error(
+        "workspaceId is required for multi-workspace authentication",
+      );
     }
     const adminDb = getAdminDb();
 
-    // Find user by username (users are root-level, no tenant filter)
+    // Find user by username (users are root-level, no workspace filter)
     const users: DbUser[] = await adminDb
       .select()
       .from(usersTable)
@@ -335,26 +343,26 @@ export class QuestlogBackendAuthController
       return null;
     }
 
-    // Check if user has access to the tenant
-    const userTenants = await adminDb
+    // Check if user has access to the workspace
+    const userWorkspaces = await adminDb
       .select()
-      .from(userTenantsTable)
+      .from(userWorkspacesTable)
       .where(
         and(
-          eq(userTenantsTable.userId, dbUser.id),
-          eq(userTenantsTable.tenantId, tenantId),
+          eq(userWorkspacesTable.userId, dbUser.id),
+          eq(userWorkspacesTable.workspaceId, workspaceId),
         ),
       );
 
-    if (userTenants.length === 0) {
-      return null; // User doesn't have access to this tenant
+    if (userWorkspaces.length === 0) {
+      return null; // User doesn't have access to this workspace
     }
 
     return {
       id: dbUser.id,
       email: dbUser.email,
       username: dbUser.username,
-      tenantId: tenantId,
+      workspaceId: workspaceId,
     };
   }
 }

@@ -12,19 +12,19 @@ import type { AuthenticationState } from "../authentication/types";
 import { ActivityIndicator, Dock, TopBar } from "../components";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
 import {
-  getTenantFromRouter,
-  type TenantContext,
-  TenantContextValue,
-  useTenant,
-  useTenantOptional,
-} from "../context/TenantContext";
+  getWorkspaceFromRouter,
+  useWorkspace,
+  useWorkspaceOptional,
+  type WorkspaceContext,
+  WorkspaceContextValue,
+} from "../context/WorkspaceContext";
 
-// Re-export tenant hooks for backwards compatibility
+// Re-export workspace hooks for backwards compatibility
 export {
-  getTenantFromRouter,
-  useTenant,
-  useTenantOptional,
-  type TenantContext,
+  getWorkspaceFromRouter,
+  useWorkspace,
+  useWorkspaceOptional,
+  type WorkspaceContext,
 };
 
 function RootComponent() {
@@ -40,11 +40,11 @@ export const rootRoute = createRootRoute({
 });
 
 /**
- * Tenant route component that extracts the tenant slug from the URL path.
- * All routes are nested under /:tenant (e.g., /tavern/r/ticket/create).
+ * Workspace route component that extracts the workspace slug from the URL path.
+ * All routes are nested under /:workspace (e.g., /tavern/r/ticket/create).
  */
-function TenantComponent() {
-  const { tenant } = useParams({ from: "/$tenant" });
+function WorkspaceComponent() {
+  const { workspace } = useParams({ from: "/$workspace" });
   const { authentication, config } = useNubaseContext();
   const publicRoutes = config.publicRoutes ?? ["/signin"];
   const location = useLocation();
@@ -85,15 +85,15 @@ function TenantComponent() {
     if (authState.status === "loading") return;
 
     const currentPath = location.pathname;
-    // Check if route is public (accounting for tenant prefix)
+    // Check if route is public (accounting for workspace prefix)
     // e.g., /tavern/signin should match /signin in publicRoutes
-    const pathWithoutTenant = currentPath.replace(`/${tenant}`, "");
+    const pathWithoutWorkspace = currentPath.replace(`/${workspace}`, "");
     const isPublicRoute = publicRoutes.some((route) =>
-      pathWithoutTenant.startsWith(route),
+      pathWithoutWorkspace.startsWith(route),
     );
 
     if (authState.status === "unauthenticated" && !isPublicRoute) {
-      // Redirect to root-level signin (not tenant-specific)
+      // Redirect to root-level signin (not workspace-specific)
       navigate({ to: "/signin" });
     }
   }, [
@@ -103,14 +103,14 @@ function TenantComponent() {
     location.pathname,
     navigate,
     publicRoutes,
-    tenant,
+    workspace,
   ]);
 
   // Check if current route is public
   const currentPath = location.pathname;
-  const pathWithoutTenant = currentPath.replace(`/${tenant}`, "");
+  const pathWithoutWorkspace = currentPath.replace(`/${workspace}`, "");
   const isPublicRoute = publicRoutes.some((route) =>
-    pathWithoutTenant.startsWith(route),
+    pathWithoutWorkspace.startsWith(route),
   );
 
   // If authentication is configured, show loading while initializing
@@ -143,16 +143,16 @@ function TenantComponent() {
   }
 
   return (
-    <TenantContextValue.Provider value={{ slug: tenant }}>
+    <WorkspaceContextValue.Provider value={{ slug: workspace }}>
       <Outlet />
-    </TenantContextValue.Provider>
+    </WorkspaceContextValue.Provider>
   );
 }
 
-export const tenantRoute = createRoute({
+export const workspaceRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/$tenant",
-  component: TenantComponent,
+  path: "/$workspace",
+  component: WorkspaceComponent,
 });
 
 function AppShellComponent() {
@@ -168,7 +168,7 @@ function AppShellComponent() {
 }
 
 export const appShellRoute = createRoute({
-  getParentRoute: () => tenantRoute,
+  getParentRoute: () => workspaceRoute,
   id: "app-shell",
   component: AppShellComponent,
 });

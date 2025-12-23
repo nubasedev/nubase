@@ -57,8 +57,8 @@ export interface NubaseContextData<
    */
   authentication: AuthenticationController | null;
   /**
-   * Current tenant slug extracted from the URL path (e.g., "tavern" from /tavern/r/ticket/create).
-   * Used for path-based multi-tenancy.
+   * Current workspace slug extracted from the URL path (e.g., "tavern" from /tavern/r/ticket/create).
+   * Used for path-based multi-workspace.
    */
-  tenant: string | null;
+  workspace: string | null;
 }

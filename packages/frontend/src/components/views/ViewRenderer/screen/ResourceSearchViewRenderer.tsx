@@ -12,7 +12,7 @@ import type { ActionLayout } from "../../../../config/action-layout";
 import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
-import { useTenant } from "../../../../context/TenantContext";
+import { useWorkspace } from "../../../../context/WorkspaceContext";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
@@ -71,7 +71,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const { view, params, resourceName, resource, onError } = props;
   const navigate = useNavigate();
   const context = useNubaseContext();
-  const tenant = useTenant();
+  const workspace = useWorkspace();
 
   // Create a function to wrap actions with automatic query invalidation
   const wrapActionsWithInvalidation = useCallback(
@@ -231,9 +231,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
                           // Navigate to view screen using the resourceName
                           if (resourceName) {
                             navigate({
-                              to: "/$tenant/r/$resourceName/$operation",
+                              to: "/$workspace/r/$resourceName/$operation",
                               params: {
-                                tenant: tenant.slug,
+                                workspace: workspace.slug,
                                 resourceName,
                                 operation: "view",
                               },
@@ -278,7 +278,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     context,
     wrapActionsWithInvalidation,
     idField,
-    tenant.slug,
+    workspace.slug,
   ]);
 
   // Filter resource actions for the ActionBar (bulk operations)

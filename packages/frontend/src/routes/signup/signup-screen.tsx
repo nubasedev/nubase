@@ -7,13 +7,13 @@ import { FormControl } from "../../components/form-controls/FormControl/FormCont
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
 
 /**
- * Sign-up screen for creating a new user and tenant.
+ * Sign-up screen for creating a new user and workspace.
  * This is the root-level signup at /signup.
- * After successful signup, redirects to /$tenant.
+ * After successful signup, redirects to /$workspace.
  */
 export default function SignUpScreen() {
-  const [tenant, setTenant] = useState("");
-  const [tenantName, setTenantName] = useState("");
+  const [workspace, setWorkspace] = useState("");
+  const [workspaceName, setWorkspaceName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,13 +32,13 @@ export default function SignUpScreen() {
       return;
     }
 
-    if (!tenant) {
+    if (!workspace) {
       setError("Please enter an organization slug");
       return;
     }
 
-    // Validate tenant slug format (lowercase, alphanumeric, hyphens)
-    if (!/^[a-z0-9-]+$/.test(tenant)) {
+    // Validate workspace slug format (lowercase, alphanumeric, hyphens)
+    if (!/^[a-z0-9-]+$/.test(workspace)) {
       setError(
         "Organization slug must be lowercase and contain only letters, numbers, and hyphens",
       );
@@ -80,14 +80,14 @@ export default function SignUpScreen() {
         return;
       }
       await authentication.signup({
-        tenant,
-        tenantName: tenantName || tenant,
+        workspace,
+        workspaceName: workspaceName || workspace,
         username,
         email,
         password,
       });
       showToast("Account created successfully!");
-      navigate({ to: "/$tenant", params: { tenant } });
+      navigate({ to: "/$workspace", params: { workspace } });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign up failed";
       setError(message);
@@ -130,11 +130,11 @@ export default function SignUpScreen() {
               required
             >
               <TextInput
-                id="tenant"
+                id="workspace"
                 type="text"
                 placeholder="my-organization"
-                value={tenant}
-                onChange={(e) => setTenant(e.target.value.toLowerCase())}
+                value={workspace}
+                onChange={(e) => setWorkspace(e.target.value.toLowerCase())}
                 disabled={isLoading}
               />
             </FormControl>
@@ -144,11 +144,11 @@ export default function SignUpScreen() {
               hint="Display name for your organization"
             >
               <TextInput
-                id="tenantName"
+                id="workspaceName"
                 type="text"
                 placeholder="My Organization"
-                value={tenantName}
-                onChange={(e) => setTenantName(e.target.value)}
+                value={workspaceName}
+                onChange={(e) => setWorkspaceName(e.target.value)}
                 disabled={isLoading}
               />
             </FormControl>

@@ -1,6 +1,6 @@
 import type { FullConfig } from "@playwright/test";
 
-// Backend API base URL for the tavern tenant
+// Backend API base URL for the tavern workspace
 const API_BASE_URL = "http://tavern.localhost:4001";
 
 async function globalSetup(_config: FullConfig) {
@@ -29,9 +29,9 @@ async function globalSetup(_config: FullConfig) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
-  // Ensure the tenant exists before running tests
+  // Ensure the workspace exists before running tests
   try {
-    const response = await fetch(`${API_BASE_URL}/api/test/ensure-tenant`, {
+    const response = await fetch(`${API_BASE_URL}/api/test/ensure-workspace`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,12 +41,14 @@ async function globalSetup(_config: FullConfig) {
 
     if (response.ok) {
       const data = await response.json();
-      console.log(`Tenant ensured: ${data.tenant.name} (${data.tenant.slug})`);
+      console.log(
+        `Workspace ensured: ${data.workspace.name} (${data.workspace.slug})`,
+      );
     } else {
-      console.warn("Failed to ensure tenant:", response.status);
+      console.warn("Failed to ensure workspace:", response.status);
     }
   } catch (error) {
-    console.warn("Could not ensure tenant:", error);
+    console.warn("Could not ensure workspace:", error);
   }
 
   // Clear database at the start of test run

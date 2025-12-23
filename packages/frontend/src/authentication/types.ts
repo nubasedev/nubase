@@ -31,14 +31,14 @@ export type AuthenticationStateListener = (state: AuthenticationState) => void;
 export interface LoginCredentials {
   username: string;
   password: string;
-  /** Tenant slug for path-based multi-tenancy */
-  tenant?: string;
+  /** Workspace slug for path-based multi-workspace */
+  workspace?: string;
 }
 
 /**
- * Tenant info returned during two-step login.
+ * Workspace info returned during two-step login.
  */
-export interface TenantInfo {
+export interface WorkspaceInfo {
   id: number;
   slug: string;
   name: string;
@@ -52,8 +52,8 @@ export interface LoginStartResponse {
   loginToken: string;
   /** User's username */
   username: string;
-  /** List of tenants the user belongs to */
-  tenants: TenantInfo[];
+  /** List of workspaces the user belongs to */
+  workspaces: WorkspaceInfo[];
 }
 
 /**
@@ -62,16 +62,16 @@ export interface LoginStartResponse {
 export interface LoginCompleteCredentials {
   /** Temporary login token from login start */
   loginToken: string;
-  /** Selected tenant slug */
-  tenant: string;
+  /** Selected workspace slug */
+  workspace: string;
 }
 
 /**
- * Signup credentials for creating new user and tenant.
+ * Signup credentials for creating new user and workspace.
  */
 export interface SignupCredentials {
-  tenant: string;
-  tenantName: string;
+  workspace: string;
+  workspaceName: string;
   username: string;
   email: string;
   password: string;
@@ -128,7 +128,7 @@ export interface AuthenticationController {
 
   /**
    * Start the two-step login process (optional).
-   * Step 1: Validates credentials and returns list of tenants user belongs to.
+   * Step 1: Validates credentials and returns list of workspaces user belongs to.
    * If not implemented, falls back to single-step login.
    */
   loginStart?(credentials: {
@@ -138,14 +138,14 @@ export interface AuthenticationController {
 
   /**
    * Complete the two-step login process (optional).
-   * Step 2: Select a tenant and complete authentication.
+   * Step 2: Select a workspace and complete authentication.
    * If not implemented, falls back to single-step login.
    */
-  loginComplete?(credentials: LoginCompleteCredentials): Promise<TenantInfo>;
+  loginComplete?(credentials: LoginCompleteCredentials): Promise<WorkspaceInfo>;
 
   /**
-   * Sign up a new user and create a new tenant (optional).
-   * Creates both the tenant and the initial admin user.
+   * Sign up a new user and create a new workspace (optional).
+   * Creates both the workspace and the initial admin user.
    */
   signup?(credentials: SignupCredentials): Promise<void>;
 

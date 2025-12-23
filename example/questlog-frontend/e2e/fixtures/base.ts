@@ -1,10 +1,10 @@
 import type { Page } from "@playwright/test";
 import { test as base } from "@playwright/test";
 import { TestReporter } from "../utils/test-reporter";
-import { TEST_TENANT, TEST_USER, TestAPI } from "./test-api";
+import { TEST_USER, TEST_WORKSPACE, TestAPI } from "./test-api";
 
-// Tenant path prefix for all test URLs
-const TENANT_PREFIX = `/${TEST_TENANT}`;
+// Workspace path prefix for all test URLs
+const WORKSPACE_PREFIX = `/${TEST_WORKSPACE}`;
 
 /**
  * Helper function to perform login via the UI.
@@ -12,10 +12,10 @@ const TENANT_PREFIX = `/${TEST_TENANT}`;
  *
  * With the two-step login flow:
  * 1. User enters username + password at /signin
- * 2. If user belongs to one tenant, auto-completes and redirects to /$tenant
- * 3. If user belongs to multiple tenants, shows selection screen
+ * 2. If user belongs to one workspace, auto-completes and redirects to /$workspace
+ * 3. If user belongs to multiple workspaces, shows selection screen
  *
- * For tests, the test user belongs to only one tenant, so it auto-completes.
+ * For tests, the test user belongs to only one workspace, so it auto-completes.
  */
 export async function performLogin(
   page: Page,
@@ -32,8 +32,8 @@ export async function performLogin(
   // Submit the form
   await page.click('button[type="submit"]');
 
-  // Wait for redirect to tenant home page (auto-completes for single tenant)
-  await page.waitForURL(`${TENANT_PREFIX}`);
+  // Wait for redirect to workspace home page (auto-completes for single workspace)
+  await page.waitForURL(`${WORKSPACE_PREFIX}`);
 }
 
 // Extend basic test by providing enhanced fixtures
@@ -142,5 +142,5 @@ export const test = base.extend<{
 });
 
 export { expect } from "@playwright/test";
-export { TEST_TENANT, TEST_USER } from "./test-api";
-export { TENANT_PREFIX };
+export { TEST_USER, TEST_WORKSPACE } from "./test-api";
+export { WORKSPACE_PREFIX };

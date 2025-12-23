@@ -9,6 +9,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3002, // Development port
-    open: "http://localhost:3002/tavern", // Auto-open with tenant path
+    open: "http://localhost:3002/tavern", // Auto-open with workspace path
   },
 });

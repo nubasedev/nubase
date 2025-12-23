@@ -135,9 +135,9 @@ export function useCreateNubaseContext({
       navigationHistory: navigationHistoryTracker,
       params: undefined,
       authentication: initializationData.config.authentication || null,
-      // Tenant is extracted dynamically from router state when needed
-      // Use getTenantFromRouter helper or context.router.state for access
-      tenant: null,
+      // Workspace is extracted dynamically from router state when needed
+      // Use getWorkspaceFromRouter helper or context.router.state for access
+      workspace: null,
     };
 
     return nubaseContextDataInternal;
