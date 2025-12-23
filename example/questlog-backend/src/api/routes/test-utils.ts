@@ -7,6 +7,7 @@ import { getAdminDb } from "../../db/helpers/drizzle";
 import { tenantsTable } from "../../db/schema/tenant";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
+import { userTenantsTable } from "../../db/schema/user-tenant";
 
 // Default test tenant slug
 const DEFAULT_TEST_TENANT = "tavern";
@@ -61,19 +62,32 @@ export const handleClearDatabase = createHttpHandler({
     // Reset the ID sequence to start from 1
     await db.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
 
-    // Clear all users for this tenant
-    await db.delete(usersTable).where(eq(usersTable.tenantId, tenant.id));
+    // Clear all user_tenants associations (for all tenants in test env)
+    await db.delete(userTenantsTable);
+
+    // Clear all users (in test env we start fresh each time)
+    await db.delete(usersTable);
 
     // Reset the users ID sequence
     await db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
 
     // Seed a default test user for this tenant
     const passwordHash = await bcrypt.hash("password123", 12);
-    await db.insert(usersTable).values({
+
+    // Create the test user
+    const [newUser] = await db
+      .insert(usersTable)
+      .values({
+        email: "testuser@example.com",
+        username: "testuser",
+        passwordHash,
+      })
+      .returning();
+
+    // Link user to tenant
+    await db.insert(userTenantsTable).values({
+      userId: newUser.id,
       tenantId: tenant.id,
-      email: "testuser@example.com",
-      username: "testuser",
-      passwordHash,
     });
 
     return {
@@ -253,10 +267,126 @@ export const handleEnsureTenant = createHttpHandler({
   },
 });
 
+/**
+ * Seed a user with multiple tenants - for testing tenant selection flow
+ */
+export const handleSeedMultiTenantUser = createHttpHandler({
+  endpoint: {
+    method: "POST" as const,
+    path: "/api/test/seed-multi-tenant-user",
+    requestParams: emptySchema,
+    requestBody: nu.object({
+      username: nu.string(),
+      password: nu.string(),
+      email: nu.string(),
+      tenants: nu.array(
+        nu.object({
+          slug: nu.string(),
+          name: nu.string(),
+        }),
+      ),
+    }),
+    responseBody: nu.object({
+      success: nu.boolean(),
+      message: nu.string(),
+      tenants: nu.array(
+        nu.object({
+          id: nu.number(),
+          slug: nu.string(),
+          name: nu.string(),
+        }),
+      ),
+    }),
+  },
+  handler: async ({ body }) => {
+    // Only allow in test environment
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
+      throw new Error(
+        "Multi-tenant user seeding is only allowed in test environment",
+      );
+    }
+
+    const db = getAdminDb();
+    const createdTenants: { id: number; slug: string; name: string }[] = [];
+    const passwordHash = await bcrypt.hash(body.password, 12);
+
+    // Check if user already exists
+    let userId: number;
+    const existingUsers = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, body.username));
+
+    if (existingUsers.length > 0) {
+      userId = existingUsers[0].id;
+    } else {
+      // Create user (root-level, no tenant)
+      const [newUser] = await db
+        .insert(usersTable)
+        .values({
+          email: body.email,
+          username: body.username,
+          passwordHash,
+        })
+        .returning();
+      userId = newUser.id;
+    }
+
+    for (const tenantData of body.tenants) {
+      // Check if tenant exists
+      let tenant = await db
+        .select()
+        .from(tenantsTable)
+        .where(eq(tenantsTable.slug, tenantData.slug))
+        .then((rows) => rows[0]);
+
+      // Create tenant if it doesn't exist
+      if (!tenant) {
+        const result = await db
+          .insert(tenantsTable)
+          .values({
+            slug: tenantData.slug,
+            name: tenantData.name,
+          })
+          .returning();
+        tenant = result[0];
+      }
+
+      // Check if user already has access to this tenant
+      const existingAccess = await db
+        .select()
+        .from(userTenantsTable)
+        .where(eq(userTenantsTable.userId, userId))
+        .then((rows) => rows.find((ut) => ut.tenantId === tenant.id));
+
+      // Link user to tenant if not already linked
+      if (!existingAccess) {
+        await db.insert(userTenantsTable).values({
+          userId,
+          tenantId: tenant.id,
+        });
+      }
+
+      createdTenants.push({
+        id: tenant.id,
+        slug: tenant.slug,
+        name: tenant.name,
+      });
+    }
+
+    return {
+      success: true,
+      message: `User ${body.username} seeded in ${createdTenants.length} tenants`,
+      tenants: createdTenants,
+    };
+  },
+});
+
 // Export test utils router
 testUtils.post("/api/test/clear-database", handleClearDatabase);
 testUtils.post("/api/test/seed", handleSeedTestData);
 testUtils.get("/api/test/stats", handleGetDatabaseStats);
 testUtils.post("/api/test/ensure-tenant", handleEnsureTenant);
+testUtils.post("/api/test/seed-multi-tenant-user", handleSeedMultiTenantUser);
 
 export { testUtils };

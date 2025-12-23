@@ -152,7 +152,7 @@ test.describe("Theme Switching", () => {
     await authenticatedPage.keyboard.press("Escape");
 
     // Theme should revert to initial
-    await expect(html).toHaveAttribute("data-theme", initialTheme!);
+    await expect(html).toHaveAttribute("data-theme", initialTheme ?? "light");
   });
 
   test("should filter themes when searching", async ({ authenticatedPage }) => {

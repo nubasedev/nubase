@@ -3,7 +3,14 @@ import { createAuthMiddleware } from "@nubase/backend";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
-import { handleGetMe, handleLogin, handleLogout } from "./api/routes/auth";
+import {
+  handleGetMe,
+  handleLogin,
+  handleLoginComplete,
+  handleLoginStart,
+  handleLogout,
+  handleSignup,
+} from "./api/routes/auth";
 import { testUtils } from "./api/routes/test-utils";
 import {
   handleDeleteTicket,
@@ -50,10 +57,13 @@ app.use("*", createPostAuthTenantMiddleware());
 
 app.get("/", getRoot);
 
-// Auth routes - using custom handlers that support multi-tenancy
-app.post("/auth/login", handleLogin);
+// Auth routes - Two-step login flow
+app.post("/auth/login/start", handleLoginStart); // Step 1: validate credentials, get tenants
+app.post("/auth/login/complete", handleLoginComplete); // Step 2: select tenant, get token
+app.post("/auth/login", handleLogin); // Legacy single-step login (deprecated)
 app.post("/auth/logout", handleLogout);
 app.get("/auth/me", handleGetMe);
+app.post("/auth/signup", handleSignup); // Create new tenant and admin user
 
 // Tickets - RESTful routes with type safety
 app.get("/tickets", handleGetTickets);

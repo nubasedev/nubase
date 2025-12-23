@@ -36,6 +36,48 @@ export interface LoginCredentials {
 }
 
 /**
+ * Tenant info returned during two-step login.
+ */
+export interface TenantInfo {
+  id: number;
+  slug: string;
+  name: string;
+}
+
+/**
+ * Response from login start (step 1 of two-step auth).
+ */
+export interface LoginStartResponse {
+  /** Temporary token for completing login */
+  loginToken: string;
+  /** User's username */
+  username: string;
+  /** List of tenants the user belongs to */
+  tenants: TenantInfo[];
+}
+
+/**
+ * Credentials for completing two-step login.
+ */
+export interface LoginCompleteCredentials {
+  /** Temporary login token from login start */
+  loginToken: string;
+  /** Selected tenant slug */
+  tenant: string;
+}
+
+/**
+ * Signup credentials for creating new user and tenant.
+ */
+export interface SignupCredentials {
+  tenant: string;
+  tenantName: string;
+  username: string;
+  email: string;
+  password: string;
+}
+
+/**
  * AuthenticationController interface.
  *
  * This is the core abstraction for authentication in Nubase applications.
@@ -83,6 +125,29 @@ export interface AuthenticationController {
    * Should check for stored credentials/tokens and restore session if valid.
    */
   initialize(): Promise<void>;
+
+  /**
+   * Start the two-step login process (optional).
+   * Step 1: Validates credentials and returns list of tenants user belongs to.
+   * If not implemented, falls back to single-step login.
+   */
+  loginStart?(credentials: {
+    username: string;
+    password: string;
+  }): Promise<LoginStartResponse>;
+
+  /**
+   * Complete the two-step login process (optional).
+   * Step 2: Select a tenant and complete authentication.
+   * If not implemented, falls back to single-step login.
+   */
+  loginComplete?(credentials: LoginCompleteCredentials): Promise<TenantInfo>;
+
+  /**
+   * Sign up a new user and create a new tenant (optional).
+   * Creates both the tenant and the initial admin user.
+   */
+  signup?(credentials: SignupCredentials): Promise<void>;
 
   // Future extensibility - these are optional and can be added by implementations
   // socialLogin?(provider: 'google' | 'github' | 'microsoft'): Promise<void>;

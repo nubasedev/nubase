@@ -93,7 +93,8 @@ function TenantComponent() {
     );
 
     if (authState.status === "unauthenticated" && !isPublicRoute) {
-      navigate({ to: "/$tenant/signin", params: { tenant } });
+      // Redirect to root-level signin (not tenant-specific)
+      navigate({ to: "/signin" });
     }
   }, [
     authentication,

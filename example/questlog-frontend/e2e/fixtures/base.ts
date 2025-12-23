@@ -9,14 +9,21 @@ const TENANT_PREFIX = `/${TEST_TENANT}`;
 /**
  * Helper function to perform login via the UI.
  * Can be used directly in tests that need to test login functionality.
+ *
+ * With the two-step login flow:
+ * 1. User enters username + password at /signin
+ * 2. If user belongs to one tenant, auto-completes and redirects to /$tenant
+ * 3. If user belongs to multiple tenants, shows selection screen
+ *
+ * For tests, the test user belongs to only one tenant, so it auto-completes.
  */
 export async function performLogin(
   page: Page,
   username: string = TEST_USER.username,
   password: string = TEST_USER.password,
 ) {
-  // Navigate to signin page (with tenant prefix)
-  await page.goto(`${TENANT_PREFIX}/signin`);
+  // Navigate to root-level signin page
+  await page.goto("/signin");
 
   // Fill in credentials
   await page.fill("#username", username);
@@ -25,7 +32,7 @@ export async function performLogin(
   // Submit the form
   await page.click('button[type="submit"]');
 
-  // Wait for redirect to home page (successful login)
+  // Wait for redirect to tenant home page (auto-completes for single tenant)
   await page.waitForURL(`${TENANT_PREFIX}`);
 }
 

@@ -103,4 +103,30 @@ export class TestAPI {
     }
     return response.json();
   }
+
+  /**
+   * Seed a user with multiple tenants for testing tenant selection flow
+   */
+  async seedMultiTenantUser(data: {
+    username: string;
+    password: string;
+    email: string;
+    tenants: Array<{ slug: string; name: string }>;
+  }) {
+    const response = await this.request.post(
+      `${API_BASE_URL}/api/test/seed-multi-tenant-user`,
+      {
+        data,
+      },
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(
+        `Failed to seed multi-tenant user: ${response.status()} - ${body}`,
+      );
+    }
+
+    return response.json();
+  }
 }

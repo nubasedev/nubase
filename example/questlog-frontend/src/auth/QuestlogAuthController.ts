@@ -3,7 +3,11 @@ import type {
   AuthenticationController,
   AuthenticationState,
   AuthenticationStateListener,
+  LoginCompleteCredentials,
   LoginCredentials,
+  LoginStartResponse,
+  SignupCredentials,
+  TenantInfo,
 } from "@nubase/frontend";
 
 /**
@@ -141,6 +145,123 @@ export class QuestlogAuthController implements AuthenticationController {
         user: null,
         error: null,
       });
+    }
+  }
+
+  /**
+   * Start the two-step login process.
+   * Step 1: Validates credentials and returns list of tenants user belongs to.
+   */
+  async loginStart(credentials: {
+    username: string;
+    password: string;
+  }): Promise<LoginStartResponse> {
+    const response = await fetch(`${this.apiBaseUrl}/auth/login/start`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        username: credentials.username,
+        password: credentials.password,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "Invalid username or password");
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Complete the two-step login process.
+   * Step 2: Select a tenant and complete authentication.
+   */
+  async loginComplete(
+    credentials: LoginCompleteCredentials,
+  ): Promise<TenantInfo> {
+    this.setState({ status: "loading", error: null });
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/login/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          loginToken: credentials.loginToken,
+          tenant: credentials.tenant,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Login failed");
+      }
+
+      const data = await response.json();
+      const user: AuthenticatedUser = data.user;
+
+      this.setState({
+        status: "authenticated",
+        user,
+        error: null,
+      });
+
+      return data.tenant;
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error("Login failed");
+      this.setState({
+        status: "unauthenticated",
+        user: null,
+        error: err,
+      });
+      throw err;
+    }
+  }
+
+  /**
+   * Sign up a new user and create a new tenant.
+   * After successful signup, the user is automatically logged in.
+   */
+  async signup(credentials: SignupCredentials): Promise<void> {
+    this.setState({ status: "loading", error: null });
+
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(credentials),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Signup failed");
+      }
+
+      const data = await response.json();
+      const user: AuthenticatedUser = data.user;
+
+      this.setState({
+        status: "authenticated",
+        user,
+        error: null,
+      });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error("Signup failed");
+      this.setState({
+        status: "unauthenticated",
+        user: null,
+        error: err,
+      });
+      throw err;
     }
   }
 }

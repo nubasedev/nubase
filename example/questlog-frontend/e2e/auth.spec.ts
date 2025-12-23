@@ -7,8 +7,8 @@ test.describe("Authentication", () => {
   }) => {
     // testAPI fixture clears the database and seeds the test user
 
-    // Navigate to signin page
-    await page.goto(`${TENANT_PREFIX}/signin`);
+    // Navigate to root-level signin page
+    await page.goto("/signin");
 
     // Verify we're on the signin page
     await expect(page.locator("h1")).toContainText("Sign In");
@@ -20,7 +20,7 @@ test.describe("Authentication", () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Wait for redirect to home page
+    // Wait for redirect to tenant home page (auto-completes for single tenant)
     await page.waitForURL(`${TENANT_PREFIX}`);
 
     // Verify we're logged in (should see the app shell with main navigation)
@@ -35,8 +35,8 @@ test.describe("Authentication", () => {
   }) => {
     // testAPI fixture clears the database and seeds the test user
 
-    // Navigate to signin page
-    await page.goto(`${TENANT_PREFIX}/signin`);
+    // Navigate to root-level signin page
+    await page.goto("/signin");
 
     // Fill in invalid credentials
     await page.fill("#username", "wronguser");
@@ -58,8 +58,8 @@ test.describe("Authentication", () => {
     page,
     testAPI: _testAPI,
   }) => {
-    // Navigate to signin page
-    await page.goto(`${TENANT_PREFIX}/signin`);
+    // Navigate to root-level signin page
+    await page.goto("/signin");
 
     // Leave username empty, fill password
     await page.fill("#password", "somepassword");
@@ -85,8 +85,8 @@ test.describe("Authentication", () => {
     // Try to access a protected route directly
     await page.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
-    // Should be redirected to signin
-    await page.waitForURL(`${TENANT_PREFIX}/signin`);
+    // Should be redirected to root-level signin
+    await page.waitForURL("/signin");
     expect(page.url()).toContain("/signin");
   });
 
@@ -131,8 +131,8 @@ test.describe("Authentication", () => {
     await expect(signOutButton).toBeVisible();
     await signOutButton.click();
 
-    // Should be redirected to signin page
-    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
+    // Should be redirected to root-level signin page
+    await authenticatedPage.waitForURL("/signin");
     expect(authenticatedPage.url()).toContain("/signin");
 
     // User avatar should no longer be visible (we're on signin page)
@@ -149,14 +149,63 @@ test.describe("Authentication", () => {
     const signOutButton = authenticatedPage.getByTestId("sign-out-button");
     await signOutButton.click();
 
-    // Wait for redirect to signin
-    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
+    // Wait for redirect to root-level signin
+    await authenticatedPage.waitForURL("/signin");
 
     // Try to access a protected route
     await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
-    // Should be redirected back to signin
-    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
+    // Should be redirected back to root-level signin
+    await authenticatedPage.waitForURL("/signin");
     expect(authenticatedPage.url()).toContain("/signin");
+  });
+
+  test("should show tenant selection when user belongs to multiple tenants", async ({
+    page,
+    testAPI,
+  }) => {
+    // Seed a user with multiple tenants
+    const multiTenantUser = {
+      username: "multitenant",
+      password: "password123",
+      email: "multitenant@example.com",
+      tenants: [
+        { slug: "guild-alpha", name: "Guild Alpha" },
+        { slug: "guild-beta", name: "Guild Beta" },
+      ],
+    };
+
+    await testAPI.seedMultiTenantUser(multiTenantUser);
+
+    // Navigate to signin page
+    await page.goto("/signin");
+
+    // Fill in credentials
+    await page.fill("#username", multiTenantUser.username);
+    await page.fill("#password", multiTenantUser.password);
+
+    // Submit the form
+    await page.click('button[type="submit"]');
+
+    // Should see tenant selection screen
+    await expect(page.locator("h1")).toContainText("Select Organization");
+
+    // Verify both tenants are shown
+    await expect(page.getByText("Guild Alpha")).toBeVisible();
+    await expect(page.getByText("guild-alpha")).toBeVisible();
+    await expect(page.getByText("Guild Beta")).toBeVisible();
+    await expect(page.getByText("guild-beta")).toBeVisible();
+
+    // Select the first tenant (Guild Alpha)
+    await page.getByText("Guild Alpha").click();
+
+    // Should redirect to the selected tenant's home page
+    await page.waitForURL("**/guild-alpha");
+    expect(page.url()).toContain("/guild-alpha");
+
+    // Verify we're logged in
+    await expect(
+      page.getByRole("navigation", { name: "Main navigation" }),
+    ).toBeVisible();
   });
 });

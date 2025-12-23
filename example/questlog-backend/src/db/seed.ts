@@ -9,6 +9,7 @@ import { getAdminDb } from "./helpers/drizzle";
 import { tenantsTable } from "./schema/tenant";
 import { ticketsTable } from "./schema/ticket";
 import { usersTable } from "./schema/user";
+import { userTenantsTable } from "./schema/user-tenant";
 
 // Load environment variables
 loadEnvironment();
@@ -81,7 +82,7 @@ async function seedTenants() {
   // Clear existing data using TRUNCATE (bypasses RLS, respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
   await db.execute(
-    sql`TRUNCATE TABLE tickets, users, tenants RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE tickets, user_tenants, users, tenants RESTART IDENTITY CASCADE`,
   );
 
   // Create default tenant
@@ -101,25 +102,30 @@ async function seedTenants() {
 }
 
 /**
- * Seed the users table with a test user for the given tenant
+ * Seed the users table with a test user and link to the given tenant
  */
 async function seedUsers(tenantId: number) {
   console.log("👤 Seeding users...");
 
   const db = getAdminDb();
 
-  // Create a test user with hashed password
+  // Create a test user with hashed password (root-level, no tenantId)
   const passwordHash = await bcrypt.hash("password123", 12);
 
   const insertedUsers = await db
     .insert(usersTable)
     .values({
-      tenantId,
       email: "admin@example.com",
       username: "admin",
       passwordHash,
     })
     .returning();
+
+  // Link user to tenant via user_tenants table
+  await db.insert(userTenantsTable).values({
+    userId: insertedUsers[0].id,
+    tenantId,
+  });
 
   console.log(
     `✅ Created user: ${insertedUsers[0].username} (password: password123)`,

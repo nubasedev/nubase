@@ -19,7 +19,11 @@ export type {
   AuthenticationController,
   AuthenticationState,
   AuthenticationStateListener,
+  LoginCompleteCredentials,
   LoginCredentials,
+  LoginStartResponse,
+  SignupCredentials,
+  TenantInfo,
 } from "./authentication";
 export * from "./commands";
 // Export commands namespace for easier importing
