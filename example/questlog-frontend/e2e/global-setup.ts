@@ -1,5 +1,8 @@
 import type { FullConfig } from "@playwright/test";
 
+// Backend API base URL for the tavern tenant
+const API_BASE_URL = "http://tavern.localhost:4001";
+
 async function globalSetup(_config: FullConfig) {
   console.log("Running global setup...");
 
@@ -9,7 +12,7 @@ async function globalSetup(_config: FullConfig) {
 
   while (retries < maxRetries) {
     try {
-      const response = await fetch("http://localhost:4001/");
+      const response = await fetch(`${API_BASE_URL}/`);
       if (response.ok) {
         console.log("Backend is ready");
         break;
@@ -26,18 +29,35 @@ async function globalSetup(_config: FullConfig) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
+  // Ensure the tenant exists before running tests
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/test/ensure-tenant`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`Tenant ensured: ${data.tenant.name} (${data.tenant.slug})`);
+    } else {
+      console.warn("Failed to ensure tenant:", response.status);
+    }
+  } catch (error) {
+    console.warn("Could not ensure tenant:", error);
+  }
+
   // Clear database at the start of test run
   try {
-    const response = await fetch(
-      "http://localhost:4001/api/test/clear-database",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
+    const response = await fetch(`${API_BASE_URL}/api/test/clear-database`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({}),
+    });
 
     if (response.ok) {
       console.log("Test database cleared successfully");

@@ -1,11 +1,13 @@
 import { createHttpHandler } from "@nubase/backend";
 import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcrypt";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb } from "../../db/helpers/drizzle";
+import { tenantsTable } from "../../db/schema/tenant";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
+import type { Tenant } from "../../middleware/tenant-middleware";
 
 // Test utility endpoints - only enabled in test environment
 const testUtils = new Hono();
@@ -22,29 +24,31 @@ export const handleClearDatabase = createHttpHandler({
       message: nu.string(),
     }),
   },
-  handler: async () => {
+  handler: async ({ ctx }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database cleanup is only allowed in test environment");
     }
 
     const db = getDb();
+    const tenant = ctx.get("tenant") as Tenant;
 
-    // Clear all tickets
-    await db.delete(ticketsTable);
+    // Clear all tickets for this tenant
+    await db.delete(ticketsTable).where(eq(ticketsTable.tenantId, tenant.id));
 
     // Reset the ID sequence to start from 1
     await db.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
 
-    // Clear all users
-    await db.delete(usersTable);
+    // Clear all users for this tenant
+    await db.delete(usersTable).where(eq(usersTable.tenantId, tenant.id));
 
     // Reset the users ID sequence
     await db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
 
-    // Seed a default test user
+    // Seed a default test user for this tenant
     const passwordHash = await bcrypt.hash("password123", 12);
     await db.insert(usersTable).values({
+      tenantId: tenant.id,
       email: "testuser@example.com",
       username: "testuser",
       passwordHash,
@@ -52,7 +56,7 @@ export const handleClearDatabase = createHttpHandler({
 
     return {
       success: true,
-      message: "Database cleared and test user seeded successfully",
+      message: `Database cleared and test user seeded for tenant ${tenant.slug}`,
     };
   },
 });
@@ -83,13 +87,14 @@ export const handleSeedTestData = createHttpHandler({
         .optional(),
     }),
   },
-  handler: async ({ body }) => {
+  handler: async ({ body, ctx }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Test seeding is only allowed in test environment");
     }
 
     const db = getDb();
+    const tenant = ctx.get("tenant") as Tenant;
     const insertedTicketIds: number[] = [];
 
     if (body?.tickets) {
@@ -97,6 +102,7 @@ export const handleSeedTestData = createHttpHandler({
         const result = await db
           .insert(ticketsTable)
           .values({
+            tenantId: tenant.id,
             title: ticket.title,
             description: ticket.description,
           })
@@ -110,7 +116,7 @@ export const handleSeedTestData = createHttpHandler({
 
     return {
       success: true,
-      message: "Test data seeded successfully",
+      message: `Test data seeded for tenant ${tenant.slug}`,
       data: {
         ticketIds: insertedTicketIds,
       },
@@ -131,14 +137,18 @@ export const handleGetDatabaseStats = createHttpHandler({
       }),
     }),
   },
-  handler: async () => {
+  handler: async ({ ctx }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database stats are only available in test environment");
     }
 
     const db = getDb();
-    const tickets = await db.select().from(ticketsTable);
+    const tenant = ctx.get("tenant") as Tenant;
+    const tickets = await db
+      .select()
+      .from(ticketsTable)
+      .where(eq(ticketsTable.tenantId, tenant.id));
 
     return {
       tickets: {
@@ -148,9 +158,84 @@ export const handleGetDatabaseStats = createHttpHandler({
   },
 });
 
+// Ensure default tenant exists - called at the start of test runs
+export const handleEnsureTenant = createHttpHandler({
+  endpoint: {
+    method: "POST" as const,
+    path: "/api/test/ensure-tenant",
+    requestParams: emptySchema,
+    requestBody: emptySchema,
+    responseBody: nu.object({
+      success: nu.boolean(),
+      tenant: nu.object({
+        id: nu.number(),
+        slug: nu.string(),
+        name: nu.string(),
+      }),
+    }),
+  },
+  handler: async ({ ctx }) => {
+    // Only allow in test environment
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
+      throw new Error("Tenant management is only allowed in test environment");
+    }
+
+    // Get the tenant slug from the subdomain (already extracted by tenant middleware)
+    // For test setup, we need to create the tenant if it doesn't exist
+    const host = ctx.req.header("Host") || "";
+    const subdomain = host.split(":")[0].split(".")[0];
+
+    if (!subdomain) {
+      throw new Error("No subdomain provided");
+    }
+
+    const db = getDb();
+
+    // Check if tenant exists
+    const existingTenants = await db
+      .select()
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, subdomain));
+
+    if (existingTenants.length > 0) {
+      return {
+        success: true,
+        tenant: {
+          id: existingTenants[0].id,
+          slug: existingTenants[0].slug,
+          name: existingTenants[0].name,
+        },
+      };
+    }
+
+    // Create the tenant
+    const result = await db
+      .insert(tenantsTable)
+      .values({
+        slug: subdomain,
+        name: subdomain.charAt(0).toUpperCase() + subdomain.slice(1),
+      })
+      .returning();
+
+    if (result.length === 0) {
+      throw new Error("Failed to create tenant");
+    }
+
+    return {
+      success: true,
+      tenant: {
+        id: result[0].id,
+        slug: result[0].slug,
+        name: result[0].name,
+      },
+    };
+  },
+});
+
 // Export test utils router
 testUtils.post("/api/test/clear-database", handleClearDatabase);
 testUtils.post("/api/test/seed", handleSeedTestData);
 testUtils.get("/api/test/stats", handleGetDatabaseStats);
+testUtils.post("/api/test/ensure-tenant", handleEnsureTenant);
 
 export { testUtils };

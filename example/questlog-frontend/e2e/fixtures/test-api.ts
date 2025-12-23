@@ -7,8 +7,32 @@ export const TEST_USER = {
   email: "testuser@example.com",
 };
 
+// Backend API base URL for the tavern tenant
+const API_BASE_URL = "http://tavern.localhost:4001";
+
 export class TestAPI {
   constructor(private request: APIRequestContext) {}
+
+  /**
+   * Ensure the tenant exists before running tests
+   */
+  async ensureTenant() {
+    const response = await this.request.post(
+      `${API_BASE_URL}/api/test/ensure-tenant`,
+      {
+        data: {},
+      },
+    );
+
+    if (!response.ok()) {
+      const body = await response.text();
+      throw new Error(
+        `Failed to ensure tenant: ${response.status()} - ${body}`,
+      );
+    }
+
+    return response.json();
+  }
 
   /**
    * Login as the test user and return cookies for authenticated requests
@@ -17,12 +41,9 @@ export class TestAPI {
     username: string = TEST_USER.username,
     password: string = TEST_USER.password,
   ) {
-    const response = await this.request.post(
-      "http://localhost:4001/auth/login",
-      {
-        data: { username, password },
-      },
-    );
+    const response = await this.request.post(`${API_BASE_URL}/auth/login`, {
+      data: { username, password },
+    });
 
     if (!response.ok()) {
       const body = await response.text();
@@ -34,7 +55,7 @@ export class TestAPI {
 
   async clearDatabase() {
     const response = await this.request.post(
-      "http://localhost:4001/api/test/clear-database",
+      `${API_BASE_URL}/api/test/clear-database`,
       {
         data: {},
       },
@@ -51,12 +72,9 @@ export class TestAPI {
   async seedTestData(data: {
     tickets?: Array<{ title: string; description?: string }>;
   }) {
-    const response = await this.request.post(
-      "http://localhost:4001/api/test/seed",
-      {
-        data,
-      },
-    );
+    const response = await this.request.post(`${API_BASE_URL}/api/test/seed`, {
+      data,
+    });
     if (!response.ok()) {
       throw new Error(`Failed to seed test data: ${response.status()}`);
     }
@@ -64,9 +82,7 @@ export class TestAPI {
   }
 
   async getDatabaseStats() {
-    const response = await this.request.get(
-      "http://localhost:4001/api/test/stats",
-    );
+    const response = await this.request.get(`${API_BASE_URL}/api/test/stats`);
     if (!response.ok()) {
       const body = await response.text();
       throw new Error(
@@ -77,9 +93,7 @@ export class TestAPI {
   }
 
   async getTicket(id: number) {
-    const response = await this.request.get(
-      `http://localhost:4001/tickets/${id}`,
-    );
+    const response = await this.request.get(`${API_BASE_URL}/tickets/${id}`);
     if (!response.ok()) {
       throw new Error(`Failed to get ticket: ${response.status()}`);
     }

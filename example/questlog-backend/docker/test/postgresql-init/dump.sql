@@ -1,9 +1,8 @@
 --
--- PostgreSQL database dump
+-- Questlog Database Schema
+-- This is the source of truth for the database structure.
+-- Run `npm run db:schema-sync` to copy this to Docker init folders.
 --
-
--- Dumped from database version 17.5 (Debian 17.5-1.pgdg120+1)
--- Dumped by pg_dump version 17.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,62 +17,65 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: pg_stat_statements; Type: EXTENSION; Schema: -; Owner: -
+-- Extensions
 --
 
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pg_stat_statements; Type: COMMENT; Schema: -; Owner: -
---
-
 COMMENT ON EXTENSION pg_stat_statements IS 'track planning and execution statistics of all SQL statements executed';
 
 
-SET default_tablespace = '';
+--
+-- Application user (non-superuser, subject to RLS)
+--
 
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'questlog_app') THEN
+    CREATE ROLE questlog_app WITH LOGIN PASSWORD 'questlog_app';
+  END IF;
+END
+$$;
+
+GRANT CONNECT ON DATABASE questlog TO questlog_app;
+GRANT USAGE ON SCHEMA public TO questlog_app;
+
+
+SET default_tablespace = '';
 SET default_table_access_method = heap;
 
+
+-- ============================================================================
+-- TABLES
+-- ============================================================================
+
 --
--- Name: tickets; Type: TABLE; Schema: public; Owner: -
+-- Tenants
 --
 
-CREATE TABLE public.tickets (
+CREATE TABLE public.tenants (
     id integer NOT NULL,
-    title character varying NOT NULL,
-    description character varying
+    slug character varying(100) NOT NULL,
+    name character varying(255) NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
 );
 
-
---
--- Name: tickets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.tickets_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
+ALTER TABLE public.tenants ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.tenants_id_seq
+    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
-
---
--- Name: tickets tickets_pk; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.tickets
-    ADD CONSTRAINT tickets_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.tenants ADD CONSTRAINT tenants_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.tenants ADD CONSTRAINT tenants_slug_unique UNIQUE (slug);
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: -
+-- Users
 --
 
 CREATE TABLE public.users (
     id integer NOT NULL,
+    tenant_id integer NOT NULL,
     email character varying(255) NOT NULL,
     username character varying(100) NOT NULL,
     password_hash character varying(255) NOT NULL,
@@ -81,46 +83,67 @@ CREATE TABLE public.users (
     updated_at timestamp without time zone DEFAULT now()
 );
 
-
---
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
 ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     SEQUENCE NAME public.users_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1
+    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
 );
 
-
---
--- Name: users users_pk; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_tenant_email_unique UNIQUE (tenant_id, email);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_tenant_username_unique UNIQUE (tenant_id, username);
+ALTER TABLE ONLY public.users ADD CONSTRAINT users_tenant_fk FOREIGN KEY (tenant_id) REFERENCES public.tenants(id);
 
 
 --
--- Name: users users_email_unique; Type: CONSTRAINT; Schema: public; Owner: -
+-- Tickets
 --
 
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_email_unique UNIQUE (email);
+CREATE TABLE public.tickets (
+    id integer NOT NULL,
+    tenant_id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    description character varying(1000)
+);
+
+ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.tickets_id_seq
+    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
+);
+
+ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_pk PRIMARY KEY (id);
+ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_tenant_fk FOREIGN KEY (tenant_id) REFERENCES public.tenants(id);
 
 
---
--- Name: users users_username_unique; Type: CONSTRAINT; Schema: public; Owner: -
---
+-- ============================================================================
+-- PERMISSIONS
+-- ============================================================================
 
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_username_unique UNIQUE (username);
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO questlog_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO questlog_app;
 
 
---
--- PostgreSQL database dump complete
---
+-- ============================================================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================================================
+
+-- Tickets: only visible/modifiable for the current tenant
+ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tickets_tenant_isolation ON public.tickets
+    TO questlog_app
+    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer)
+    WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
+
+
+-- Users: only visible/modifiable for the current tenant
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY users_tenant_isolation ON public.users
+    TO questlog_app
+    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer)
+    WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
+
+
+-- Note: tenants table does NOT have RLS - it must be queried to look up tenant
+-- by slug before the tenant context is established.
 

@@ -38,9 +38,12 @@ Command.prototype.action = function (fn) {
   return originalAction.call(this, timedFn);
 };
 
-program.command("pg-dump").action(async (_options: any) => {
-  await pgDump();
-});
+program
+  .command("pg-dump")
+  .option("-o, --output <file>", "Output file path", "db/schema.sql")
+  .action(async (options: { output: string }) => {
+    await pgDump({ output: options.output });
+  });
 
 program.command("pg-dump-data").action(async (_options: any) => {
   await pgDumpData();

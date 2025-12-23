@@ -1,10 +1,11 @@
 import { createHttpHandler } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
+import type { Tenant } from "../../middleware/tenant-middleware";
 
 // Type-safe database types inferred from schema
 type Ticket = InferSelectModel<typeof ticketsTable>;
@@ -12,6 +13,7 @@ type NewTicket = InferInsertModel<typeof ticketsTable>;
 
 /**
  * Get all tickets - requires authentication.
+ * Now tenant-scoped: only returns tickets belonging to the current tenant.
  */
 export const handleGetTickets = createHttpHandler<
   typeof apiEndpoints.getTickets,
@@ -20,10 +22,16 @@ export const handleGetTickets = createHttpHandler<
 >({
   endpoint: apiEndpoints.getTickets,
   auth: "required",
-  handler: async ({ user }) => {
-    console.log(`User ${user.username} fetching tickets`);
+  handler: async ({ user, ctx }) => {
+    const tenant = ctx.get("tenant") as Tenant;
+    console.log(
+      `User ${user.username} fetching tickets for tenant ${tenant.slug}`,
+    );
     const db = getDb();
-    const tickets: Ticket[] = await db.select().from(ticketsTable);
+    const tickets: Ticket[] = await db
+      .select()
+      .from(ticketsTable)
+      .where(eq(ticketsTable.tenantId, tenant.id));
 
     // Transform database result to match API schema
     return tickets.map((ticket) => ({
@@ -36,6 +44,7 @@ export const handleGetTickets = createHttpHandler<
 
 /**
  * Get a single ticket - requires authentication.
+ * Now tenant-scoped: only returns ticket if it belongs to the current tenant.
  */
 export const handleGetTicket = createHttpHandler<
   typeof apiEndpoints.getTicket,
@@ -44,13 +53,21 @@ export const handleGetTicket = createHttpHandler<
 >({
   endpoint: apiEndpoints.getTicket,
   auth: "required",
-  handler: async ({ params, user }) => {
-    console.log(`User ${user.username} fetching ticket ${params.id}`);
+  handler: async ({ params, user, ctx }) => {
+    const tenant = ctx.get("tenant") as Tenant;
+    console.log(
+      `User ${user.username} fetching ticket ${params.id} for tenant ${tenant.slug}`,
+    );
     const db = getDb();
     const tickets: Ticket[] = await db
       .select()
       .from(ticketsTable)
-      .where(eq(ticketsTable.id, params.id));
+      .where(
+        and(
+          eq(ticketsTable.id, params.id),
+          eq(ticketsTable.tenantId, tenant.id),
+        ),
+      );
 
     if (tickets.length === 0) {
       throw new Error("Ticket not found");
@@ -67,6 +84,7 @@ export const handleGetTicket = createHttpHandler<
 
 /**
  * Create a new ticket - requires authentication.
+ * Now tenant-scoped: creates ticket for the current tenant.
  */
 export const handlePostTicket = createHttpHandler<
   typeof apiEndpoints.postTicket,
@@ -75,12 +93,17 @@ export const handlePostTicket = createHttpHandler<
 >({
   endpoint: apiEndpoints.postTicket,
   auth: "required",
-  handler: async ({ body, user }) => {
-    console.log(`User ${user.username} creating ticket:`, body);
+  handler: async ({ body, user, ctx }) => {
+    const tenant = ctx.get("tenant") as Tenant;
+    console.log(
+      `User ${user.username} creating ticket for tenant ${tenant.slug}:`,
+      body,
+    );
     const db = getDb();
 
-    // Type-safe insert data - only include fields that can be inserted
+    // Type-safe insert data - includes tenantId
     const insertData: NewTicket = {
+      tenantId: tenant.id,
       title: body.title,
       description: body.description,
     };
@@ -105,6 +128,7 @@ export const handlePostTicket = createHttpHandler<
 
 /**
  * Update a ticket - requires authentication.
+ * Now tenant-scoped: only updates ticket if it belongs to the current tenant.
  */
 export const handlePatchTicket = createHttpHandler<
   typeof apiEndpoints.patchTicket,
@@ -113,8 +137,12 @@ export const handlePatchTicket = createHttpHandler<
 >({
   endpoint: apiEndpoints.patchTicket,
   auth: "required",
-  handler: async ({ params, body, user }) => {
-    console.log(`User ${user.username} updating ticket ${params.id}:`, body);
+  handler: async ({ params, body, user, ctx }) => {
+    const tenant = ctx.get("tenant") as Tenant;
+    console.log(
+      `User ${user.username} updating ticket ${params.id} for tenant ${tenant.slug}:`,
+      body,
+    );
     const db = getDb();
 
     // Type-safe partial update - only include fields that exist and are not undefined
@@ -129,7 +157,12 @@ export const handlePatchTicket = createHttpHandler<
     const result: Ticket[] = await db
       .update(ticketsTable)
       .set(updateData)
-      .where(eq(ticketsTable.id, params.id))
+      .where(
+        and(
+          eq(ticketsTable.id, params.id),
+          eq(ticketsTable.tenantId, tenant.id),
+        ),
+      )
       .returning();
 
     if (result.length === 0) {
@@ -147,6 +180,7 @@ export const handlePatchTicket = createHttpHandler<
 
 /**
  * Delete a ticket - requires authentication.
+ * Now tenant-scoped: only deletes ticket if it belongs to the current tenant.
  */
 export const handleDeleteTicket = createHttpHandler<
   typeof apiEndpoints.deleteTicket,
@@ -155,13 +189,21 @@ export const handleDeleteTicket = createHttpHandler<
 >({
   endpoint: apiEndpoints.deleteTicket,
   auth: "required",
-  handler: async ({ params, user }) => {
-    console.log(`User ${user.username} deleting ticket ${params.id}`);
+  handler: async ({ params, user, ctx }) => {
+    const tenant = ctx.get("tenant") as Tenant;
+    console.log(
+      `User ${user.username} deleting ticket ${params.id} for tenant ${tenant.slug}`,
+    );
     const db = getDb();
 
     const result: Ticket[] = await db
       .delete(ticketsTable)
-      .where(eq(ticketsTable.id, params.id))
+      .where(
+        and(
+          eq(ticketsTable.id, params.id),
+          eq(ticketsTable.tenantId, tenant.id),
+        ),
+      )
       .returning();
 
     if (result.length === 0) {

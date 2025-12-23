@@ -1,21 +1,34 @@
 import shelljs from "shelljs";
 
-export async function pgDump() {
-  const databaseUrl = process.env.DATABASE_URL;
+export interface PgDumpOptions {
+  output?: string;
+}
+
+export async function pgDump(options: PgDumpOptions = {}) {
+  // Use admin connection for pg_dump (needs full access to dump schema)
+  const databaseUrl =
+    process.env.DATABASE_URL_ADMIN || process.env.DATABASE_URL;
   if (!databaseUrl) {
-    throw new Error("DATABASE_URL is not set");
+    throw new Error("DATABASE_URL_ADMIN or DATABASE_URL is not set");
   }
+
+  const outputFile = options.output || "db/schema.sql";
 
   // make shelljs to output all commands
   shelljs.config.verbose = true;
 
-  shelljs.rm("-f", "db/dump.sql");
+  shelljs.rm("-f", outputFile);
 
-  shelljs.mkdir("-p", "db");
+  // Ensure directory exists
+  const dir = outputFile.substring(0, outputFile.lastIndexOf("/"));
+  if (dir) {
+    shelljs.mkdir("-p", dir);
+  }
 
   shelljs.exec(
-    `pg_dump --file db/dump.sql --schema-only --no-owner --no-acl ${databaseUrl}`,
+    `pg_dump --file ${outputFile} --schema-only --no-owner --no-acl ${databaseUrl}`,
   );
-  shelljs.cp("db/dump.sql", "docker/dev/postgresql-init/dump.sql");
-  shelljs.cp("db/dump.sql", "docker/test/postgresql-init/dump.sql");
+
+  console.log(`\nSchema dumped to ${outputFile}`);
+  console.log("Run 'npm run db:schema-sync' to copy to Docker init folders.");
 }

@@ -17,7 +17,7 @@ The schema is defined in example/questlog-schema and both the frontend and backe
 
 ## Documentation
 
-If you're curious about how the architecture works internally you can read the docs at apps/docs/docs/
+If you're curious about how the architecture works internally you can read the docs at apps/docs/docs/ and apps/docs/docs/internal/
 
 ## Development Commands
 

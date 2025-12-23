@@ -5,29 +5,37 @@ import {
 } from "@nubase/backend";
 import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";
+import type { Tenant } from "../../middleware/tenant-middleware";
 
 type DbUser = InferSelectModel<typeof usersTable>;
 
 /**
  * Login handler - validates credentials and sets HttpOnly cookie.
  * Uses the auth controller to create tokens and set cookies.
+ * Now tenant-aware: looks up user within the current tenant.
  */
 export const handleLogin = createHttpHandler({
   endpoint: apiEndpoints.login,
   handler: async ({ body, ctx }) => {
     const db = getDb();
     const authController = getAuthController<QuestlogUser>(ctx);
+    const tenant = ctx.get("tenant") as Tenant;
 
-    // Find user by username
+    // Find user by username within the tenant
     const users: DbUser[] = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.username, body.username));
+      .where(
+        and(
+          eq(usersTable.username, body.username),
+          eq(usersTable.tenantId, tenant.id),
+        ),
+      );
 
     if (users.length === 0) {
       throw new HttpError(401, "Invalid username or password");
@@ -44,11 +52,12 @@ export const handleLogin = createHttpHandler({
       throw new HttpError(401, "Invalid username or password");
     }
 
-    // Create user object for token
+    // Create user object for token (includes tenantId)
     const user: QuestlogUser = {
       id: dbUser.id,
       email: dbUser.email,
       username: dbUser.username,
+      tenantId: dbUser.tenantId,
     };
 
     // Create token using auth controller

@@ -24,6 +24,8 @@
     "db:down": "cd example/questlog-backend && npm run db:dev:down && npm run db:test:down",
     "db:kill": "npm run db:down && cd example/questlog-backend && npm run db:dev:kill && npm run db:test:kill",
     "db:seed": "cd example/questlog-backend && npm run db:dev:seed",
+    "db:pg-dump": "cd example/questlog-backend && npm run db:pg-dump",
+    "db:pg-dump-data": "cd example/questlog-backend && npm run db:pg-dump-data",
     "e2e": "turbo run e2e",
     "e2e:ui": "cd example/questlog-frontend && npm run e2e:ui",
     "e2e:headed": "cd example/questlog-frontend && npm run e2e:headed",

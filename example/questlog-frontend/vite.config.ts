@@ -7,4 +7,8 @@ export default defineConfig({
     outDir: "dist",
   },
   plugins: [react()],
+  server: {
+    host: true, // Listen on all interfaces for subdomain support
+    open: "http://tavern.localhost:5173/", // Auto-open with subdomain
+  },
 });

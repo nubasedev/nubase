@@ -3,8 +3,10 @@
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcrypt";
 import type { InferInsertModel } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";
-import { getDb } from "./helpers/drizzle";
+import { getAdminDb } from "./helpers/drizzle";
+import { tenantsTable } from "./schema/tenant";
 import { ticketsTable } from "./schema/ticket";
 import { usersTable } from "./schema/user";
 
@@ -16,10 +18,16 @@ type NewTicket = InferInsertModel<typeof ticketsTable>;
 // Default number of tickets to generate
 const DEFAULT_TICKET_COUNT = 10;
 
+// Default tenant configuration
+const DEFAULT_TENANT = {
+  slug: "tavern",
+  name: "The Tavern",
+};
+
 /**
  * Generate fake ticket data using faker.js
  */
-function generateFakeTicket(): NewTicket {
+function generateFakeTicket(tenantId: number): NewTicket {
   const ticketTypes = [
     "Bug Report",
     "Feature Request",
@@ -56,21 +64,49 @@ function generateFakeTicket(): NewTicket {
     : null;
 
   return {
+    tenantId,
     title,
     description,
   };
 }
 
 /**
- * Seed the users table with a test user
+ * Seed the tenants table with the default tenant
  */
-async function seedUsers() {
+async function seedTenants() {
+  console.log("🏠 Seeding tenants...");
+
+  const db = getAdminDb();
+
+  // Clear existing data using TRUNCATE (bypasses RLS, respects FKs with CASCADE)
+  console.log("🗑️  Clearing existing data...");
+  await db.execute(
+    sql`TRUNCATE TABLE tickets, users, tenants RESTART IDENTITY CASCADE`,
+  );
+
+  // Create default tenant
+  const insertedTenants = await db
+    .insert(tenantsTable)
+    .values({
+      slug: DEFAULT_TENANT.slug,
+      name: DEFAULT_TENANT.name,
+    })
+    .returning();
+
+  console.log(
+    `✅ Created tenant: ${insertedTenants[0].name} (${insertedTenants[0].slug})`,
+  );
+
+  return insertedTenants[0];
+}
+
+/**
+ * Seed the users table with a test user for the given tenant
+ */
+async function seedUsers(tenantId: number) {
   console.log("👤 Seeding users...");
 
-  const db = getDb();
-
-  // Clear existing users before seeding
-  await db.delete(usersTable);
+  const db = getAdminDb();
 
   // Create a test user with hashed password
   const passwordHash = await bcrypt.hash("password123", 12);
@@ -78,6 +114,7 @@ async function seedUsers() {
   const insertedUsers = await db
     .insert(usersTable)
     .values({
+      tenantId,
       email: "admin@example.com",
       username: "admin",
       passwordHash,
@@ -90,23 +127,17 @@ async function seedUsers() {
 }
 
 /**
- * Seed the database with fake tickets
+ * Seed the database with fake tickets for the given tenant
  */
-async function seedTickets(count: number = DEFAULT_TICKET_COUNT) {
-  console.log(`🌱 Starting database seed with ${count} tickets...`);
+async function seedTickets(count: number, tenantId: number) {
+  console.log(`📝 Generating ${count} fake tickets...`);
 
-  const db = getDb();
-
-  // Seed users first
-  await seedUsers();
-
-  // Clear existing tickets before seeding
-  console.log("🗑️  Clearing existing tickets...");
-  await db.delete(ticketsTable);
+  const db = getAdminDb();
 
   // Generate and insert fake tickets
-  console.log("📝 Generating fake tickets...");
-  const fakeTickets = Array.from({ length: count }, generateFakeTicket);
+  const fakeTickets = Array.from({ length: count }, () =>
+    generateFakeTicket(tenantId),
+  );
 
   console.log("💾 Inserting tickets into database...");
   const insertedTickets = await db
@@ -129,7 +160,28 @@ async function seedTickets(count: number = DEFAULT_TICKET_COUNT) {
     }
     console.log("");
   });
+}
 
+/**
+ * Main seeding function
+ */
+async function main(ticketCount: number = DEFAULT_TICKET_COUNT) {
+  console.log(`🌱 Starting database seed...`);
+  console.log(`   Tenant: ${DEFAULT_TENANT.name} (${DEFAULT_TENANT.slug})`);
+  console.log(`   Tickets: ${ticketCount}`);
+  console.log("");
+
+  // Seed tenants first (clears all data)
+  // Note: Using admin connection which bypasses RLS
+  const tenant = await seedTenants();
+
+  // Seed users for the tenant
+  await seedUsers(tenant.id);
+
+  // Seed tickets for the tenant
+  await seedTickets(ticketCount, tenant.id);
+
+  console.log("\n🎉 Database seeding complete!");
   process.exit(0);
 }
 
@@ -145,7 +197,7 @@ if (Number.isNaN(count) || count <= 0) {
 }
 
 // Run the seeding
-seedTickets(count).catch((error) => {
+main(count).catch((error) => {
   console.error("❌ Seeding failed:", error);
   process.exit(1);
 });
