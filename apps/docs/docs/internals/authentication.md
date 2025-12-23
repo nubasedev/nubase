@@ -434,7 +434,7 @@ For cookie-based auth to work cross-origin:
 // Backend (Hono example)
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: ["http://tavern.localhost:3002", "http://tavern.localhost:4002"],
     credentials: true,  // Required for cookies
   }),
 );

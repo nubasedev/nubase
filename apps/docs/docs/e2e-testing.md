@@ -18,13 +18,13 @@ The e2e tests use **Playwright** with the **questlog-frontend** example applicat
 The testing infrastructure uses **separate environments** for development and testing to ensure complete isolation:
 
 ### Development Environment
-- **Frontend**: `http://localhost:3000` (Vite dev server)
-- **Backend**: `http://localhost:3001` (Express server)
-- **Database**: PostgreSQL on port `5432` (development data)
+- **Frontend**: `http://tavern.localhost:3002` (Vite dev server)
+- **Backend**: `http://tavern.localhost:3001` (Hono server)
+- **Database**: PostgreSQL on port `5434` (development data)
 
 ### Test Environment
-- **Frontend**: `http://localhost:4000` (Vite test server)
-- **Backend**: `http://localhost:4001` (Express test server)  
+- **Frontend**: `http://tavern.localhost:4002` (Vite test server)
+- **Backend**: `http://tavern.localhost:4001` (Hono test server)
 - **Database**: PostgreSQL on port `5435` (clean test data)
 
 This separation ensures that:
@@ -55,11 +55,11 @@ The test environment uses specific ports and environment variables:
 
 #### Environment Variables
 - **VITE_API_BASE_URL**: Automatically configured based on environment
-  - Development: `http://localhost:3001` 
-  - Test: `http://localhost:4001`
-- **PORT**: Frontend server port (4000 for tests, 3000 for dev)
+  - Development: `http://tavern.localhost:3001`
+  - Test: `http://tavern.localhost:4001`
+- **PORT**: Frontend server port (4002 for tests, 3002 for dev)
 - **API_PORT**: Backend server port (4001 for tests, 3001 for dev)
-- **DB_PORT**: Database port (5435 for tests, 5432 for dev)
+- **DB_PORT**: Database port (5435 for tests, 5434 for dev)
 
 #### Configuration Files
 The test setup uses these configuration files:
@@ -75,7 +75,7 @@ The test environment automatically starts dedicated servers on test ports to ens
 ```bash
 # Setup test database and run all tests
 npm run e2e:setup    # Starts PostgreSQL on port 5435
-npm run e2e          # Starts frontend:4000, backend:4001, runs tests
+npm run e2e          # Starts frontend:4002, backend:4001, runs tests
 
 # Teardown when done
 npm run e2e:teardown # Stops database and cleans up
@@ -87,7 +87,7 @@ npm run e2e:teardown # Stops database and cleans up
 npm run e2e:setup
 
 # Open Playwright UI for interactive test development
-npm run e2e:ui       # Frontend:4000, Backend:4001
+npm run e2e:ui       # Frontend:4002, Backend:4001
 
 # Teardown when done
 npm run e2e:teardown
@@ -113,7 +113,7 @@ All e2e scripts are available at the project root level:
 |--------|-------------|
 | `npm run e2e:setup` | Start the test database (PostgreSQL on port 5435) |
 | `npm run e2e:teardown` | Stop and clean up the test database |
-| `npm run e2e` | Run all tests in headless mode (auto-starts frontend:4000, backend:4001) |
+| `npm run e2e` | Run all tests in headless mode (auto-starts frontend:4002, backend:4001) |
 | `npm run e2e:ui` | Open Playwright test UI for interactive development |
 | `npm run e2e:headed` | Run tests with visible browser windows |
 | `npm run e2e:debug` | Run tests in debug mode with step-by-step execution |
@@ -124,7 +124,7 @@ All e2e scripts are available at the project root level:
 
 | Script | Description |
 |--------|-------------|
-| `npm run dev:test:frontend` | Start frontend on test port (:4000) with test API URL |
+| `npm run dev:test:frontend` | Start frontend on test port (:4002) with test API URL |
 | `npm run dev:test:backend` | Start backend on test port (:4001) with test database |
 | `npm run dev:test` | Start both frontend and backend in test mode (concurrent) |
 
@@ -133,22 +133,22 @@ All e2e scripts are available at the project root level:
 ### Infrastructure Components
 
 ```
-DEVELOPMENT ENVIRONMENT (ports 3000-3001, 5432):
+DEVELOPMENT ENVIRONMENT (ports 3001-3002, 5434):
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Development   │ ─► │    Frontend     │ ─► │    Backend      │
-│      Work       │    │  (Port 3000)    │    │  (Port 3001)    │
+│      Work       │    │  (Port 3002)    │    │  (Port 3001)    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                                         │
                                                         ▼
                                                ┌─────────────────┐
                                                │  Dev Database   │
-                                               │  (Port 5432)    │
+                                               │  (Port 5434)    │
                                                └─────────────────┘
 
-TEST ENVIRONMENT (ports 4000-4001, 5435):
+TEST ENVIRONMENT (ports 4001-4002, 5435):
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Playwright    │ ─► │    Frontend     │ ─► │    Backend      │
-│     Tests       │    │  (Port 4000)    │    │  (Port 4001)    │
+│     Tests       │    │  (Port 4002)    │    │  (Port 4001)    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                                         │
                                                         ▼
@@ -162,8 +162,8 @@ TEST ENVIRONMENT (ports 4000-4001, 5435):
 
 - **Environment Isolation**: Complete separation between development and test environments
 - **Database Isolation**: Each test starts with a clean database state on port 5435
-- **Automatic Server Management**: Playwright manages dedicated test servers (ports 4000-4001)
-- **API Integration**: Tests can interact with backend APIs directly via test port 4001
+- **Automatic Server Management**: Playwright manages dedicated test servers (ports 4001-4002)
+- **API Integration**: Tests can interact with backend APIs directly via port 4001
 - **Environment Variables**: Automatic configuration via VITE_API_BASE_URL
 - **Visual Testing**: Screenshots and traces captured on failures
 - **Parallel Safety**: Tests are designed to run safely in parallel
@@ -266,22 +266,22 @@ The testing framework provides these fixtures:
 #### Port Conflicts
 ```bash
 # Check what's using the test ports
-lsof -ti:4000,4001,5435
+lsof -ti:4001,4002,5435
 
 # Kill conflicting processes
-kill $(lsof -ti:4000,4001,5435)
+kill $(lsof -ti:4001,4002,5435)
 
 # If development ports are also conflicting
-lsof -ti:3000,3001,5432
+lsof -ti:3001,3002,5434
 
 # Check all relevant ports at once
-lsof -ti:3000,3001,4000,4001,5432,5435
+lsof -ti:3001,3002,4001,4002,5434,5435
 ```
 
 #### Environment Variable Issues
 ```bash
 # Check if VITE_API_BASE_URL is set correctly
-echo $VITE_API_BASE_URL  # Should be http://localhost:4001 for tests
+echo $VITE_API_BASE_URL  # Should be http://tavern.localhost:4001 for tests
 
 # Verify .env.test file exists and has correct values
 cat .env.test
@@ -296,28 +296,28 @@ cat .env.test
 #### Server Startup Issues
 ```bash
 # Check if servers are running on correct ports
-curl http://localhost:4000  # Frontend should respond
-curl http://localhost:4001/health  # Backend should respond
+curl http://tavern.localhost:4002  # Frontend should respond
+curl http://tavern.localhost:4001/  # Backend should respond
 
 # Check server logs for environment confirmation
-# Frontend should show: "Local: http://localhost:4000"
+# Frontend should show: "Local: http://localhost:4002"
 # Backend should show: "Server running on port 4001"
 
 # Verify API URL configuration in browser
-# Open http://localhost:4000, check Network tab
-# API calls should go to localhost:4001, not localhost:3001
+# Open http://tavern.localhost:4002, check Network tab
+# API calls should go to tavern.localhost:4001, not tavern.localhost:3001
 ```
 
 #### Environment Isolation Issues
 ```bash
 # Verify test and dev environments are separate
-lsof -i :3000  # Should show dev frontend (if running)
+lsof -i :3002  # Should show dev frontend (if running)
 lsof -i :3001  # Should show dev backend (if running)
-lsof -i :4000  # Should show test frontend (during tests)
+lsof -i :4002  # Should show test frontend (during tests)
 lsof -i :4001  # Should show test backend (during tests)
 
 # Check database connections
-# Dev backend should connect to :5432
+# Dev backend should connect to :5434
 # Test backend should connect to :5435
 ```
 
@@ -398,15 +398,15 @@ The test configuration is located in `example/questlog-frontend/playwright.confi
 - **Parallel Execution**: Disabled for database isolation (can be enabled if needed)
 - **Retries**: Configured for CI environments
 - **Reporters**: HTML report with traces and screenshots
-- **Base URL**: `http://localhost:4000` (test environment)
+- **Base URL**: `http://tavern.localhost:4002` (test environment)
 - **Timeout**: 30 seconds per test (configurable)
 
 ### Environment Configuration Files
 
 #### `.env.test` (Auto-generated)
 ```bash
-VITE_API_BASE_URL=http://localhost:4001
-PORT=4000
+VITE_API_BASE_URL=http://tavern.localhost:4001
+PORT=4002
 API_PORT=4001
 DB_PORT=5435
 NODE_ENV=test
@@ -415,18 +415,18 @@ NODE_ENV=test
 #### `example/questlog-frontend/.env.local` (Optional overrides)
 ```bash
 # Local development overrides
-# Only affects development environment (ports 3000-3001)
-VITE_API_BASE_URL=http://localhost:3001
+# Only affects development environment (ports 3001-3002)
+VITE_API_BASE_URL=http://tavern.localhost:3001
 ```
 
 #### `example/questlog-backend/.env`
 ```bash
 # Backend configuration
 # PORT is overridden by scripts (3001 for dev, 4001 for test)
-DB_PORT=5432  # Overridden to 5435 for tests
+DB_PORT=5434  # Overridden to 5435 for tests
 DB_NAME=questlog
-DB_USER=postgres
-DB_PASSWORD=postgres
+DB_USER=questlog
+DB_PASSWORD=questlog
 DB_HOST=localhost
 ```
 
@@ -455,9 +455,9 @@ DB_HOST=localhost
    ```
    - Creates `.env.test` with test environment variables
    - Starts backend server on port 4001 (connected to test DB)
-   - Starts frontend server on port 4000 (with VITE_API_BASE_URL=http://localhost:4001)
+   - Starts frontend server on port 4002 (with VITE_API_BASE_URL=http://tavern.localhost:4001)
    - Waits for both servers to be ready
-   - Runs Playwright tests against http://localhost:4000
+   - Runs Playwright tests against http://tavern.localhost:4002
    - Automatically stops servers after tests complete
 
 3. **Cleanup Phase**
@@ -480,10 +480,10 @@ npm run e2e:setup
 npm run dev:test:backend  # Runs on :4001 with test DB
 
 # Terminal 3: Start frontend in test mode
-npm run dev:test:frontend  # Runs on :4000 with API_URL=localhost:4001
+npm run dev:test:frontend  # Runs on :4002 with API_URL=tavern.localhost:4001
 
 # Or use concurrent mode
-npm run dev:test  # Starts both frontend:4000 and backend:4001
+npm run dev:test  # Starts both frontend:4002 and backend:4001
 
 # When done
 npm run e2e:teardown
@@ -551,8 +551,8 @@ test("should handle complex data", async ({ testAPI }) => {
 The updated E2E testing setup provides **complete environment isolation** with the following key features:
 
 #### Port Separation
-- **Development**: Frontend :3000, Backend :3001, Database :5432
-- **Testing**: Frontend :4000, Backend :4001, Database :5435
+- **Development**: Frontend :3002, Backend :3001, Database :5434
+- **Testing**: Frontend :4002, Backend :4001, Database :5435
 - **Benefit**: Development and testing can run simultaneously without conflicts
 
 #### Environment Variables
@@ -561,7 +561,7 @@ The updated E2E testing setup provides **complete environment isolation** with t
 - **Clean Separation**: Development `.env.local` doesn't affect test environment
 
 #### New Scripts
-- `npm run dev:test:frontend` - Frontend on :4000 with test API URL
+- `npm run dev:test:frontend` - Frontend on :4002 with test API URL
 - `npm run dev:test:backend` - Backend on :4001 with test database
 - `npm run dev:test` - Both services in test mode (concurrent)
 
@@ -574,9 +574,9 @@ The updated E2E testing setup provides **complete environment isolation** with t
 
 If you're updating from the previous configuration:
 
-1. **Port Changes**: Tests now run on :4000 instead of :3000
+1. **Port Changes**: Tests now run on :4002 instead of :3002
 2. **Environment Variables**: VITE_API_BASE_URL now points to :4001 for tests
-3. **Database**: Test database moved from :5432 to :5435
+3. **Database**: Test database uses :5435 (dev uses :5434)
 4. **Configuration**: `.env.test` file automatically managed
 5. **Scripts**: New `dev:test` scripts available for manual testing
 

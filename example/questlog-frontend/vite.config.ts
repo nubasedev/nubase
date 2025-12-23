@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Listen on all interfaces for subdomain support
-    open: "http://tavern.localhost:5173/", // Auto-open with subdomain
+    port: 3002, // Development port
+    open: "http://tavern.localhost:3002/", // Auto-open with subdomain
   },
 });

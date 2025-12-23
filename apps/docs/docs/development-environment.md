@@ -46,11 +46,11 @@ Used for day-to-day development work.
 
 | Service | Port | URL |
 |---------|------|-----|
-| Frontend | 5173 | http://tavern.localhost:5173 |
 | Backend | 3001 | http://tavern.localhost:3001 |
+| Frontend | 3002 | http://tavern.localhost:3002 |
+| Documentation | 3003 | http://localhost:3003 |
 | PostgreSQL | 5434 | localhost:5434 |
 | Storybook | 6006 | http://localhost:6006 |
-| Documentation | 3002 | http://localhost:3002 |
 
 ### Test Environment
 
@@ -58,18 +58,22 @@ Used for E2E testing with Playwright. Runs on separate ports with a separate dat
 
 | Service | Port | URL |
 |---------|------|-----|
-| Frontend | 4000 | http://tavern.localhost:4000 |
 | Backend | 4001 | http://tavern.localhost:4001 |
+| Frontend | 4002 | http://tavern.localhost:4002 |
 | PostgreSQL | 5435 | localhost:5435 |
+
+:::note Port Allocation
+Port 3000 is intentionally skipped as it's a common development port that might conflict with other projects.
+:::
 
 ## Subdomain-Based Multi-Tenancy
 
 The example application uses subdomain-based multi-tenancy. The default tenant is **tavern**, so all URLs use:
 
-- `tavern.localhost:5173` (not `localhost:5173`)
+- `tavern.localhost:3002` (not `localhost:3002`)
 - `tavern.localhost:3001` (not `localhost:3001`)
 
-Different subdomains represent different tenants. For example, `acme.localhost:5173` would be a different tenant.
+Different subdomains represent different tenants. For example, `acme.localhost:3002` would be a different tenant.
 
 :::warning Important
 Always use the subdomain URLs. The application will return "Tenant not found" if you access it without a subdomain.
@@ -128,8 +132,8 @@ npm run dev
 ```
 
 This starts:
-- Frontend at http://tavern.localhost:5173
 - Backend at http://tavern.localhost:3001
+- Frontend at http://tavern.localhost:3002
 - Storybook at http://localhost:6006
 - Playwright UI (for E2E testing)
 
@@ -151,7 +155,7 @@ cd apps/docs && npm run dev
 
 ## E2E Testing
 
-Playwright E2E tests run against the test environment (ports 4000/4001).
+Playwright E2E tests run against the test environment (ports 4001/4002).
 
 ```bash
 # Run all E2E tests
@@ -238,8 +242,8 @@ npm run e2e:ui
 
 | Service | Dev Port | Test Port | URL Pattern |
 |---------|----------|-----------|-------------|
-| Frontend | 5173 | 4000 | `tavern.localhost:<port>` |
 | Backend | 3001 | 4001 | `tavern.localhost:<port>` |
+| Frontend | 3002 | 4002 | `tavern.localhost:<port>` |
+| Documentation | 3003 | - | `localhost:3003` |
 | PostgreSQL | 5434 | 5435 | `localhost:<port>` |
 | Storybook | 6006 | - | `localhost:6006` |
-| Docs | 3002 | - | `localhost:3002` |

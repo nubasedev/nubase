@@ -31,11 +31,9 @@ app.use(
       }
       // Fallback origins for backward compatibility
       if (
-        [
-          "http://localhost:5173",
-          "http://localhost:3000",
-          "http://localhost:4000",
-        ].includes(origin || "")
+        ["http://localhost:3002", "http://localhost:4002"].includes(
+          origin || "",
+        )
       ) {
         return origin;
       }

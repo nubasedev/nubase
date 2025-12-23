@@ -62,8 +62,8 @@ This is a Turborepo-based monorepo with the following structure:
 **Example Applications:**
 
 - `apps/docs` - Docusaurus documentation site
-- `example/questlog-frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in localhost:3000
-- `example/questlog-backend` - Node.js backend example with API endpoints. It runs in localhost:3001
+- `example/questlog-frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in tavern.localhost:3002
+- `example/questlog-backend` - Node.js backend example with API endpoints. It runs in tavern.localhost:3001
 - `example/questlog-schema` - Shared schema definitions for the questlog example app
 
 ### Example Application Architecture

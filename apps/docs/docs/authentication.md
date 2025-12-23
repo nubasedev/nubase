@@ -271,7 +271,7 @@ const app = new Hono();
 
 // CORS - must come first
 app.use(cors({
-  origin: ["http://localhost:3000"],
+  origin: ["http://tavern.localhost:3002"],
   credentials: true,
 }));
 

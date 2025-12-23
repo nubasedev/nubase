@@ -16,7 +16,7 @@ The e2e testing infrastructure includes:
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Playwright    │ ─► │    Frontend     │ ─► │    Backend      │
-│     Tests       │    │  (Port 3000)    │    │  (Port 3001)    │
+│     Tests       │    │  (Port 4002)    │    │  (Port 4001)    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                                         │
                                                         ▼
@@ -24,6 +24,8 @@ The e2e testing infrastructure includes:
                                                │ Test Database   │
                                                │  (Port 5435)    │
                                                └─────────────────┘
+
+Note: All URLs use the subdomain format: tavern.localhost:4002 (frontend), tavern.localhost:4001 (backend)
 ```
 
 ## Installation
@@ -146,12 +148,12 @@ export default defineConfig({
   
   webServer: [
     {
-      command: 'npm run dev',
-      url: 'http://localhost:3000', // Frontend
+      command: 'npm run dev:test',
+      url: 'http://tavern.localhost:4002', // Frontend (test mode)
     },
     {
-      command: 'cd ../questlog-backend && npm run dev',
-      url: 'http://localhost:5010', // Backend
+      command: 'cd ../questlog-backend && npm run dev:test',
+      url: 'http://tavern.localhost:4001', // Backend (test mode)
       env: {
         DB_PORT: '5435', // Test database
       },
@@ -226,10 +228,10 @@ curl http://localhost:3001/api/test/stats
 ### Port Conflicts
 ```bash
 # Check what's using ports
-lsof -ti:3000,3001,5435
+lsof -ti:4001,4002,5435
 
 # Kill processes if needed
-kill $(lsof -ti:3000,3001,5435)
+kill $(lsof -ti:4001,4002,5435)
 ```
 
 ### Reset Everything
