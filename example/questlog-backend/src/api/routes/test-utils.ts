@@ -3,14 +3,33 @@ import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcrypt";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getDb } from "../../db/helpers/drizzle";
+import { getAdminDb } from "../../db/helpers/drizzle";
 import { tenantsTable } from "../../db/schema/tenant";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
-import type { Tenant } from "../../middleware/tenant-middleware";
+
+// Default test tenant slug
+const DEFAULT_TEST_TENANT = "tavern";
 
 // Test utility endpoints - only enabled in test environment
 const testUtils = new Hono();
+
+/**
+ * Helper to get tenant by slug using admin DB (bypasses RLS).
+ * Used by test utilities that don't have auth context.
+ */
+async function getTenantBySlug(slug: string) {
+  const db = getAdminDb();
+  const tenants = await db
+    .select()
+    .from(tenantsTable)
+    .where(eq(tenantsTable.slug, slug));
+
+  if (tenants.length === 0) {
+    throw new Error(`Tenant not found: ${slug}`);
+  }
+  return tenants[0];
+}
 
 // Clear all data from the database - used between tests
 export const handleClearDatabase = createHttpHandler({
@@ -18,20 +37,23 @@ export const handleClearDatabase = createHttpHandler({
     method: "POST" as const,
     path: "/api/test/clear-database",
     requestParams: emptySchema,
-    requestBody: emptySchema,
+    requestBody: nu.object({
+      tenant: nu.string().optional(),
+    }),
     responseBody: nu.object({
       success: nu.boolean(),
       message: nu.string(),
     }),
   },
-  handler: async ({ ctx }) => {
+  handler: async ({ body }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database cleanup is only allowed in test environment");
     }
 
-    const db = getDb();
-    const tenant = ctx.get("tenant") as Tenant;
+    const tenantSlug = body?.tenant || DEFAULT_TEST_TENANT;
+    const tenant = await getTenantBySlug(tenantSlug);
+    const db = getAdminDb();
 
     // Clear all tickets for this tenant
     await db.delete(ticketsTable).where(eq(ticketsTable.tenantId, tenant.id));
@@ -68,6 +90,7 @@ export const handleSeedTestData = createHttpHandler({
     path: "/api/test/seed",
     requestParams: emptySchema,
     requestBody: nu.object({
+      tenant: nu.string().optional(),
       tickets: nu
         .array(
           nu.object({
@@ -87,14 +110,15 @@ export const handleSeedTestData = createHttpHandler({
         .optional(),
     }),
   },
-  handler: async ({ body, ctx }) => {
+  handler: async ({ body }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Test seeding is only allowed in test environment");
     }
 
-    const db = getDb();
-    const tenant = ctx.get("tenant") as Tenant;
+    const tenantSlug = body?.tenant || DEFAULT_TEST_TENANT;
+    const tenant = await getTenantBySlug(tenantSlug);
+    const db = getAdminDb();
     const insertedTicketIds: number[] = [];
 
     if (body?.tickets) {
@@ -129,7 +153,9 @@ export const handleGetDatabaseStats = createHttpHandler({
   endpoint: {
     method: "GET" as const,
     path: "/api/test/stats",
-    requestParams: emptySchema,
+    requestParams: nu.object({
+      tenant: nu.string().optional(),
+    }),
     requestBody: emptySchema,
     responseBody: nu.object({
       tickets: nu.object({
@@ -137,14 +163,15 @@ export const handleGetDatabaseStats = createHttpHandler({
       }),
     }),
   },
-  handler: async ({ ctx }) => {
+  handler: async ({ params }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database stats are only available in test environment");
     }
 
-    const db = getDb();
-    const tenant = ctx.get("tenant") as Tenant;
+    const tenantSlug = params?.tenant || DEFAULT_TEST_TENANT;
+    const tenant = await getTenantBySlug(tenantSlug);
+    const db = getAdminDb();
     const tickets = await db
       .select()
       .from(ticketsTable)
@@ -164,7 +191,9 @@ export const handleEnsureTenant = createHttpHandler({
     method: "POST" as const,
     path: "/api/test/ensure-tenant",
     requestParams: emptySchema,
-    requestBody: emptySchema,
+    requestBody: nu.object({
+      tenant: nu.string().optional(),
+    }),
     responseBody: nu.object({
       success: nu.boolean(),
       tenant: nu.object({
@@ -174,28 +203,20 @@ export const handleEnsureTenant = createHttpHandler({
       }),
     }),
   },
-  handler: async ({ ctx }) => {
+  handler: async ({ body }) => {
     // Only allow in test environment
     if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Tenant management is only allowed in test environment");
     }
 
-    // Get the tenant slug from the subdomain (already extracted by tenant middleware)
-    // For test setup, we need to create the tenant if it doesn't exist
-    const host = ctx.req.header("Host") || "";
-    const subdomain = host.split(":")[0].split(".")[0];
-
-    if (!subdomain) {
-      throw new Error("No subdomain provided");
-    }
-
-    const db = getDb();
+    const tenantSlug = body?.tenant || DEFAULT_TEST_TENANT;
+    const db = getAdminDb();
 
     // Check if tenant exists
     const existingTenants = await db
       .select()
       .from(tenantsTable)
-      .where(eq(tenantsTable.slug, subdomain));
+      .where(eq(tenantsTable.slug, tenantSlug));
 
     if (existingTenants.length > 0) {
       return {
@@ -212,8 +233,8 @@ export const handleEnsureTenant = createHttpHandler({
     const result = await db
       .insert(tenantsTable)
       .values({
-        slug: subdomain,
-        name: subdomain.charAt(0).toUpperCase() + subdomain.slice(1),
+        slug: tenantSlug,
+        name: tenantSlug.charAt(0).toUpperCase() + tenantSlug.slice(1),
       })
       .returning();
 

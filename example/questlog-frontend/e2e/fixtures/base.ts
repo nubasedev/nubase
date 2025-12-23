@@ -1,7 +1,10 @@
 import type { Page } from "@playwright/test";
 import { test as base } from "@playwright/test";
 import { TestReporter } from "../utils/test-reporter";
-import { TEST_USER, TestAPI } from "./test-api";
+import { TEST_TENANT, TEST_USER, TestAPI } from "./test-api";
+
+// Tenant path prefix for all test URLs
+const TENANT_PREFIX = `/${TEST_TENANT}`;
 
 /**
  * Helper function to perform login via the UI.
@@ -12,8 +15,8 @@ export async function performLogin(
   username: string = TEST_USER.username,
   password: string = TEST_USER.password,
 ) {
-  // Navigate to signin page
-  await page.goto("/signin");
+  // Navigate to signin page (with tenant prefix)
+  await page.goto(`${TENANT_PREFIX}/signin`);
 
   // Fill in credentials
   await page.fill("#username", username);
@@ -23,7 +26,7 @@ export async function performLogin(
   await page.click('button[type="submit"]');
 
   // Wait for redirect to home page (successful login)
-  await page.waitForURL("/");
+  await page.waitForURL(`${TENANT_PREFIX}`);
 }
 
 // Extend basic test by providing enhanced fixtures
@@ -132,4 +135,5 @@ export const test = base.extend<{
 });
 
 export { expect } from "@playwright/test";
-export { TEST_USER } from "./test-api";
+export { TEST_TENANT, TEST_USER } from "./test-api";
+export { TENANT_PREFIX };

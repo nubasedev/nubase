@@ -10,7 +10,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";
-import { getDb } from "../db/helpers/drizzle";
+import { getAdminDb, getDb } from "../db/helpers/drizzle";
 import { usersTable } from "../db/schema/user";
 
 type DbUser = InferSelectModel<typeof usersTable>;
@@ -52,14 +52,14 @@ const COOKIE_NAME = "nubase_auth";
  * Example: DEBUG_AUTH_TOKEN=dev-secret-123
  *
  * Usage with curl:
- *   curl -H "Authorization: Bearer debug:1:dev-secret-123" http://tavern.localhost:3001/tickets
+ *   curl -H "Authorization: Bearer debug:1:dev-secret-123" http://localhost:3001/tickets
  *
  * To authenticate as different users, just change the user ID:
  *   debug:1:dev-secret-123  -> User ID 1
  *   debug:2:dev-secret-123  -> User ID 2
  *   debug:42:dev-secret-123 -> User ID 42
  *
- * The user must exist in the current tenant (determined by subdomain via RLS).
+ * The user must exist in the current tenant (determined by JWT via RLS).
  */
 function getDebugAuthToken(): string | undefined {
   return process.env.DEBUG_AUTH_TOKEN;
@@ -145,8 +145,9 @@ export class QuestlogBackendAuthController
       }
 
       // Fetch user from database to ensure they still exist
-      const db = getDb();
-      const users: DbUser[] = await db
+      // Use adminDb to bypass RLS since RLS context isn't set yet during auth
+      const adminDb = getAdminDb();
+      const users: DbUser[] = await adminDb
         .select()
         .from(usersTable)
         .where(eq(usersTable.id, decoded.userId));
@@ -232,14 +233,20 @@ export class QuestlogBackendAuthController
 
   /**
    * Set the authentication token in an HttpOnly cookie.
-   * For subdomain-based multi-tenancy, the cookie is set without a Domain attribute
-   * so it's sent only to the exact host that set it. Each tenant subdomain
-   * (e.g., tavern.localhost) gets its own session.
+   * For path-based multi-tenancy, the cookie is set without a Domain attribute.
+   * The tenant is identified from the URL path in the frontend and from the
+   * JWT token in the backend.
+   *
+   * Cookie settings:
+   * - HttpOnly: Prevents JavaScript access (XSS protection)
+   * - Path=/: Cookie is sent for all paths
+   * - SameSite=None: Required for cross-origin requests (frontend on different port)
+   * - Secure: Required when SameSite=None (localhost is treated as secure by browsers)
    */
   setTokenInResponse(ctx: Context, token: string): void {
     ctx.header(
       "Set-Cookie",
-      `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=3600`,
+      `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=3600`,
     );
   }
 
@@ -249,7 +256,7 @@ export class QuestlogBackendAuthController
   clearTokenFromResponse(ctx: Context): void {
     ctx.header(
       "Set-Cookie",
-      `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`,
+      `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=0`,
     );
   }
 

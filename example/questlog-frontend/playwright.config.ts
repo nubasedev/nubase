@@ -28,7 +28,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://tavern.localhost:4002",
+    baseURL: "http://localhost:4002",
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
     /* Screenshot on failure */
@@ -54,13 +54,13 @@ export default defineConfig({
   webServer: [
     {
       command: "npm run dev:test",
-      url: "http://tavern.localhost:4002",
+      url: "http://localhost:4002/tavern",
       reuseExistingServer: true,
       timeout: 120 * 1000,
     },
     {
       command: "cd ../questlog-backend && npm run dev:test",
-      url: "http://tavern.localhost:4001",
+      url: "http://localhost:4001",
       reuseExistingServer: true,
       timeout: 120 * 1000,
       env: {

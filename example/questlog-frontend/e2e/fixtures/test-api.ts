@@ -7,8 +7,11 @@ export const TEST_USER = {
   email: "testuser@example.com",
 };
 
-// Backend API base URL for the tavern tenant
-const API_BASE_URL = "http://tavern.localhost:4001";
+// Test tenant for path-based multi-tenancy
+export const TEST_TENANT = "tavern";
+
+// Backend API base URL (no subdomain for path-based tenancy)
+const API_BASE_URL = "http://localhost:4001";
 
 export class TestAPI {
   constructor(private request: APIRequestContext) {}
@@ -40,9 +43,10 @@ export class TestAPI {
   async login(
     username: string = TEST_USER.username,
     password: string = TEST_USER.password,
+    tenant: string = TEST_TENANT,
   ) {
     const response = await this.request.post(`${API_BASE_URL}/auth/login`, {
-      data: { username, password },
+      data: { username, password, tenant },
     });
 
     if (!response.ok()) {

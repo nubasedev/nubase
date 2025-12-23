@@ -8,26 +8,41 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
-import { getDb } from "../../db/helpers/drizzle";
+import { getAdminDb } from "../../db/helpers/drizzle";
+import { tenantsTable } from "../../db/schema/tenant";
 import { usersTable } from "../../db/schema/user";
-import type { Tenant } from "../../middleware/tenant-middleware";
 
 type DbUser = InferSelectModel<typeof usersTable>;
 
 /**
  * Login handler - validates credentials and sets HttpOnly cookie.
  * Uses the auth controller to create tokens and set cookies.
- * Now tenant-aware: looks up user within the current tenant.
+ *
+ * For path-based multi-tenancy, the tenant slug is provided in the request body.
+ * The handler looks up the tenant and validates the user within that tenant.
  */
 export const handleLogin = createHttpHandler({
   endpoint: apiEndpoints.login,
   handler: async ({ body, ctx }) => {
-    const db = getDb();
     const authController = getAuthController<QuestlogUser>(ctx);
-    const tenant = ctx.get("tenant") as Tenant;
+
+    // Look up tenant from the request body (path-based multi-tenancy)
+    // Use admin DB to bypass RLS since we don't have a tenant context yet
+    const adminDb = getAdminDb();
+    const tenants = await adminDb
+      .select()
+      .from(tenantsTable)
+      .where(eq(tenantsTable.slug, body.tenant));
+
+    if (tenants.length === 0) {
+      throw new HttpError(404, `Tenant not found: ${body.tenant}`);
+    }
+
+    const tenant = tenants[0];
 
     // Find user by username within the tenant
-    const users: DbUser[] = await db
+    // Use admin DB since we don't have RLS context set
+    const users: DbUser[] = await adminDb
       .select()
       .from(usersTable)
       .where(

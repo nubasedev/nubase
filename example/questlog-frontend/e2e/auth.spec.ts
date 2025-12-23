@@ -1,4 +1,4 @@
-import { expect, TEST_USER, test } from "./fixtures/base";
+import { expect, TENANT_PREFIX, TEST_USER, test } from "./fixtures/base";
 
 test.describe("Authentication", () => {
   test("should successfully sign in with valid credentials", async ({
@@ -8,7 +8,7 @@ test.describe("Authentication", () => {
     // testAPI fixture clears the database and seeds the test user
 
     // Navigate to signin page
-    await page.goto("/signin");
+    await page.goto(`${TENANT_PREFIX}/signin`);
 
     // Verify we're on the signin page
     await expect(page.locator("h1")).toContainText("Sign In");
@@ -21,7 +21,7 @@ test.describe("Authentication", () => {
     await page.click('button[type="submit"]');
 
     // Wait for redirect to home page
-    await page.waitForURL("/");
+    await page.waitForURL(`${TENANT_PREFIX}`);
 
     // Verify we're logged in (should see the app shell with main navigation)
     await expect(
@@ -36,7 +36,7 @@ test.describe("Authentication", () => {
     // testAPI fixture clears the database and seeds the test user
 
     // Navigate to signin page
-    await page.goto("/signin");
+    await page.goto(`${TENANT_PREFIX}/signin`);
 
     // Fill in invalid credentials
     await page.fill("#username", "wronguser");
@@ -59,7 +59,7 @@ test.describe("Authentication", () => {
     testAPI: _testAPI,
   }) => {
     // Navigate to signin page
-    await page.goto("/signin");
+    await page.goto(`${TENANT_PREFIX}/signin`);
 
     // Leave username empty, fill password
     await page.fill("#password", "somepassword");
@@ -83,10 +83,10 @@ test.describe("Authentication", () => {
     testAPI: _testAPI,
   }) => {
     // Try to access a protected route directly
-    await page.goto("/r/ticket/create");
+    await page.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
     // Should be redirected to signin
-    await page.waitForURL("/signin");
+    await page.waitForURL(`${TENANT_PREFIX}/signin`);
     expect(page.url()).toContain("/signin");
   });
 
@@ -95,7 +95,7 @@ test.describe("Authentication", () => {
   }) => {
     // authenticatedPage is already logged in and at home page
     // Navigate to the protected route
-    await authenticatedPage.goto("/r/ticket/create");
+    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
     // Wait for the page to be ready and check for the heading
     await expect(
@@ -132,7 +132,7 @@ test.describe("Authentication", () => {
     await signOutButton.click();
 
     // Should be redirected to signin page
-    await authenticatedPage.waitForURL("/signin");
+    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
     expect(authenticatedPage.url()).toContain("/signin");
 
     // User avatar should no longer be visible (we're on signin page)
@@ -150,13 +150,13 @@ test.describe("Authentication", () => {
     await signOutButton.click();
 
     // Wait for redirect to signin
-    await authenticatedPage.waitForURL("/signin");
+    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
 
     // Try to access a protected route
-    await authenticatedPage.goto("/r/ticket/create");
+    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
     // Should be redirected back to signin
-    await authenticatedPage.waitForURL("/signin");
+    await authenticatedPage.waitForURL(`${TENANT_PREFIX}/signin`);
     expect(authenticatedPage.url()).toContain("/signin");
   });
 });

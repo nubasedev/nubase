@@ -1,9 +1,11 @@
+import type { AnyRoute } from "@tanstack/react-router";
 import { createRoute } from "@tanstack/react-router";
-import { rootRoute } from "../root";
 import SignInScreen from "./signin-screen";
 
-export const signinRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/signin",
-  component: SignInScreen,
-});
+// Factory function to create the route with parent injected to avoid circular deps
+export const createSigninRoute = (parentRoute: AnyRoute) =>
+  createRoute({
+    getParentRoute: () => parentRoute,
+    path: "/signin",
+    component: SignInScreen,
+  });

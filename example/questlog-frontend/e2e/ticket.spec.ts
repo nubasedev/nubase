@@ -1,10 +1,10 @@
-import { expect, test } from "./fixtures/base";
+import { expect, TENANT_PREFIX, test } from "./fixtures/base";
 
 test.describe("Ticket Management", () => {
   test("should create a ticket and view it", async ({ authenticatedPage }) => {
     // authenticatedPage fixture already logged in the test user
     // Navigate to create ticket page
-    await authenticatedPage.goto("/r/ticket/create");
+    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
     // Fill in the ticket form
     await authenticatedPage.fill('input[name="title"]', "Test Ticket Title");
@@ -38,7 +38,7 @@ test.describe("Ticket Management", () => {
   }) => {
     // authenticatedPage fixture already logged in the test user
     // Navigate to create ticket page
-    await authenticatedPage.goto("/r/ticket/create");
+    await authenticatedPage.goto(`${TENANT_PREFIX}/r/ticket/create`);
 
     // Leave title empty, fill description
     await authenticatedPage.fill(

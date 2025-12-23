@@ -46,13 +46,18 @@ export class QuestlogAuthController implements AuthenticationController {
     this.setState({ status: "loading", error: null });
 
     try {
+      // Include tenant in the login request body for path-based multi-tenancy
       const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include", // Important for cookies
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({
+          username: credentials.username,
+          password: credentials.password,
+          tenant: credentials.tenant,
+        }),
       });
 
       if (!response.ok) {

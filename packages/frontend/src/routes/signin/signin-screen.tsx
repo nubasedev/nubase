@@ -5,6 +5,7 @@ import { showToast } from "../../components/floating/toast";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
 import { FormControl } from "../../components/form-controls/FormControl/FormControl";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
+import { useTenant } from "../../context/TenantContext";
 
 export default function SignInScreen() {
   const [username, setUsername] = useState("");
@@ -13,6 +14,7 @@ export default function SignInScreen() {
   const [error, setError] = useState<string | null>(null);
   const { authentication } = useNubaseContext();
   const navigate = useNavigate();
+  const tenant = useTenant();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +33,10 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      await authentication.login({ username, password });
+      // Pass tenant slug for path-based multi-tenancy
+      await authentication.login({ username, password, tenant: tenant.slug });
       showToast("Successfully signed in!");
-      navigate({ to: "/" });
+      navigate({ to: "/$tenant", params: { tenant: tenant.slug } });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
       setError(message);

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { useTenantOptional } from "../../../context/TenantContext";
 import type { MenuItem } from "../../../menu/types";
 import { cn } from "../../../styling/cn";
 
@@ -30,6 +31,8 @@ export const MenuItemComponent = ({
   itemRef,
   "data-testid": testId,
 }: MenuItemComponentProps) => {
+  const tenant = useTenantOptional();
+
   const handleClick = () => {
     if (item.hasChildren) {
       onToggleExpanded(item.id);
@@ -37,6 +40,19 @@ export const MenuItemComponent = ({
       item.onExecute();
     }
   };
+
+  // Build tenant-aware href if tenant is available and href doesn't already include it
+  const resolvedHref = (() => {
+    if (!item.href) return undefined;
+    if (!tenant?.slug) return item.href;
+    // If href already starts with /$tenant pattern, use as-is
+    if (item.href.startsWith(`/${tenant.slug}`)) return item.href;
+    // Prepend tenant to relative paths
+    if (item.href.startsWith("/")) {
+      return `/${tenant.slug}${item.href}`;
+    }
+    return item.href;
+  })();
 
   const commonClassName = cn(
     "flex items-center gap-3 rounded-md py-2 pr-3 text-sm cursor-pointer w-full text-left transition-colors",
@@ -86,12 +102,12 @@ export const MenuItemComponent = ({
   );
 
   // Use Link for href navigation, button for everything else
-  if (item.href && !item.hasChildren) {
+  if (resolvedHref && !item.hasChildren) {
     return (
       <Link
         key={item.id}
         ref={itemRef as any}
-        to={item.href}
+        to={resolvedHref}
         className={commonClassName}
         style={commonStyle}
         data-testid={testId}

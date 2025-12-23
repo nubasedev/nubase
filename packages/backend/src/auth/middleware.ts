@@ -78,6 +78,13 @@ export function createAuthMiddleware<TUser extends BackendUser = BackendUser>(
       // Extract token from request
       const token = controller.extractToken(c);
 
+      // Debug logging
+      const cookieHeader = c.req.header("Cookie");
+      console.info(
+        `[Auth] ${c.req.method} ${c.req.path} - Cookie header: ${cookieHeader ? `${cookieHeader.substring(0, 50)}...` : "(none)"}`,
+      );
+      console.info(`[Auth] Token extracted: ${token ? "yes" : "no"}`);
+
       if (!token) {
         // No token present - user is not authenticated
         c.set(AUTH_USER_KEY, null);
@@ -86,6 +93,10 @@ export function createAuthMiddleware<TUser extends BackendUser = BackendUser>(
 
       // Verify the token
       const result = await controller.verifyToken(token);
+
+      console.info(
+        `[Auth] Token verification: ${result.valid ? "valid" : `invalid - ${result.error}`}`,
+      );
 
       if (result.valid) {
         c.set(AUTH_USER_KEY, result.user);

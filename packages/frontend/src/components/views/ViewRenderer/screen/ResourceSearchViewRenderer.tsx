@@ -12,6 +12,7 @@ import type { ActionLayout } from "../../../../config/action-layout";
 import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
+import { useTenant } from "../../../../context/TenantContext";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
@@ -70,6 +71,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const { view, params, resourceName, resource, onError } = props;
   const navigate = useNavigate();
   const context = useNubaseContext();
+  const tenant = useTenant();
 
   // Create a function to wrap actions with automatic query invalidation
   const wrapActionsWithInvalidation = useCallback(
@@ -229,8 +231,12 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
                           // Navigate to view screen using the resourceName
                           if (resourceName) {
                             navigate({
-                              to: "/r/$resourceName/$operation",
-                              params: { resourceName, operation: "view" },
+                              to: "/$tenant/r/$resourceName/$operation",
+                              params: {
+                                tenant: tenant.slug,
+                                resourceName,
+                                operation: "view",
+                              },
                               search: { id: row.id },
                             });
                           }
@@ -272,6 +278,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     context,
     wrapActionsWithInvalidation,
     idField,
+    tenant.slug,
   ]);
 
   // Filter resource actions for the ActionBar (bulk operations)

@@ -29,6 +29,13 @@ export type { Keybinding } from "./commands/types";
 export * from "./components";
 // Export NubaseFrontendConfig
 export * from "./config";
+// Export tenant hooks for path-based multi-tenancy
+export {
+  getTenantFromRouter,
+  type TenantContext,
+  useTenant,
+  useTenantOptional,
+} from "./context/TenantContext";
 // Export context types
 export * from "./context/types";
 // Export all hooks

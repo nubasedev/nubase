@@ -56,4 +56,9 @@ export interface NubaseContextData<
    * Null if no authentication is configured.
    */
   authentication: AuthenticationController | null;
+  /**
+   * Current tenant slug extracted from the URL path (e.g., "tavern" from /tavern/r/ticket/create).
+   * Used for path-based multi-tenancy.
+   */
+  tenant: string | null;
 }

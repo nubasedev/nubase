@@ -7,6 +7,7 @@ import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/
 import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceSearchViewRenderer";
 import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceViewViewRenderer";
 import type { BreadcrumbItem } from "../../config/breadcrumb";
+import { useTenant } from "../../context/TenantContext";
 
 /**
  * URL Parameter Coercion System
@@ -41,6 +42,7 @@ export default function ResourceScreen() {
   const searchParams = useSearch({ strict: false });
   const context = useNubaseContext();
   const navigate = useNavigate();
+  const tenant = useTenant();
 
   // Check if resources exist in config
   if (!context.config.resources) {
@@ -116,8 +118,12 @@ export default function ResourceScreen() {
                 document.title = `NAVIGATING - ${document.title}`;
 
                 navigate({
-                  to: "/r/$resourceName/$operation",
-                  params: { resourceName, operation: "view" },
+                  to: "/$tenant/r/$resourceName/$operation",
+                  params: {
+                    tenant: tenant.slug,
+                    resourceName,
+                    operation: "view",
+                  },
                   search: { id: recordId },
                 });
               } else {

@@ -2,6 +2,7 @@ import { nu } from "@nubase/core";
 import { Database, Folder } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
+import { getTenantFromRouter } from "../../context/TenantContext";
 import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
@@ -29,6 +30,9 @@ export const workbenchOpenResourceOperation = createCommand({
   icon: Database,
   argsSchema: workbenchOpenResourceOperationArgsSchema.optional(),
   execute: (context, args) => {
+    // Get current tenant from router state for path-based multi-tenancy
+    const tenant = getTenantFromRouter(context.router);
+
     // If both resourceId and operation are provided, navigate directly
     if (args?.resourceId && args?.operation) {
       const { resourceId, operation } = args;
@@ -37,8 +41,9 @@ export const workbenchOpenResourceOperation = createCommand({
       const resource = context.config?.resources?.[resourceId];
       if (resource?.views?.[operation]) {
         context.router.navigate({
-          to: "/r/$resourceName/$operation",
+          to: "/$tenant/r/$resourceName/$operation",
           params: {
+            tenant: tenant || "",
             resourceName: resourceId,
             operation: operation,
           },
@@ -96,8 +101,9 @@ export const workbenchOpenResourceOperation = createCommand({
               onExecute: () => {
                 context.modal.closeModal();
                 context.router.navigate({
-                  to: "/r/$resourceName/$operation",
+                  to: "/$tenant/r/$resourceName/$operation",
                   params: {
+                    tenant: tenant || "",
                     resourceName: resourceId,
                     operation: viewId,
                   },

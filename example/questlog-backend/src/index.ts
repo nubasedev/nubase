@@ -14,27 +14,22 @@ import {
 } from "./api/routes/ticket";
 import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
-import { createTenantMiddleware } from "./middleware/tenant-middleware";
+import {
+  createPostAuthTenantMiddleware,
+  createTenantMiddleware,
+} from "./middleware/tenant-middleware";
 
 // Load environment variables
 loadEnvironment();
 
 export const app = new Hono();
 
-// CORS middleware - allow any subdomain of localhost
+// CORS middleware - allow localhost origins for path-based multi-tenancy
 app.use(
   cors({
     origin: (origin) => {
-      // Allow any subdomain of localhost (e.g., tavern.localhost:3001)
-      if (origin?.match(/^http:\/\/[\w-]+\.localhost(:\d+)?$/)) {
-        return origin;
-      }
-      // Fallback origins for backward compatibility
-      if (
-        ["http://localhost:3002", "http://localhost:4002"].includes(
-          origin || "",
-        )
-      ) {
+      // Allow localhost origins (path-based tenancy doesn't use subdomains)
+      if (origin?.match(/^http:\/\/localhost(:\d+)?$/)) {
         return origin;
       }
       return null;
@@ -43,12 +38,15 @@ app.use(
   }),
 );
 
-// Tenant middleware - extracts tenant from subdomain
-// Must come before auth middleware
+// Tenant middleware - handles login path (gets tenant from body)
+// For other paths, tenant will be set from JWT by post-auth middleware
 app.use("*", createTenantMiddleware());
 
 // Auth middleware - extracts and verifies JWT, sets user in context
 app.use("*", createAuthMiddleware({ controller: questlogAuthController }));
+
+// Post-auth tenant middleware - sets RLS context from authenticated user's tenant
+app.use("*", createPostAuthTenantMiddleware());
 
 app.get("/", getRoot);
 

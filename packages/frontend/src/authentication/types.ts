@@ -31,6 +31,8 @@ export type AuthenticationStateListener = (state: AuthenticationState) => void;
 export interface LoginCredentials {
   username: string;
   password: string;
+  /** Tenant slug for path-based multi-tenancy */
+  tenant?: string;
 }
 
 /**

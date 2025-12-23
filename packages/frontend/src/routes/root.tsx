@@ -4,14 +4,47 @@ import {
   Outlet,
   useLocation,
   useNavigate,
+  useParams,
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MainNav } from "@/components/navigation/main-nav/MainNav";
 import type { AuthenticationState } from "../authentication/types";
 import { ActivityIndicator, Dock, TopBar } from "../components";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
+import {
+  getTenantFromRouter,
+  type TenantContext,
+  TenantContextValue,
+  useTenant,
+  useTenantOptional,
+} from "../context/TenantContext";
+
+// Re-export tenant hooks for backwards compatibility
+export {
+  getTenantFromRouter,
+  useTenant,
+  useTenantOptional,
+  type TenantContext,
+};
 
 function RootComponent() {
+  return (
+    <div className="bg-background text-text h-screen w-screen">
+      <Outlet />
+    </div>
+  );
+}
+
+export const rootRoute = createRootRoute({
+  component: RootComponent,
+});
+
+/**
+ * Tenant route component that extracts the tenant slug from the URL path.
+ * All routes are nested under /:tenant (e.g., /tavern/r/ticket/create).
+ */
+function TenantComponent() {
+  const { tenant } = useParams({ from: "/$tenant" });
   const { authentication, config } = useNubaseContext();
   const publicRoutes = config.publicRoutes ?? ["/signin"];
   const location = useLocation();
@@ -52,12 +85,15 @@ function RootComponent() {
     if (authState.status === "loading") return;
 
     const currentPath = location.pathname;
+    // Check if route is public (accounting for tenant prefix)
+    // e.g., /tavern/signin should match /signin in publicRoutes
+    const pathWithoutTenant = currentPath.replace(`/${tenant}`, "");
     const isPublicRoute = publicRoutes.some((route) =>
-      currentPath.startsWith(route),
+      pathWithoutTenant.startsWith(route),
     );
 
     if (authState.status === "unauthenticated" && !isPublicRoute) {
-      navigate({ to: "/signin" });
+      navigate({ to: "/$tenant/signin", params: { tenant } });
     }
   }, [
     authentication,
@@ -66,12 +102,14 @@ function RootComponent() {
     location.pathname,
     navigate,
     publicRoutes,
+    tenant,
   ]);
 
   // Check if current route is public
   const currentPath = location.pathname;
+  const pathWithoutTenant = currentPath.replace(`/${tenant}`, "");
   const isPublicRoute = publicRoutes.some((route) =>
-    currentPath.startsWith(route),
+    pathWithoutTenant.startsWith(route),
   );
 
   // If authentication is configured, show loading while initializing
@@ -79,7 +117,7 @@ function RootComponent() {
   if (authentication && !isPublicRoute) {
     if (!isInitialized || authState?.status === "loading") {
       return (
-        <div className="bg-background text-text h-screen w-screen flex items-center justify-center">
+        <div className="flex items-center justify-center h-full">
           <ActivityIndicator
             size="lg"
             color="primary"
@@ -92,7 +130,7 @@ function RootComponent() {
     // If unauthenticated and not on a public route, show loading (redirect will happen)
     if (authState?.status === "unauthenticated") {
       return (
-        <div className="bg-background text-text h-screen w-screen flex items-center justify-center">
+        <div className="flex items-center justify-center h-full">
           <ActivityIndicator
             size="lg"
             color="primary"
@@ -104,14 +142,16 @@ function RootComponent() {
   }
 
   return (
-    <div className="bg-background text-text h-screen w-screen">
+    <TenantContextValue.Provider value={{ slug: tenant }}>
       <Outlet />
-    </div>
+    </TenantContextValue.Provider>
   );
 }
 
-export const rootRoute = createRootRoute({
-  component: RootComponent,
+export const tenantRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/$tenant",
+  component: TenantComponent,
 });
 
 function AppShellComponent() {
@@ -127,7 +167,7 @@ function AppShellComponent() {
 }
 
 export const appShellRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => tenantRoute,
   id: "app-shell",
   component: AppShellComponent,
 });

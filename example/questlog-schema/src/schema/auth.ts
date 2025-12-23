@@ -12,6 +12,8 @@ export const userSchema = nu.object({
 /**
  * Login request schema
  * POST /auth/login
+ *
+ * For path-based multi-tenancy, the tenant slug is required in the request body.
  */
 export const loginSchema = {
   method: "POST" as const,
@@ -20,6 +22,8 @@ export const loginSchema = {
   requestBody: nu.object({
     username: nu.string(),
     password: nu.string(),
+    /** Tenant slug for path-based multi-tenancy */
+    tenant: nu.string(),
   }),
   responseBody: nu.object({
     user: userSchema,

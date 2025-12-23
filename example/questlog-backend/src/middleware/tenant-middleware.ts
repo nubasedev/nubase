@@ -16,6 +16,18 @@ export interface Tenant {
 // Paths that don't require a tenant to exist (for bootstrapping and health checks)
 const TENANT_BYPASS_PATHS = ["/", "/api/test/ensure-tenant"];
 
+// Paths where tenant comes from request body (login) instead of JWT
+const TENANT_FROM_BODY_PATHS = ["/auth/login"];
+
+/**
+ * Tenant middleware for path-based multi-tenancy.
+ *
+ * For most authenticated requests, the tenant is identified from the JWT token.
+ * For login requests, the tenant slug is provided in the request body.
+ *
+ * This middleware sets the tenant in the Hono context and establishes the RLS context
+ * for database queries.
+ */
 export function createTenantMiddleware() {
   return createMiddleware<{ Variables: { tenant: Tenant } }>(
     async (c, next) => {
@@ -26,58 +38,77 @@ export function createTenantMiddleware() {
         return next();
       }
 
-      const host = c.req.header("Host") || "";
-
-      const subdomain = extractSubdomain(host);
-
-      if (!subdomain) {
-        return c.json({ error: "Invalid tenant: no subdomain provided" }, 400);
+      // For login, tenant will be handled by the login handler itself
+      // Skip tenant middleware for these paths
+      if (TENANT_FROM_BODY_PATHS.includes(path)) {
+        return next();
       }
 
-      const db = getDb();
-      const tenants = await db
-        .select()
-        .from(tenantsTable)
-        .where(eq(tenantsTable.slug, subdomain));
-
-      if (tenants.length === 0) {
-        return c.json({ error: `Tenant not found: ${subdomain}` }, 404);
-      }
-
-      const tenant = {
-        id: tenants[0].id,
-        slug: tenants[0].slug,
-        name: tenants[0].name,
-      };
-
-      c.set("tenant", tenant);
-
-      // Set the RLS context for this request
-      await setTenantContext(tenant.id);
-
-      try {
-        return await next();
-      } finally {
-        // Clear the RLS context after the request completes
-        await clearTenantContext();
-      }
+      // For other paths, tenant will be set from JWT by auth middleware
+      // The auth middleware runs after this and sets user with tenantId
+      // We'll set up RLS context after auth middleware identifies the user
+      return next();
     },
   );
 }
 
-function extractSubdomain(host: string): string | null {
-  // Remove port if present (e.g., "tavern.localhost:3001" -> "tavern.localhost")
-  const hostWithoutPort = host.split(":")[0];
+/**
+ * Post-auth middleware that sets RLS context based on authenticated user's tenant.
+ * This should run after the auth middleware.
+ */
+export function createPostAuthTenantMiddleware() {
+  return createMiddleware<{
+    Variables: { tenant: Tenant; user: { tenantId: number } | null };
+  }>(async (c, next) => {
+    const path = c.req.path;
 
-  // Split by dots
-  const parts = hostWithoutPort.split(".");
+    // Skip for bypass paths and login (already handled)
+    if (
+      TENANT_BYPASS_PATHS.includes(path) ||
+      TENANT_FROM_BODY_PATHS.includes(path)
+    ) {
+      return next();
+    }
 
-  // For "tavern.localhost" -> ["tavern", "localhost"] -> return "tavern"
-  // For "localhost" -> ["localhost"] -> return null (no subdomain)
-  // For "tavern.example.com" -> ["tavern", "example", "com"] -> return "tavern"
-  if (parts.length >= 2) {
-    return parts[0];
-  }
+    // If tenant is already set (e.g., from login path), skip
+    const existingTenant = c.get("tenant");
+    if (existingTenant) {
+      return next();
+    }
 
-  return null;
+    // Get user from auth middleware
+    const user = c.get("user");
+
+    if (!user || !user.tenantId) {
+      // No authenticated user - proceed without tenant context
+      // Protected routes will fail at the auth level
+      return next();
+    }
+
+    // Look up tenant from user's tenantId
+    const db = getDb();
+    const tenants = await db
+      .select()
+      .from(tenantsTable)
+      .where(eq(tenantsTable.id, user.tenantId));
+
+    if (tenants.length === 0) {
+      return c.json({ error: "User's tenant not found" }, 500);
+    }
+
+    const tenant = {
+      id: tenants[0].id,
+      slug: tenants[0].slug,
+      name: tenants[0].name,
+    };
+
+    c.set("tenant", tenant);
+    await setTenantContext(tenant.id);
+
+    try {
+      return await next();
+    } finally {
+      await clearTenantContext();
+    }
+  });
 }
