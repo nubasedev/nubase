@@ -1,0 +1,5 @@
+/* Override react-grid-layout placeholder styling to use design system colors */
+.react-grid-item.react-grid-placeholder {
+  background: var(--color-primary, var(--primary));
+  border-radius: var(--radius-lg);
+}

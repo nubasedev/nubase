@@ -72,11 +72,7 @@ export const Dock: React.FC<DockProps> = ({
         ref={containerRef}
         className={`flex flex-col h-full w-full min-h-0 min-w-0 ${isNested ? "h-auto w-auto" : "h-screen w-screen"}`}
       >
-        {top && (
-          <div className="bg-background border-b border-border flex-shrink-0">
-            {top}
-          </div>
-        )}
+        {top && <div className="bg-background shrink-0">{top}</div>}
         <div className="flex flex-1 min-h-0 min-w-0">
           {left && (
             <div

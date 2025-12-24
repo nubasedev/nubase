@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./components/data-grid/styles/data-grid.css";
+@import "./components/dashboard/dashboard.css";
 
 @theme {
   --radius-sm: calc(var(--radius) - 4px);
