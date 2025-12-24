@@ -5,6 +5,7 @@ export type { GlobalActionsConfig } from "./global-action";
 export * from "./nav-item";
 export * from "./nubase-frontend-config";
 export * from "./resource";
+export * from "./resource-link";
 export * from "./view";
 export * from "./view-factory";
 export * from "./view-helpers";

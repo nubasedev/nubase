@@ -1,5 +1,6 @@
 import type { ObjectSchema } from "@nubase/core";
 import type { NubaseContextData } from "../context/types";
+import type { ResourceLink } from "./resource-link";
 
 /**
  * Represents a single breadcrumb item in the navigation trail.
@@ -8,7 +9,12 @@ export type BreadcrumbItem =
   | string // Simple text breadcrumb
   | {
       label: string;
-      to?: string; // Optional navigation path
+      /**
+       * Optional navigation path. Can be:
+       * - A string path (e.g., "/r/ticket/search")
+       * - A ResourceLink for type-safe resource navigation
+       */
+      to?: string | ResourceLink;
       params?: Record<string, any>; // Route parameters for navigation
       search?: Record<string, any>; // Query parameters for navigation
     };

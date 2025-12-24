@@ -1,4 +1,5 @@
 import type { CommandRegistry } from "../commands/types";
+import type { ResourceLink } from "../config/resource-link";
 import type { IconComponent, MenuItem } from "./types";
 
 /**
@@ -14,7 +15,8 @@ export interface ResolvedMenuItem {
   variant?: "default" | "destructive";
 
   // Navigation/Action
-  href?: string;
+  /** String path or ResourceLink for type-safe resource navigation */
+  href?: string | ResourceLink;
   commandId?: string;
   commandArgs?: Record<string, unknown>;
   onExecute?: () => void | Promise<void>;

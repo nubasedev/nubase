@@ -1,5 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import {
+  isResourceLink,
+  resolveResourceLink,
+} from "../../../config/resource-link";
 import { useWorkspaceOptional } from "../../../context/WorkspaceContext";
 import type { MenuItem } from "../../../menu/types";
 import { cn } from "../../../styling/cn";
@@ -41,18 +45,32 @@ export const MenuItemComponent = ({
     }
   };
 
-  // Build workspace-aware href if workspace is available and href doesn't already include it
+  // Build workspace-aware href if workspace is available
   const resolvedHref = (() => {
     if (!item.href) return undefined;
+
+    // Handle ResourceLink objects
+    if (isResourceLink(item.href)) {
+      return resolveResourceLink(item.href, workspace?.slug);
+    }
+
+    // Handle string hrefs
     if (!workspace?.slug) return item.href;
     // If href already starts with /$workspace pattern, use as-is
     if (item.href.startsWith(`/${workspace.slug}`)) return item.href;
-    // Prepend workspace to relative paths
+    // Prepend workspace to relative paths that look like resource/view paths
+    if (item.href.startsWith("/r/") || item.href.startsWith("/v/")) {
+      return `/${workspace.slug}${item.href}`;
+    }
+    // For other paths starting with /, prepend workspace
     if (item.href.startsWith("/")) {
       return `/${workspace.slug}${item.href}`;
     }
     return item.href;
   })();
+
+  // Get search params from ResourceLink if applicable
+  const searchParams = isResourceLink(item.href) ? item.href.search : undefined;
 
   const commonClassName = cn(
     "flex items-center gap-3 rounded-md py-2 pr-3 text-sm cursor-pointer w-full text-left transition-colors",
@@ -108,6 +126,7 @@ export const MenuItemComponent = ({
         key={item.id}
         ref={itemRef as any}
         to={resolvedHref}
+        search={searchParams}
         className={commonClassName}
         style={commonStyle}
         data-testid={testId}

@@ -1,5 +1,6 @@
 import type React from "react";
 import type { TypedCommandDefinition } from "../commands/types";
+import type { ResourceLink } from "../config/resource-link";
 
 /**
  * Standard icon type used throughout Nubase.
@@ -80,9 +81,17 @@ export interface MenuItem {
 
   /**
    * URL to navigate to. Uses client-side routing.
+   * Can be a string path or a ResourceLink for type-safe resource navigation.
    * Mutually exclusive with `command` and `onExecute`.
+   *
+   * @example
+   * // String path
+   * { href: "/settings" }
+   *
+   * // Type-safe resource link
+   * { href: resourceLink(ticketResource, "search") }
    */
-  href?: string;
+  href?: string | ResourceLink;
 
   /**
    * Command to execute when the menu item is activated.

@@ -1,6 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { type FC, Fragment } from "react";
 import type { BreadcrumbItem } from "../../../config/breadcrumb";
+import {
+  isResourceLink,
+  resolveResourceLink,
+} from "../../../config/resource-link";
 import { useWorkspaceOptional } from "../../../context/WorkspaceContext";
 import {
   Breadcrumb,
@@ -46,6 +50,18 @@ export const BreadcrumbBar: FC<BreadcrumbBarProps> = ({ items, className }) => {
     if (typeof item === "string") return;
 
     if (item.to) {
+      // Handle ResourceLink objects
+      if (isResourceLink(item.to)) {
+        const resolvedPath = resolveResourceLink(item.to, workspace?.slug);
+        navigate({
+          to: resolvedPath,
+          params: item.params,
+          search: item.to.search || item.search,
+        });
+        return;
+      }
+
+      // Handle string paths
       const workspaceAwarePath = makeWorkspaceAwarePath(
         item.to,
         workspace?.slug,

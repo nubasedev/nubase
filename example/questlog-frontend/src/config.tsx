@@ -3,8 +3,9 @@ import {
   commands,
   createCommandAction,
   defaultKeybindings,
+  resourceLink,
 } from "@nubase/frontend";
-import { Home, Plus } from "lucide-react";
+import { Home, Plus, TicketIcon } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { ticketResource } from "./resources/ticket";
@@ -20,6 +21,12 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
       icon: Home,
       label: "Home",
       href: "/",
+    },
+    {
+      id: "tickets",
+      icon: TicketIcon,
+      label: "Tickets",
+      href: resourceLink(ticketResource, "search"),
     },
   ],
   resources: {
