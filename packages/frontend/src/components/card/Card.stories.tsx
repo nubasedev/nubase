@@ -19,7 +19,7 @@ import {
 } from "./Card";
 
 const meta: Meta = {
-  title: "Components/Card",
+  title: "Dashboards/Card",
   parameters: {
     layout: "centered",
   },

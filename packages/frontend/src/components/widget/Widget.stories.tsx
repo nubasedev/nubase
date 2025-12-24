@@ -33,7 +33,7 @@ import {
 import { Widget } from "./Widget";
 
 const meta: Meta<typeof Widget> = {
-  title: "Components/Widget",
+  title: "Dashboards/Widget",
   component: Widget,
   parameters: {
     layout: "centered",

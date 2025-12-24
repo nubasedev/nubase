@@ -3,6 +3,7 @@ export * from "./buttons/ActionBar";
 export * from "./callout";
 export * from "./card";
 export * from "./charts";
+export * from "./dashboard";
 export * from "./data-grid";
 export * from "./data-state";
 export * from "./dock";
