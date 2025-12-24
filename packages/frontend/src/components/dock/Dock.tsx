@@ -91,7 +91,7 @@ export const Dock: React.FC<DockProps> = ({
             </div>
           )}
           <div className="flex-1 flex flex-col relative min-h-0 min-w-0">
-            <div className="flex-1 bg-background relative min-h-0">
+            <div className="flex-1 bg-background relative min-h-0 overflow-y-auto">
               {center}
             </div>
           </div>
