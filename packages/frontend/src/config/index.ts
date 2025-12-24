@@ -1,6 +1,8 @@
 export * from "./action-layout";
+export * from "./create-dashboard-factory";
 export * from "./create-resource-factory";
 export * from "./create-view-factory";
+export * from "./dashboard-widget";
 export type { GlobalActionsConfig } from "./global-action";
 export * from "./nav-item";
 export * from "./nubase-frontend-config";

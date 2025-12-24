@@ -8,6 +8,7 @@ import {
 import { Home, Plus, TicketIcon } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
+import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
@@ -56,4 +57,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   defaultThemeId: "dark",
   authentication: authController,
   publicRoutes: ["/signin"],
+  dashboards: {
+    [analyticsDashboard.id]: analyticsDashboard,
+  },
 };

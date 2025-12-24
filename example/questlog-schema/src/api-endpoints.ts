@@ -8,6 +8,14 @@ import {
   signupSchema,
 } from "./schema/auth";
 import {
+  getActiveUsersSchema,
+  getBrowserStatsSchema,
+  getRecentActivitySchema,
+  getRevenueChartSchema,
+  getSalesChartSchema,
+  getTotalRevenueSchema,
+} from "./schema/dashboard";
+import {
   deleteTicketSchema,
   getTicketSchema,
   getTicketsSchema,
@@ -34,6 +42,14 @@ export const apiEndpoints = {
   postTicket: postTicketSchema, // POST /tickets
   patchTicket: patchTicketSchema, // PUT /tickets/:id
   deleteTicket: deleteTicketSchema, // DELETE /tickets/:id
+
+  // Dashboard widget endpoints
+  getRevenueChart: getRevenueChartSchema, // GET /dashboard/revenue-chart
+  getBrowserStats: getBrowserStatsSchema, // GET /dashboard/browser-stats
+  getTotalRevenue: getTotalRevenueSchema, // GET /dashboard/total-revenue
+  getActiveUsers: getActiveUsersSchema, // GET /dashboard/active-users
+  getSalesChart: getSalesChartSchema, // GET /dashboard/sales-chart
+  getRecentActivity: getRecentActivitySchema, // GET /dashboard/recent-activity
 } satisfies Record<string, RequestSchema>;
 
 export type ApiEndpoints = typeof apiEndpoints;

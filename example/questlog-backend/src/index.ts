@@ -11,6 +11,14 @@ import {
   handleLogout,
   handleSignup,
 } from "./api/routes/auth";
+import {
+  handleGetActiveUsers,
+  handleGetBrowserStats,
+  handleGetRecentActivity,
+  handleGetRevenueChart,
+  handleGetSalesChart,
+  handleGetTotalRevenue,
+} from "./api/routes/dashboard";
 import { testUtils } from "./api/routes/test-utils";
 import {
   handleDeleteTicket,
@@ -71,6 +79,14 @@ app.get("/tickets/:id", handleGetTicket);
 app.post("/tickets", handlePostTicket);
 app.patch("/tickets/:id", handlePatchTicket);
 app.delete("/tickets/:id", handleDeleteTicket);
+
+// Dashboard widget endpoints
+app.get("/dashboard/revenue-chart", handleGetRevenueChart);
+app.get("/dashboard/browser-stats", handleGetBrowserStats);
+app.get("/dashboard/total-revenue", handleGetTotalRevenue);
+app.get("/dashboard/active-users", handleGetActiveUsers);
+app.get("/dashboard/sales-chart", handleGetSalesChart);
+app.get("/dashboard/recent-activity", handleGetRecentActivity);
 
 // Test utility routes - only enabled in test environment
 if (process.env.NODE_ENV === "test" || process.env.DB_PORT === "5435") {

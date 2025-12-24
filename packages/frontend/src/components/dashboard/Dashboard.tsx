@@ -6,20 +6,12 @@ import ReactGridLayout, {
 } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
+import type { DashboardGridConfig } from "../../config/dashboard-widget";
 import { cn } from "../../styling/cn";
 
 export type { LayoutItem, Layout };
-
-export interface DashboardGridConfig {
-  /** Number of columns in the grid */
-  cols?: number;
-  /** Height of a single row in pixels */
-  rowHeight?: number;
-  /** Margin between items [horizontal, vertical] in pixels */
-  margin?: [number, number];
-  /** Container padding [horizontal, vertical] in pixels */
-  containerPadding?: [number, number];
-}
+// Re-export for backwards compatibility
+export type { DashboardGridConfig };
 
 export interface DashboardDragConfig {
   /** Enable dragging */

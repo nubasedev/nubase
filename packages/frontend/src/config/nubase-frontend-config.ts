@@ -1,6 +1,7 @@
 import type { AuthenticationController } from "../authentication/types";
 import type { Keybinding } from "../commands/types";
 import type { MenuItem } from "../menu/types";
+import type { DashboardDescriptor } from "./dashboard-widget";
 import type { GlobalActionsConfig } from "./global-action";
 import type { ResourceDescriptor } from "./resource";
 
@@ -51,4 +52,16 @@ export type NubaseFrontendConfig<TApiEndpoints = any> = {
    * Default: ['/signin']
    */
   publicRoutes?: string[];
+  /**
+   * Dashboard configurations for the application.
+   * Each dashboard contains widgets that render data from API endpoints.
+   *
+   * @example
+   * ```typescript
+   * dashboards: {
+   *   [analyticsDashboard.id]: analyticsDashboard,
+   * }
+   * ```
+   */
+  dashboards?: Record<string, DashboardDescriptor<TApiEndpoints>>;
 };
