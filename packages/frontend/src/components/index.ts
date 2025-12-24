@@ -1,6 +1,7 @@
 export * from "./activity-indicator";
 export * from "./buttons/ActionBar";
 export * from "./callout";
+export * from "./card";
 export * from "./charts";
 export * from "./data-grid";
 export * from "./data-state";
@@ -17,3 +18,4 @@ export * from "./table";
 export * from "./top-bar";
 export * from "./user-avatar";
 export * from "./views";
+export * from "./widget";
