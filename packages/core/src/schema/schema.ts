@@ -674,11 +674,7 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
         zodShape[key] = fieldSchema.toZod();
       }
     }
-    // Use passthrough() to preserve unknown properties in the response
-    // This is important for dynamic data like chart series values
-    return z.object(zodShape).passthrough() as z.ZodSchema<
-      ObjectOutput<TShape>
-    >;
+    return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
   }
 
   /**

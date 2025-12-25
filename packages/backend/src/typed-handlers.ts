@@ -163,8 +163,16 @@ function createTypedHandlerInternal<
       });
 
       // Validate response body (optional, for development safety)
+      // Use passthrough() to preserve unknown properties in the response
+      // This is important for dynamic data like chart series values (e.g., { category: "Jan", desktop: 186, mobile: 80 })
       try {
-        const validatedResult = schema.responseBody.toZod().parse(result);
+        const responseZod = schema.responseBody.toZod();
+        // Apply passthrough if it's an object schema to preserve dynamic fields
+        const passthroughZod =
+          "passthrough" in responseZod
+            ? responseZod.passthrough()
+            : responseZod;
+        const validatedResult = passthroughZod.parse(result);
 
         // Return appropriate status code based on method
         const statusCode = schema.method === "POST" ? 201 : 200;
