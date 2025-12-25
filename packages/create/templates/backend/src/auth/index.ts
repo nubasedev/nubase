@@ -1,15 +1,10 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import type { User, Workspace } from "__PROJECT_NAME__-schema";
-
-export interface __PROJECT_NAME_PASCAL__User extends User {
-	workspace: Workspace;
-}
 
 export interface TokenPayload {
 	userId: number;
 	workspaceId: number;
-	email: string;
+	username: string;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";

@@ -62,7 +62,7 @@ export const authHandlers = {
 		const token = authController.generateToken({
 			userId: user.id,
 			workspaceId: workspace.id,
-			email: user.email,
+			username: user.username,
 		});
 
 		return c.json({
@@ -104,7 +104,7 @@ export const authHandlers = {
 		const token = authController.generateToken({
 			userId: user.id,
 			workspaceId: userWs.id,
-			email: user.email,
+			username: user.username,
 		});
 
 		return c.json({
@@ -197,7 +197,7 @@ export const authHandlers = {
 		const token = authController.generateToken({
 			userId: user.id,
 			workspaceId: workspace.id,
-			email: user.email,
+			username: user.username,
 		});
 
 		return c.json({

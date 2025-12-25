@@ -1,68 +1,71 @@
-import { type RequestSchema, nu } from "@nubase/core";
+import {
+	emptySchema,
+	idNumberSchema,
+	nu,
+	type RequestSchema,
+	successSchema,
+} from "@nubase/core";
 
 export const ticketBaseSchema = nu
 	.object({
 		id: nu.number(),
 		title: nu.string().withMeta({
 			label: "Title",
-			placeholder: "Enter ticket title",
+			description: "Enter the title of the ticket",
 		}),
 		description: nu.string().optional().withMeta({
 			label: "Description",
-			placeholder: "Enter ticket description",
+			description: "Enter the description of the ticket",
 			renderer: "multiline",
-		}),
-		createdAt: nu.string().optional().withMeta({
-			label: "Created At",
-		}),
-		updatedAt: nu.string().optional().withMeta({
-			label: "Updated At",
 		}),
 	})
 	.withId("id")
 	.withTableLayouts({
 		default: {
-			fields: ["id", "title", "description", "createdAt"],
+			fields: [
+				{ name: "id", columnWidthPx: 80, pinned: true },
+				{ name: "title", columnWidthPx: 300, pinned: true },
+				{ name: "description", columnWidthPx: 400 },
+			],
 			metadata: {
 				linkFields: ["title"],
 			},
 		},
 	});
 
-export type Ticket = (typeof ticketBaseSchema)["_output"];
-
 export const getTicketsSchema = {
-	method: "GET",
+	method: "GET" as const,
 	path: "/tickets",
-	requestParams: ticketBaseSchema.omit("id", "createdAt", "updatedAt").partial(),
+	requestParams: ticketBaseSchema.omit("id").partial(),
 	responseBody: nu.array(ticketBaseSchema),
 } satisfies RequestSchema;
 
 export const getTicketSchema = {
-	method: "GET",
+	method: "GET" as const,
 	path: "/tickets/:id",
-	pathParams: nu.object({ id: nu.number() }),
+	requestParams: idNumberSchema,
 	responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 
 export const postTicketSchema = {
-	method: "POST",
+	method: "POST" as const,
 	path: "/tickets",
-	requestBody: ticketBaseSchema.omit("id", "createdAt", "updatedAt"),
+	requestParams: emptySchema,
+	requestBody: ticketBaseSchema.omit("id"),
 	responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 
 export const patchTicketSchema = {
-	method: "PATCH",
+	method: "PATCH" as const,
 	path: "/tickets/:id",
-	pathParams: nu.object({ id: nu.number() }),
-	requestBody: ticketBaseSchema.omit("id", "createdAt", "updatedAt").partial(),
+	requestParams: idNumberSchema,
+	requestBody: ticketBaseSchema.omit("id").partial(),
 	responseBody: ticketBaseSchema,
 } satisfies RequestSchema;
 
 export const deleteTicketSchema = {
-	method: "DELETE",
+	method: "DELETE" as const,
 	path: "/tickets/:id",
-	pathParams: nu.object({ id: nu.number() }),
-	responseBody: nu.object({ success: nu.boolean() }),
+	requestParams: idNumberSchema,
+	responseBody: successSchema,
 } satisfies RequestSchema;
