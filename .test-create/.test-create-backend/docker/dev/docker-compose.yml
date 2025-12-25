@@ -1,0 +1,21 @@
+services:
+  postgresql:
+    image: postgres:17.5
+    container_name: .test-create-db-dev
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: .test_create
+      POSTGRES_USER: .test_create
+      POSTGRES_PASSWORD: .test_create
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+      - ./postgresql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U .test_create -d .test_create"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgresql-data:

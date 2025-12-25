@@ -1,0 +1,30 @@
+{
+  "name": ".test-create",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    ".test-create-schema",
+    ".test-create-backend",
+    ".test-create-frontend"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "db:up": "cd .test-create-backend && npm run db:dev:up",
+    "db:down": "cd .test-create-backend && npm run db:dev:down",
+    "db:kill": "cd .test-create-backend && npm run db:dev:kill",
+    "db:seed": "cd .test-create-backend && npm run db:seed",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "turbo": "^2.7.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

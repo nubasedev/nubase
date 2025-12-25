@@ -35,7 +35,10 @@
     "publish:core": "turbo run publish --filter=@nubase/core",
     "publish:frontend": "turbo run publish --filter=@nubase/frontend",
     "publish:backend": "turbo run publish --filter=@nubase/backend",
-    "publish:all": "turbo run publish --filter=\"@nubase/*\""
+    "publish:all": "turbo run publish --filter=\"@nubase/*\"",
+    "test:create": "cd packages/create && npm run build && cd ../.. && rm -rf test-nubase-app && node packages/create/dist/index.js test-nubase-app --skip-install",
+    "test:create:full": "cd packages/create && npm run build && cd ../.. && rm -rf test-nubase-app && node packages/create/dist/index.js test-nubase-app",
+    "test:create:clean": "rm -rf test-nubase-app"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",

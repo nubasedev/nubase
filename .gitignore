@@ -43,6 +43,9 @@ dist/
 # scratch
 .scratch
 
+# test:create output
+test-nubase-app
+
 # Affinity Design lock files
 *.afdesign~lock~
 
