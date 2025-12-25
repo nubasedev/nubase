@@ -1,5 +1,5 @@
 {
-  "name": "__PROJECT_NAME__-frontend",
+  "name": "frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -19,7 +19,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.1.18",
-    "__PROJECT_NAME__-schema": "*"
+    "schema": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.10",

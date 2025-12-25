@@ -49,10 +49,10 @@ The application will be available at:
 
 ```
 __PROJECT_NAME__/
-├── __PROJECT_NAME__-schema/    # Shared API schemas and types
-├── __PROJECT_NAME__-backend/   # Node.js backend (Hono + PostgreSQL)
-├── __PROJECT_NAME__-frontend/  # React frontend (Vite + Nubase)
-└── package.json                # Root workspace configuration
+├── schema/      # Shared API schemas and types
+├── backend/     # Node.js backend (Hono + PostgreSQL)
+├── frontend/    # React frontend (Vite + Nubase)
+└── package.json # Root workspace configuration
 ```
 
 ## Available Scripts

@@ -181,10 +181,7 @@ async function main() {
 		if (template === "root") {
 			copyTemplateDir(templatePath, targetDir, options);
 		} else {
-			const destPath = path.join(
-				targetDir,
-				`${toKebabCase(projectName)}-${template}`,
-			);
+			const destPath = path.join(targetDir, template);
 			copyTemplateDir(templatePath, destPath, options);
 		}
 

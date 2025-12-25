@@ -1,5 +1,5 @@
 {
-  "name": "__PROJECT_NAME__-schema",
+  "name": "schema",
   "version": "0.1.0",
   "description": "Schema for __PROJECT_NAME_PASCAL__",
   "type": "module",

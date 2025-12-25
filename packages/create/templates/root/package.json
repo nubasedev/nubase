@@ -4,17 +4,17 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "__PROJECT_NAME__-schema",
-    "__PROJECT_NAME__-backend",
-    "__PROJECT_NAME__-frontend"
+    "schema",
+    "backend",
+    "frontend"
   ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "db:up": "cd __PROJECT_NAME__-backend && npm run db:dev:up",
-    "db:down": "cd __PROJECT_NAME__-backend && npm run db:dev:down",
-    "db:kill": "cd __PROJECT_NAME__-backend && npm run db:dev:kill",
-    "db:seed": "cd __PROJECT_NAME__-backend && npm run db:seed",
+    "db:up": "cd backend && npm run db:dev:up",
+    "db:down": "cd backend && npm run db:dev:down",
+    "db:kill": "cd backend && npm run db:dev:kill",
+    "db:seed": "cd backend && npm run db:seed",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix"

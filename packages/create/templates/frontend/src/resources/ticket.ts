@@ -1,5 +1,5 @@
 import { createResource } from "@nubase/frontend";
-import { apiEndpoints } from "__PROJECT_NAME__-schema";
+import { apiEndpoints } from "schema";
 
 export const ticketResource = createResource("ticket")
 	.withApiEndpoints(apiEndpoints)

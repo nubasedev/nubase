@@ -1,7 +1,7 @@
 import type { NubaseFrontendConfig } from "@nubase/frontend";
 import { defaultKeybindings, resourceLink } from "@nubase/frontend";
 import { Home, TicketIcon } from "lucide-react";
-import { apiEndpoints } from "__PROJECT_NAME__-schema";
+import { apiEndpoints } from "schema";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth/__PROJECT_NAME_PASCAL__AuthController";
 import { ticketResource } from "./resources/ticket";
 
