@@ -225,6 +225,14 @@ export function createTypedRoutes<T extends TypedRoutes>(routes: T) {
 }
 
 /**
+ * A handler created by createHttpHandler with endpoint metadata attached.
+ * This allows registerHandlers to auto-register routes based on the endpoint's path and method.
+ */
+export type HttpHandler = ((c: Context) => Promise<Response>) & {
+  __endpoint: RequestSchema;
+};
+
+/**
  * Options for createHttpHandler.
  */
 export type CreateHttpHandlerOptions<
@@ -301,11 +309,63 @@ export function createHttpHandler<
   T extends RequestSchema,
   TAuth extends AuthLevel = "none",
   TUser extends BackendUser = BackendUser,
->(
-  options: CreateHttpHandlerOptions<T, TAuth, TUser>,
-): ReturnType<typeof createTypedHandlerInternal> {
+>(options: CreateHttpHandlerOptions<T, TAuth, TUser>): HttpHandler {
   const { endpoint, handler, auth } = options;
-  return createTypedHandlerInternal(endpoint, handler as TypedHandler<T, any>, {
-    auth,
-  });
+  const honoHandler = createTypedHandlerInternal(
+    endpoint,
+    handler as TypedHandler<T, any>,
+    {
+      auth,
+    },
+  );
+
+  // Attach endpoint metadata to the handler for auto-registration
+  return Object.assign(honoHandler, { __endpoint: endpoint }) as HttpHandler;
+}
+
+/**
+ * A record of handlers to be registered with registerHandlers.
+ */
+export type HttpHandlers = Record<string, HttpHandler>;
+
+/**
+ * Register multiple HTTP handlers with a Hono app.
+ * Automatically extracts path and method from each handler's endpoint metadata.
+ *
+ * @example
+ * ```typescript
+ * // In dashboard.ts
+ * export const dashboardHandlers = {
+ *   getRevenueChart: createHttpHandler({
+ *     endpoint: apiEndpoints.getRevenueChart,
+ *     auth: "required",
+ *     handler: async () => ({ ... }),
+ *   }),
+ *   getBrowserStats: createHttpHandler({
+ *     endpoint: apiEndpoints.getBrowserStats,
+ *     auth: "required",
+ *     handler: async () => ({ ... }),
+ *   }),
+ * };
+ *
+ * // In index.ts
+ * registerHandlers(app, dashboardHandlers);
+ * // Automatically registers:
+ * // app.get("/dashboard/revenue-chart", handler)
+ * // app.get("/dashboard/browser-stats", handler)
+ * ```
+ */
+export function registerHandlers<
+  TApp extends { get: any; post: any; put: any; patch: any; delete: any },
+>(app: TApp, handlers: HttpHandlers): void {
+  for (const handler of Object.values(handlers)) {
+    const { method, path } = handler.__endpoint;
+    const methodLower = method.toLowerCase() as
+      | "get"
+      | "post"
+      | "put"
+      | "patch"
+      | "delete";
+    app[methodLower](path, handler);
+  }
 }

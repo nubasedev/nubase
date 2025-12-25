@@ -12,7 +12,7 @@ export const ticketBaseSchema = nu
     title: nu.string().withMeta({
       label: "Title",
       description: "Enter the title of the ticket",
-    }), // required by default
+    }),
     description: nu.string().optional().withMeta({
       label: "Description",
       description: "Enter the description of the ticket",

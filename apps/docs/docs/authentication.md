@@ -301,72 +301,87 @@ app.get("/auth/me", authHandlers.getMe);
 
 **Custom Auth Endpoints**
 
-For completely custom auth logic, you can still create handlers manually:
+For completely custom auth logic, you can create handlers manually and export them as an object:
 
 ```typescript
 // src/api/routes/auth.ts
 import { createHttpHandler, getAuthController, HttpError } from "@nubase/backend";
 import { apiEndpoints } from "your-schema";
 
-export const handleLogin = createHttpHandler({
-  endpoint: apiEndpoints.login,
-  handler: async ({ body, ctx }) => {
-    const authController = getAuthController(ctx);
+export const authHandlers = {
+  login: createHttpHandler({
+    endpoint: apiEndpoints.login,
+    handler: async ({ body, ctx }) => {
+      const authController = getAuthController(ctx);
 
-    // Custom credential validation
-    const user = await authController.validateCredentials(body.username, body.password);
-    if (!user) {
-      throw new HttpError(401, "Invalid username or password");
-    }
+      // Custom credential validation
+      const user = await authController.validateCredentials(body.username, body.password);
+      if (!user) {
+        throw new HttpError(401, "Invalid username or password");
+      }
 
-    // Create and set token
-    const token = await authController.createToken(user);
-    authController.setTokenInResponse(ctx, token);
+      // Create and set token
+      const token = await authController.createToken(user);
+      authController.setTokenInResponse(ctx, token);
 
-    return { user };
-  },
-});
+      return { user };
+    },
+  }),
+};
 ```
+
+Then register with `registerHandlers(app, authHandlers)` in your main app.
 
 ### 5. Protect Your Routes
 
-Use the `auth` option in `createHttpHandler` to protect routes:
+Use the `auth` option in `createHttpHandler` to protect routes. Export handlers as an object for auto-registration:
 
 ```typescript
 // src/api/routes/tickets.ts
 import { createHttpHandler } from "@nubase/backend";
 
-// Protected route - returns 401 if not authenticated
-export const handleGetTickets = createHttpHandler({
-  endpoint: apiEndpoints.getTickets,
-  auth: "required",
-  handler: async ({ user }) => {
-    // user is guaranteed to exist here
-    console.log(`User ${user.username} fetching tickets`);
-    return await fetchTicketsForUser(user.id);
-  },
-});
+export const ticketHandlers = {
+  // Protected route - returns 401 if not authenticated
+  getTickets: createHttpHandler({
+    endpoint: apiEndpoints.getTickets,
+    auth: "required",
+    handler: async ({ user }) => {
+      // user is guaranteed to exist here
+      console.log(`User ${user.username} fetching tickets`);
+      return await fetchTicketsForUser(user.id);
+    },
+  }),
 
-// Optional auth - user may be null
-export const handleGetPublicContent = createHttpHandler({
-  endpoint: apiEndpoints.getPublicContent,
-  auth: "optional",
-  handler: async ({ user }) => {
-    if (user) {
-      return { content: "personalized content", userId: user.id };
-    }
-    return { content: "generic content" };
-  },
-});
+  // Optional auth - user may be null
+  getPublicContent: createHttpHandler({
+    endpoint: apiEndpoints.getPublicContent,
+    auth: "optional",
+    handler: async ({ user }) => {
+      if (user) {
+        return { content: "personalized content", userId: user.id };
+      }
+      return { content: "generic content" };
+    },
+  }),
 
-// No auth (default) - for public endpoints
-export const handleHealthCheck = createHttpHandler({
-  endpoint: apiEndpoints.healthCheck,
-  // auth: "none" is the default
-  handler: async () => {
-    return { status: "ok" };
-  },
-});
+  // No auth (default) - for public endpoints
+  healthCheck: createHttpHandler({
+    endpoint: apiEndpoints.healthCheck,
+    // auth: "none" is the default
+    handler: async () => {
+      return { status: "ok" };
+    },
+  }),
+};
+```
+
+Then in your main app:
+
+```typescript
+import { registerHandlers } from "@nubase/backend";
+import { ticketHandlers } from "./api/routes/tickets";
+
+registerHandlers(app, ticketHandlers);
 ```
 
 ## Configuration Options

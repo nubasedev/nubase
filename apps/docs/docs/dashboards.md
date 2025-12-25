@@ -80,19 +80,18 @@ export const apiEndpoints = {
 
 ### 3. Implement Backend Handlers
 
-Create handlers that return data in the expected format:
+Create handlers that return data in the expected format. Export them as an object for auto-registration:
 
 ```typescript
 // backend/src/api/routes/dashboard.ts
 import { createHttpHandler } from "@nubase/backend";
 import { apiEndpoints } from "your-schema";
 
-export const handleGetRevenueChart = createHttpHandler({
-  endpoint: apiEndpoints.getRevenueChart,
-  auth: "required",
-  handler: async () => {
-    // Query your database here
-    return {
+export const dashboardHandlers = {
+  getRevenueChart: createHttpHandler({
+    endpoint: apiEndpoints.getRevenueChart,
+    auth: "required",
+    handler: async () => ({
       type: "series",
       config: {
         keys: ["desktop", "mobile"],
@@ -103,15 +102,13 @@ export const handleGetRevenueChart = createHttpHandler({
         { category: "March", desktop: 237, mobile: 120 },
         // ... more data
       ],
-    };
-  },
-});
+    }),
+  }),
 
-export const handleGetBrowserStats = createHttpHandler({
-  endpoint: apiEndpoints.getBrowserStats,
-  auth: "required",
-  handler: async () => {
-    return {
+  getBrowserStats: createHttpHandler({
+    endpoint: apiEndpoints.getBrowserStats,
+    auth: "required",
+    handler: async () => ({
       type: "proportional",
       data: [
         { label: "Chrome", value: 275 },
@@ -120,29 +117,25 @@ export const handleGetBrowserStats = createHttpHandler({
         { label: "Edge", value: 173 },
         { label: "Other", value: 90 },
       ],
-    };
-  },
-});
+    }),
+  }),
 
-export const handleGetTotalRevenue = createHttpHandler({
-  endpoint: apiEndpoints.getTotalRevenue,
-  auth: "required",
-  handler: async () => {
-    return {
+  getTotalRevenue: createHttpHandler({
+    endpoint: apiEndpoints.getTotalRevenue,
+    auth: "required",
+    handler: async () => ({
       type: "kpi",
       value: "$45,231.89",
       label: "Total Revenue",
       trend: "+20.1% from last month",
       trendDirection: "up",
-    };
-  },
-});
+    }),
+  }),
 
-export const handleGetRecentActivity = createHttpHandler({
-  endpoint: apiEndpoints.getRecentActivity,
-  auth: "required",
-  handler: async () => {
-    return {
+  getRecentActivity: createHttpHandler({
+    endpoint: apiEndpoints.getRecentActivity,
+    auth: "required",
+    handler: async () => ({
       type: "table",
       columns: [
         { key: "user", label: "User", width: "30%" },
@@ -154,27 +147,20 @@ export const handleGetRecentActivity = createHttpHandler({
         { user: "Jane Smith", action: "Updated settings", time: "5 min ago" },
         // ... more rows
       ],
-    };
-  },
-});
+    }),
+  }),
+};
 ```
 
-Register the routes in your main app:
+Register the routes in your main app using `registerHandlers`:
 
 ```typescript
 // backend/src/index.ts
-import {
-  handleGetRevenueChart,
-  handleGetBrowserStats,
-  handleGetTotalRevenue,
-  handleGetRecentActivity,
-} from "./api/routes/dashboard";
+import { registerHandlers } from "@nubase/backend";
+import { dashboardHandlers } from "./api/routes/dashboard";
 
-// Dashboard widget endpoints
-app.get("/dashboard/revenue-chart", handleGetRevenueChart);
-app.get("/dashboard/browser-stats", handleGetBrowserStats);
-app.get("/dashboard/total-revenue", handleGetTotalRevenue);
-app.get("/dashboard/recent-activity", handleGetRecentActivity);
+// Auto-registers all dashboard routes based on endpoint path and method
+registerHandlers(app, dashboardHandlers);
 ```
 
 ### 4. Create Dashboard Configuration

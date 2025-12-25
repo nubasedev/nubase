@@ -1,32 +1,12 @@
 import { serve } from "@hono/node-server";
-import { createAuthMiddleware } from "@nubase/backend";
+import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
-import {
-  handleGetMe,
-  handleLogin,
-  handleLoginComplete,
-  handleLoginStart,
-  handleLogout,
-  handleSignup,
-} from "./api/routes/auth";
-import {
-  handleGetActiveUsers,
-  handleGetBrowserStats,
-  handleGetRecentActivity,
-  handleGetRevenueChart,
-  handleGetSalesChart,
-  handleGetTotalRevenue,
-} from "./api/routes/dashboard";
+import { authHandlers } from "./api/routes/auth";
+import { dashboardHandlers } from "./api/routes/dashboard";
 import { testUtils } from "./api/routes/test-utils";
-import {
-  handleDeleteTicket,
-  handleGetTicket,
-  handleGetTickets,
-  handlePatchTicket,
-  handlePostTicket,
-} from "./api/routes/ticket";
+import { ticketHandlers } from "./api/routes/ticket";
 import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 import {
@@ -65,28 +45,10 @@ app.use("*", createPostAuthWorkspaceMiddleware());
 
 app.get("/", getRoot);
 
-// Auth routes - Two-step login flow
-app.post("/auth/login/start", handleLoginStart); // Step 1: validate credentials, get workspaces
-app.post("/auth/login/complete", handleLoginComplete); // Step 2: select workspace, get token
-app.post("/auth/login", handleLogin); // Legacy single-step login (deprecated)
-app.post("/auth/logout", handleLogout);
-app.get("/auth/me", handleGetMe);
-app.post("/auth/signup", handleSignup); // Create new workspace and admin user
-
-// Tickets - RESTful routes with type safety
-app.get("/tickets", handleGetTickets);
-app.get("/tickets/:id", handleGetTicket);
-app.post("/tickets", handlePostTicket);
-app.patch("/tickets/:id", handlePatchTicket);
-app.delete("/tickets/:id", handleDeleteTicket);
-
-// Dashboard widget endpoints
-app.get("/dashboard/revenue-chart", handleGetRevenueChart);
-app.get("/dashboard/browser-stats", handleGetBrowserStats);
-app.get("/dashboard/total-revenue", handleGetTotalRevenue);
-app.get("/dashboard/active-users", handleGetActiveUsers);
-app.get("/dashboard/sales-chart", handleGetSalesChart);
-app.get("/dashboard/recent-activity", handleGetRecentActivity);
+// Register all handlers - path and method extracted from endpoint metadata
+registerHandlers(app, authHandlers);
+registerHandlers(app, ticketHandlers);
+registerHandlers(app, dashboardHandlers);
 
 // Test utility routes - only enabled in test environment
 if (process.env.NODE_ENV === "test" || process.env.DB_PORT === "5435") {

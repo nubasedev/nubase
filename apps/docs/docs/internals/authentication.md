@@ -310,50 +310,58 @@ This reduces boilerplate by encapsulating the standard login/logout/getMe patter
 
 ### Route Protection with createHttpHandler
 
-Routes specify their authentication requirements via the `auth` option:
+Routes specify their authentication requirements via the `auth` option. Export handlers as an object for auto-registration with `registerHandlers`:
 
 ```typescript
 import { createHttpHandler } from "@nubase/backend";
 
-// Protected route - user is guaranteed non-null
-export const handleGetTickets = createHttpHandler<
-  typeof apiEndpoints.getTickets,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getTickets,
-  auth: "required",
-  handler: async ({ user }) => {
-    console.log(`User ${user.username} fetching tickets`);
-    // user is guaranteed to exist here
-    return await fetchTickets();
-  },
-});
+export const ticketHandlers = {
+  // Protected route - user is guaranteed non-null
+  getTickets: createHttpHandler<
+    typeof apiEndpoints.getTickets,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getTickets,
+    auth: "required",
+    handler: async ({ user }) => {
+      console.log(`User ${user.username} fetching tickets`);
+      // user is guaranteed to exist here
+      return await fetchTickets();
+    },
+  }),
+};
 
-// Optional auth - user may be null
-export const handleGetMe = createHttpHandler<
-  typeof apiEndpoints.getMe,
-  "optional",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getMe,
-  auth: "optional",
-  handler: async ({ user }) => {
-    if (!user) {
-      return { user: undefined };
-    }
-    return { user };
-  },
-});
+export const authHandlers = {
+  // Optional auth - user may be null
+  getMe: createHttpHandler<
+    typeof apiEndpoints.getMe,
+    "optional",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getMe,
+    auth: "optional",
+    handler: async ({ user }) => {
+      if (!user) {
+        return { user: undefined };
+      }
+      return { user };
+    },
+  }),
 
-// No auth required (default)
-export const handleLogin = createHttpHandler({
-  endpoint: apiEndpoints.login,
-  // auth: "none" is the default
-  handler: async ({ body, ctx }) => {
-    // Login logic...
-  },
-});
+  // No auth required (default)
+  login: createHttpHandler({
+    endpoint: apiEndpoints.login,
+    // auth: "none" is the default
+    handler: async ({ body, ctx }) => {
+      // Login logic...
+    },
+  }),
+};
+
+// In index.ts:
+// registerHandlers(app, ticketHandlers);
+// registerHandlers(app, authHandlers);
 ```
 
 ### Backend Architecture Diagram

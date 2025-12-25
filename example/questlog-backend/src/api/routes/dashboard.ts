@@ -6,19 +6,16 @@ import type { QuestlogUser } from "../../auth";
  * Dashboard widget endpoints.
  * These return hardcoded data for now - real implementations would query the database.
  */
-
-/**
- * Revenue chart - returns series data for area/line/bar charts.
- */
-export const handleGetRevenueChart = createHttpHandler<
-  typeof apiEndpoints.getRevenueChart,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getRevenueChart,
-  auth: "required",
-  handler: async () => {
-    return {
+export const dashboardHandlers = {
+  /** Revenue chart - returns series data for area/line/bar charts. */
+  getRevenueChart: createHttpHandler<
+    typeof apiEndpoints.getRevenueChart,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getRevenueChart,
+    auth: "required",
+    handler: async () => ({
       type: "series",
       config: {
         keys: ["desktop", "mobile"],
@@ -31,22 +28,18 @@ export const handleGetRevenueChart = createHttpHandler<
         { category: "May", desktop: 209, mobile: 130 },
         { category: "June", desktop: 214, mobile: 140 },
       ],
-    };
-  },
-});
+    }),
+  }),
 
-/**
- * Browser stats - returns proportional data for pie/donut charts.
- */
-export const handleGetBrowserStats = createHttpHandler<
-  typeof apiEndpoints.getBrowserStats,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getBrowserStats,
-  auth: "required",
-  handler: async () => {
-    return {
+  /** Browser stats - returns proportional data for pie/donut charts. */
+  getBrowserStats: createHttpHandler<
+    typeof apiEndpoints.getBrowserStats,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getBrowserStats,
+    auth: "required",
+    handler: async () => ({
       type: "proportional",
       data: [
         { label: "Chrome", value: 275 },
@@ -55,64 +48,52 @@ export const handleGetBrowserStats = createHttpHandler<
         { label: "Edge", value: 173 },
         { label: "Other", value: 90 },
       ],
-    };
-  },
-});
+    }),
+  }),
 
-/**
- * Total revenue KPI - returns single value with trend.
- */
-export const handleGetTotalRevenue = createHttpHandler<
-  typeof apiEndpoints.getTotalRevenue,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getTotalRevenue,
-  auth: "required",
-  handler: async () => {
-    return {
+  /** Total revenue KPI - returns single value with trend. */
+  getTotalRevenue: createHttpHandler<
+    typeof apiEndpoints.getTotalRevenue,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getTotalRevenue,
+    auth: "required",
+    handler: async () => ({
       type: "kpi",
       value: "$45,231.89",
       label: "Total Revenue",
       trend: "+20.1% from last month",
       trendDirection: "up",
-    };
-  },
-});
+    }),
+  }),
 
-/**
- * Active users KPI - returns single value with trend.
- */
-export const handleGetActiveUsers = createHttpHandler<
-  typeof apiEndpoints.getActiveUsers,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getActiveUsers,
-  auth: "required",
-  handler: async () => {
-    return {
+  /** Active users KPI - returns single value with trend. */
+  getActiveUsers: createHttpHandler<
+    typeof apiEndpoints.getActiveUsers,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getActiveUsers,
+    auth: "required",
+    handler: async () => ({
       type: "kpi",
       value: "+2,350",
       label: "Active Users",
       trend: "+180.1% from last month",
       trendDirection: "up",
-    };
-  },
-});
+    }),
+  }),
 
-/**
- * Sales chart - returns series data for bar charts.
- */
-export const handleGetSalesChart = createHttpHandler<
-  typeof apiEndpoints.getSalesChart,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getSalesChart,
-  auth: "required",
-  handler: async () => {
-    return {
+  /** Sales chart - returns series data for bar charts. */
+  getSalesChart: createHttpHandler<
+    typeof apiEndpoints.getSalesChart,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getSalesChart,
+    auth: "required",
+    handler: async () => ({
       type: "series",
       config: {
         keys: ["sales"],
@@ -126,22 +107,18 @@ export const handleGetSalesChart = createHttpHandler<
         { category: "Sat", sales: 8 },
         { category: "Sun", sales: 15 },
       ],
-    };
-  },
-});
+    }),
+  }),
 
-/**
- * Recent activity - returns table data.
- */
-export const handleGetRecentActivity = createHttpHandler<
-  typeof apiEndpoints.getRecentActivity,
-  "required",
-  QuestlogUser
->({
-  endpoint: apiEndpoints.getRecentActivity,
-  auth: "required",
-  handler: async () => {
-    return {
+  /** Recent activity - returns table data. */
+  getRecentActivity: createHttpHandler<
+    typeof apiEndpoints.getRecentActivity,
+    "required",
+    QuestlogUser
+  >({
+    endpoint: apiEndpoints.getRecentActivity,
+    auth: "required",
+    handler: async () => ({
       type: "table",
       columns: [
         { key: "user", label: "User", width: "30%" },
@@ -171,6 +148,6 @@ export const handleGetRecentActivity = createHttpHandler<
           time: "20 min ago",
         },
       ],
-    };
-  },
-});
+    }),
+  }),
+};
