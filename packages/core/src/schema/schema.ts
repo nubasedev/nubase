@@ -286,18 +286,59 @@ export type TableLayouts<TShape extends ObjectShape> = {
   [layoutName: string]: TableLayout<TShape>;
 };
 
-export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
-  ObjectOutput<TShape>
-> {
+/**
+ * ObjectSchema with optional catchall.
+ *
+ * Note on typing: When using .catchall(), the output type remains ObjectOutput<TShape>.
+ * TypeScript cannot express "extra keys have type X" without conflicting with defined keys.
+ * The catchall provides runtime validation and passthrough behavior, but dynamic keys
+ * should be accessed via type assertion: `(data as any).dynamicKey` or `data["dynamicKey"]`.
+ */
+export class ObjectSchema<
+  TShape extends ObjectShape = any,
+  TCatchall extends BaseSchema<any> | null = null,
+> extends BaseSchema<ObjectOutput<TShape>> {
   readonly type = "object" as const;
   _shape: TShape;
   _computedMeta: ObjectComputedMetadata<TShape> = {};
   _layouts: ObjectLayouts<TShape> = {};
   _idField: keyof ObjectOutput<TShape> = "id" as keyof ObjectOutput<TShape>;
+  _catchall: TCatchall = null as TCatchall;
 
-  constructor(shape: TShape) {
+  constructor(shape: TShape, catchall?: TCatchall) {
     super();
     this._shape = shape;
+    if (catchall) {
+      this._catchall = catchall;
+    }
+  }
+
+  /**
+   * Allow additional properties beyond the defined shape, validated against the provided schema.
+   * Similar to Zod's .catchall() method.
+   *
+   * @example
+   * const chartDataSchema = nu.object({ category: nu.string() }).catchall(nu.number());
+   * // Validates: { category: "Jan", desktop: 186, mobile: 80 }
+   *
+   * @param schema The schema to validate additional properties against.
+   * @returns A new ObjectSchema that allows additional properties.
+   */
+  catchall<TCatchallSchema extends BaseSchema<any>>(
+    schema: TCatchallSchema,
+  ): ObjectSchema<TShape, TCatchallSchema> {
+    const newSchema = new ObjectSchema<TShape, TCatchallSchema>(
+      this._shape,
+      schema,
+    );
+
+    // Copy metadata from parent schema
+    newSchema._meta = { ...this._meta } as any;
+    newSchema._computedMeta = { ...this._computedMeta };
+    newSchema._layouts = { ...this._layouts };
+    newSchema._idField = this._idField;
+
+    return newSchema;
   }
 
   /**
@@ -674,7 +715,15 @@ export class ObjectSchema<TShape extends ObjectShape = any> extends BaseSchema<
         zodShape[key] = fieldSchema.toZod();
       }
     }
-    return z.object(zodShape) as z.ZodSchema<ObjectOutput<TShape>>;
+
+    const baseZod = z.object(zodShape);
+
+    // If catchall is defined, use it to allow additional properties
+    if (this._catchall) {
+      return baseZod.catchall(this._catchall.toZod()) as any;
+    }
+
+    return baseZod as any;
   }
 
   /**
@@ -764,6 +813,30 @@ export class ArraySchema<
 }
 
 /**
+ * RecordSchema represents a dictionary/map type with string keys and values of a specific type.
+ * Similar to TypeScript's Record<string, T> or Zod's z.record().
+ *
+ * @example
+ * const scoresSchema = nu.record(nu.number());
+ * // Represents: { [key: string]: number }
+ */
+export class RecordSchema<
+  TValueSchema extends BaseSchema<any>,
+> extends BaseSchema<Record<string, TValueSchema["_outputType"]>> {
+  readonly type = "record" as const;
+  _valueSchema: TValueSchema;
+
+  constructor(valueSchema: TValueSchema) {
+    super();
+    this._valueSchema = valueSchema;
+  }
+
+  toZod(): z.ZodRecord<z.ZodString, z.ZodSchema<TValueSchema["_outputType"]>> {
+    return z.record(z.string(), this._valueSchema.toZod());
+  }
+}
+
+/**
  * Infers the TypeScript type from a schema.
  * @example
  * const userSchema = nu.object({ name: nu.string() });
@@ -778,4 +851,5 @@ export type NuSchema =
   | NumberSchema
   | OptionalSchema<any>
   | ObjectSchema<any>
-  | ArraySchema<any>;
+  | ArraySchema<any>
+  | RecordSchema<any>;

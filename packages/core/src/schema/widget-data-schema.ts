@@ -21,12 +21,15 @@ export const seriesConfigSchema = nu.object({
 /**
  * A single data point in a series chart.
  * The 'category' is the x-axis label (e.g., "January", "Q1", "2024-01").
- * Additional numeric fields are the data series values.
+ * Additional numeric fields are the data series values (e.g., desktop: 186, mobile: 80).
+ *
+ * Uses .catchall(nu.number()) to allow dynamic numeric fields beyond 'category'.
  */
-export const seriesDataPointSchema = nu.object({
-  category: nu.string(),
-  // Additional numeric fields are dynamic and handled at runtime
-});
+export const seriesDataPointSchema = nu
+  .object({
+    category: nu.string(),
+  })
+  .catchall(nu.number());
 
 /**
  * Complete series data response from an endpoint.
@@ -39,6 +42,8 @@ export const seriesDataSchema = nu.object({
 });
 
 export type SeriesConfig = Infer<typeof seriesConfigSchema>;
+// The schema uses .catchall(nu.number()) for runtime validation of dynamic fields.
+// TypeScript type is manually extended with Record<string, number> for type safety.
 export type SeriesDataPoint = Infer<typeof seriesDataPointSchema> &
   Record<string, number>;
 export type SeriesData = {

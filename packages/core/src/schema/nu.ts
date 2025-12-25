@@ -5,6 +5,7 @@ import {
   NumberSchema,
   ObjectSchema,
   type ObjectShape,
+  RecordSchema,
   StringSchema,
 } from "./schema";
 
@@ -39,5 +40,16 @@ export const nu = {
     elementSchema: TElementSchema,
   ) => new ArraySchema(elementSchema),
 
-  // Add more factory methods here (boolean, union, literal, etc.)
+  /**
+   * Creates a record schema (dictionary) with string keys and values of a specific type.
+   * Similar to TypeScript's Record<string, T>.
+   *
+   * @example
+   * const scoresSchema = nu.record(nu.number());
+   * // Represents: { [key: string]: number }
+   *
+   * @param valueSchema The schema for values in the record.
+   */
+  record: <TValueSchema extends BaseSchema<any>>(valueSchema: TValueSchema) =>
+    new RecordSchema(valueSchema),
 };

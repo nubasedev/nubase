@@ -223,6 +223,70 @@ userArraySchema.toZod().parse([
 ]); // ✅
 ```
 
+#### RecordSchema
+
+Record schemas validate dictionary/map types with string keys and values of a specific type:
+
+```typescript
+// Simple record with number values
+const scoresSchema = nu.record(nu.number());
+
+scoresSchema.toZod().parse({ math: 95, english: 87, science: 92 }); // ✅
+scoresSchema.toZod().parse({ math: "A+" }); // ❌ Throws error - value must be number
+scoresSchema.toZod().parse({}); // ✅ Empty records are valid
+
+// Record with object values
+const usersById = nu.record(nu.object({
+  name: nu.string(),
+  age: nu.number()
+}));
+
+usersById.toZod().parse({
+  "user-1": { name: "Alice", age: 30 },
+  "user-2": { name: "Bob", age: 25 }
+}); // ✅
+
+// Type inference
+type Scores = Infer<typeof scoresSchema>;
+// Inferred as: Record<string, number>
+```
+
+#### ObjectSchema with Catchall
+
+Use `.catchall()` to allow additional properties beyond the defined shape, validated against a schema. This is useful for dynamic data like chart series:
+
+```typescript
+// Chart data point with dynamic numeric fields
+const dataPointSchema = nu.object({
+  category: nu.string()  // Required field
+}).catchall(nu.number()); // Extra fields must be numbers
+
+// Valid - extra fields are numbers
+dataPointSchema.toZod().parse({
+  category: "January",
+  desktop: 186,
+  mobile: 80
+}); // ✅ Returns { category: "January", desktop: 186, mobile: 80 }
+
+// Invalid - extra field is not a number
+dataPointSchema.toZod().parse({
+  category: "January",
+  desktop: "not a number"
+}); // ❌ Throws error
+
+// Without catchall, extra fields are stripped
+const strictSchema = nu.object({ category: nu.string() });
+strictSchema.toZod().parse({ category: "Jan", desktop: 186 });
+// Returns: { category: "Jan" } - desktop is stripped!
+
+// With catchall, extra fields are preserved and validated
+const flexibleSchema = nu.object({ category: nu.string() }).catchall(nu.number());
+flexibleSchema.toZod().parse({ category: "Jan", desktop: 186 });
+// Returns: { category: "Jan", desktop: 186 } - desktop is preserved!
+```
+
+**Note on TypeScript types:** When using `.catchall()`, the TypeScript output type remains `ObjectOutput<TShape>`. TypeScript cannot express "extra keys have type X" without conflicting with defined keys. The catchall provides runtime validation and passthrough behavior, but dynamic keys should be accessed via type assertion if needed.
+
 #### PartialObjectSchema
 
 Makes all properties optional:
