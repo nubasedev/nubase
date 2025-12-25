@@ -38,8 +38,8 @@
     "publish:all": "turbo run publish --filter=\"@nubase/*\""
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.2",
-    "turbo": "^2.7.1",
+    "@biomejs/biome": "^2.3.10",
+    "turbo": "^2.7.2",
     "vitest": "^4.0.16"
   },
   "engines": {

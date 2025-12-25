@@ -1,0 +1,52 @@
+{
+  "name": "@nubase/create",
+  "version": "0.1.0",
+  "description": "Create a new Nubase application",
+  "type": "module",
+  "bin": {
+    "nubase-create": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.2",
+    "@types/prompts": "^2.4.9",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "nubase",
+    "create",
+    "scaffold",
+    "fullstack",
+    "react",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nubase/nubase.git",
+    "directory": "packages/create"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "__PROJECT_NAME__-schema",
+    "__PROJECT_NAME__-backend",
+    "__PROJECT_NAME__-frontend"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "db:up": "cd __PROJECT_NAME__-backend && npm run db:dev:up",
+    "db:down": "cd __PROJECT_NAME__-backend && npm run db:dev:down",
+    "db:kill": "cd __PROJECT_NAME__-backend && npm run db:dev:kill",
+    "db:seed": "cd __PROJECT_NAME__-backend && npm run db:seed",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "turbo": "^2.7.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

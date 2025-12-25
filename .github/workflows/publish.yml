@@ -130,3 +130,18 @@ jobs:
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @nubase/create (if version changed)
+        run: |
+          cd packages/create
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @nubase/create version 2>/dev/null || echo "0.0.0")
+
+          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "Publishing @nubase/create: $NPM_VERSION -> $LOCAL_VERSION"
+            npm publish
+          else
+            echo "@nubase/create is up to date ($LOCAL_VERSION)"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
