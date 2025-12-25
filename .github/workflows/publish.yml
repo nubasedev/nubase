@@ -1,0 +1,132 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: questlog
+          POSTGRES_PASSWORD: questlog
+          POSTGRES_DB: questlog
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Initialize test database
+        run: |
+          PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog -f example/questlog-backend/docker/test/postgresql-init/dump.sql
+        env:
+          PGPASSWORD: questlog
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run build and typecheck
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e tests
+        run: npm run e2e
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://questlog:questlog@localhost:5435/questlog
+          DB_HOST: localhost
+          DB_PORT: 5435
+          DB_USER: questlog
+          DB_PASSWORD: questlog
+          DB_NAME: questlog
+
+  publish:
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Publish @nubase/core (if version changed)
+        run: |
+          cd packages/core
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @nubase/core version 2>/dev/null || echo "0.0.0")
+
+          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "Publishing @nubase/core: $NPM_VERSION -> $LOCAL_VERSION"
+            npm publish
+          else
+            echo "@nubase/core is up to date ($LOCAL_VERSION)"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @nubase/backend (if version changed)
+        run: |
+          cd packages/backend
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @nubase/backend version 2>/dev/null || echo "0.0.0")
+
+          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "Publishing @nubase/backend: $NPM_VERSION -> $LOCAL_VERSION"
+            npm publish
+          else
+            echo "@nubase/backend is up to date ($LOCAL_VERSION)"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @nubase/frontend (if version changed)
+        run: |
+          cd packages/frontend
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @nubase/frontend version 2>/dev/null || echo "0.0.0")
+
+          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "Publishing @nubase/frontend: $NPM_VERSION -> $LOCAL_VERSION"
+            npm publish
+          else
+            echo "@nubase/frontend is up to date ($LOCAL_VERSION)"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
