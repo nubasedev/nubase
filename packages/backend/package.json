@@ -1,6 +1,6 @@
 {
   "name": "@nubase/backend",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Backend utilities and typed handlers for nubase",
   "keywords": [
     "backend",
@@ -31,7 +31,6 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish",
     "watch": "tsup --watch",
     "dev": "tsup --watch"
   },
