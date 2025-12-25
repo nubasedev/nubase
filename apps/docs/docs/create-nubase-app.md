@@ -32,7 +32,7 @@ my-app/
 ├── turbo.json                # Turborepo configuration
 ├── biome.json                # Linting and formatting
 │
-├── my-app-schema/            # Shared API schemas
+├── schema/                   # Shared API schemas
 │   └── src/
 │       ├── index.ts
 │       ├── api-endpoints.ts  # API endpoint definitions
@@ -40,7 +40,7 @@ my-app/
 │           ├── ticket.ts     # Example entity schema
 │           └── auth.ts       # Authentication schemas
 │
-├── my-app-backend/           # Node.js backend
+├── backend/                  # Node.js backend
 │   ├── src/
 │   │   ├── index.ts          # Hono server entry
 │   │   ├── auth/             # Authentication logic
@@ -52,7 +52,7 @@ my-app/
 │   │   └── test/             # Test PostgreSQL (port 5435)
 │   └── db/schema.sql         # Database schema
 │
-└── my-app-frontend/          # React frontend
+└── frontend/                 # React frontend
     └── src/
         ├── main.tsx          # Entry point
         ├── config.tsx        # Nubase configuration
@@ -68,15 +68,15 @@ my-app/
 The schema package is the **source of truth** for your API. Both the backend and frontend depend on it.
 
 ```typescript
-// my-app-schema/src/schema/ticket.ts
-import { nu, type RequestSchema } from "@nubase/core";
+// schema/src/schema/ticket.ts
+import { emptySchema, nu, type RequestSchema } from "@nubase/core";
 
 export const ticketBaseSchema = nu
   .object({
     id: nu.number(),
     title: nu.string().withMeta({
       label: "Title",
-      placeholder: "Enter ticket title",
+      description: "Enter ticket title",
     }),
     description: nu.string().optional().withMeta({
       label: "Description",
@@ -86,7 +86,10 @@ export const ticketBaseSchema = nu
   .withId("id")
   .withTableLayouts({
     default: {
-      fields: ["id", "title", "description"],
+      fields: [
+        { name: "id", columnWidthPx: 80 },
+        { name: "title", columnWidthPx: 300 },
+      ],
       metadata: { linkFields: ["title"] },
     },
   });
@@ -94,6 +97,7 @@ export const ticketBaseSchema = nu
 export const getTicketsSchema = {
   method: "GET",
   path: "/tickets",
+  requestParams: emptySchema,
   responseBody: nu.array(ticketBaseSchema),
 } satisfies RequestSchema;
 ```
@@ -103,7 +107,7 @@ export const getTicketsSchema = {
 The backend uses [Hono](https://hono.dev) for HTTP and [Drizzle ORM](https://orm.drizzle.team) for PostgreSQL.
 
 ```typescript
-// my-app-backend/src/api/routes/ticket.ts
+// backend/src/api/routes/ticket.ts
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { db } from "../../db/helpers/drizzle";
@@ -123,9 +127,9 @@ export const ticketHandlers = {
 The frontend is a Vite + React app that uses the `NubaseApp` component.
 
 ```typescript
-// my-app-frontend/src/config.tsx
-import { type NubaseFrontendConfig } from "@nubase/frontend";
-import { apiEndpoints } from "my-app-schema";
+// frontend/src/config.tsx
+import { type NubaseFrontendConfig, defaultKeybindings } from "@nubase/frontend";
+import { apiEndpoints } from "schema";
 import { ticketResource } from "./resources/ticket";
 
 export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
@@ -138,6 +142,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   },
   apiBaseUrl: "http://localhost:3001",
   apiEndpoints,
+  keybindings: defaultKeybindings.extend(),
   themeIds: ["dark", "light"],
   defaultThemeId: "dark",
 };
@@ -256,10 +261,12 @@ The backend middleware extracts the workspace from the path and sets the Postgre
 
 ## Adding a New Entity
 
-1. **Define the schema** in `my-app-schema/src/schema/`:
+1. **Define the schema** in `schema/src/schema/`:
 
 ```typescript
-// my-app-schema/src/schema/customer.ts
+// schema/src/schema/customer.ts
+import { emptySchema, nu, type RequestSchema } from "@nubase/core";
+
 export const customerSchema = nu.object({
   id: nu.number(),
   name: nu.string().withMeta({ label: "Name" }),
@@ -269,11 +276,12 @@ export const customerSchema = nu.object({
 export const getCustomersSchema = {
   method: "GET",
   path: "/customers",
+  requestParams: emptySchema,
   responseBody: nu.array(customerSchema),
 } satisfies RequestSchema;
 ```
 
-2. **Add to API endpoints** in `my-app-schema/src/api-endpoints.ts`:
+2. **Add to API endpoints** in `schema/src/api-endpoints.ts`:
 
 ```typescript
 export const apiEndpoints = {
@@ -282,7 +290,7 @@ export const apiEndpoints = {
 };
 ```
 
-3. **Create database table** in `my-app-backend/src/db/schema/`:
+3. **Create database table** in `backend/src/db/schema/`:
 
 ```typescript
 // customer.ts
@@ -294,7 +302,7 @@ export const customers = pgTable("customers", {
 });
 ```
 
-4. **Add API route** in `my-app-backend/src/api/routes/`:
+4. **Add API route** in `backend/src/api/routes/`:
 
 ```typescript
 // customer.ts
@@ -306,23 +314,30 @@ export const customerHandlers = {
 };
 ```
 
-5. **Create resource** in `my-app-frontend/src/resources/`:
+5. **Create resource** in `frontend/src/resources/`:
 
 ```typescript
 // customer.ts
+import { createResource } from "@nubase/frontend";
+import { apiEndpoints } from "schema";
+
 export const customerResource = createResource("customer")
   .withApiEndpoints(apiEndpoints)
   .withViews({
     search: {
       type: "resource-search",
+      id: "search-customers",
       title: "Customers",
-      schema: customerSchema,
-      fetchEndpoint: "getCustomers",
+      schemaGet: (api) => api.getCustomers.responseBody,
+      breadcrumbs: () => [{ label: "Customers", to: "/r/customer/search" }],
+      onLoad: async ({ context }) => {
+        return context.http.getCustomers({ params: {} });
+      },
     },
   });
 ```
 
-6. **Add to config** in `my-app-frontend/src/config.tsx`:
+6. **Add to config** in `frontend/src/config.tsx`:
 
 ```typescript
 resources: {
