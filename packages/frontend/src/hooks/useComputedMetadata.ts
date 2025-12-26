@@ -1,10 +1,47 @@
-import type {
-  ObjectOutput,
-  ObjectSchema,
-  ObjectShape,
-  SchemaMetadata,
+import {
+  type ObjectOutput,
+  type ObjectSchema,
+  type ObjectShape,
+  OptionalSchema,
+  type SchemaMetadata,
 } from "@nubase/core";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+/**
+ * Helper to get metadata from a field schema, unwrapping OptionalSchema if needed.
+ * Handles nested OptionalSchemas (e.g., from calling .partial() on an already optional field).
+ *
+ * Metadata can be attached at any level of wrapping:
+ * - nu.string().withMeta({ label: "Name" }) - metadata on base schema
+ * - nu.string().optional().withMeta({ label: "Name" }) - metadata on OptionalSchema
+ * - nu.string().withMeta({ label: "Name" }).optional() - metadata on inner schema
+ *
+ * This function collects metadata from all layers, with outer layers taking precedence.
+ */
+export function getFieldMeta(fieldSchema: any): any {
+  const metadataLayers: any[] = [];
+  let schema = fieldSchema;
+
+  // Collect metadata from all layers (outer to inner)
+  while (schema) {
+    if (schema._meta && Object.keys(schema._meta).length > 0) {
+      metadataLayers.push(schema._meta);
+    }
+    if (schema instanceof OptionalSchema) {
+      schema = schema._wrapped;
+    } else {
+      break;
+    }
+  }
+
+  // Merge metadata with inner layers first, outer layers override
+  // Object.assign avoids O(n^2) spread in reduce
+  const merged = {};
+  for (let i = metadataLayers.length - 1; i >= 0; i--) {
+    Object.assign(merged, metadataLayers[i]);
+  }
+  return merged;
+}
 
 export interface UseComputedMetadataOptions {
   /** Debounce delay in milliseconds (default: 300ms) */
@@ -51,7 +88,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
       if (Object.hasOwn(schema._shape, key)) {
         const fieldSchema = schema._shape[key];
         if (fieldSchema) {
-          initialMeta[key] = { ...fieldSchema._meta };
+          initialMeta[key] = getFieldMeta(fieldSchema);
         }
       }
     }
@@ -118,7 +155,7 @@ export function useComputedMetadata<TShape extends ObjectShape>(
         if (Object.hasOwn(schema._shape, key)) {
           const fieldSchema = schema._shape[key];
           if (fieldSchema) {
-            staticMeta[key] = { ...fieldSchema._meta };
+            staticMeta[key] = getFieldMeta(fieldSchema);
           }
         }
       }

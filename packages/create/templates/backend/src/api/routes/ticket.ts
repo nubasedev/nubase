@@ -1,62 +1,111 @@
+import { createHttpHandler, HttpError } from "@nubase/backend";
 import { eq } from "drizzle-orm";
-import type { Context } from "hono";
+import { apiEndpoints } from "schema";
 import { db } from "../../db/helpers/drizzle";
 import { tickets } from "../../db/schema";
 
 export const ticketHandlers = {
-	async getTickets(c: Context) {
-		const allTickets = await db.select().from(tickets);
-		return c.json(allTickets);
-	},
+	getTickets: createHttpHandler({
+		endpoint: apiEndpoints.getTickets,
+		handler: async () => {
+			const allTickets = await db.select().from(tickets);
+			return allTickets.map((ticket) => ({
+				id: ticket.id,
+				title: ticket.title,
+				description: ticket.description ?? undefined,
+			}));
+		},
+	}),
 
-	async getTicket(c: Context) {
-		const id = Number(c.req.param("id"));
-		const [ticket] = await db.select().from(tickets).where(eq(tickets.id, id));
+	getTicket: createHttpHandler({
+		endpoint: apiEndpoints.getTicket,
+		handler: async ({ params }) => {
+			const [ticket] = await db
+				.select()
+				.from(tickets)
+				.where(eq(tickets.id, params.id));
 
-		if (!ticket) {
-			return c.json({ error: "Ticket not found" }, 404);
-		}
+			if (!ticket) {
+				throw new HttpError(404, "Ticket not found");
+			}
 
-		return c.json(ticket);
-	},
+			return {
+				id: ticket.id,
+				title: ticket.title,
+				description: ticket.description ?? undefined,
+			};
+		},
+	}),
 
-	async postTicket(c: Context) {
-		const body = await c.req.json();
-		const [ticket] = await db
-			.insert(tickets)
-			.values({
-				workspaceId: 1, // TODO: Get from context
-				title: body.title,
-				description: body.description,
-			})
-			.returning();
+	postTicket: createHttpHandler({
+		endpoint: apiEndpoints.postTicket,
+		handler: async ({ body }) => {
+			const [ticket] = await db
+				.insert(tickets)
+				.values({
+					workspaceId: 1, // TODO: Get from context
+					title: body.title,
+					description: body.description,
+				})
+				.returning();
 
-		return c.json(ticket, 201);
-	},
+			if (!ticket) {
+				throw new HttpError(500, "Failed to create ticket");
+			}
 
-	async patchTicket(c: Context) {
-		const id = Number(c.req.param("id"));
-		const body = await c.req.json();
+			return {
+				id: ticket.id,
+				title: ticket.title,
+				description: ticket.description ?? undefined,
+			};
+		},
+	}),
 
-		const [ticket] = await db
-			.update(tickets)
-			.set({
-				...body,
+	patchTicket: createHttpHandler({
+		endpoint: apiEndpoints.patchTicket,
+		handler: async ({ params, body }) => {
+			const updateData: { title?: string; description?: string; updatedAt: Date } = {
 				updatedAt: new Date(),
-			})
-			.where(eq(tickets.id, id))
-			.returning();
+			};
 
-		if (!ticket) {
-			return c.json({ error: "Ticket not found" }, 404);
-		}
+			if (body.title !== undefined) {
+				updateData.title = body.title;
+			}
+			if (body.description !== undefined) {
+				updateData.description = body.description;
+			}
 
-		return c.json(ticket);
-	},
+			const [ticket] = await db
+				.update(tickets)
+				.set(updateData)
+				.where(eq(tickets.id, params.id))
+				.returning();
 
-	async deleteTicket(c: Context) {
-		const id = Number(c.req.param("id"));
-		await db.delete(tickets).where(eq(tickets.id, id));
-		return c.json({ success: true });
-	},
+			if (!ticket) {
+				throw new HttpError(404, "Ticket not found");
+			}
+
+			return {
+				id: ticket.id,
+				title: ticket.title,
+				description: ticket.description ?? undefined,
+			};
+		},
+	}),
+
+	deleteTicket: createHttpHandler({
+		endpoint: apiEndpoints.deleteTicket,
+		handler: async ({ params }) => {
+			const [deleted] = await db
+				.delete(tickets)
+				.where(eq(tickets.id, params.id))
+				.returning();
+
+			if (!deleted) {
+				throw new HttpError(404, "Ticket not found");
+			}
+
+			return { success: true };
+		},
+	}),
 };

@@ -1,209 +1,384 @@
+import {
+	createHttpHandler,
+	getAuthController,
+	HttpError,
+} from "@nubase/backend";
 import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
-import type { Context } from "hono";
-import { __PROJECT_NAME_PASCAL__AuthController } from "../../auth";
-import { adminDb, db } from "../../db/helpers/drizzle";
-import { userWorkspaces, users, workspaces } from "../../db/schema";
+import { and, eq, inArray } from "drizzle-orm";
+import { apiEndpoints } from "schema";
+import jwt from "jsonwebtoken";
+import type { __PROJECT_NAME_PASCAL__User } from "../../auth";
+import { db, adminDb } from "../../db/helpers/drizzle";
+import { users, userWorkspaces, workspaces } from "../../db/schema";
 
-const authController = new __PROJECT_NAME_PASCAL__AuthController();
+// Short-lived secret for login tokens (in production, use a proper secret)
+const LOGIN_TOKEN_SECRET =
+	process.env.LOGIN_TOKEN_SECRET ||
+	"nubase-login-token-secret-change-in-production";
+const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
+
+interface LoginTokenPayload {
+	userId: number;
+	username: string;
+}
 
 export const authHandlers = {
-	async loginStart(c: Context) {
-		const { email, password } = await c.req.json();
+	/**
+	 * Login Start handler - Step 1 of two-step auth.
+	 * Validates credentials and returns list of workspaces.
+	 */
+	loginStart: createHttpHandler({
+		endpoint: apiEndpoints.loginStart,
+		handler: async ({ body }) => {
+			// Find user by username
+			const [user] = await adminDb
+				.select()
+				.from(users)
+				.where(eq(users.username, body.username));
 
-		const [user] = await db.select().from(users).where(eq(users.email, email));
+			if (!user) {
+				throw new HttpError(401, "Invalid username or password");
+			}
 
-		if (!user) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+			// Verify password
+			const isValidPassword = await bcrypt.compare(
+				body.password,
+				user.passwordHash,
+			);
+			if (!isValidPassword) {
+				throw new HttpError(401, "Invalid username or password");
+			}
 
-		const isValid = await bcrypt.compare(password, user.passwordHash);
-		if (!isValid) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+			// Get all workspaces this user belongs to
+			const userWorkspaceRows = await adminDb
+				.select()
+				.from(userWorkspaces)
+				.where(eq(userWorkspaces.userId, user.id));
 
-		// Get user's workspaces
-		const userWs = await db
-			.select({
-				id: workspaces.id,
-				slug: workspaces.slug,
-				name: workspaces.name,
-			})
-			.from(userWorkspaces)
-			.innerJoin(workspaces, eq(userWorkspaces.workspaceId, workspaces.id))
-			.where(eq(userWorkspaces.userId, user.id));
+			if (userWorkspaceRows.length === 0) {
+				throw new HttpError(401, "User has no workspace access");
+			}
 
-		return c.json({ workspaces: userWs });
-	},
+			// Fetch workspace details
+			const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
+			const workspaceList = await adminDb
+				.select()
+				.from(workspaces)
+				.where(inArray(workspaces.id, workspaceIds));
 
-	async loginComplete(c: Context) {
-		const { email, password, workspaceId } = await c.req.json();
+			// Create a short-lived login token
+			const loginToken = jwt.sign(
+				{
+					userId: user.id,
+					username: body.username,
+				} satisfies LoginTokenPayload,
+				LOGIN_TOKEN_SECRET,
+				{ expiresIn: LOGIN_TOKEN_EXPIRY },
+			);
 
-		const [user] = await db.select().from(users).where(eq(users.email, email));
+			return {
+				loginToken,
+				username: body.username,
+				workspaces: workspaceList.map((w) => ({
+					id: w.id,
+					slug: w.slug,
+					name: w.name,
+				})),
+			};
+		},
+	}),
 
-		if (!user) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+	/**
+	 * Login Complete handler - Step 2 of two-step auth.
+	 * Validates the login token and selected workspace.
+	 */
+	loginComplete: createHttpHandler({
+		endpoint: apiEndpoints.loginComplete,
+		handler: async ({ body, ctx }) => {
+			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
-		const isValid = await bcrypt.compare(password, user.passwordHash);
-		if (!isValid) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+			// Verify the login token
+			let decoded: LoginTokenPayload;
+			try {
+				decoded = jwt.verify(
+					body.loginToken,
+					LOGIN_TOKEN_SECRET,
+				) as LoginTokenPayload;
+			} catch {
+				throw new HttpError(401, "Invalid or expired login token");
+			}
 
-		const [workspace] = await db
-			.select()
-			.from(workspaces)
-			.where(eq(workspaces.id, workspaceId));
+			// Look up the selected workspace
+			const [workspace] = await adminDb
+				.select()
+				.from(workspaces)
+				.where(eq(workspaces.slug, body.workspace));
 
-		if (!workspace) {
-			return c.json({ error: "Workspace not found" }, 404);
-		}
+			if (!workspace) {
+				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
+			}
 
-		const token = authController.generateToken({
-			userId: user.id,
-			workspaceId: workspace.id,
-			username: user.username,
-		});
+			// Verify user has access to this workspace
+			const [access] = await adminDb
+				.select()
+				.from(userWorkspaces)
+				.where(
+					and(
+						eq(userWorkspaces.userId, decoded.userId),
+						eq(userWorkspaces.workspaceId, workspace.id),
+					),
+				);
 
-		return c.json({
-			token,
-			user: { id: user.id, email: user.email, username: user.username },
-			workspace: { id: workspace.id, slug: workspace.slug, name: workspace.name },
-		});
-	},
+			if (!access) {
+				throw new HttpError(403, "You do not have access to this workspace");
+			}
 
-	async login(c: Context) {
-		const { email, password } = await c.req.json();
+			// Fetch the user
+			const [dbUser] = await adminDb
+				.select()
+				.from(users)
+				.where(eq(users.id, decoded.userId));
 
-		const [user] = await db.select().from(users).where(eq(users.email, email));
+			if (!dbUser) {
+				throw new HttpError(401, "User not found");
+			}
 
-		if (!user) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+			// Create user object for token
+			const user: __PROJECT_NAME_PASCAL__User = {
+				id: dbUser.id,
+				email: dbUser.email,
+				username: dbUser.username,
+				workspaceId: workspace.id,
+			};
 
-		const isValid = await bcrypt.compare(password, user.passwordHash);
-		if (!isValid) {
-			return c.json({ error: "Invalid credentials" }, 401);
-		}
+			// Create and set the auth token
+			const token = await authController.createToken(user);
+			authController.setTokenInResponse(ctx, token);
 
-		// Get first workspace for simple login
-		const [userWs] = await db
-			.select({
-				id: workspaces.id,
-				slug: workspaces.slug,
-				name: workspaces.name,
-			})
-			.from(userWorkspaces)
-			.innerJoin(workspaces, eq(userWorkspaces.workspaceId, workspaces.id))
-			.where(eq(userWorkspaces.userId, user.id));
+			return {
+				user: {
+					id: user.id,
+					email: user.email,
+					username: user.username,
+				},
+				workspace: {
+					id: workspace.id,
+					slug: workspace.slug,
+					name: workspace.name,
+				},
+			};
+		},
+	}),
 
-		if (!userWs) {
-			return c.json({ error: "No workspace found" }, 404);
-		}
+	/**
+	 * Legacy Login handler - validates credentials and sets HttpOnly cookie.
+	 * @deprecated Use loginStart and loginComplete for two-step flow
+	 */
+	login: createHttpHandler({
+		endpoint: apiEndpoints.login,
+		handler: async ({ body, ctx }) => {
+			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
-		const token = authController.generateToken({
-			userId: user.id,
-			workspaceId: userWs.id,
-			username: user.username,
-		});
+			// Look up workspace
+			const [workspace] = await adminDb
+				.select()
+				.from(workspaces)
+				.where(eq(workspaces.slug, body.workspace));
 
-		return c.json({
-			token,
-			user: { id: user.id, email: user.email, username: user.username },
-			workspace: userWs,
-		});
-	},
+			if (!workspace) {
+				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
+			}
 
-	async logout(c: Context) {
-		// Client-side token removal
-		return c.json({ success: true });
-	},
+			// Find user by username
+			const [dbUser] = await adminDb
+				.select()
+				.from(users)
+				.where(eq(users.username, body.username));
 
-	async getMe(c: Context) {
-		const authHeader = c.req.header("Authorization");
-		if (!authHeader?.startsWith("Bearer ")) {
-			return c.json({ error: "Unauthorized" }, 401);
-		}
+			if (!dbUser) {
+				throw new HttpError(401, "Invalid username or password");
+			}
 
-		const token = authHeader.slice(7);
-		const payload = authController.verifyToken(token);
+			// Verify password
+			const isValidPassword = await bcrypt.compare(
+				body.password,
+				dbUser.passwordHash,
+			);
+			if (!isValidPassword) {
+				throw new HttpError(401, "Invalid username or password");
+			}
 
-		if (!payload) {
-			return c.json({ error: "Invalid token" }, 401);
-		}
+			// Verify user has access to this workspace
+			const [access] = await adminDb
+				.select()
+				.from(userWorkspaces)
+				.where(
+					and(
+						eq(userWorkspaces.userId, dbUser.id),
+						eq(userWorkspaces.workspaceId, workspace.id),
+					),
+				);
 
-		const [user] = await db
-			.select()
-			.from(users)
-			.where(eq(users.id, payload.userId));
+			if (!access) {
+				throw new HttpError(403, "You do not have access to this workspace");
+			}
 
-		if (!user) {
-			return c.json({ error: "User not found" }, 404);
-		}
+			// Create user object for token
+			const user: __PROJECT_NAME_PASCAL__User = {
+				id: dbUser.id,
+				email: dbUser.email,
+				username: dbUser.username,
+				workspaceId: workspace.id,
+			};
 
-		const [workspace] = await db
-			.select()
-			.from(workspaces)
-			.where(eq(workspaces.id, payload.workspaceId));
+			// Create and set token
+			const token = await authController.createToken(user);
+			authController.setTokenInResponse(ctx, token);
 
-		return c.json({
-			user: { id: user.id, email: user.email, username: user.username },
-			workspace: workspace
-				? { id: workspace.id, slug: workspace.slug, name: workspace.name }
-				: null,
-		});
-	},
+			return {
+				user: {
+					id: user.id,
+					email: user.email,
+					username: user.username,
+				},
+			};
+		},
+	}),
 
-	async signup(c: Context) {
-		const { email, username, password, workspaceName } = await c.req.json();
+	/** Logout handler - clears the auth cookie. */
+	logout: createHttpHandler({
+		endpoint: apiEndpoints.logout,
+		handler: async ({ ctx }) => {
+			const authController = getAuthController(ctx);
+			authController.clearTokenFromResponse(ctx);
+			return { success: true };
+		},
+	}),
 
-		// Check if user exists
-		const [existingUser] = await db
-			.select()
-			.from(users)
-			.where(eq(users.email, email));
+	/** Get current user handler. */
+	getMe: createHttpHandler<
+		typeof apiEndpoints.getMe,
+		"optional",
+		__PROJECT_NAME_PASCAL__User
+	>({
+		endpoint: apiEndpoints.getMe,
+		auth: "optional",
+		handler: async ({ user }) => {
+			if (!user) {
+				return { user: undefined };
+			}
 
-		if (existingUser) {
-			return c.json({ error: "Email already registered" }, 400);
-		}
+			return {
+				user: {
+					id: user.id,
+					email: user.email,
+					username: user.username,
+				},
+			};
+		},
+	}),
 
-		// Create user
-		const passwordHash = await bcrypt.hash(password, 10);
-		const [user] = await adminDb
-			.insert(users)
-			.values({ email, username, passwordHash })
-			.returning();
+	/** Signup handler - creates a new workspace and admin user. */
+	signup: createHttpHandler({
+		endpoint: apiEndpoints.signup,
+		handler: async ({ body, ctx }) => {
+			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
-		// Create or get workspace
-		const wsSlug = workspaceName?.toLowerCase().replace(/\s+/g, "-") || "default";
-		let [workspace] = await db
-			.select()
-			.from(workspaces)
-			.where(eq(workspaces.slug, wsSlug));
+			// Validate workspace slug format
+			if (!/^[a-z0-9-]+$/.test(body.workspace)) {
+				throw new HttpError(
+					400,
+					"Workspace slug must be lowercase and contain only letters, numbers, and hyphens",
+				);
+			}
 
-		if (!workspace) {
-			[workspace] = await adminDb
+			// Check if workspace slug already exists
+			const [existingWorkspace] = await adminDb
+				.select()
+				.from(workspaces)
+				.where(eq(workspaces.slug, body.workspace));
+
+			if (existingWorkspace) {
+				throw new HttpError(409, "Organization slug is already taken");
+			}
+
+			// Check if username already exists
+			const [existingUser] = await adminDb
+				.select()
+				.from(users)
+				.where(eq(users.username, body.username));
+
+			if (existingUser) {
+				throw new HttpError(409, "Username is already taken");
+			}
+
+			// Check if email already exists
+			const [existingEmail] = await adminDb
+				.select()
+				.from(users)
+				.where(eq(users.email, body.email));
+
+			if (existingEmail) {
+				throw new HttpError(409, "Email is already registered");
+			}
+
+			// Validate password length
+			if (body.password.length < 8) {
+				throw new HttpError(400, "Password must be at least 8 characters long");
+			}
+
+			// Create the workspace
+			const [newWorkspace] = await adminDb
 				.insert(workspaces)
-				.values({ slug: wsSlug, name: workspaceName || "Default Workspace" })
+				.values({
+					slug: body.workspace,
+					name: body.workspaceName,
+				})
 				.returning();
-		}
 
-		// Link user to workspace
-		await adminDb.insert(userWorkspaces).values({
-			userId: user.id,
-			workspaceId: workspace.id,
-		});
+			// Hash the password
+			const passwordHash = await bcrypt.hash(body.password, 10);
 
-		const token = authController.generateToken({
-			userId: user.id,
-			workspaceId: workspace.id,
-			username: user.username,
-		});
+			// Create the admin user
+			const [newUser] = await adminDb
+				.insert(users)
+				.values({
+					email: body.email,
+					username: body.username,
+					passwordHash,
+				})
+				.returning();
 
-		return c.json({
-			token,
-			user: { id: user.id, email: user.email, username: user.username },
-			workspace: { id: workspace.id, slug: workspace.slug, name: workspace.name },
-		});
-	},
+			// Link user to workspace
+			await adminDb.insert(userWorkspaces).values({
+				userId: newUser.id,
+				workspaceId: newWorkspace.id,
+			});
+
+			// Create user object for token
+			const user: __PROJECT_NAME_PASCAL__User = {
+				id: newUser.id,
+				email: newUser.email,
+				username: newUser.username,
+				workspaceId: newWorkspace.id,
+			};
+
+			// Create and set the auth token
+			const token = await authController.createToken(user);
+			authController.setTokenInResponse(ctx, token);
+
+			return {
+				user: {
+					id: user.id,
+					email: user.email,
+					username: user.username,
+				},
+				workspace: {
+					id: newWorkspace.id,
+					slug: newWorkspace.slug,
+					name: newWorkspace.name,
+				},
+			};
+		},
+	}),
 };

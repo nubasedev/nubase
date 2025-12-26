@@ -1,4 +1,4 @@
-import { createHttpHandler } from "@nubase/backend";
+import { createHttpHandler, HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
 import { apiEndpoints } from "example-schema";
@@ -67,7 +67,7 @@ export const ticketHandlers = {
         );
 
       if (tickets.length === 0) {
-        throw new Error("Ticket not found");
+        throw new HttpError(404, "Ticket not found");
       }
 
       const ticket: Ticket = tickets[0];
@@ -107,7 +107,7 @@ export const ticketHandlers = {
         .returning();
 
       if (result.length === 0) {
-        throw new Error("Failed to create ticket");
+        throw new HttpError(500, "Failed to create ticket");
       }
 
       const createdTicket: Ticket = result[0];
@@ -155,7 +155,7 @@ export const ticketHandlers = {
         .returning();
 
       if (result.length === 0) {
-        throw new Error("Ticket not found");
+        throw new HttpError(404, "Ticket not found");
       }
 
       const updatedTicket: Ticket = result[0];
@@ -193,7 +193,7 @@ export const ticketHandlers = {
         .returning();
 
       if (result.length === 0) {
-        throw new Error("Ticket not found");
+        throw new HttpError(404, "Ticket not found");
       }
 
       return { success: true };

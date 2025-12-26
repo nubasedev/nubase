@@ -16,6 +16,7 @@ export * from "./navigation/main-nav";
 export * from "./navigation/searchable-tree-navigator";
 export * from "./nubase-app";
 export * from "./table";
+export * from "./tabs";
 export * from "./top-bar";
 export * from "./user-avatar";
 export * from "./views";

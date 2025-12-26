@@ -1,9 +1,13 @@
 import { serve } from "@hono/node-server";
+import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ticketHandlers } from "./api/routes/ticket";
 import { authHandlers } from "./api/routes/auth";
-import { workspaceMiddleware } from "./middleware/workspace-middleware";
+import {
+	createPostAuthWorkspaceMiddleware,
+	createWorkspaceMiddleware,
+} from "./middleware/workspace-middleware";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth";
 import { loadEnv } from "./helpers/env";
 
@@ -12,38 +16,39 @@ loadEnv();
 
 const app = new Hono();
 
+// Auth controller
+const authController = new __PROJECT_NAME_PASCAL__AuthController();
+
 // CORS configuration
 app.use(
 	"*",
 	cors({
-		origin: ["http://localhost:__FRONTEND_PORT__"],
+		origin: (origin) => {
+			// Allow localhost origins
+			if (origin?.match(/^http:\/\/localhost(:\d+)?$/)) {
+				return origin;
+			}
+			return null;
+		},
 		credentials: true,
 	}),
 );
 
-// Workspace middleware (extracts workspace from path)
-app.use("/:workspace/*", workspaceMiddleware);
+// Workspace middleware - handles login path (gets workspace from body)
+app.use("*", createWorkspaceMiddleware());
 
-// Auth controller
-const authController = new __PROJECT_NAME_PASCAL__AuthController();
+// Auth middleware - extracts and verifies JWT, sets user in context
+app.use("*", createAuthMiddleware({ controller: authController }));
 
-// Routes
-app.get("/:workspace", (c) => c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }));
+// Post-auth workspace middleware - sets context from authenticated user's workspace
+app.use("*", createPostAuthWorkspaceMiddleware());
 
-// Auth routes
-app.post("/:workspace/auth/login/start", authHandlers.loginStart);
-app.post("/:workspace/auth/login/complete", authHandlers.loginComplete);
-app.post("/:workspace/auth/login", authHandlers.login);
-app.post("/:workspace/auth/logout", authHandlers.logout);
-app.get("/:workspace/auth/me", authHandlers.getMe);
-app.post("/:workspace/auth/signup", authHandlers.signup);
+// Root route
+app.get("/", (c) => c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }));
 
-// Ticket routes
-app.get("/:workspace/tickets", ticketHandlers.getTickets);
-app.get("/:workspace/tickets/:id", ticketHandlers.getTicket);
-app.post("/:workspace/tickets", ticketHandlers.postTicket);
-app.patch("/:workspace/tickets/:id", ticketHandlers.patchTicket);
-app.delete("/:workspace/tickets/:id", ticketHandlers.deleteTicket);
+// Register all handlers - path and method extracted from endpoint metadata
+registerHandlers(app, authHandlers);
+registerHandlers(app, ticketHandlers);
 
 const port = Number(process.env.PORT) || __BACKEND_PORT__;
 
