@@ -1,7 +1,7 @@
 {
   "name": "questlog-schema",
   "version": "0.1.0",
-  "description": "Schema for the Questlog App",
+  "description": "Schema for the example app",
   "type": "module",
   "files": [
     "src"

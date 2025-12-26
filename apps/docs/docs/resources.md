@@ -95,7 +95,7 @@ const ticketResource = createResource("ticket");
 Configures API endpoints for type-safe HTTP client access in actions and views.
 
 ```typescript
-import { apiEndpoints } from "questlog-schema";
+import { apiEndpoints } from "example-schema";
 
 createResource("ticket")
   .withApiEndpoints(apiEndpoints)
@@ -251,7 +251,7 @@ Here's a complete resource definition from the Nubase example application:
 ```typescript
 import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
-import { apiEndpoints } from "questlog-schema";
+import { apiEndpoints } from "example-schema";
 
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)

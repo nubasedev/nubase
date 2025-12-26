@@ -721,10 +721,10 @@ To add social login:
 
 | File | Purpose |
 |------|---------|
-| `example/questlog-frontend/src/auth/QuestlogAuthController.ts` | Frontend controller implementation |
-| `example/questlog-backend/src/auth/QuestlogBackendAuthController.ts` | Backend controller implementation |
-| `example/questlog-backend/src/api/routes/auth.ts` | Auth endpoints (login, logout, me) |
-| `example/questlog-backend/src/api/routes/ticket.ts` | Protected endpoints example |
+| `questlog-example-app/frontend/src/auth/QuestlogAuthController.ts` | Frontend controller implementation |
+| `questlog-example-app/backend/src/auth/QuestlogBackendAuthController.ts` | Backend controller implementation |
+| `questlog-example-app/backend/src/api/routes/auth.ts` | Auth endpoints (login, logout, me) |
+| `questlog-example-app/backend/src/api/routes/ticket.ts` | Protected endpoints example |
 
 ## Security Considerations
 

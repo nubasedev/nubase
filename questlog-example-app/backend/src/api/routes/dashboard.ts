@@ -1,5 +1,5 @@
 import { createHttpHandler } from "@nubase/backend";
-import { apiEndpoints } from "questlog-schema";
+import { apiEndpoints } from "example-schema";
 import type { QuestlogUser } from "../../auth";
 
 /**

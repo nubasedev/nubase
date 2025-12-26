@@ -1,5 +1,5 @@
 import { createDashboard } from "@nubase/frontend";
-import { apiEndpoints } from "questlog-schema";
+import { apiEndpoints } from "example-schema";
 
 /**
  * Analytics dashboard configuration.

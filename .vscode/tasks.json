@@ -71,7 +71,7 @@
       "command": "node",
       "args": ["dist-cli/index.cjs", "pg-dump"],
       "options": {
-        "cwd": "${workspaceFolder}/example/questlog-backend",
+        "cwd": "${workspaceFolder}/questlog-example-app/backend",
         "env": {
           "NODE_ENV": "development"
         }

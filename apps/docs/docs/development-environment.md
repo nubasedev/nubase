@@ -32,9 +32,9 @@ The example application (Questlog) consists of three main parts:
 
 | Component | Description |
 |-----------|-------------|
-| **questlog-frontend** | React frontend using Vite |
-| **questlog-backend** | Node.js/Hono backend with REST API |
-| **questlog-schema** | Shared TypeScript schema definitions |
+| **questlog-example-app/frontend** | React frontend using Vite |
+| **questlog-example-app/backend** | Node.js/Hono backend with REST API |
+| **questlog-example-app/schema** | Shared TypeScript schema definitions |
 
 ## Environments
 
@@ -141,10 +141,10 @@ This starts:
 
 ```bash
 # Frontend only
-cd example/questlog-frontend && npm run dev
+cd questlog-example-app/frontend && npm run dev
 
 # Backend only
-cd example/questlog-backend && npm run dev
+cd questlog-example-app/backend && npm run dev
 
 # Storybook only
 cd packages/frontend && npm run storybook

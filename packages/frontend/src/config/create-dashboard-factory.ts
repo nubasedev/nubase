@@ -121,7 +121,7 @@ class DashboardBuilder<TId extends string, TApiEndpoints = never> {
  *
  * @example
  * ```typescript
- * import { apiEndpoints } from "questlog-schema";
+ * import { apiEndpoints } from "schema";
  *
  * const salesDashboard = createDashboard("sales")
  *   .withApiEndpoints(apiEndpoints)
