@@ -40,6 +40,20 @@ Nubase is primary a frontend framework but you don't write any frontend code.
 
 In Nubase, you define your application as a collection of schema and business logic, and a selected Nubase runtime will execute and render the application for you. We are currently implementing a React runtime, but we plan to also have a React-Native runtime. When that is published, the same application you developed with Nubase, should be able to be published as a mobile app without any modification.
 
+## Getting Started
+
+The fastest way to create a Nubase app is to use the CLI:
+
+```bash
+npx @nubase/create my-app
+cd my-app
+npm run db:up      # Start PostgreSQL
+npm run db:seed    # Seed with sample data
+npm run dev        # Start development servers
+```
+
+This scaffolds a complete application with backend, frontend, and shared schema packages. See [Create a Nubase App](./create-nubase-app.md) for more details.
+
 ## How does a Nubase app look like?
 
 A Nubase app is basically a Vite app that renders a single top-level React component, the `NubaseApp` component.

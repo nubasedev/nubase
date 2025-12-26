@@ -6,9 +6,23 @@ sidebar_position: 3
 
 This guide will help you get up and running with Nubase quickly. We'll create a simple application to demonstrate the core concepts.
 
-## Installation
+## Quick Start with CLI
 
-Install both the core schema system and frontend components:
+The fastest way to get started is using the Nubase CLI:
+
+```bash
+npx @nubase/create my-app
+cd my-app
+npm run db:up      # Start PostgreSQL
+npm run db:seed    # Seed with sample data
+npm run dev        # Start development servers
+```
+
+This creates a complete application with backend, frontend, and shared schema. See [Create a Nubase App](./create-nubase-app.md) for full details.
+
+## Manual Installation
+
+If you prefer to add Nubase to an existing project or want more control, install the packages directly:
 
 ```bash
 npm install @nubase/core @nubase/frontend

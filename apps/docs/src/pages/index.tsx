@@ -10,7 +10,7 @@ function InstallationBox() {
   return (
     <div className={styles.installationBox}>
       <div className={styles.codeBlock}>
-        <code>npm i @nubase/frontend @nubase/core</code>
+        <code>npx @nubase/create</code>
       </div>
     </div>
   );
