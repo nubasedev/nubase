@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
-import { db } from "../db/helpers/drizzle";
+import { getDb } from "../db/helpers/drizzle";
 import { workspaces } from "../db/schema";
 
 export interface Workspace {
@@ -75,7 +75,7 @@ export function createPostAuthWorkspaceMiddleware() {
 		}
 
 		// Look up workspace from user's workspaceId
-		const workspaceRows = await db
+		const workspaceRows = await getDb()
 			.select()
 			.from(workspaces)
 			.where(eq(workspaces.id, user.workspaceId));

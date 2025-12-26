@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ticketHandlers } from "./api/routes/ticket";
 import { authHandlers } from "./api/routes/auth";
+import { testUtilsHandlers } from "./api/routes/test-utils";
 import {
 	createPostAuthWorkspaceMiddleware,
 	createWorkspaceMiddleware,
@@ -49,6 +50,11 @@ app.get("/", (c) => c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }
 // Register all handlers - path and method extracted from endpoint metadata
 registerHandlers(app, authHandlers);
 registerHandlers(app, ticketHandlers);
+
+// Register test utility handlers (only in test environment)
+if (process.env.NODE_ENV === "test") {
+	registerHandlers(app, testUtilsHandlers);
+}
 
 const port = Number(process.env.PORT) || __BACKEND_PORT__;
 

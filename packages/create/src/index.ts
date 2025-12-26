@@ -21,6 +21,8 @@ interface ProjectOptions {
 	testPort: number;
 	backendPort: number;
 	frontendPort: number;
+	testBackendPort: number;
+	testFrontendPort: number;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "..", "templates");
@@ -62,7 +64,9 @@ function replaceInContent(
 		.replace(/__DEV_PORT__/g, String(options.devPort))
 		.replace(/__TEST_PORT__/g, String(options.testPort))
 		.replace(/__BACKEND_PORT__/g, String(options.backendPort))
-		.replace(/__FRONTEND_PORT__/g, String(options.frontendPort));
+		.replace(/__FRONTEND_PORT__/g, String(options.frontendPort))
+		.replace(/__TEST_BACKEND_PORT__/g, String(options.testBackendPort))
+		.replace(/__TEST_FRONTEND_PORT__/g, String(options.testFrontendPort));
 }
 
 function copyTemplateDir(
@@ -104,6 +108,8 @@ async function main() {
 		.option("--test-port <port>", "Test database port", "5435")
 		.option("--backend-port <port>", "Backend server port", "3001")
 		.option("--frontend-port <port>", "Frontend dev server port", "3002")
+		.option("--test-backend-port <port>", "Test backend server port", "4001")
+		.option("--test-frontend-port <port>", "Test frontend dev server port", "4002")
 		.option("--skip-install", "Skip npm install")
 		.parse();
 
@@ -147,6 +153,8 @@ async function main() {
 		testPort: Number.parseInt(opts.testPort, 10),
 		backendPort: Number.parseInt(opts.backendPort, 10),
 		frontendPort: Number.parseInt(opts.frontendPort, 10),
+		testBackendPort: Number.parseInt(opts.testBackendPort, 10),
+		testFrontendPort: Number.parseInt(opts.testFrontendPort, 10),
 	};
 
 	const targetDir = path.join(process.cwd(), projectName);

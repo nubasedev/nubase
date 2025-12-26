@@ -9,7 +9,7 @@ import bcrypt from "bcrypt";
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";
-import { adminDb } from "../db/helpers/drizzle";
+import { getAdminDb } from "../db/helpers/drizzle";
 import { users, userWorkspaces } from "../db/schema";
 
 /**
@@ -77,7 +77,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 			) as __PROJECT_NAME_PASCAL__TokenPayload;
 
 			// Fetch user from database to ensure they still exist
-			const [dbUser] = await adminDb
+			const [dbUser] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.id, decoded.userId));
@@ -87,7 +87,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 			}
 
 			// Verify user still has access to the workspace in the token
-			const [access] = await adminDb
+			const [access] = await getAdminDb()
 				.select()
 				.from(userWorkspaces)
 				.where(
@@ -180,7 +180,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 		}
 
 		// Find user by username
-		const [dbUser] = await adminDb
+		const [dbUser] = await getAdminDb()
 			.select()
 			.from(users)
 			.where(eq(users.username, username));
@@ -196,7 +196,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 		}
 
 		// Check if user has access to the workspace
-		const [access] = await adminDb
+		const [access] = await getAdminDb()
 			.select()
 			.from(userWorkspaces)
 			.where(

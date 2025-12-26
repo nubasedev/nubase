@@ -1,27 +1,30 @@
 # Dependencies
-node_modules
+node_modules/
 
 # Build outputs
-dist
+dist/
+build/
+
+# Docker data
+**/postgresql-data/
 
 # Environment files
 .env
 .env.local
-*.local
-
-# Logs
-*.log
-npm-debug.log*
 
 # IDE
-.vscode
-.idea
-*.swp
-*.swo
+.idea/
+.vscode/
 
 # OS
 .DS_Store
-Thumbs.db
 
-# Test
-coverage
+# Turbo
+.turbo/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Logs
+*.log

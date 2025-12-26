@@ -9,6 +9,6 @@ export default defineConfig({
 	},
 	server: {
 		port: __FRONTEND_PORT__,
-		open: "http://localhost:__FRONTEND_PORT__/default",
+		open: "http://localhost:__FRONTEND_PORT__/tavern",
 	},
 });

@@ -1,20 +1,24 @@
-import { faker } from "@faker-js/faker";
-import bcrypt from "bcrypt";
 import { loadEnv } from "../helpers/env";
-import { adminDb } from "./helpers/drizzle";
-import { tickets, userWorkspaces, users, workspaces } from "./schema";
 
 loadEnv();
 
 async function seed() {
+	const { faker } = await import("@faker-js/faker");
+	const bcrypt = await import("bcrypt");
+	const { getAdminDb } = await import("./helpers/drizzle");
+	const { tickets, userWorkspaces, users, workspaces } = await import(
+		"./schema"
+	);
 	console.log("Seeding database...");
 
-	// Create default workspace
-	const [workspace] = await adminDb
+	const db = getAdminDb();
+
+	// Create tavern workspace
+	const [workspace] = await db
 		.insert(workspaces)
 		.values({
-			slug: "default",
-			name: "Default Workspace",
+			slug: "tavern",
+			name: "Tavern",
 		})
 		.onConflictDoNothing()
 		.returning();
@@ -22,13 +26,13 @@ async function seed() {
 	const workspaceId = workspace?.id ?? 1;
 	console.log(`Created/found workspace: ${workspaceId}`);
 
-	// Create test user
-	const passwordHash = await bcrypt.hash("password123", 10);
-	const [user] = await adminDb
+	// Create admin user
+	const passwordHash = await bcrypt.default.hash("password123", 10);
+	const [user] = await db
 		.insert(users)
 		.values({
-			email: "demo@example.com",
-			username: "demo",
+			email: "admin@example.com",
+			username: "admin",
 			passwordHash,
 		})
 		.onConflictDoNothing()
@@ -38,7 +42,7 @@ async function seed() {
 		console.log(`Created user: ${user.email}`);
 
 		// Link user to workspace
-		await adminDb
+		await db
 			.insert(userWorkspaces)
 			.values({
 				userId: user.id,
@@ -54,12 +58,12 @@ async function seed() {
 		description: faker.lorem.paragraph(),
 	}));
 
-	await adminDb.insert(tickets).values(ticketData).onConflictDoNothing();
+	await db.insert(tickets).values(ticketData).onConflictDoNothing();
 	console.log(`Created ${ticketData.length} sample tickets`);
 
 	console.log("Database seeded successfully!");
 	console.log("\nTest credentials:");
-	console.log("  Email: demo@example.com");
+	console.log("  Username: admin");
 	console.log("  Password: password123");
 
 	process.exit(0);

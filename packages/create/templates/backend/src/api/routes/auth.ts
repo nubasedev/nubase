@@ -8,7 +8,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { apiEndpoints } from "schema";
 import jwt from "jsonwebtoken";
 import type { __PROJECT_NAME_PASCAL__User } from "../../auth";
-import { db, adminDb } from "../../db/helpers/drizzle";
+import { getAdminDb } from "../../db/helpers/drizzle";
 import { users, userWorkspaces, workspaces } from "../../db/schema";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
@@ -31,7 +31,7 @@ export const authHandlers = {
 		endpoint: apiEndpoints.loginStart,
 		handler: async ({ body }) => {
 			// Find user by username
-			const [user] = await adminDb
+			const [user] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.username, body.username));
@@ -50,7 +50,7 @@ export const authHandlers = {
 			}
 
 			// Get all workspaces this user belongs to
-			const userWorkspaceRows = await adminDb
+			const userWorkspaceRows = await getAdminDb()
 				.select()
 				.from(userWorkspaces)
 				.where(eq(userWorkspaces.userId, user.id));
@@ -61,7 +61,7 @@ export const authHandlers = {
 
 			// Fetch workspace details
 			const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-			const workspaceList = await adminDb
+			const workspaceList = await getAdminDb()
 				.select()
 				.from(workspaces)
 				.where(inArray(workspaces.id, workspaceIds));
@@ -109,7 +109,7 @@ export const authHandlers = {
 			}
 
 			// Look up the selected workspace
-			const [workspace] = await adminDb
+			const [workspace] = await getAdminDb()
 				.select()
 				.from(workspaces)
 				.where(eq(workspaces.slug, body.workspace));
@@ -119,7 +119,7 @@ export const authHandlers = {
 			}
 
 			// Verify user has access to this workspace
-			const [access] = await adminDb
+			const [access] = await getAdminDb()
 				.select()
 				.from(userWorkspaces)
 				.where(
@@ -134,7 +134,7 @@ export const authHandlers = {
 			}
 
 			// Fetch the user
-			const [dbUser] = await adminDb
+			const [dbUser] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.id, decoded.userId));
@@ -180,7 +180,7 @@ export const authHandlers = {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
 			// Look up workspace
-			const [workspace] = await adminDb
+			const [workspace] = await getAdminDb()
 				.select()
 				.from(workspaces)
 				.where(eq(workspaces.slug, body.workspace));
@@ -190,7 +190,7 @@ export const authHandlers = {
 			}
 
 			// Find user by username
-			const [dbUser] = await adminDb
+			const [dbUser] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.username, body.username));
@@ -209,7 +209,7 @@ export const authHandlers = {
 			}
 
 			// Verify user has access to this workspace
-			const [access] = await adminDb
+			const [access] = await getAdminDb()
 				.select()
 				.from(userWorkspaces)
 				.where(
@@ -293,7 +293,7 @@ export const authHandlers = {
 			}
 
 			// Check if workspace slug already exists
-			const [existingWorkspace] = await adminDb
+			const [existingWorkspace] = await getAdminDb()
 				.select()
 				.from(workspaces)
 				.where(eq(workspaces.slug, body.workspace));
@@ -303,7 +303,7 @@ export const authHandlers = {
 			}
 
 			// Check if username already exists
-			const [existingUser] = await adminDb
+			const [existingUser] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.username, body.username));
@@ -313,7 +313,7 @@ export const authHandlers = {
 			}
 
 			// Check if email already exists
-			const [existingEmail] = await adminDb
+			const [existingEmail] = await getAdminDb()
 				.select()
 				.from(users)
 				.where(eq(users.email, body.email));
@@ -328,7 +328,7 @@ export const authHandlers = {
 			}
 
 			// Create the workspace
-			const [newWorkspace] = await adminDb
+			const [newWorkspace] = await getAdminDb()
 				.insert(workspaces)
 				.values({
 					slug: body.workspace,
@@ -340,7 +340,7 @@ export const authHandlers = {
 			const passwordHash = await bcrypt.hash(body.password, 10);
 
 			// Create the admin user
-			const [newUser] = await adminDb
+			const [newUser] = await getAdminDb()
 				.insert(users)
 				.values({
 					email: body.email,
@@ -350,7 +350,7 @@ export const authHandlers = {
 				.returning();
 
 			// Link user to workspace
-			await adminDb.insert(userWorkspaces).values({
+			await getAdminDb().insert(userWorkspaces).values({
 				userId: newUser.id,
 				workspaceId: newWorkspace.id,
 			});

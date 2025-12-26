@@ -21,7 +21,7 @@
     "db:dev:down": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml down",
     "db:dev:kill": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml down -v && rm -rf docker/dev/postgresql-data",
     "db:dev:seed": "NODE_ENV=development tsx src/db/seed.ts",
-    "db:dev:reset": "npm run db:dev:kill && npm run db:schema-sync && npm run db:dev:up && sleep 2 && npm run db:dev:seed",
+    "db:dev:reset": "npm run db:dev:kill && npm run db:schema-sync && npm run db:dev:up && sleep 5 && npm run db:dev:seed",
     "db:test:up": "docker compose -p nubase-test -f docker/test/docker-compose.yml up -d",
     "db:test:down": "docker compose -p nubase-test -f docker/test/docker-compose.yml down",
     "db:test:kill": "docker compose -p nubase-test -f docker/test/docker-compose.yml down -v && rm -rf docker/test/postgresql-data",

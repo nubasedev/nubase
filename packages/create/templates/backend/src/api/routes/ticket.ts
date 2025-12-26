@@ -1,14 +1,14 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
 import { eq } from "drizzle-orm";
 import { apiEndpoints } from "schema";
-import { db } from "../../db/helpers/drizzle";
+import { getDb } from "../../db/helpers/drizzle";
 import { tickets } from "../../db/schema";
 
 export const ticketHandlers = {
 	getTickets: createHttpHandler({
 		endpoint: apiEndpoints.getTickets,
 		handler: async () => {
-			const allTickets = await db.select().from(tickets);
+			const allTickets = await getDb().select().from(tickets);
 			return allTickets.map((ticket) => ({
 				id: ticket.id,
 				title: ticket.title,
@@ -20,7 +20,7 @@ export const ticketHandlers = {
 	getTicket: createHttpHandler({
 		endpoint: apiEndpoints.getTicket,
 		handler: async ({ params }) => {
-			const [ticket] = await db
+			const [ticket] = await getDb()
 				.select()
 				.from(tickets)
 				.where(eq(tickets.id, params.id));
@@ -40,7 +40,7 @@ export const ticketHandlers = {
 	postTicket: createHttpHandler({
 		endpoint: apiEndpoints.postTicket,
 		handler: async ({ body }) => {
-			const [ticket] = await db
+			const [ticket] = await getDb()
 				.insert(tickets)
 				.values({
 					workspaceId: 1, // TODO: Get from context
@@ -75,7 +75,7 @@ export const ticketHandlers = {
 				updateData.description = body.description;
 			}
 
-			const [ticket] = await db
+			const [ticket] = await getDb()
 				.update(tickets)
 				.set(updateData)
 				.where(eq(tickets.id, params.id))
@@ -96,7 +96,7 @@ export const ticketHandlers = {
 	deleteTicket: createHttpHandler({
 		endpoint: apiEndpoints.deleteTicket,
 		handler: async ({ params }) => {
-			const [deleted] = await db
+			const [deleted] = await getDb()
 				.delete(tickets)
 				.where(eq(tickets.id, params.id))
 				.returning();
