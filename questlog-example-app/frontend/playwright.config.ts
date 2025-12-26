@@ -59,7 +59,7 @@ export default defineConfig({
       timeout: 120 * 1000,
     },
     {
-      command: "cd ../questlog-backend && npm run dev:test",
+      command: "cd ../backend && npm run dev:test",
       url: "http://localhost:4001",
       reuseExistingServer: true,
       timeout: 120 * 1000,

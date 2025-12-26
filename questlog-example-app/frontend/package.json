@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:e2e": "concurrently \"vite\" \"playwright test --ui\"",
     "dev:test": "vite --mode test --port 4002",
     "build": "tsc -b && vite build",
     "preview": "vite preview",

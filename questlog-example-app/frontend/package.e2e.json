@@ -6,7 +6,7 @@
     "e2e:headed": "playwright test --headed",
     "e2e:install": "playwright install",
     "e2e:report": "playwright show-report",
-    "db:test:up": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml up -d",
-    "db:test:down": "cd ../questlog-backend && docker-compose -f docker/test/docker-compose.yml down"
+    "db:test:up": "cd ../backend && docker-compose -f docker/test/docker-compose.yml up -d",
+    "db:test:down": "cd ../backend && docker-compose -f docker/test/docker-compose.yml down"
   }
 }

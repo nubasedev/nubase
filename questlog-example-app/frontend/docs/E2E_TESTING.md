@@ -152,7 +152,7 @@ export default defineConfig({
       url: 'http://tavern.localhost:4002', // Frontend (test mode)
     },
     {
-      command: 'cd ../questlog-backend && npm run dev:test',
+      command: 'cd ../backend && npm run dev:test',
       url: 'http://tavern.localhost:4001', // Backend (test mode)
       env: {
         DB_PORT: '5435', // Test database
@@ -240,7 +240,7 @@ kill $(lsof -ti:4001,4002,5435)
 npm run test:teardown
 
 # Clean up containers
-docker-compose -f ../questlog-backend/docker/test/docker-compose.yml down -v
+docker-compose -f ../backend/docker/test/docker-compose.yml down -v
 
 # Restart
 npm run test:setup

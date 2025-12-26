@@ -6,6 +6,7 @@
     "build:docs": "cd apps/docs && npm run build",
     "build:storybook": "cd packages/frontend && npm run build:storybook",
     "dev": "turbo run dev",
+    "dev:e2e": "cd questlog-example-app/frontend && npm run dev:e2e",
     "dev:test": "turbo run dev:test",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
