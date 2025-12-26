@@ -6,7 +6,7 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**", "storybook-static/**"]
     },
-    "questlog-example-app/*#build": {
+    "examples/internal/*#build": {
       "dependsOn": ["packages/*#build"],
       "outputs": ["dist/**", "build/**"]
     },

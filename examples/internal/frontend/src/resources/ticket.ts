@@ -1,6 +1,6 @@
 import { createResource, showToast } from "@nubase/frontend";
-import { apiEndpoints } from "example-schema";
 import { TrashIcon } from "lucide-react";
+import { apiEndpoints } from "questlog-schema";
 
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)

@@ -6,8 +6,8 @@ import {
 import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
-import { apiEndpoints } from "example-schema";
 import jwt from "jsonwebtoken";
+import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getAdminDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";

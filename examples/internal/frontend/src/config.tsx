@@ -5,8 +5,8 @@ import {
   defaultKeybindings,
   resourceLink,
 } from "@nubase/frontend";
-import { apiEndpoints } from "example-schema";
 import { Home, Plus, TicketIcon } from "lucide-react";
+import { apiEndpoints } from "questlog-schema";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";

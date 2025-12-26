@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `packages/` contains the publishable libraries: `@nubase/core`, `@nubase/frontend`, and `@nubase/backend`, with source in `src/` and tests in `tests/`.
 - `apps/docs` builds the Docusaurus site; sync it whenever public concepts shift.
-- `questlog-example-app/` holds the Questlog demo split into frontend, backend, and schema so runtime, API, and typing evolve together.
+- `examples/internal/` holds the Questlog demo split into frontend, backend, and schema so runtime, API, and typing evolve together.
 - Store shared assets under `assets/`, `docs/`, and `coordination/`. Touch root configs (`package.json`, `turbo.json`, `biome.json`) only when coordinated.
 
 ## Build, Test, and Development Commands

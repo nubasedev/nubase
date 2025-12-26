@@ -17,7 +17,7 @@ Every concrete action carries shared metadata (label, icon, variant) so UI compo
 Most actions come from the resource builder:
 
 ```ts
-// questlog-example-app/frontend/src/resources/ticket.ts
+// examples/internal/frontend/src/resources/ticket.ts
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)
   .withActions({

@@ -1,7 +1,7 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
-import { apiEndpoints } from "example-schema";
+import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";

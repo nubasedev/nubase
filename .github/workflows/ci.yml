@@ -38,7 +38,7 @@ jobs:
 
     - name: Initialize test database
       run: |
-        PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog -f questlog-example-app/backend/docker/test/postgresql-init/dump.sql
+        PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog -f examples/internal/backend/docker/test/postgresql-init/dump.sql
       env:
         PGPASSWORD: questlog
 

@@ -64,8 +64,8 @@ The test environment uses specific ports and environment variables:
 #### Configuration Files
 The test setup uses these configuration files:
 - `.env.test` - Test environment variables (automatically created)
-- `questlog-example-app/frontend/.env.local` - Local development overrides
-- `questlog-example-app/backend/.env` - Backend configuration
+- `examples/internal/frontend/.env.local` - Local development overrides
+- `examples/internal/backend/.env` - Backend configuration
 
 ### Running Tests
 
@@ -197,7 +197,7 @@ TEST ENVIRONMENT (ports 4001-4002, 5435):
 
 ### Test Structure
 
-Tests are located in `questlog-example-app/frontend/e2e/` and follow this pattern:
+Tests are located in `examples/internal/frontend/e2e/` and follow this pattern:
 
 ```typescript
 import { expect, test } from "./fixtures/base";
@@ -391,7 +391,7 @@ For continuous integration, use the headless mode:
 
 ## Test Configuration
 
-The test configuration is located in `questlog-example-app/frontend/playwright.config.ts`:
+The test configuration is located in `examples/internal/frontend/playwright.config.ts`:
 
 - **Test Directory**: `./e2e`
 - **Global Setup**: Database initialization and server readiness checks
@@ -412,14 +412,14 @@ DB_PORT=5435
 NODE_ENV=test
 ```
 
-#### `questlog-example-app/frontend/.env.local` (Optional overrides)
+#### `examples/internal/frontend/.env.local` (Optional overrides)
 ```bash
 # Local development overrides
 # Only affects development environment (ports 3001-3002)
 VITE_API_BASE_URL=http://tavern.localhost:3001
 ```
 
-#### `questlog-example-app/backend/.env`
+#### `examples/internal/backend/.env`
 ```bash
 # Backend configuration
 # PORT is overridden by scripts (3001 for dev, 4001 for test)
