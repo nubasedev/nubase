@@ -118,11 +118,12 @@ export const tableColumnSchema = nu.object({
 
 /**
  * Complete table data response from an endpoint.
+ * Uses passthrough() for rows to allow any properties in the row objects.
  */
 export const tableDataSchema = nu.object({
   type: nu.string(), // "table"
   columns: nu.array(tableColumnSchema),
-  rows: nu.array(nu.object({})), // Record<string, unknown>[]
+  rows: nu.array(nu.object({}).passthrough()), // Record<string, unknown>[]
 });
 
 export type TableColumn = Infer<typeof tableColumnSchema>;

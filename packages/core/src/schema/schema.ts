@@ -304,6 +304,7 @@ export class ObjectSchema<
   _layouts: ObjectLayouts<TShape> = {};
   _idField: keyof ObjectOutput<TShape> = "id" as keyof ObjectOutput<TShape>;
   _catchall: TCatchall = null as TCatchall;
+  _passthrough = false;
 
   constructor(shape: TShape, catchall?: TCatchall) {
     super();
@@ -337,6 +338,33 @@ export class ObjectSchema<
     newSchema._computedMeta = { ...this._computedMeta };
     newSchema._layouts = { ...this._layouts };
     newSchema._idField = this._idField;
+    newSchema._passthrough = this._passthrough;
+
+    return newSchema;
+  }
+
+  /**
+   * Allow any additional properties beyond the defined shape without validation.
+   * Similar to Zod's .passthrough() method.
+   *
+   * @example
+   * const rowSchema = nu.object({}).passthrough();
+   * // Validates: { user: "John", action: "Created", time: "2m ago" }
+   *
+   * @returns A new ObjectSchema that passes through additional properties.
+   */
+  passthrough(): ObjectSchema<TShape, TCatchall> {
+    const newSchema = new ObjectSchema<TShape, TCatchall>(
+      this._shape,
+      this._catchall as TCatchall,
+    );
+
+    // Copy metadata from parent schema
+    newSchema._meta = { ...this._meta } as any;
+    newSchema._computedMeta = { ...this._computedMeta };
+    newSchema._layouts = { ...this._layouts };
+    newSchema._idField = this._idField;
+    newSchema._passthrough = true;
 
     return newSchema;
   }
@@ -721,6 +749,11 @@ export class ObjectSchema<
     // If catchall is defined, use it to allow additional properties
     if (this._catchall) {
       return baseZod.catchall(this._catchall.toZod()) as any;
+    }
+
+    // If passthrough is enabled, allow any additional properties
+    if (this._passthrough) {
+      return baseZod.passthrough() as any;
     }
 
     return baseZod as any;
