@@ -13,8 +13,8 @@
     "build": "turbo run build",
     "db:up": "cd backend && npm run db:dev:up",
     "db:down": "cd backend && npm run db:dev:down",
-    "db:kill": "cd backend && npm run db:dev:kill",
-    "db:seed": "cd backend && npm run db:seed",
+    "db:seed": "cd backend && npm run db:dev:seed",
+    "db:reset": "cd backend && npm run db:dev:reset",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix"

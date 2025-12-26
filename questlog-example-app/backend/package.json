@@ -19,13 +19,13 @@
     "lint:fix": "biome check . --write --unsafe",
     "db:dev:up": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml up -d",
     "db:dev:down": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml down",
-    "db:dev:kill": "rm -rf docker/dev/postgresql-data",
+    "db:dev:kill": "docker compose -p nubase-dev -f docker/dev/docker-compose.yml down -v && rm -rf docker/dev/postgresql-data",
     "db:dev:seed": "NODE_ENV=development tsx src/db/seed.ts",
+    "db:dev:reset": "npm run db:dev:kill && npm run db:schema-sync && npm run db:dev:up && sleep 2 && npm run db:dev:seed",
     "db:test:up": "docker compose -p nubase-test -f docker/test/docker-compose.yml up -d",
     "db:test:down": "docker compose -p nubase-test -f docker/test/docker-compose.yml down",
-    "db:test:kill": "rm -rf docker/test/postgresql-data",
-    "db:pg-dump": "npm run dev:cli -- pg-dump --output db/schema.sql && npm run db:schema-sync",
-    "db:pg-dump-data": "npm run dev:cli -- pg-dump-data",
+    "db:test:kill": "docker compose -p nubase-test -f docker/test/docker-compose.yml down -v && rm -rf docker/test/postgresql-data",
+    "db:test:reset": "npm run db:test:kill && npm run db:schema-sync && npm run db:test:up",
     "db:schema-sync": "cp db/schema.sql docker/dev/postgresql-init/dump.sql && cp db/schema.sql docker/test/postgresql-init/dump.sql"
   },
   "dependencies": {
