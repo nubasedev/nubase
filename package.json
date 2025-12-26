@@ -18,27 +18,26 @@
     "build:core": "cd packages/core && npm run build",
     "build:frontend": "cd packages/frontend && npm run build",
     "build:backend": "cd packages/backend && npm run build",
-    "build:example-backend": "cd examples/internal/backend && npm run build",
-    "build:example-frontend": "cd examples/internal/frontend && npm run build",
+    "build:example-backend": "cd examples/questlog/backend && npm run build",
+    "build:example-frontend": "cd examples/questlog/frontend && npm run build",
     "build:frontend:storybook": "cd packages/frontend && npm run build:storybook",
-    "db:up": "cd examples/internal/backend && npm run db:dev:up && npm run db:test:up",
-    "db:down": "cd examples/internal/backend && npm run db:dev:down && npm run db:test:down",
-    "db:seed": "cd examples/internal/backend && npm run db:dev:seed",
-    "db:reset": "cd examples/internal/backend && npm run db:dev:reset",
+    "db:up": "cd examples/questlog/backend && npm run db:dev:up && npm run db:test:up",
+    "db:down": "cd examples/questlog/backend && npm run db:dev:down && npm run db:test:down",
+    "db:seed": "cd examples/questlog/backend && npm run db:dev:seed",
+    "db:reset": "cd examples/questlog/backend && npm run db:dev:reset",
     "e2e": "turbo run e2e",
-    "e2e:ui": "cd examples/internal/frontend && npm run e2e:ui",
-    "e2e:headed": "cd examples/internal/frontend && npm run e2e:headed",
-    "e2e:debug": "cd examples/internal/frontend && npm run e2e:debug",
-    "e2e:report": "cd examples/internal/frontend && npm run e2e:report",
-    "e2e:install": "cd examples/internal/frontend && npm run e2e:install",
+    "e2e:ui": "cd examples/questlog/frontend && npm run e2e:ui",
+    "e2e:headed": "cd examples/questlog/frontend && npm run e2e:headed",
+    "e2e:debug": "cd examples/questlog/frontend && npm run e2e:debug",
+    "e2e:report": "cd examples/questlog/frontend && npm run e2e:report",
+    "e2e:install": "cd examples/questlog/frontend && npm run e2e:install",
     "publish:core": "turbo run publish --filter=@nubase/core",
     "publish:frontend": "turbo run publish --filter=@nubase/frontend",
     "publish:backend": "turbo run publish --filter=@nubase/backend",
     "publish:all": "turbo run publish --filter=\"@nubase/*\"",
-    "test:create:local": "cd packages/create && npm run build && cd ../.. && rm -rf test-nubase-app && node packages/create/dist/index.js test-nubase-app --skip-install",
-    "examples:external:create:local": "./scripts/create-external-example.sh",
-    "examples:external:create:npm": "./scripts/create-external-example-npm.sh",
-    "examples:external:test": "./scripts/test-external-example.sh"
+    "examples:generated:create:local": "./scripts/create-generated-example.sh",
+    "examples:generated:create:npm": "./scripts/create-generated-example-npm.sh",
+    "examples:generated:test": "./scripts/test-generated-example.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
@@ -53,6 +52,6 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "examples/internal/*"
+    "examples/questlog/*"
   ]
 }

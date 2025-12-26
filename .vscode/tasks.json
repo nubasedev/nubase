@@ -66,12 +66,12 @@
       "problemMatcher": "$tsc"
     },
     {
-      "label": "internal-backend:db:pg-dump",
+      "label": "questlog-backend:db:pg-dump",
       "type": "shell",
       "command": "node",
       "args": ["dist-cli/index.cjs", "pg-dump"],
       "options": {
-        "cwd": "${workspaceFolder}/examples/internal/backend",
+        "cwd": "${workspaceFolder}/examples/questlog/backend",
         "env": {
           "NODE_ENV": "development"
         }

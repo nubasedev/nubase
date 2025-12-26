@@ -119,12 +119,12 @@ This is safe because:
 - `src/routes/signin/signin-screen.tsx` - Passes tenant to login
 - `src/index.tsx` - Updated exports
 
-### Backend (`examples/internal/backend`)
+### Backend (`examples/questlog/backend`)
 - `src/auth/QuestlogBackendAuthController.ts` - Updated cookie settings, use adminDb
 - `src/middleware/tenant-middleware.ts` - Added post-auth middleware
 - `src/api/routes/auth.ts` - Get tenant from request body for login
 
-### Schema (`examples/internal/schema`)
+### Schema (`examples/questlog/schema`)
 - `src/schema/auth.ts` - Added `tenant` field to login schema
 
 ## Testing

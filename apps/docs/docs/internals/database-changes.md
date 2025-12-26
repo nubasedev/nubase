@@ -31,7 +31,7 @@ The database has two users with different permission levels:
 The database schema is defined in a single SQL file:
 
 ```
-examples/internal/backend/db/schema.sql
+examples/questlog/backend/db/schema.sql
 ```
 
 This file is the **source of truth** for the database structure. It contains:
@@ -51,7 +51,7 @@ Modify the source of truth directly:
 
 ```bash
 # Edit the schema file
-code examples/internal/backend/db/schema.sql
+code examples/questlog/backend/db/schema.sql
 ```
 
 Add your changes following the existing patterns:
@@ -196,11 +196,11 @@ The seed script uses the admin connection (`DATABASE_URL_ADMIN`) which bypasses 
 
 | File/Folder | Purpose |
 |-------------|---------|
-| `examples/internal/backend/db/schema.sql` | **Source of truth** - SQL schema definition |
-| `examples/internal/backend/src/db/schema/` | Drizzle TypeScript schema definitions |
-| `examples/internal/backend/docker/dev/postgresql-init/dump.sql` | Dev container init (copy of schema.sql) |
-| `examples/internal/backend/docker/test/postgresql-init/dump.sql` | Test container init (copy of schema.sql) |
-| `examples/internal/backend/.env.development` | Database connection strings |
+| `examples/questlog/backend/db/schema.sql` | **Source of truth** - SQL schema definition |
+| `examples/questlog/backend/src/db/schema/` | Drizzle TypeScript schema definitions |
+| `examples/questlog/backend/docker/dev/postgresql-init/dump.sql` | Dev container init (copy of schema.sql) |
+| `examples/questlog/backend/docker/test/postgresql-init/dump.sql` | Test container init (copy of schema.sql) |
+| `examples/questlog/backend/.env.development` | Database connection strings |
 
 ## Row Level Security (RLS)
 
@@ -267,7 +267,7 @@ If queries return no rows unexpectedly:
 If you modified the database directly but forgot to update Drizzle schemas:
 
 ```bash
-cd examples/internal/backend
+cd examples/questlog/backend
 npx drizzle-kit pull
 ```
 

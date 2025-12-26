@@ -1,32 +1,46 @@
 #!/bin/bash
 
-# Script to run npm install, typecheck, and E2E tests on examples/external.
-# Assumes examples/external already exists (created via create:local or create:npm).
+# Script to run npm install, typecheck, and E2E tests on examples/generated.
+# Assumes examples/generated already exists (created via create:local or create:npm).
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-EXTERNAL_DIR="$ROOT_DIR/examples/external"
+GENERATED_DIR="$ROOT_DIR/examples/generated"
+
+# Cleanup function to stop docker containers
+cleanup_docker() {
+  echo "Stopping any existing test docker containers..."
+  if [ -d "$GENERATED_DIR/backend/docker/test" ]; then
+    cd "$GENERATED_DIR/backend"
+    docker compose -f docker/test/docker-compose.yml down -v 2>/dev/null || true
+  fi
+}
 
 echo "========================================"
-echo "Testing external example"
+echo "Testing generated example"
 echo "========================================"
 echo ""
 
-# Check that examples/external exists
-if [ ! -d "$EXTERNAL_DIR" ]; then
-  echo "Error: examples/external does not exist."
+# Check that examples/generated exists
+if [ ! -d "$GENERATED_DIR" ]; then
+  echo "Error: examples/generated does not exist."
   echo ""
   echo "Create it first with one of:"
-  echo "  npm run examples:external:create:local"
-  echo "  npm run examples:external:create:npm"
+  echo "  npm run examples:generated:create:local"
+  echo "  npm run examples:generated:create:npm"
   exit 1
 fi
 
-cd "$EXTERNAL_DIR"
+# Step 0: Cleanup any existing docker containers from previous runs
+echo "[0/5] Cleaning up previous docker containers..."
+cleanup_docker
+
+cd "$GENERATED_DIR"
 
 # Step 1: Install dependencies
+echo ""
 echo "[1/5] Installing dependencies..."
 npm install
 
