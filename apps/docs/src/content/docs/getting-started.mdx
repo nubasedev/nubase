@@ -1,0 +1,86 @@
+---
+title: Getting Started
+description: Learn how to get started with Nubase and build your first application.
+---
+
+This guide will help you get started with Nubase by walking you through the process of creating your first application.
+
+## Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **Node.js** 18+ (we recommend using the latest LTS version)
+- **npm** or **pnpm** package manager
+- **Docker** (for running the database)
+
+## Quick Start
+
+The fastest way to create a new Nubase application is using the `@nubase/create` CLI:
+
+```bash
+npx @nubase/create my-app
+cd my-app
+npm install
+```
+
+This creates a new project with the following structure:
+
+```
+my-app/
+├── frontend/          # React frontend application
+├── backend/           # Node.js backend with Hono
+├── schema/            # Shared TypeScript schema definitions
+├── package.json       # Root package.json with workspace configuration
+└── turbo.json         # Turborepo configuration
+```
+
+## Starting the Development Server
+
+1. **Start the database**:
+   ```bash
+   npm run db:up
+   ```
+
+2. **Seed the database** (optional, for sample data):
+   ```bash
+   npm run db:seed
+   ```
+
+3. **Start the development servers**:
+   ```bash
+   npm run dev
+   ```
+
+This will start:
+- Frontend at `http://localhost:3002`
+- Backend at `http://localhost:3001`
+
+## Project Structure
+
+### Frontend (`frontend/`)
+
+The frontend is a React application using Vite. Key files:
+
+- `src/config/config.ts` - Main application configuration
+- `src/main.tsx` - Application entry point
+- `src/resources/` - Resource definitions
+
+### Backend (`backend/`)
+
+The backend is a Node.js application using Hono. Key files:
+
+- `src/index.ts` - Server entry point
+- `src/api/routes/` - API route handlers
+- `src/db/` - Database schema and connections
+
+### Schema (`schema/`)
+
+Shared TypeScript definitions used by both frontend and backend:
+
+- `src/schema/` - API endpoint and data type definitions
+
+## Next Steps
+
+- Learn about the [Schema System](/schema) to understand how to define your data models
+- Explore [Resources](/resources) to see how to create CRUD operations
+- Check out the [Frontend Configuration](/frontend) for customizing your application

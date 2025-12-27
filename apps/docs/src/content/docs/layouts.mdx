@@ -1,0 +1,180 @@
+---
+title: Layout System
+description: Learn how to use the Nubase layout system to organize form fields and data displays.
+---
+
+The Nubase layout system provides a declarative way to organize form fields into groups, tabs, and grids. Layouts are defined on schemas and automatically applied to generated forms.
+
+## Overview
+
+Layouts determine how fields are visually organized:
+
+- **Form Layout** - Fields arranged in labeled groups
+- **Grid Layout** - Fields in a responsive grid
+- **Tabs Layout** - Fields organized across tabs
+- **Accordion Layout** - Collapsible sections
+
+## Basic Usage
+
+Define layouts using the `withLayout()` method on object schemas:
+
+```typescript
+import { nu } from '@nubase/core';
+
+const ticketSchema = nu.object({
+  title: nu.string().withMeta({ label: 'Title' }),
+  description: nu.string().withMeta({ label: 'Description' }),
+  priority: nu.number().withMeta({ label: 'Priority' }),
+  status: nu.string().withMeta({ label: 'Status' }),
+  assignee: nu.string().withMeta({ label: 'Assignee' }),
+  dueDate: nu.string().withMeta({ label: 'Due Date' }),
+}).withLayout({
+  type: 'form',
+  groups: [
+    {
+      title: 'Basic Information',
+      fields: ['title', 'description'],
+    },
+    {
+      title: 'Assignment',
+      fields: ['priority', 'status', 'assignee', 'dueDate'],
+    },
+  ],
+});
+```
+
+## Layout Types
+
+### Form Layout
+
+The default layout type. Organizes fields into labeled groups:
+
+```typescript
+{
+  type: 'form',
+  groups: [
+    {
+      title: 'Group Title',
+      description: 'Optional description for the group',
+      fields: ['field1', 'field2', 'field3'],
+    },
+  ],
+}
+```
+
+### Grid Layout
+
+Arranges fields in a responsive grid:
+
+```typescript
+{
+  type: 'grid',
+  columns: 2, // Number of columns
+  fields: ['field1', 'field2', 'field3', 'field4'],
+}
+```
+
+### Tabs Layout
+
+Organizes fields across tabs:
+
+```typescript
+{
+  type: 'tabs',
+  tabs: [
+    {
+      id: 'basic',
+      label: 'Basic Info',
+      fields: ['title', 'description'],
+    },
+    {
+      id: 'details',
+      label: 'Details',
+      fields: ['priority', 'status', 'assignee'],
+    },
+  ],
+}
+```
+
+### Accordion Layout
+
+Creates collapsible sections:
+
+```typescript
+{
+  type: 'accordion',
+  sections: [
+    {
+      id: 'basic',
+      title: 'Basic Information',
+      fields: ['title', 'description'],
+      defaultOpen: true,
+    },
+    {
+      id: 'advanced',
+      title: 'Advanced Options',
+      fields: ['priority', 'status'],
+    },
+  ],
+}
+```
+
+## Groups
+
+Groups are used in form layouts to organize related fields:
+
+```typescript
+{
+  title: 'Group Title',        // Required: Display title
+  description: 'Help text',    // Optional: Description below title
+  fields: ['field1', 'field2'], // Required: Array of field names
+  collapsible: false,          // Optional: Make group collapsible
+  defaultCollapsed: false,     // Optional: Start collapsed
+}
+```
+
+## Field Order
+
+Fields are rendered in the order specified in the layout. Fields not included in any group are rendered at the end.
+
+```typescript
+// Only 'title' and 'description' will have specific positioning
+// 'priority', 'status', etc. will render after the defined groups
+{
+  type: 'form',
+  groups: [
+    { fields: ['title', 'description'] },
+  ],
+}
+```
+
+## Conditional Layouts
+
+You can conditionally apply different layouts based on context:
+
+```typescript
+function getLayout(mode: 'create' | 'edit' | 'view') {
+  if (mode === 'create') {
+    return {
+      type: 'form',
+      groups: [{ fields: ['title', 'description'] }],
+    };
+  }
+
+  return {
+    type: 'tabs',
+    tabs: [
+      { id: 'basic', label: 'Basic', fields: ['title', 'description'] },
+      { id: 'details', label: 'Details', fields: ['priority', 'status'] },
+    ],
+  };
+}
+```
+
+## Best Practices
+
+1. **Group related fields** - Put fields that belong together in the same group
+2. **Use meaningful titles** - Group titles should clearly describe the content
+3. **Limit group size** - Avoid having too many fields in a single group
+4. **Consider the user flow** - Order groups logically for the user's workflow
+5. **Use tabs sparingly** - Only use tabs when there are distinct categories of information

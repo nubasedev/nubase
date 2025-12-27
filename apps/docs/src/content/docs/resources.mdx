@@ -1,0 +1,194 @@
+---
+title: Resources
+description: Learn how to define and configure resources in Nubase for CRUD operations.
+---
+
+Resources in Nubase define the operations available for entities in your application. They provide a declarative way to configure CRUD operations that are automatically wired to your UI.
+
+## Overview
+
+A resource consists of:
+
+1. **ID** - Unique identifier used in URLs
+2. **API Endpoints** - HTTP client methods for data operations
+3. **Actions** - Operations like delete, duplicate, etc.
+4. **Views** - UI screens for different operations (create, view, edit, search)
+
+## Creating a Resource
+
+Use the `createResource` factory function:
+
+```typescript
+import { createResource } from '@nubase/frontend';
+import { apiEndpoints } from '../../schema/api';
+
+export const ticketResource = createResource('ticket')
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    create: {
+      type: 'resource-form',
+      mode: 'create',
+      schema: createTicketSchema,
+      async onSubmit({ data, context }) {
+        await context.http.createTicket({ body: data });
+      },
+    },
+    view: {
+      type: 'resource-form',
+      mode: 'view',
+      schema: ticketSchema,
+      async loader({ params, context }) {
+        return context.http.getTicket({ params: { id: params.id } });
+      },
+    },
+    search: {
+      type: 'resource-search',
+      columns: [
+        { key: 'id', name: 'ID', width: 80 },
+        { key: 'title', name: 'Title' },
+        { key: 'status', name: 'Status', width: 120 },
+      ],
+      async loader({ context }) {
+        return context.http.getTickets({});
+      },
+    },
+  });
+```
+
+## Resource Views
+
+### Create View (`resource-form` with `mode: 'create'`)
+
+Displays a form for creating new records:
+
+```typescript
+create: {
+  type: 'resource-form',
+  mode: 'create',
+  schema: createTicketSchema,
+  async onSubmit({ data, context }) {
+    const result = await context.http.createTicket({ body: data });
+    // Navigate to the new record after creation
+    context.router.navigate({
+      to: '/r/ticket/view',
+      search: { id: result.id },
+    });
+  },
+}
+```
+
+### View View (`resource-form` with `mode: 'view'`)
+
+Displays a read-only form or editable fields:
+
+```typescript
+view: {
+  type: 'resource-form',
+  mode: 'view',
+  schema: ticketSchema,
+  async loader({ params, context }) {
+    return context.http.getTicket({ params: { id: params.id } });
+  },
+  async onPatch({ field, value, params, context }) {
+    await context.http.updateTicket({
+      params: { id: params.id },
+      body: { [field]: value },
+    });
+  },
+}
+```
+
+### Search View (`resource-search`)
+
+Displays a data grid with search/filter capabilities:
+
+```typescript
+search: {
+  type: 'resource-search',
+  columns: [
+    { key: 'id', name: 'ID', width: 80 },
+    { key: 'title', name: 'Title' },
+    { key: 'status', name: 'Status', width: 120 },
+    { key: 'priority', name: 'Priority', width: 100 },
+  ],
+  async loader({ context }) {
+    return context.http.getTickets({});
+  },
+  rowActions: ['view', 'delete'],
+  tableActions: ['create', 'delete'],
+}
+```
+
+## Resource Actions
+
+Actions define operations on resources:
+
+```typescript
+export const ticketResource = createResource('ticket')
+  .withApiEndpoints(apiEndpoints)
+  .withActions({
+    delete: {
+      label: 'Delete',
+      variant: 'destructive',
+      async onExecute({ selectedIds, context }) {
+        await Promise.all(
+          selectedIds.map(id =>
+            context.http.deleteTicket({ params: { id: Number(id) } })
+          )
+        );
+      },
+    },
+    duplicate: {
+      label: 'Duplicate',
+      async onExecute({ selectedIds, context }) {
+        // Duplicate logic
+      },
+    },
+  })
+  .withViews({
+    // Views can reference actions by ID
+    search: {
+      type: 'resource-search',
+      rowActions: ['delete', 'duplicate'],
+      tableActions: ['delete'],
+      // ...
+    },
+  });
+```
+
+## Registering Resources
+
+Add resources to your app configuration:
+
+```typescript
+import { ticketResource } from './resources/ticket';
+
+export const config: NubaseFrontendConfig = {
+  appName: 'My App',
+  resources: {
+    [ticketResource.id]: ticketResource,
+  },
+  mainMenu: [
+    {
+      type: 'link',
+      label: 'Tickets',
+      to: '/r/ticket/search',
+    },
+  ],
+  // ...
+};
+```
+
+## URL Structure
+
+Resources use a consistent URL pattern:
+
+- Create: `/r/{resourceId}/create`
+- View: `/r/{resourceId}/view?id={id}`
+- Edit: `/r/{resourceId}/edit?id={id}`
+- Search: `/r/{resourceId}/search`
+
+For example:
+- `/r/ticket/create` - Create a new ticket
+- `/r/ticket/view?id=42` - View ticket #42
+- `/r/ticket/search` - Search all tickets

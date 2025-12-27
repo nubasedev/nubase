@@ -1,0 +1,237 @@
+---
+title: Authentication
+description: Learn how to implement authentication in your Nubase application.
+---
+
+Nubase provides a flexible authentication system that works across both frontend and backend. This guide covers how to implement authentication in your application.
+
+## Overview
+
+The authentication system is designed as an optional layer. When no `AuthenticationController` is provided in the config, all routes are accessible without login.
+
+Key features:
+- Cookie-based JWT authentication
+- Automatic route protection
+- TypeScript type safety throughout
+- Extensible for custom auth providers
+
+## Frontend Setup
+
+### Creating an AuthenticationController
+
+Implement the `AuthenticationController` interface:
+
+```typescript
+import type {
+  AuthenticationController,
+  AuthenticationState,
+  LoginCredentials
+} from '@nubase/frontend';
+
+class MyAuthController implements AuthenticationController {
+  private state: AuthenticationState = {
+    status: 'loading',
+    user: null,
+    error: null,
+  };
+  private listeners = new Set<(state: AuthenticationState) => void>();
+
+  constructor(private apiBaseUrl: string) {}
+
+  getState(): AuthenticationState {
+    return this.state;
+  }
+
+  subscribe(listener: (state: AuthenticationState) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  async login(credentials: LoginCredentials): Promise<void> {
+    const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) throw new Error('Invalid credentials');
+    const data = await response.json();
+
+    this.setState({
+      status: 'authenticated',
+      user: data.user,
+      error: null
+    });
+  }
+
+  async logout(): Promise<void> {
+    await fetch(`${this.apiBaseUrl}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    this.setState({ status: 'unauthenticated', user: null, error: null });
+  }
+
+  async initialize(): Promise<void> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}/auth/me`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user) {
+          this.setState({ status: 'authenticated', user: data.user, error: null });
+          return;
+        }
+      }
+      this.setState({ status: 'unauthenticated', user: null, error: null });
+    } catch {
+      this.setState({ status: 'unauthenticated', user: null, error: null });
+    }
+  }
+
+  private setState(newState: Partial<AuthenticationState>): void {
+    this.state = { ...this.state, ...newState };
+    this.listeners.forEach(listener => listener(this.state));
+  }
+}
+```
+
+### Adding to Config
+
+```typescript
+const authController = new MyAuthController('http://localhost:3001');
+
+export const config: NubaseFrontendConfig = {
+  // ...
+  authentication: authController,
+  publicRoutes: ['/signin'],
+};
+```
+
+## Backend Setup
+
+### Creating a BackendAuthController
+
+```typescript
+import type { BackendAuthController } from '@nubase/backend';
+import jwt from 'jsonwebtoken';
+
+class MyBackendAuthController implements BackendAuthController<MyUser> {
+  extractToken(ctx: Context): string | null {
+    const cookieHeader = ctx.req.header('Cookie') || '';
+    return getCookie(cookieHeader, 'auth_token');
+  }
+
+  async verifyToken(token: string): Promise<VerifyTokenResult<MyUser>> {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+      const user = await db.users.findById(decoded.userId);
+      if (!user) return { valid: false, error: 'User not found' };
+      return { valid: true, user };
+    } catch {
+      return { valid: false, error: 'Invalid token' };
+    }
+  }
+
+  async createToken(user: MyUser): Promise<string> {
+    return jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  }
+
+  setTokenInResponse(ctx: Context, token: string): void {
+    ctx.header(
+      'Set-Cookie',
+      `auth_token=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=3600`
+    );
+  }
+
+  clearTokenFromResponse(ctx: Context): void {
+    ctx.header(
+      'Set-Cookie',
+      `auth_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`
+    );
+  }
+
+  async validateCredentials(
+    username: string,
+    password: string
+  ): Promise<MyUser | null> {
+    const user = await db.users.findByUsername(username);
+    if (!user) return null;
+
+    const isValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isValid) return null;
+
+    return user;
+  }
+}
+```
+
+### Using Auth Middleware
+
+```typescript
+import { createAuthMiddleware, createAuthHandlers } from '@nubase/backend';
+
+const authController = new MyBackendAuthController();
+const authHandlers = createAuthHandlers({ controller: authController });
+
+const app = new Hono();
+
+// Apply auth middleware to all routes
+app.use('*', createAuthMiddleware({ controller: authController }));
+
+// Mount auth routes
+app.route('/auth', authHandlers.routes);
+```
+
+### Protecting Routes
+
+Use the `auth` option in `createHttpHandler`:
+
+```typescript
+import { createHttpHandler } from '@nubase/backend';
+
+// Protected route - requires authentication
+export const getTickets = createHttpHandler({
+  endpoint: apiEndpoints.getTickets,
+  auth: 'required',
+  handler: async ({ user }) => {
+    // user is guaranteed to exist here
+    return await fetchTicketsForUser(user.id);
+  },
+});
+
+// Optional auth - user may be null
+export const getMe = createHttpHandler({
+  endpoint: apiEndpoints.getMe,
+  auth: 'optional',
+  handler: async ({ user }) => {
+    return { user: user ?? null };
+  },
+});
+
+// No auth required (default)
+export const login = createHttpHandler({
+  endpoint: apiEndpoints.login,
+  handler: async ({ body, ctx }) => {
+    // Login logic
+  },
+});
+```
+
+## Auth Levels
+
+| Level | Behavior |
+|-------|----------|
+| `required` | Returns 401 if not authenticated. User is guaranteed non-null. |
+| `optional` | Authentication optional. User may be null. |
+| `none` | No authentication check (default). User is null. |
+
+## Security Considerations
+
+1. **Use HttpOnly cookies** - Prevents XSS token theft
+2. **Set Secure flag in production** - Ensures HTTPS-only cookies
+3. **Use SameSite cookies** - Prevents CSRF attacks
+4. **Short token expiry** - Use 1-hour tokens with refresh capability
+5. **Hash passwords** - Use bcrypt with cost factor 12+

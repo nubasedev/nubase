@@ -1,0 +1,101 @@
+---
+title: Actions System
+description: How Nubase wires actions through the frontend stack for bulk, row, and command-based actions.
+---
+
+This document explains how Nubase wires actions through the frontend stack. It focuses on the infrastructure that powers bulk/table actions, row actions, and command-based actions.
+
+## Action Taxonomy
+
+Actions all implement the shared `Action` union (`packages/frontend/src/actions/types.ts`):
+
+- **Handler actions** – `type: "handler"`, execute inline logic with optional `rowData`/`context`.
+- **Command actions** – `type: "command"`, proxy to the command registry and benefit from schema-validated arguments.
+- **Resource actions** – `type: "resource"`, operate on the selected resource ids and always run inside a `ResourceContext`.
+
+Every concrete action carries shared metadata (label, icon, variant) so UI components can render consistent menus and toolbars.
+
+## Declaring Actions
+
+Most actions come from the resource builder:
+
+```ts
+export const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withActions({
+    delete: {
+      label: "Delete",
+      variant: "destructive",
+      onExecute: async ({ selectedIds, context }) => {
+        await Promise.all(
+          selectedIds.map((id) =>
+            context.http.deleteTicket({ params: { id: Number(id) } }),
+          ),
+        );
+      },
+    },
+  })
+  .withViews({
+    search: {
+      type: "resource-search",
+      rowActions: ["delete"],      // row-level menu
+      tableActions: ["delete"],    // bulk toolbar
+      // ...
+    },
+  });
+```
+
+### Action Layouts
+
+Views reference actions by id through `ActionLayout` arrays. `ResourceSearchViewRenderer` resolves these layouts into actual `Action` objects via `resource.actions`, which preserves type-safety and keeps view configs declarative.
+
+## Runtime Plumbing
+
+### Context Bootstrap
+
+`useCreateNubaseContext` initializes the global `NubaseContextData` and injects:
+
+- `commands`: the shared `CommandRegistry`
+- `resourceActions`: a singleton `ResourceActionsExecutor`
+- routing, HTTP client, modal/dialog providers, query client, and theming information
+
+### ResourceActionsExecutor
+
+`ResourceActionsExecutor` is a thin layer that guards `disabled` flags, injects `resourceType/selectedIds/context`, and centralizes error logging. It is the only piece responsible for invoking `onExecute` on `ResourceAction`s.
+
+## Search View Integration
+
+`ResourceSearchViewRenderer` binds everything together:
+
+- Wraps the grid in `ResourceContextProvider`, storing the current resource id and selected row ids
+- Builds a `SelectColumn` so bulk actions know which rows are active
+- Adds an `Action` column when `rowActions` exist
+- Computes toolbar (`tableActions`) actions, disabling them when `selectedRows.size === 0`
+- Wraps handler/resource actions with query invalidation so successful operations refresh the current search query
+
+### executeAction Bridge
+
+`executeAction` is the generic dispatcher used by grids, toolbars, and keybindings. It switches by `action.type`:
+
+- **Handler** – calls `onExecute()` directly
+- **Command** – enforces that the Nubase context is available, then calls `context.commands.execute(...)`
+- **Resource** – confirms both Nubase context and `ResourceContextData` exist, then proxies to `context.resourceActions.execute(...)`
+
+## Bulk vs Row Actions
+
+| Aspect          | Row actions                                   | Table actions                               |
+|-----------------|-----------------------------------------------|---------------------------------------------|
+| UI              | Dropdown per row                              | `ActionBar` toolbar                         |
+| Trigger context | Single-row `selectedIds` set (one id)         | `selectedRows` set from the grid selection  |
+| Typical use     | View / duplicate / row-scoped commands        | Delete, assign, export                      |
+| Selections      | Driven by `ActionCellFormatter` logic         | Driven by `ResourceContextProvider` state   |
+
+Both variants ultimately call into `executeAction`, so handler/command/resource logic stays identical.
+
+## Best Practices
+
+1. **Respect selection semantics** – Resource actions should read from `selectedIds`
+2. **Leverage command actions for cross-cutting behavior** – They integrate with keybindings and command palettes automatically
+3. **Surface errors via toasts/dialogs** – Keep UI feedback consistent by reusing `showToast` and `context.dialog`
+4. **Invalidate data** – Search views already wrap actions to invalidate queries, but standalone usages should call `context.queryClient.invalidateQueries`
+5. **Encapsulate complex logic** – Use helper functions for multi-step mutations so action handlers remain readable

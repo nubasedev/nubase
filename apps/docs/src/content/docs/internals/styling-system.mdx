@@ -1,0 +1,164 @@
+---
+title: Styling System
+description: How Nubase's styling system works with Tailwind CSS v4 and runtime theming.
+---
+
+This document explains how Nubase's styling system works, focusing on the centralized typography system and Tailwind CSS v4 integration.
+
+## Overview
+
+Nubase uses **Tailwind CSS v4** with a centralized styling approach. All core styles are defined in `packages/frontend/src/styles.css` using the `@theme` directive, which creates both CSS variables and corresponding Tailwind utility classes.
+
+## Core Styling Architecture
+
+### Main Styles File
+
+The primary styling configuration is located at:
+```
+packages/frontend/src/styles.css
+```
+
+This file contains:
+- **Typography scale** definitions using `@theme`
+- **Color mappings** from theme variables to Tailwind classes
+- **Radius variables** for consistent border-radius values
+- **Base layer styles** for global defaults
+
+## Typography System
+
+### Philosophy
+
+Nubase follows industry standards for typography:
+
+- **Base font size**: 16px (1rem) - respects browser defaults and accessibility
+- **Rem units**: All font sizes use rem units for scalability
+- **14px preference**: Most UI components use `text-sm` (14px) following industry patterns from Material Design, Shadcn/ui, and other modern design systems
+
+### Typography Scale
+
+The typography scale is defined using Tailwind v4's `@theme` directive:
+
+```css
+@theme {
+  /* Typography scale - rem values based on 16px browser default */
+  --text-2xs: 0.625rem;    /* 10px - tiny labels, badges */
+  --text-xs: 0.75rem;      /* 12px - data grids, dense UI */
+  --text-sm: 0.875rem;     /* 14px - secondary text, form labels */
+  --text-base: 1rem;       /* 16px - body text default */
+  --text-lg: 1.125rem;     /* 18px - emphasized body text */
+  --text-xl: 1.25rem;      /* 20px - section headings */
+  --text-2xl: 1.5rem;      /* 24px - page titles */
+  --text-3xl: 1.875rem;    /* 30px - hero headings */
+  --text-4xl: 2.25rem;     /* 36px - larger headings */
+  --text-5xl: 3rem;        /* 48px - display text */
+}
+```
+
+## How @theme Works
+
+The `@theme` directive in Tailwind v4 is powerful because it:
+
+1. **Creates CSS variables**: `--text-sm` becomes available as a CSS custom property
+2. **Generates utility classes**: `text-sm` class is automatically created
+3. **Enables theming**: Variables can be overridden for different themes
+
+### Example Usage
+
+When you define:
+```css
+@theme {
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+}
+```
+
+You get:
+- CSS variable: `var(--text-sm)`
+- Utility class: `text-sm` (sets font-size and line-height)
+- Consistency: Both approaches use the same values
+
+## Runtime Color System
+
+Nubase uses a sophisticated **runtime theme injection system** that dynamically generates CSS variables for colors. This system is inspired by **Shadcn/ui's color variable conventions** but extends it with runtime capabilities.
+
+### How Runtime Theming Works
+
+1. **Theme Definition**: Themes are defined in TypeScript files with OKLCH color values
+2. **Runtime Processing**: At app startup, theme colors are converted to CSS variables
+3. **DOM Injection**: CSS variables are injected into the DOM as a `<style>` element
+4. **Dynamic Switching**: Themes can be changed at runtime without page reload
+
+### Theme Structure (Inspired by Shadcn)
+
+Nubase follows Shadcn's **background/foreground color convention**:
+
+```typescript
+export const light: NubaseTheme = {
+  id: "light",
+  name: "Light",
+  type: "light",
+  colors: {
+    // Base colors (Shadcn pattern)
+    background: "oklch(1 0 0)",
+    foreground: "oklch(0.145 0 0)",
+
+    // Primary colors with foreground pair
+    primary: "oklch(0.205 0 0)",
+    primaryForeground: "oklch(0.985 0 0)",
+
+    // Secondary colors with foreground pair
+    secondary: "oklch(0.97 0 0)",
+    secondaryForeground: "oklch(0.205 0 0)",
+
+    // Muted colors for subtle elements
+    muted: "oklch(0.97 0 0)",
+    mutedForeground: "oklch(0.556 0 0)",
+
+    // Component-specific colors
+    card: "oklch(1 0 0)",
+    cardForeground: "oklch(0.145 0 0)",
+
+    // Interactive states
+    destructive: "oklch(0.577 0.245 27.325)",
+    destructiveForeground: "oklch(0.985 0 0)",
+
+    // Borders and inputs
+    border: "oklch(0.922 0 0)",
+    input: "oklch(0.922 0 0)",
+    ring: "oklch(0.708 0 0)",
+  }
+};
+```
+
+### Theme Switching Process
+
+1. **App Initialization**:
+   - `NubaseApp` → `ServicesProvider` → `useCreateNubaseContext`
+   - Calls `initializeNubaseApp()` → `initializeStyles()` → `injectThemeVariables()`
+
+2. **Theme Selection**:
+   - User selects theme or system detects preference
+   - `setActiveThemeId()` updates state
+   - `data-theme` attribute is set on `<html>` element
+
+3. **CSS Cascade**:
+   - Browser applies CSS based on `[data-theme="selected"]` selector
+   - All components automatically use new color values
+   - No component re-renders needed - pure CSS update
+
+## Best Practices
+
+### Typography Guidelines
+
+1. **Use theme variables**: Always prefer `var(--text-sm)` over hardcoded values
+2. **Follow conventions**: Use `text-sm` for UI components, `text-base` for body content
+3. **Include fallbacks**: `var(--text-sm, 0.875rem)` ensures robustness
+4. **Respect accessibility**: Don't go below 12px (`text-xs`) for interactive elements
+
+### Component Styling
+
+When creating components:
+- Use Tailwind utility classes when possible
+- Use theme variables for custom CSS
+- Avoid hardcoded pixel values
+- Follow the established typography scale

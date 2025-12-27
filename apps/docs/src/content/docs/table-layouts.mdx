@@ -1,0 +1,269 @@
+---
+title: Table Layouts
+description: Learn how to configure table layouts and data grids in Nubase applications.
+---
+
+Table layouts control how data is displayed in list and search views. Nubase provides a powerful data grid component for displaying and interacting with tabular data.
+
+## Basic Table Configuration
+
+Define columns for your data grid:
+
+```typescript
+const ticketSearch = {
+  type: 'resource-search',
+  columns: [
+    { key: 'id', name: 'ID', width: 80 },
+    { key: 'title', name: 'Title' },
+    { key: 'status', name: 'Status', width: 120 },
+    { key: 'priority', name: 'Priority', width: 100 },
+    { key: 'createdAt', name: 'Created', width: 150 },
+  ],
+  async loader({ context }) {
+    return context.http.getTickets({});
+  },
+};
+```
+
+## Column Configuration
+
+Each column supports these options:
+
+```typescript
+{
+  key: 'fieldName',        // Required: Property name in data
+  name: 'Display Name',    // Required: Column header text
+  width: 150,              // Optional: Fixed width in pixels
+  minWidth: 100,           // Optional: Minimum width
+  maxWidth: 300,           // Optional: Maximum width
+  resizable: true,         // Optional: Allow column resizing
+  sortable: true,          // Optional: Enable sorting
+  frozen: false,           // Optional: Freeze column to left
+  formatter: CustomCell,   // Optional: Custom cell renderer
+}
+```
+
+## Column Types
+
+### Text Columns
+
+Default column type for string data:
+
+```typescript
+{ key: 'title', name: 'Title' }
+```
+
+### Number Columns
+
+Format numbers appropriately:
+
+```typescript
+{
+  key: 'price',
+  name: 'Price',
+  formatter: ({ row }) => `$${row.price.toFixed(2)}`,
+}
+```
+
+### Date Columns
+
+Format date values:
+
+```typescript
+{
+  key: 'createdAt',
+  name: 'Created',
+  formatter: ({ row }) => new Date(row.createdAt).toLocaleDateString(),
+}
+```
+
+### Status Columns
+
+Display status with badges:
+
+```typescript
+{
+  key: 'status',
+  name: 'Status',
+  width: 120,
+  formatter: ({ row }) => (
+    <Badge variant={getStatusVariant(row.status)}>
+      {row.status}
+    </Badge>
+  ),
+}
+```
+
+## Row Actions
+
+Add actions to each row:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  rowActions: ['view', 'edit', 'delete'],
+  async loader({ context }) {
+    return context.http.getTickets({});
+  },
+}
+```
+
+Actions appear in a dropdown menu on each row.
+
+## Table Actions
+
+Add bulk actions to the table toolbar:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  tableActions: ['create', 'delete', 'export'],
+  async loader({ context }) {
+    return context.http.getTickets({});
+  },
+}
+```
+
+Bulk actions operate on selected rows.
+
+## Row Selection
+
+Enable row selection for bulk operations:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  selectable: true,          // Enable row selection
+  multiSelect: true,         // Allow multiple selection
+  tableActions: ['delete'],  // Actions for selected rows
+}
+```
+
+## Sorting
+
+Enable column sorting:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [
+    { key: 'title', name: 'Title', sortable: true },
+    { key: 'createdAt', name: 'Created', sortable: true },
+  ],
+  defaultSort: { key: 'createdAt', direction: 'desc' },
+}
+```
+
+## Filtering
+
+Add filters to your table:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  filters: [
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      options: [
+        { value: 'open', label: 'Open' },
+        { value: 'closed', label: 'Closed' },
+      ],
+    },
+    {
+      key: 'search',
+      label: 'Search',
+      type: 'text',
+      placeholder: 'Search tickets...',
+    },
+  ],
+}
+```
+
+## Pagination
+
+Configure pagination for large datasets:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  pagination: {
+    pageSize: 25,
+    pageSizeOptions: [10, 25, 50, 100],
+  },
+}
+```
+
+## Custom Cell Renderers
+
+Create custom cell formatters for complex displays:
+
+```typescript
+function UserCell({ row }: { row: Ticket }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Avatar src={row.assignee.avatar} size="sm" />
+      <span>{row.assignee.name}</span>
+    </div>
+  );
+}
+
+// Use in column config
+{
+  key: 'assignee',
+  name: 'Assignee',
+  formatter: UserCell,
+}
+```
+
+## Row Click Handling
+
+Handle row clicks for navigation:
+
+```typescript
+{
+  type: 'resource-search',
+  columns: [/* ... */],
+  onRowClick: ({ row, context }) => {
+    context.router.navigate({
+      to: '/r/ticket/view',
+      search: { id: row.id },
+    });
+  },
+}
+```
+
+## Styling
+
+### Column Alignment
+
+```typescript
+{
+  key: 'amount',
+  name: 'Amount',
+  cellClass: 'text-right',
+  headerClass: 'text-right',
+}
+```
+
+### Conditional Row Styling
+
+```typescript
+{
+  rowClass: (row) => row.priority === 'high' ? 'bg-red-50' : '',
+}
+```
+
+## Best Practices
+
+1. **Limit visible columns** - Show only essential data, hide details in row expansion
+2. **Use appropriate widths** - Set fixed widths for short content (IDs, status)
+3. **Enable sorting** - Allow sorting on frequently searched columns
+4. **Add row actions** - Common actions should be easily accessible
+5. **Consider mobile** - Tables should be responsive or have horizontal scroll

@@ -1,0 +1,41 @@
+---
+title: Introduction
+description: Nubase is a highly-opinionated full-stack framework for creating internal tools and business applications.
+---
+
+Nubase is a highly-opinionated full-stack framework for creating internal tools and business applications.
+
+## What is Nubase?
+
+Nubase is a configuration-based framework that generates fully functional applications from schema definitions. Instead of manually coding routes, API calls, forms, and navigation, you define:
+
+1. **Schemas** using `@nubase/core`
+2. **View configurations** that reference these schemas
+3. **Resource operations** (create, view, edit, etc.)
+4. **Main menu structure**
+5. **API endpoints and theme preferences**
+
+The framework then automatically generates a complete application with:
+- Consistent UI
+- Proper routing
+- Type safety
+- Theme support
+
+## Core Packages
+
+Nubase consists of two main packages:
+
+- **@nubase/core** - Core schema system with Zod-based validation, computed metadata, and layout definitions
+- **@nubase/frontend** - React components, form controls, and hooks for building Nubase applications
+
+## Getting Started
+
+The fastest way to get started is to create a new Nubase app:
+
+```bash
+npx @nubase/create my-app
+cd my-app
+npm run dev
+```
+
+This will create a new project with everything configured and ready to go.

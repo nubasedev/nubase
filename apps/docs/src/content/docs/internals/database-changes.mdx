@@ -1,0 +1,144 @@
+---
+title: Database Changes
+description: How to modify the database schema in Nubase example applications.
+---
+
+This guide explains how to modify the database schema in the questlog example application. This workflow is designed for **development and testing only**.
+
+## Overview
+
+The questlog-backend uses:
+- **PostgreSQL 17.5** running in Docker containers
+- **Drizzle ORM** for type-safe schema definitions
+- **Two separate databases**: dev (port 5434) and test (port 5435)
+- **Row Level Security (RLS)** for multi-tenant isolation
+
+## Database Users
+
+| User | Purpose | Permissions |
+|------|---------|-------------|
+| `questlog` | Admin (migrations, seeding) | Superuser, bypasses RLS |
+| `questlog_app` | Application runtime | DML only, subject to RLS |
+
+## Database Credentials
+
+| Environment | Port | Database | App User | App Password |
+|-------------|------|----------|----------|--------------|
+| Development | 5434 | questlog | questlog_app | questlog_app |
+| Test | 5435 | questlog | questlog_app | questlog_app |
+
+## Source of Truth
+
+The database schema is defined in a single SQL file:
+
+```
+examples/questlog/backend/db/schema.sql
+```
+
+This file is the **source of truth** for the database structure.
+
+## Workflow for Schema Changes
+
+### Option A: Direct SQL Editing (Recommended)
+
+#### Step 1: Edit the Schema File
+
+```bash
+code examples/questlog/backend/db/schema.sql
+```
+
+Add your changes following existing patterns:
+
+```sql
+CREATE TABLE public.categories (
+    id integer NOT NULL,
+    tenant_id integer NOT NULL,
+    name character varying(255) NOT NULL
+);
+
+ALTER TABLE public.categories ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE ONLY public.categories ADD CONSTRAINT categories_pk PRIMARY KEY (id);
+
+-- Don't forget RLS policy for tenant isolation
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY categories_tenant_isolation ON public.categories
+    TO questlog_app
+    USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
+```
+
+#### Step 2: Sync Schema to Docker Folders
+
+```bash
+npm run db:schema-sync
+```
+
+#### Step 3: Recreate the Databases
+
+```bash
+npm run db:kill && npm run db:up
+```
+
+#### Step 4: Update Drizzle Schema
+
+Update the TypeScript schema files to match:
+
+```typescript
+import { pgTable, serial, integer, varchar, pgPolicy } from "drizzle-orm/pg-core";
+
+export const categoriesTable = pgTable(
+  "categories",
+  {
+    id: serial("id").primaryKey(),
+    tenantId: integer("tenant_id").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+  },
+);
+```
+
+## Quick Reference: All Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run db:up` | Start both dev and test database containers |
+| `npm run db:down` | Stop both database containers |
+| `npm run db:kill` | Stop containers and delete all data |
+| `npm run db:seed` | Seed the dev database with test data |
+| `npm run db:pg-dump` | Export schema from DB to `db/schema.sql` |
+| `npm run db:schema-sync` | Copy `db/schema.sql` to Docker init folders |
+
+## Connecting to Databases
+
+### Development Database (Admin)
+```bash
+PGPASSWORD=questlog psql -h localhost -p 5434 -U questlog -d questlog
+```
+
+### Development Database (App User)
+```bash
+PGPASSWORD=questlog_app psql -h localhost -p 5434 -U questlog_app -d questlog
+```
+
+### Test Database
+```bash
+PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog
+```
+
+## Troubleshooting
+
+### Schema changes not applying
+
+Make sure to run the full cycle:
+
+```bash
+npm run db:kill && npm run db:up
+```
+
+The `dump.sql` files only run on **first container initialization**.
+
+### RLS blocking queries
+
+If queries return no rows unexpectedly:
+1. Check if tenant context is set: `SELECT current_setting('app.current_tenant_id', true);`
+2. Verify you're using the app user, not the admin user
+3. Ensure the tenant_id in your data matches the context

@@ -1,0 +1,176 @@
+---
+title: Authentication Internals
+description: How Nubase implements authentication at the framework level.
+---
+
+This document explains how Nubase implements authentication at the framework level. It covers the internal architecture, state management, route protection, and integration between frontend and backend.
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend                                 │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  NubaseApp                                                  │ │
+│  │    └─ ServicesProvider                                      │ │
+│  │         └─ NubaseContextProvider (exposes authentication)   │ │
+│  │              └─ RouterProvider                              │ │
+│  │                   └─ RootComponent (auth logic lives here)  │ │
+│  │                        ├─ AppShellRoute (protected)         │ │
+│  │                        └─ SignInRoute (public)              │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              │ HTTP (cookies)
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                          Backend                                 │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │  Hono App                                                   │ │
+│  │    └─ CORS Middleware                                       │ │
+│  │         └─ Auth Middleware (extracts user from JWT cookie)  │ │
+│  │              ├─ Public Routes (auth: 'none')                │ │
+│  │              └─ Protected Routes (auth: 'required')         │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Frontend Authentication
+
+### Core Types
+
+```typescript
+export interface AuthenticatedUser {
+  id: number;
+  email: string;
+  username: string;
+}
+
+export interface AuthenticationState {
+  status: "loading" | "authenticated" | "unauthenticated";
+  user: AuthenticatedUser | null;
+  error: Error | null;
+}
+
+export interface AuthenticationController {
+  getState(): AuthenticationState;
+  subscribe(listener: AuthenticationStateListener): () => void;
+  login(credentials: LoginCredentials): Promise<void>;
+  logout(): Promise<void>;
+  initialize(): Promise<void>;
+}
+```
+
+### RootComponent: The Auth Gate
+
+`packages/frontend/src/routes/root.tsx` contains all authentication logic:
+
+```typescript
+function RootComponent() {
+  const { authentication, config } = useNubaseContext();
+  const publicRoutes = config.publicRoutes ?? ["/signin"];
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // 1. Initialize authentication on mount
+  useEffect(() => {
+    if (!authentication) return;
+    authentication.initialize();
+  }, [authentication]);
+
+  // 2. Subscribe to auth state changes
+  useEffect(() => {
+    if (!authentication) return;
+    return authentication.subscribe((state) => {
+      setAuthState(state);
+    });
+  }, [authentication]);
+
+  // 3. Handle redirection for unauthenticated users
+  useEffect(() => {
+    if (authState?.status === "unauthenticated" && !isPublicRoute) {
+      navigate({ to: "/signin" });
+    }
+  }, [authState, location.pathname]);
+}
+```
+
+## Backend Authentication
+
+### Auth Levels
+
+```typescript
+export type AuthLevel = "required" | "optional" | "none";
+```
+
+- `required`: Returns 401 if not authenticated
+- `optional`: Authentication optional, user may be null
+- `none`: No authentication check (default)
+
+### Auth Middleware
+
+```typescript
+import { createAuthMiddleware } from "@nubase/backend";
+
+app.use("*", createAuthMiddleware({ controller: authController }));
+```
+
+The middleware:
+1. Extracts the token from cookies
+2. Verifies the token using the controller
+3. Sets the user in Hono context (`c.get('user')`)
+
+### Route Protection
+
+```typescript
+export const getTickets = createHttpHandler({
+  endpoint: apiEndpoints.getTickets,
+  auth: "required",
+  handler: async ({ user }) => {
+    // user is guaranteed non-null here
+    return await fetchTicketsForUser(user.id);
+  },
+});
+```
+
+## Expected Endpoints
+
+| Endpoint | Method | Auth | Purpose |
+|----------|--------|------|---------|
+| `/auth/login` | POST | none | Validate credentials, set cookie |
+| `/auth/logout` | POST | none | Clear authentication cookie |
+| `/auth/me` | GET | optional | Return current user from cookie |
+
+## Cookie-Based Authentication
+
+The design uses HttpOnly cookies for security:
+
+1. **XSS Protection**: JavaScript cannot access HttpOnly cookies
+2. **Automatic Inclusion**: Cookies sent automatically with `credentials: "include"`
+3. **Server-Side Control**: Cookie expiry controlled server-side
+
+### CORS Configuration
+
+```typescript
+// Backend
+app.use(
+  cors({
+    origin: ["http://localhost:3002"],
+    credentials: true,
+  }),
+);
+
+// Frontend HTTP client
+const response = await axios({
+  url: fullUrl,
+  withCredentials: true,
+});
+```
+
+## Security Considerations
+
+1. **Token Storage**: Always use HttpOnly cookies
+2. **HTTPS in Production**: Set `Secure` flag on cookies
+3. **CSRF Protection**: Use `SameSite=Lax` or `SameSite=Strict`
+4. **Short Token Expiry**: Prefer 1-hour tokens with refresh capability
+5. **Password Hashing**: Use bcrypt with cost factor 12+

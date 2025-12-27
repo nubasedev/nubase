@@ -1,0 +1,158 @@
+---
+title: Schema
+description: Learn about the Nubase schema system for defining data models and validation.
+---
+
+The Nubase schema system provides a type-safe way to define your data models, validation rules, and metadata. It's built on top of Zod and provides additional features for UI generation.
+
+## Overview
+
+Schemas in Nubase serve multiple purposes:
+
+1. **Validation** - Define validation rules for your data
+2. **Type Safety** - Generate TypeScript types from schemas
+3. **UI Generation** - Provide metadata for automatic form generation
+4. **API Contracts** - Define request/response shapes for API endpoints
+
+## Basic Usage
+
+Import the schema builder from `@nubase/core`:
+
+```typescript
+import { nu } from '@nubase/core';
+```
+
+### Primitive Types
+
+```typescript
+// String fields
+const name = nu.string();
+const email = nu.string().email();
+const optional = nu.string().optional();
+
+// Number fields
+const age = nu.number().min(0).max(120);
+const price = nu.number().positive();
+
+// Boolean fields
+const isActive = nu.boolean();
+```
+
+### Object Schemas
+
+```typescript
+const userSchema = nu.object({
+  name: nu.string().withMeta({
+    label: 'Full Name',
+    description: 'Enter your full name',
+  }),
+  email: nu.string().email().withMeta({
+    label: 'Email Address',
+  }),
+  age: nu.number().min(18).withMeta({
+    label: 'Age',
+    description: 'Must be 18 or older',
+  }),
+});
+```
+
+## Schema Metadata
+
+The `withMeta()` method allows you to attach UI metadata to fields:
+
+```typescript
+nu.string().withMeta({
+  label: 'Field Label',           // Display label for the field
+  description: 'Help text',       // Description shown below the field
+  placeholder: 'Enter value...',  // Placeholder text
+  defaultValue: 'default',        // Default value for the field
+});
+```
+
+## Type Inference
+
+Use `InferOutput` to get the TypeScript type from a schema:
+
+```typescript
+import { type InferOutput } from '@nubase/core';
+
+const ticketSchema = nu.object({
+  title: nu.string(),
+  priority: nu.number(),
+  status: nu.string(),
+});
+
+type Ticket = InferOutput<typeof ticketSchema>;
+// { title: string; priority: number; status: string }
+```
+
+## URL Parameter Coercion
+
+When working with URL parameters (which are always strings), use `toZodWithCoercion()` for automatic type conversion:
+
+```typescript
+const paramsSchema = nu.object({
+  id: nu.number(),
+  active: nu.boolean(),
+  name: nu.string(),
+});
+
+// URL: ?id=37&active=true&name=test
+const coercionSchema = paramsSchema.toZodWithCoercion();
+const result = coercionSchema.parse({ id: "37", active: "true", name: "test" });
+// Result: { id: 37, active: true, name: "test" }
+```
+
+Type conversions:
+- `"37"` → `37` (string to number)
+- `"true"/"false"` → `true`/`false` (string to boolean)
+- `"hello"` → `"hello"` (string unchanged)
+
+## Layouts
+
+Object schemas can include layout information for form generation:
+
+```typescript
+const ticketSchema = nu.object({
+  title: nu.string().withMeta({ label: 'Title' }),
+  description: nu.string().withMeta({ label: 'Description' }),
+  priority: nu.number().withMeta({ label: 'Priority' }),
+  assignee: nu.string().withMeta({ label: 'Assignee' }),
+}).withLayout({
+  type: 'form',
+  groups: [
+    {
+      title: 'Basic Information',
+      fields: ['title', 'description'],
+    },
+    {
+      title: 'Assignment',
+      fields: ['priority', 'assignee'],
+    },
+  ],
+});
+```
+
+See [Layout System](/layouts) for more details.
+
+## Computed Metadata
+
+For dynamic field metadata based on form state, use computed metadata:
+
+```typescript
+const productSchema = nu.object({
+  name: nu.string().withMeta({ label: 'Product Name' }),
+  category: nu.string().withMeta({ label: 'Category' }),
+  price: nu.number().withMeta({ label: 'Price' }),
+  discount: nu.number().withMeta({ label: 'Discount %' }),
+}).withComputed({
+  price: {
+    description: async (obj) => {
+      const finalPrice = obj.price * (1 - (obj.discount || 0) / 100);
+      return `Final price: $${finalPrice.toFixed(2)}`;
+    },
+  },
+});
+```
+
+See [Computed Metadata](/computed-metadata) for more details.

@@ -1,0 +1,210 @@
+---
+title: Form Layouts
+description: Learn how to create and customize form layouts in Nubase applications.
+---
+
+Form layouts control how fields are arranged and displayed in create, edit, and view forms. This guide covers the form layout options and best practices.
+
+## Basic Form Layout
+
+The simplest form layout groups fields into sections:
+
+```typescript
+import { nu } from '@nubase/core';
+
+const contactSchema = nu.object({
+  firstName: nu.string().withMeta({ label: 'First Name' }),
+  lastName: nu.string().withMeta({ label: 'Last Name' }),
+  email: nu.string().email().withMeta({ label: 'Email' }),
+  phone: nu.string().withMeta({ label: 'Phone' }),
+  company: nu.string().withMeta({ label: 'Company' }),
+  notes: nu.string().withMeta({ label: 'Notes' }),
+}).withLayout({
+  type: 'form',
+  groups: [
+    {
+      title: 'Personal Information',
+      fields: ['firstName', 'lastName'],
+    },
+    {
+      title: 'Contact Details',
+      fields: ['email', 'phone'],
+    },
+    {
+      title: 'Additional Info',
+      fields: ['company', 'notes'],
+    },
+  ],
+});
+```
+
+## Group Configuration
+
+Each group in a form layout supports these options:
+
+```typescript
+{
+  title: 'Group Title',           // Display title for the group
+  description: 'Help text here',  // Optional description
+  fields: ['field1', 'field2'],   // Array of field names
+  collapsible: true,              // Make the group collapsible
+  defaultCollapsed: false,        // Start in collapsed state
+}
+```
+
+### Collapsible Groups
+
+Create collapsible sections for optional or advanced fields:
+
+```typescript
+{
+  type: 'form',
+  groups: [
+    {
+      title: 'Required Fields',
+      fields: ['name', 'email'],
+    },
+    {
+      title: 'Advanced Options',
+      fields: ['customField1', 'customField2'],
+      collapsible: true,
+      defaultCollapsed: true,
+    },
+  ],
+}
+```
+
+## Field Arrangement
+
+### Single Column (Default)
+
+By default, fields are arranged in a single column:
+
+```typescript
+{
+  type: 'form',
+  groups: [
+    { fields: ['field1', 'field2', 'field3'] },
+  ],
+}
+```
+
+### Multi-Column
+
+Use nested arrays to create multi-column rows:
+
+```typescript
+{
+  type: 'form',
+  groups: [
+    {
+      title: 'Name',
+      fields: [
+        ['firstName', 'lastName'],  // Two fields in one row
+      ],
+    },
+    {
+      title: 'Location',
+      fields: [
+        ['city', 'state', 'zip'],   // Three fields in one row
+      ],
+    },
+  ],
+}
+```
+
+## Form Modes
+
+Forms can operate in different modes that affect field behavior:
+
+### Create Mode
+
+All fields are editable, values start empty:
+
+```typescript
+{
+  type: 'resource-form',
+  mode: 'create',
+  schema: ticketSchema,
+  async onSubmit({ data, context }) {
+    await context.http.createTicket({ body: data });
+  },
+}
+```
+
+### Edit Mode
+
+All fields are editable, values are pre-populated:
+
+```typescript
+{
+  type: 'resource-form',
+  mode: 'edit',
+  schema: ticketSchema,
+  async loader({ params, context }) {
+    return context.http.getTicket({ params: { id: params.id } });
+  },
+  async onSubmit({ data, params, context }) {
+    await context.http.updateTicket({ params: { id: params.id }, body: data });
+  },
+}
+```
+
+### View Mode
+
+Fields display as read-only by default, can be inline-editable:
+
+```typescript
+{
+  type: 'resource-form',
+  mode: 'view',
+  schema: ticketSchema,
+  async loader({ params, context }) {
+    return context.http.getTicket({ params: { id: params.id } });
+  },
+  async onPatch({ field, value, params, context }) {
+    await context.http.updateTicket({
+      params: { id: params.id },
+      body: { [field]: value },
+    });
+  },
+}
+```
+
+## Validation Display
+
+Form layouts automatically display validation errors:
+
+- Errors appear below the field that failed validation
+- The field is highlighted with an error state
+- Submit is prevented until errors are resolved
+
+```typescript
+const schema = nu.object({
+  email: nu.string().email().withMeta({
+    label: 'Email',
+    description: 'Enter a valid email address',
+  }),
+  age: nu.number().min(18).max(120).withMeta({
+    label: 'Age',
+    description: 'Must be between 18 and 120',
+  }),
+});
+```
+
+## Responsive Behavior
+
+Form layouts are responsive by default:
+
+- Multi-column rows stack on mobile
+- Groups maintain their structure
+- Field widths adjust to container size
+
+## Best Practices
+
+1. **Group logically** - Put related fields together
+2. **Use clear titles** - Group titles should describe the content
+3. **Consider the user journey** - Order groups by workflow
+4. **Limit fields per group** - 4-6 fields per group is ideal
+5. **Use descriptions** - Help users understand what's expected
+6. **Make optional fields obvious** - Use collapsible groups for optional content

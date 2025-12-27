@@ -1,0 +1,108 @@
+---
+title: Create a Nubase App
+description: Learn how to create a new Nubase application using the CLI.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+The `@nubase/create` CLI provides the fastest way to create a new Nubase application with a complete project structure.
+
+## Usage
+
+```bash
+npx @nubase/create my-app
+```
+
+This command creates a new directory called `my-app` with a complete Nubase project.
+
+## What's Included
+
+The generated project includes:
+
+### Project Structure
+
+<FileTree>
+
+- my-app/
+  - frontend/ React frontend (Vite)
+    - src/
+      - config/ Application configuration
+      - resources/ Resource definitions
+      - main.tsx Entry point
+    - package.json
+  - backend/ Node.js backend (Hono)
+    - src/
+      - api/ API routes
+      - db/ Database schemas
+      - index.ts Server entry point
+    - docker/ Docker configuration
+    - package.json
+  - schema/ Shared TypeScript schemas
+    - src/
+      - schema/ API endpoint definitions
+    - package.json
+  - package.json Root workspace configuration
+  - turbo.json Turborepo configuration
+  - .gitignore
+
+</FileTree>
+
+### Pre-configured Features
+
+- **TypeScript** - Full type safety across frontend and backend
+- **Database Setup** - PostgreSQL with Docker Compose
+- **Drizzle ORM** - Type-safe database operations
+- **Authentication** - JWT-based authentication ready to use
+- **Theming** - Material Design 3 color system with dark mode
+- **Testing** - Playwright E2E testing infrastructure
+
+## Getting Started with Your New App
+
+After creating your app:
+
+1. **Install dependencies**:
+   ```bash
+   cd my-app
+   npm install
+   ```
+
+2. **Start the database**:
+   ```bash
+   npm run db:up
+   ```
+
+3. **Seed the database** (for sample data):
+   ```bash
+   npm run db:seed
+   ```
+
+4. **Start development servers**:
+   ```bash
+   npm run dev
+   ```
+
+5. Open `http://localhost:3002` in your browser
+
+## Available Scripts
+
+The generated project includes these npm scripts:
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start frontend and backend in development mode |
+| `npm run build` | Build all packages for production |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm run lint` | Run linting across all packages |
+| `npm run db:up` | Start the database container |
+| `npm run db:down` | Stop the database container |
+| `npm run db:seed` | Seed the database with sample data |
+
+## CLI Options
+
+The `@nubase/create` CLI supports several options:
+
+```bash
+npx @nubase/create my-app [options]
+```
+
+Run `npx @nubase/create --help` for a full list of available options.

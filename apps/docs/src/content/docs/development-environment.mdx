@@ -1,0 +1,151 @@
+---
+title: Development Environment
+description: Learn how to set up your development environment for working with Nubase.
+---
+
+This guide covers setting up your development environment for working with Nubase applications.
+
+## Prerequisites
+
+### Required Software
+
+- **Node.js 18+** - We recommend using the latest LTS version
+- **Docker** - Required for running PostgreSQL database
+- **Git** - For version control
+
+### Recommended Tools
+
+- **VS Code** - With the following extensions:
+  - ESLint
+  - Prettier
+  - TypeScript and JavaScript Language Features
+  - Tailwind CSS IntelliSense
+
+## Project Setup
+
+### Installing Dependencies
+
+From the project root:
+
+```bash
+npm install
+```
+
+This installs all dependencies across the monorepo.
+
+### Database Setup
+
+Nubase uses PostgreSQL running in Docker. The database configuration uses two separate environments:
+
+| Environment | Frontend Port | Backend Port | Database Port |
+|-------------|--------------|--------------|---------------|
+| Development | 3002 | 3001 | 5434 |
+| Test | 4002 | 4001 | 5435 |
+
+**Start the development database**:
+
+```bash
+npm run db:up
+```
+
+**Stop the database**:
+
+```bash
+npm run db:down
+```
+
+**Reset the database** (deletes all data):
+
+```bash
+npm run db:kill && npm run db:up
+```
+
+### Starting Development Servers
+
+Start all development servers:
+
+```bash
+npm run dev
+```
+
+This starts:
+- Frontend at `http://localhost:3002`
+- Backend at `http://localhost:3001`
+
+## Common Commands
+
+### Build & Quality
+
+| Command | Description |
+|---------|-------------|
+| `npm run build` | Build all packages |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm run lint` | Run linting |
+| `npm run lint:fix` | Fix linting issues |
+
+### Database
+
+| Command | Description |
+|---------|-------------|
+| `npm run db:up` | Start database containers |
+| `npm run db:down` | Stop database containers |
+| `npm run db:kill` | Stop and delete database data |
+| `npm run db:seed` | Seed database with sample data |
+
+### Testing
+
+| Command | Description |
+|---------|-------------|
+| `npm run e2e:setup` | Start test database |
+| `npm run e2e` | Run E2E tests |
+| `npm run e2e:ui` | Open Playwright UI |
+| `npm run e2e:teardown` | Stop test database |
+
+## Environment Variables
+
+### Frontend (.env.local)
+
+```bash
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+### Backend (.env)
+
+```bash
+PORT=3001
+DB_HOST=localhost
+DB_PORT=5434
+DB_NAME=questlog
+DB_USER=questlog
+DB_PASSWORD=questlog
+```
+
+## Troubleshooting
+
+### Port Conflicts
+
+If you see "port already in use" errors:
+
+```bash
+# Check what's using the ports
+lsof -i :3001,3002,5434
+
+# Kill conflicting processes
+kill $(lsof -ti:3001,3002,5434)
+```
+
+### Database Connection Issues
+
+1. Ensure Docker is running
+2. Check if the container is up: `docker ps | grep postgres`
+3. Restart the database: `npm run db:kill && npm run db:up`
+
+### Type Errors After Changes
+
+Run the type checker to see all errors:
+
+```bash
+npm run typecheck
+```
+
+Always run `npm run typecheck` and `npm run lint:fix` after making changes to ensure code quality.

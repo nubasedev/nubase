@@ -1,0 +1,222 @@
+---
+title: React Component Guide
+description: Conventions for implementing React components in @nubase/frontend.
+---
+
+This guide covers all conventions for implementing React components in `@nubase/frontend`. Following these standards ensures consistency, maintainability, and proper integration with the Nubase ecosystem.
+
+## File Structure
+
+### Directory Organization
+
+Each component lives in its own directory under `packages/frontend/src/components/`:
+
+```
+packages/frontend/src/components/
+   callout/
+      Callout.tsx           # Component implementation
+      Callout.stories.tsx   # Storybook stories
+      index.ts              # Explicit exports
+   buttons/
+      Button/
+         Button.tsx
+         Button.stories.tsx
+         index.ts
+```
+
+### Naming Conventions
+
+- **Directory**: lowercase with hyphens (`form-controls`, `data-grid`)
+- **Component file**: PascalCase matching the component name (`Button.tsx`)
+- **Stories file**: `{ComponentName}.stories.tsx`
+- **Index file**: Always `index.ts`
+
+## Export Patterns
+
+### Props Type Definition
+
+Every component **must** have an explicit Props type exported inline, directly before the component:
+
+```tsx
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  elevated?: boolean;
+}
+
+const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, elevated = false, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("rounded-xl border bg-card", elevated && "shadow-md", className)}
+      {...props}
+    />
+  ),
+);
+Card.displayName = "Card";
+
+export { Card };
+```
+
+### Index File Exports
+
+Each component directory **must** have an `index.ts` with explicit named exports. **Never use `export *`**:
+
+```tsx
+// Correct - explicit named exports
+export { Card, type CardProps } from "./Card";
+
+// Incorrect - star exports
+export * from "./Card";
+```
+
+## Component Implementation
+
+### Using forwardRef
+
+Most components should use `forwardRef` to allow ref forwarding:
+
+```tsx
+import { forwardRef } from "react";
+
+export interface ButtonProps extends React.ComponentProps<"button"> {
+  variant?: "default" | "secondary" | "destructive";
+}
+
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = "default", ...props }, ref) => (
+    <button ref={ref} className={cn(buttonVariants({ variant }), className)} {...props} />
+  ),
+);
+Button.displayName = "Button";
+
+export { Button };
+```
+
+### displayName
+
+Always set `displayName` for components using `forwardRef` for React DevTools.
+
+### data-slot Attributes
+
+Add `data-slot` attributes for styling hooks and testing:
+
+```tsx
+<div data-slot="card" className={cn("rounded-xl border", className)} {...props} />
+```
+
+## Styling with CVA
+
+Use Class Variance Authority (CVA) for variant-based styling:
+
+```tsx
+import { cva, type VariantProps } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive: "bg-destructive text-white hover:bg-destructive/90",
+      },
+      size: {
+        sm: "h-8 px-3 text-xs",
+        md: "h-9 px-4",
+        lg: "h-10 px-6",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "md",
+    },
+  },
+);
+
+export interface ButtonProps
+  extends React.ComponentProps<"button">,
+    VariantProps<typeof buttonVariants> {}
+```
+
+## Storybook Stories
+
+### Story Naming Convention
+
+- **Never** start titles with "Components/"
+- Use format: `"Category/ComponentName"`
+
+```tsx
+// Good
+title: "Form Controls/TextInput"
+title: "Buttons/Button"
+
+// Bad
+title: "Components/Form Controls/TextInput"
+```
+
+### Self-Contained Stories
+
+Stories must be self-contained using the `render` function:
+
+```tsx
+export const WithModal: Story = {
+  render: () => {
+    const { openModal } = useModal();
+
+    return (
+      <Button onClick={() => openModal(<div>Content</div>)}>
+        Open Modal
+      </Button>
+    );
+  },
+};
+```
+
+### No Dark Mode Stories
+
+**Never** create specific dark mode stories. Storybook has an automatic dark mode toggle.
+
+## Accessibility
+
+### ARIA Attributes
+
+Include appropriate ARIA attributes:
+
+```tsx
+<div role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+  <h2 id="dialog-title">{title}</h2>
+</div>
+```
+
+### Keyboard Navigation
+
+Support keyboard interactions:
+
+```tsx
+const handleKeyDown = (event: React.KeyboardEvent) => {
+  switch (event.key) {
+    case "Enter":
+    case " ":
+      event.preventDefault();
+      handleSelect();
+      break;
+    case "Escape":
+      handleClose();
+      break;
+  }
+};
+```
+
+## Summary Checklist
+
+When creating a new component:
+
+- [ ] Component has its own directory with `index.ts`
+- [ ] Props type is exported inline before the component
+- [ ] `index.ts` uses explicit named exports (no `export *`)
+- [ ] Component uses `forwardRef` if it renders a DOM element
+- [ ] `displayName` is set for forwardRef components
+- [ ] Styling uses CVA for variants or `cn()` for class merging
+- [ ] `data-slot` or `data-component` attributes are added
+- [ ] Accessibility attributes are included
+- [ ] Storybook story follows naming conventions
+- [ ] Story is self-contained (no external components)

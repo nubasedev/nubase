@@ -1,0 +1,233 @@
+---
+title: End-to-End Testing
+description: Learn how to run and write end-to-end tests for Nubase applications using Playwright.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+This guide covers how to run and work with end-to-end (e2e) tests in Nubase projects using Playwright with isolated test environments.
+
+## Overview
+
+The Nubase testing infrastructure validates complete user workflows, focusing on:
+
+- Resource creation and navigation flows
+- Form validation and submission
+- Data persistence and retrieval
+- Cross-page navigation and state management
+
+## Environment Architecture
+
+The testing infrastructure uses **separate environments** for development and testing to ensure complete isolation:
+
+### Development Environment
+- **Frontend**: `http://localhost:3002`
+- **Backend**: `http://localhost:3001`
+- **Database**: PostgreSQL on port `5434`
+
+### Test Environment
+- **Frontend**: `http://localhost:4002`
+- **Backend**: `http://localhost:4001`
+- **Database**: PostgreSQL on port `5435`
+
+This separation ensures:
+- Tests never interfere with development work
+- Each test run starts with a clean database state
+- Development and testing can run simultaneously
+- Test failures don't affect development data
+
+## Quick Start
+
+### Prerequisites
+
+1. **Node.js**: Ensure you have Node.js 18+ installed
+2. **Docker**: Required for running the test database
+3. **Project Dependencies**: Run `npm install` in the project root
+
+### Initial Setup
+
+Install Playwright browsers:
+
+```bash
+npm run e2e:install
+```
+
+### Running Tests
+
+```bash
+# Setup test database and run all tests
+npm run e2e:setup    # Starts PostgreSQL on port 5435
+npm run e2e          # Starts frontend:4002, backend:4001, runs tests
+
+# Teardown when done
+npm run e2e:teardown # Stops database and cleans up
+```
+
+### Interactive UI Mode
+
+```bash
+npm run e2e:ui       # Open Playwright UI for interactive test development
+```
+
+### Debug Mode
+
+```bash
+npm run e2e:debug    # Step-by-step execution with browsers visible
+```
+
+## Available Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run e2e:setup` | Start the test database (PostgreSQL on port 5435) |
+| `npm run e2e:teardown` | Stop and clean up the test database |
+| `npm run e2e` | Run all tests in headless mode |
+| `npm run e2e:ui` | Open Playwright test UI |
+| `npm run e2e:headed` | Run tests with visible browser windows |
+| `npm run e2e:debug` | Run tests in debug mode |
+| `npm run e2e:report` | View the HTML test report |
+| `npm run e2e:install` | Install Playwright browsers |
+
+## Writing Tests
+
+### Test Structure
+
+Tests are located in `examples/questlog/frontend/e2e/`:
+
+<FileTree>
+
+- examples/questlog/frontend/
+  - e2e/
+    - fixtures/
+      - base.ts
+    - ticket.spec.ts
+    - navigation.spec.ts
+  - playwright.config.ts
+
+</FileTree>
+
+### Basic Test Example
+
+```typescript
+import { expect, test } from "./fixtures/base";
+
+test.describe("Feature Name", () => {
+  test("should do something specific", async ({ page, testAPI }) => {
+    // Navigate to page
+    await page.goto("/r/resource/create");
+
+    // Interact with UI
+    await page.fill('input[name="field"]', "value");
+    await page.click('[data-testid="submit-button"]');
+
+    // Assert UI changes
+    await page.waitForURL(/\/r\/resource\/view\?id=\d+/);
+
+    // Verify via API
+    const data = await testAPI.getData();
+    expect(data).toMatchObject({ field: "value" });
+  });
+});
+```
+
+### Test Fixtures
+
+The testing framework provides these fixtures:
+
+- **`page`**: Playwright Page object for browser automation
+- **`testAPI`**: Custom API client for backend interactions
+  - `clearDatabase()`: Reset database state
+  - `seedTestData(data)`: Insert test data
+  - `getDatabaseStats()`: Get record counts
+  - `createTicket(data)`: Create ticket via API
+  - `getTicket(id)`: Retrieve ticket by ID
+
+## Best Practices
+
+### Use Test IDs
+
+Always use `data-testid` attributes for reliable element selection:
+
+```typescript
+await page.click('[data-testid="form-submit-button"]');
+```
+
+### Verify Both UI and Data
+
+Test UI changes and verify backend state:
+
+```typescript
+// UI assertion
+await expect(page.locator(".success-message")).toBeVisible();
+
+// API verification
+const record = await testAPI.getRecord(id);
+expect(record.status).toBe("active");
+```
+
+### Test Independence
+
+Each test should work in isolation:
+
+```typescript
+test("should work independently", async ({ testAPI }) => {
+  // Database is automatically cleared before this test
+  const stats = await testAPI.getDatabaseStats();
+  expect(stats.records.count).toBe(0);
+});
+```
+
+## Troubleshooting
+
+### Port Conflicts
+
+```bash
+# Check what's using the test ports
+lsof -ti:4001,4002,5435
+
+# Kill conflicting processes
+kill $(lsof -ti:4001,4002,5435)
+```
+
+### Database Connection Issues
+
+```bash
+# Check if test database is running
+docker ps | grep postgres
+
+# Restart the test setup
+npm run e2e:teardown
+npm run e2e:setup
+```
+
+### Debug Strategies
+
+1. **Visual Debugging**: Use headed mode to see what's happening
+   ```bash
+   npm run e2e:headed
+   ```
+
+2. **Console Logs**: Add logging to your tests
+   ```typescript
+   page.on('console', msg => console.log(`PAGE: ${msg.text()}`));
+   ```
+
+3. **Screenshots**: Check failure screenshots in `test-results/`
+
+## CI/CD Integration
+
+For continuous integration:
+
+```yaml
+- name: Setup Test Database
+  run: npm run e2e:setup
+
+- name: Install Playwright
+  run: npm run e2e:install
+
+- name: Run E2E Tests
+  run: npm run e2e
+
+- name: Cleanup
+  run: npm run e2e:teardown
+```

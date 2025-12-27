@@ -1,0 +1,192 @@
+---
+title: Frontend
+description: Learn how to configure and customize the Nubase frontend application.
+---
+
+The Nubase frontend is a React application that automatically generates UI from your configuration. This guide covers how to configure and customize your frontend.
+
+## Configuration
+
+The main configuration is defined in `src/config/config.ts`:
+
+```typescript
+import type { NubaseFrontendConfig } from '@nubase/frontend';
+
+export const config: NubaseFrontendConfig = {
+  appName: 'My Application',
+  apiBaseUrl: 'http://localhost:3001',
+  apiEndpoints: apiEndpoints,
+  resources: {
+    // Resource definitions
+  },
+  views: {
+    // View definitions
+  },
+  mainMenu: [
+    // Navigation menu items
+  ],
+  themeIds: ['light', 'dark'],
+  defaultThemeId: 'light',
+};
+```
+
+## Main Menu
+
+The `mainMenu` property defines the navigation structure:
+
+```typescript
+mainMenu: [
+  {
+    type: 'link',
+    label: 'Dashboard',
+    to: '/v/dashboard',
+    icon: IconDashboard,
+  },
+  {
+    type: 'group',
+    label: 'Tickets',
+    icon: IconTicket,
+    children: [
+      { type: 'link', label: 'All Tickets', to: '/r/ticket/search' },
+      { type: 'link', label: 'Create Ticket', to: '/r/ticket/create' },
+    ],
+  },
+  {
+    type: 'separator',
+  },
+  {
+    type: 'link',
+    label: 'Settings',
+    to: '/v/settings',
+  },
+]
+```
+
+### Menu Item Types
+
+- **link** - Navigation link with optional icon and badge
+- **group** - Expandable group with nested children
+- **separator** - Visual divider between sections
+
+## Views
+
+Views define custom screens that aren't tied to resource operations:
+
+```typescript
+views: {
+  dashboard: {
+    type: 'custom',
+    component: DashboardScreen,
+  },
+  settings: {
+    type: 'custom',
+    component: SettingsScreen,
+  },
+}
+```
+
+Views are accessible at `/v/{viewId}` (e.g., `/v/dashboard`).
+
+## Theming
+
+Nubase uses Material Design 3 with runtime theme switching:
+
+```typescript
+themeIds: ['light', 'dark', 'darkHighContrast', 'lightHighContrast'],
+defaultThemeId: 'light',
+```
+
+### Available Themes
+
+- `light` - Standard light theme
+- `dark` - Standard dark theme
+- `lightHighContrast` - High contrast light theme
+- `darkHighContrast` - High contrast dark theme
+
+### Custom Themes
+
+You can create custom themes by defining new theme files:
+
+```typescript
+// themes/custom.ts
+import type { NubaseTheme } from '@nubase/frontend';
+
+export const customTheme: NubaseTheme = {
+  id: 'custom',
+  name: 'Custom Theme',
+  type: 'light',
+  colors: {
+    background: 'oklch(1 0 0)',
+    foreground: 'oklch(0.145 0 0)',
+    primary: 'oklch(0.6 0.2 250)',
+    // ... other colors
+  },
+};
+```
+
+## Authentication
+
+To enable authentication, provide an `AuthenticationController`:
+
+```typescript
+import { QuestlogAuthController } from './auth/QuestlogAuthController';
+
+const authController = new QuestlogAuthController(apiBaseUrl);
+
+export const config: NubaseFrontendConfig = {
+  // ...
+  authentication: authController,
+  publicRoutes: ['/signin'],
+};
+```
+
+See [Authentication](/authentication) for more details.
+
+## NubaseApp Component
+
+The `NubaseApp` component is the application shell that renders your entire app:
+
+```tsx
+// main.tsx
+import { NubaseApp } from '@nubase/frontend';
+import { config } from './config/config';
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <NubaseApp config={config} />
+  </StrictMode>,
+);
+```
+
+### What NubaseApp Generates
+
+- **Routing System** - Creates routes for all views and resources
+- **Navigation** - Generates the main navigation from `mainMenu`
+- **HTTP Client** - Sets up API client with configured endpoints
+- **Theme System** - Provides theme switching capabilities
+- **Provider Context** - Wraps app with necessary providers
+
+## Component Library
+
+The `@nubase/frontend` package includes a comprehensive component library:
+
+### Form Controls
+- `TextInput` - Text, email, password inputs
+- `NumberInput` - Numeric inputs
+- `Select` - Dropdown selection
+- `Checkbox` - Boolean inputs
+- `FormControl` - Form field wrapper with labels and errors
+
+### Buttons
+- `Button` - Primary button component with variants
+- `ButtonBar` - Button group layout
+
+### Feedback
+- `Toast` - Notification toasts
+- `Dialog` - Confirmation dialogs
+- `Modal` - Modal overlays
+
+### Layout
+- `MainNav` - Navigation component
+- `Card` - Card container
+- `DataGrid` - Data table component

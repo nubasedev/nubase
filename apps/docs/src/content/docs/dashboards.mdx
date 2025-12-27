@@ -1,0 +1,189 @@
+---
+title: Dashboards
+description: Learn how to create custom dashboards in Nubase applications.
+---
+
+Dashboards provide a way to create custom screens that display aggregated data, charts, and widgets. This guide covers how to build dashboards in your Nubase application.
+
+## Creating a Dashboard
+
+Dashboards are implemented as custom views in your configuration:
+
+```typescript
+// config/config.ts
+import { DashboardScreen } from '../screens/DashboardScreen';
+
+export const config: NubaseFrontendConfig = {
+  // ...
+  views: {
+    dashboard: {
+      type: 'custom',
+      component: DashboardScreen,
+    },
+  },
+  mainMenu: [
+    {
+      type: 'link',
+      label: 'Dashboard',
+      to: '/v/dashboard',
+      icon: IconDashboard,
+    },
+    // ...
+  ],
+};
+```
+
+## Dashboard Component
+
+Create a React component for your dashboard:
+
+```tsx
+// screens/DashboardScreen.tsx
+import { Card, CardContent, CardHeader } from '@nubase/frontend';
+import { useNubaseContext } from '@nubase/frontend';
+import { useQuery } from '@tanstack/react-query';
+
+export function DashboardScreen() {
+  const { http } = useNubaseContext();
+
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: () => http.getDashboardStats({}),
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard
+          title="Total Tickets"
+          value={stats?.totalTickets ?? 0}
+        />
+        <StatCard
+          title="Open Tickets"
+          value={stats?.openTickets ?? 0}
+        />
+        <StatCard
+          title="Closed Today"
+          value={stats?.closedToday ?? 0}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value }: { title: string; value: number }) {
+  return (
+    <Card>
+      <CardHeader>
+        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
+      </CardHeader>
+      <CardContent>
+        <p className="text-3xl font-bold">{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Data Fetching
+
+Use React Query for data fetching in dashboards:
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+import { useNubaseContext } from '@nubase/frontend';
+
+function useDashboardData() {
+  const { http } = useNubaseContext();
+
+  const statsQuery = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: () => http.getDashboardStats({}),
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const recentTicketsQuery = useQuery({
+    queryKey: ['dashboard', 'recent-tickets'],
+    queryFn: () => http.getRecentTickets({ query: { limit: 5 } }),
+  });
+
+  return {
+    stats: statsQuery.data,
+    recentTickets: recentTicketsQuery.data,
+    isLoading: statsQuery.isLoading || recentTicketsQuery.isLoading,
+  };
+}
+```
+
+## Charts and Visualizations
+
+You can use any React charting library with Nubase. Here's an example with a hypothetical chart component:
+
+```tsx
+import { BarChart } from './components/BarChart';
+
+function TicketsByStatusChart({ data }: { data: StatusData[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <h3 className="text-lg font-medium">Tickets by Status</h3>
+      </CardHeader>
+      <CardContent>
+        <BarChart
+          data={data}
+          xKey="status"
+          yKey="count"
+          className="h-64"
+        />
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Responsive Layout
+
+Use CSS Grid or Tailwind classes for responsive layouts:
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {/* Cards automatically adjust to screen size */}
+  <StatCard title="Total" value={100} />
+  <StatCard title="Active" value={50} />
+  <StatCard title="Pending" value={25} />
+</div>
+```
+
+## Real-time Updates
+
+For real-time dashboards, configure React Query with polling:
+
+```tsx
+const { data } = useQuery({
+  queryKey: ['live-stats'],
+  queryFn: fetchLiveStats,
+  refetchInterval: 5000, // Poll every 5 seconds
+  refetchIntervalInBackground: true,
+});
+```
+
+Or use WebSocket connections for instant updates:
+
+```tsx
+useEffect(() => {
+  const ws = new WebSocket('ws://localhost:3001/ws');
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    queryClient.setQueryData(['live-stats'], data);
+  };
+
+  return () => ws.close();
+}, [queryClient]);
+```
