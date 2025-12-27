@@ -4,13 +4,28 @@ import type {
   Maybe,
 } from "../types";
 
-export * from "./colSpanUtils";
-export * from "./domUtils";
-export * from "./eventUtils";
-export * from "./keyboardUtils";
-export * from "./renderMeasuringCells";
-export * from "./selectedCellUtils";
-export * from "./styleUtils";
+export { getColSpan } from "./colSpanUtils";
+export { scrollIntoView, stopPropagation } from "./domUtils";
+export { createCellEvent } from "./eventUtils";
+export {
+  getLeftRightKey,
+  isCtrlKeyHeldDown,
+  isDefaultCellInput,
+  onEditorNavigation,
+} from "./keyboardUtils";
+export { renderMeasuringCells } from "./renderMeasuringCells";
+export {
+  canExitGrid,
+  getNextSelectedCellPosition,
+  isCellEditableUtil,
+  isSelectedCellEditable,
+} from "./selectedCellUtils";
+export {
+  getCellClassname,
+  getCellStyle,
+  getHeaderCellStyle,
+  getRowStyle,
+} from "./styleUtils";
 
 export const { min, max, floor, sign, abs } = Math;
 

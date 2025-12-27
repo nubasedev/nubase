@@ -1,13 +1,13 @@
 import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 import type React from "react";
 
-interface BreadcrumbProps extends React.ComponentProps<"nav"> {}
+export type BreadcrumbProps = React.ComponentProps<"nav">;
 
 function Breadcrumb({ ...props }: BreadcrumbProps) {
   return <nav data-component="Breadcrumb" aria-label="breadcrumb" {...props} />;
 }
 
-interface BreadcrumbListProps extends React.ComponentProps<"ol"> {}
+export type BreadcrumbListProps = React.ComponentProps<"ol">;
 
 function BreadcrumbList({ className, ...props }: BreadcrumbListProps) {
   return (
@@ -19,7 +19,7 @@ function BreadcrumbList({ className, ...props }: BreadcrumbListProps) {
   );
 }
 
-interface BreadcrumbItemProps extends React.ComponentProps<"li"> {}
+export type BreadcrumbItemProps = React.ComponentProps<"li">;
 
 function BreadcrumbItem({ className, ...props }: BreadcrumbItemProps) {
   return (
@@ -30,7 +30,7 @@ function BreadcrumbItem({ className, ...props }: BreadcrumbItemProps) {
   );
 }
 
-interface BreadcrumbLinkProps extends React.ComponentProps<"a"> {}
+export type BreadcrumbLinkProps = React.ComponentProps<"a">;
 
 function BreadcrumbLink({ className, ...props }: BreadcrumbLinkProps) {
   return (
@@ -41,7 +41,7 @@ function BreadcrumbLink({ className, ...props }: BreadcrumbLinkProps) {
   );
 }
 
-interface BreadcrumbPageProps extends React.ComponentProps<"span"> {}
+export type BreadcrumbPageProps = React.ComponentProps<"span">;
 
 function BreadcrumbPage({ className, ...props }: BreadcrumbPageProps) {
   return (
@@ -53,9 +53,9 @@ function BreadcrumbPage({ className, ...props }: BreadcrumbPageProps) {
   );
 }
 
-interface BreadcrumbSeparatorProps extends React.ComponentProps<"li"> {
+export type BreadcrumbSeparatorProps = React.ComponentProps<"li"> & {
   children?: React.ReactNode;
-}
+};
 
 function BreadcrumbSeparator({
   children,
@@ -74,7 +74,7 @@ function BreadcrumbSeparator({
   );
 }
 
-interface BreadcrumbEllipsisProps extends React.ComponentProps<"span"> {}
+export type BreadcrumbEllipsisProps = React.ComponentProps<"span">;
 
 function BreadcrumbEllipsis({ className, ...props }: BreadcrumbEllipsisProps) {
   return (

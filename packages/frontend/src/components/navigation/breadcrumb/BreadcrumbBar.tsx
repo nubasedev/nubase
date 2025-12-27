@@ -14,10 +14,10 @@ import {
   BreadcrumbSeparator,
 } from "./Breadcrumb";
 
-interface BreadcrumbBarProps {
+export type BreadcrumbBarProps = {
   items: BreadcrumbItem[];
   className?: string;
-}
+};
 
 /**
  * Transforms a path to be workspace-aware by prepending the workspace slug.

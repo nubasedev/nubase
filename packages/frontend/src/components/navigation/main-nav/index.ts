@@ -1,3 +1,3 @@
-export * from "@/components/navigation/main-nav/MainNav";
-export * from "@/components/navigation/main-nav/NavItems";
-export * from "@/components/navigation/main-nav/types";
+export { MainNav, type MainNavProps } from "./MainNav";
+export { NavItems } from "./NavItems";
+export { filterNavItems, flattenNavItems } from "./types";

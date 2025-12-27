@@ -1,9 +1,22 @@
-export * from "./commands";
-export type {
-  MarkdownTextAreaHandle,
-  MarkdownTextAreaProps,
+export {
+  boldCommand,
+  checkListCommand,
+  codeBlockCommand,
+  codeCommand,
+  headingCommand,
+  imageCommand,
+  italicCommand,
+  linkCommand,
+  orderedListCommand,
+  quoteCommand,
+  strikethroughCommand,
+  unorderedListCommand,
+} from "./commands";
+export {
+  MarkdownTextArea,
+  type MarkdownTextAreaHandle,
+  type MarkdownTextAreaProps,
 } from "./MarkdownTextArea";
-export { MarkdownTextArea } from "./MarkdownTextArea";
 export type {
   MarkdownCommand,
   SelectionRange,

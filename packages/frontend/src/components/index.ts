@@ -1,5 +1,6 @@
 export * from "./activity-indicator";
 export * from "./buttons/ActionBar";
+export * from "./buttons/ButtonBar";
 export * from "./callout";
 export * from "./card";
 export * from "./charts";
@@ -7,6 +8,7 @@ export * from "./dashboard";
 export * from "./data-grid";
 export * from "./data-state";
 export * from "./dock";
+export * from "./dropdown-menu";
 export * from "./floating";
 export * from "./form";
 export * from "./form-controls";

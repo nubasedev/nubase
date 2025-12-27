@@ -1,1 +1,1 @@
-export * from "./NubaseApp";
+export { NubaseApp, type NubaseAppProps } from "./NubaseApp";
