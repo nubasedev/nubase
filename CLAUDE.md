@@ -416,6 +416,75 @@ Refer to `packages/frontend/src/theme/theme.css` for available color classes. Co
 
 ## Component Development Guidelines
 
+### React Component Export Standards
+
+All components in `packages/frontend/src/components/` must follow these export patterns:
+
+#### Props Type Definition
+
+Every component must have an explicit Props type exported inline, directly before the component:
+
+```tsx
+// ✅ Correct - inline type export before component
+export type CardProps = React.HTMLAttributes<HTMLDivElement>;
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("...", className)} {...props} />
+  ),
+);
+Card.displayName = "Card";
+
+export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+
+const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("...", className)} {...props} />
+  ),
+);
+CardHeader.displayName = "CardHeader";
+
+// Export components at the end
+export { Card, CardHeader };
+```
+
+```tsx
+// ❌ Incorrect - types grouped at top, separate from components
+export type CardProps = React.HTMLAttributes<HTMLDivElement>;
+export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(...);
+const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(...);
+```
+
+#### Index File Exports
+
+Each component directory must have an `index.ts` with explicit named exports. Never use `export *`:
+
+```tsx
+// ✅ Correct - explicit named exports with types
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  type CardProps,
+  type CardHeaderProps,
+  type CardTitleProps,
+} from "./Card";
+```
+
+```tsx
+// ❌ Incorrect - star exports
+export * from "./Card";
+```
+
+#### Why Explicit Exports Matter
+
+- **Tree-shaking**: Bundlers can eliminate unused exports more effectively
+- **IDE Performance**: Faster autocomplete and type inference
+- **API Clarity**: Makes the public API of each module explicit
+- **Refactoring Safety**: Catches missing exports at compile time
+
 ### ActivityIndicator Component
 
 - **Always use the centralized ActivityIndicator component** for loading states instead of custom spinners
