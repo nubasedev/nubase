@@ -6,6 +6,7 @@ import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../../form/SchemaForm/SchemaFormButtonBar";
+import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 
 export type ResourceCreateViewRendererProps = {
@@ -57,6 +58,7 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
       data-testid="resource-create-form"
     >
       <SchemaFormBody form={form} />
+      <SchemaFormValidationErrors form={form} />
       <SchemaFormButtonBar form={form} />
     </SchemaForm>
   );

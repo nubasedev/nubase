@@ -5,6 +5,7 @@ import { useSchemaForm } from "../../../../hooks";
 import { DataState } from "../../../data-state";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
+import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 
 export type ResourceViewViewRendererProps = {
@@ -126,6 +127,7 @@ const ResourceViewForm: FC<{
         data-testid="resource-view-form"
       >
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
       </SchemaForm>
     </div>
   );

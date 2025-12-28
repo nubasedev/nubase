@@ -7,6 +7,7 @@ import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator
 import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
+import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 
 export type ResourceViewViewModalRendererProps = {
   view: ResourceViewView;
@@ -141,6 +142,7 @@ const ResourceViewForm: FC<{
       data-testid="resource-view-form-modal"
     >
       <SchemaFormBody form={form} />
+      <SchemaFormValidationErrors form={form} />
     </SchemaForm>
   );
 };

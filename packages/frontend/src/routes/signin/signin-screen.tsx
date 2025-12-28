@@ -1,8 +1,10 @@
+import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { WorkspaceInfo } from "../../authentication";
 import { Button } from "../../components/buttons/Button/Button";
 import { showToast } from "../../components/floating/toast";
+import { FormValidationErrors } from "../../components/form";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
 import { FormControl } from "../../components/form-controls/FormControl/FormControl";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
@@ -16,10 +18,7 @@ import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvi
  * After successful login, redirects to /$workspace.
  */
 export default function SignInScreen() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { authentication } = useNubaseContext();
   const navigate = useNavigate();
 
@@ -27,69 +26,86 @@ export default function SignInScreen() {
   const [loginToken, setLoginToken] = useState<string | null>(null);
   const [workspaces, setWorkspaces] = useState<WorkspaceInfo[]>([]);
 
-  const handleCredentialsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const form = useForm({
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+    onSubmit: async ({ value }) => {
+      form.setErrorMap({});
 
-    if (!authentication) {
-      setError("Authentication is not configured");
-      return;
-    }
-
-    if (!username || !password) {
-      setError("Please enter both username and password");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Check if auth controller supports two-step login
-      if (authentication.loginStart) {
-        const result = await authentication.loginStart({ username, password });
-
-        if (result.workspaces.length === 1 && result.workspaces[0]) {
-          // Single workspace - auto-complete login
-          if (!authentication.loginComplete) {
-            setError("Authentication not properly configured");
-            return;
-          }
-          const singleWorkspace = result.workspaces[0];
-          const workspace = await authentication.loginComplete({
-            loginToken: result.loginToken,
-            workspace: singleWorkspace.slug,
-          });
-          showToast("Successfully signed in!");
-          navigate({
-            to: "/$workspace",
-            params: { workspace: workspace.slug },
-          });
-        } else if (result.workspaces.length > 1) {
-          // Multiple workspaces - show selection
-          setLoginToken(result.loginToken);
-          setWorkspaces(result.workspaces);
-        }
-      } else {
-        // Fallback to legacy single-step login (requires workspace)
-        setError("Please enter your organization slug");
+      if (!authentication) {
+        form.setErrorMap({
+          onSubmit: { form: "Authentication is not configured", fields: {} },
+        });
+        return;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign in failed";
-      setError(message);
-      showToast(message, "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      setIsLoading(true);
+
+      try {
+        // Check if auth controller supports two-step login
+        if (authentication.loginStart) {
+          const result = await authentication.loginStart({
+            username: value.username,
+            password: value.password,
+          });
+
+          if (result.workspaces.length === 1 && result.workspaces[0]) {
+            // Single workspace - auto-complete login
+            if (!authentication.loginComplete) {
+              form.setErrorMap({
+                onSubmit: {
+                  form: "Authentication not properly configured",
+                  fields: {},
+                },
+              });
+              return;
+            }
+            const singleWorkspace = result.workspaces[0];
+            const workspace = await authentication.loginComplete({
+              loginToken: result.loginToken,
+              workspace: singleWorkspace.slug,
+            });
+            showToast("Successfully signed in!");
+            navigate({
+              to: "/$workspace",
+              params: { workspace: workspace.slug },
+            });
+          } else if (result.workspaces.length > 1) {
+            // Multiple workspaces - show selection
+            setLoginToken(result.loginToken);
+            setWorkspaces(result.workspaces);
+          }
+        } else {
+          // Fallback to legacy single-step login (requires workspace)
+          form.setErrorMap({
+            onSubmit: {
+              form: "Please enter your organization slug",
+              fields: {},
+            },
+          });
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Sign in failed";
+        form.setErrorMap({ onSubmit: { form: message, fields: {} } });
+        showToast(message, "error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+  });
 
   const handleWorkspaceSelect = async (workspace: WorkspaceInfo) => {
     if (!authentication?.loginComplete || !loginToken) {
-      setError("Session expired. Please try again.");
+      form.setErrorMap({
+        onSubmit: { form: "Session expired. Please try again.", fields: {} },
+      });
       return;
     }
 
     setIsLoading(true);
-    setError(null);
+    form.setErrorMap({});
 
     try {
       const selectedWorkspace = await authentication.loginComplete({
@@ -103,7 +119,7 @@ export default function SignInScreen() {
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
-      setError(message);
+      form.setErrorMap({ onSubmit: { form: message, fields: {} } });
       showToast(message, "error");
     } finally {
       setIsLoading(false);
@@ -113,7 +129,7 @@ export default function SignInScreen() {
   const handleBackToCredentials = () => {
     setLoginToken(null);
     setWorkspaces([]);
-    setError(null);
+    form.setErrorMap({});
   };
 
   // Workspace selection screen
@@ -129,15 +145,6 @@ export default function SignInScreen() {
               Choose the organization you want to sign in to
             </p>
           </div>
-
-          {error && (
-            <div
-              data-testid="signin-error"
-              className="p-3 text-sm text-destructive bg-destructive/10 rounded-md mb-6"
-            >
-              {error}
-            </div>
-          )}
 
           <div className="space-y-3">
             {workspaces.map((workspace) => (
@@ -157,6 +164,8 @@ export default function SignInScreen() {
               </button>
             ))}
           </div>
+
+          <FormValidationErrors form={form} className="mt-6" />
 
           <div className="mt-6 text-center">
             <button
@@ -183,39 +192,67 @@ export default function SignInScreen() {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleCredentialsSubmit}>
-          {error && (
-            <div
-              data-testid="signin-error"
-              className="p-3 text-sm text-destructive bg-destructive/10 rounded-md"
-            >
-              {error}
-            </div>
-          )}
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
+          <form.Field
+            name="username"
+            validators={{
+              onBlur: ({ value }) =>
+                !value ? "Username is required" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormControl label="Username" required field={field}>
+                <TextInput
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  autoComplete="username"
+                  disabled={isLoading}
+                  hasError={
+                    field.state.meta.isTouched && !field.state.meta.isValid
+                  }
+                />
+              </FormControl>
+            )}
+          </form.Field>
 
-          <FormControl label="Username" required>
-            <TextInput
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              autoComplete="username"
-              disabled={isLoading}
-            />
-          </FormControl>
+          <form.Field
+            name="password"
+            validators={{
+              onBlur: ({ value }) =>
+                !value ? "Password is required" : undefined,
+            }}
+          >
+            {(field) => (
+              <FormControl label="Password" required field={field}>
+                <TextInput
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  autoComplete="current-password"
+                  disabled={isLoading}
+                  hasError={
+                    field.state.meta.isTouched && !field.state.meta.isValid
+                  }
+                />
+              </FormControl>
+            )}
+          </form.Field>
 
-          <FormControl label="Password" required>
-            <TextInput
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              disabled={isLoading}
-            />
-          </FormControl>
+          <FormValidationErrors form={form} />
 
           <div className="pt-4">
             <Button type="submit" className="w-full" isLoading={isLoading}>

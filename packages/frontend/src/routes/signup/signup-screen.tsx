@@ -1,7 +1,9 @@
+import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../../components/buttons/Button/Button";
 import { showToast } from "../../components/floating/toast";
+import { FormValidationErrors } from "../../components/form";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
 import { FormControl } from "../../components/form-controls/FormControl/FormControl";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
@@ -12,90 +14,58 @@ import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvi
  * After successful signup, redirects to /$workspace.
  */
 export default function SignUpScreen() {
-  const [workspace, setWorkspace] = useState("");
-  const [workspaceName, setWorkspaceName] = useState("");
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const { authentication } = useNubaseContext();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const form = useForm({
+    defaultValues: {
+      workspace: "",
+      workspaceName: "",
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    onSubmit: async ({ value }) => {
+      form.setErrorMap({});
 
-    if (!authentication) {
-      setError("Authentication is not configured");
-      return;
-    }
-
-    if (!workspace) {
-      setError("Please enter an organization slug");
-      return;
-    }
-
-    // Validate workspace slug format (lowercase, alphanumeric, hyphens)
-    if (!/^[a-z0-9-]+$/.test(workspace)) {
-      setError(
-        "Organization slug must be lowercase and contain only letters, numbers, and hyphens",
-      );
-      return;
-    }
-
-    if (!username) {
-      setError("Please enter a username");
-      return;
-    }
-
-    if (!email) {
-      setError("Please enter an email address");
-      return;
-    }
-
-    if (!password) {
-      setError("Please enter a password");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Call the signup method on the authentication controller
-      if (!authentication.signup) {
-        setError("Signup is not configured");
-        setIsLoading(false);
+      if (!authentication) {
+        form.setErrorMap({
+          onSubmit: { form: "Authentication is not configured", fields: {} },
+        });
         return;
       }
-      await authentication.signup({
-        workspace,
-        workspaceName: workspaceName || workspace,
-        username,
-        email,
-        password,
-      });
-      showToast("Account created successfully!");
-      navigate({ to: "/$workspace", params: { workspace } });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Sign up failed";
-      setError(message);
-      showToast(message, "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      setIsLoading(true);
+
+      try {
+        // Call the signup method on the authentication controller
+        if (!authentication.signup) {
+          form.setErrorMap({
+            onSubmit: { form: "Signup is not configured", fields: {} },
+          });
+          setIsLoading(false);
+          return;
+        }
+        await authentication.signup({
+          workspace: value.workspace,
+          workspaceName: value.workspaceName || value.workspace,
+          username: value.username,
+          email: value.email,
+          password: value.password,
+        });
+        showToast("Account created successfully!");
+        navigate({ to: "/$workspace", params: { workspace: value.workspace } });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Sign up failed";
+        form.setErrorMap({ onSubmit: { form: message, fields: {} } });
+        showToast(message, "error");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -109,49 +79,78 @@ export default function SignUpScreen() {
           </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div
-              data-testid="signup-error"
-              className="p-3 text-sm text-destructive bg-destructive/10 rounded-md"
-            >
-              {error}
-            </div>
-          )}
-
+        <form
+          className="space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
           <div className="space-y-4">
             <h2 className="text-sm font-medium text-foreground">
               Organization
             </h2>
 
-            <FormControl
-              label="Organization Slug"
-              hint="A unique identifier for your organization (e.g., my-company)"
-              required
+            <form.Field
+              name="workspace"
+              validators={{
+                onBlur: ({ value }) => {
+                  if (!value) return "Organization slug is required";
+                  if (!/^[a-z0-9-]+$/.test(value)) {
+                    return "Must be lowercase letters, numbers, and hyphens only";
+                  }
+                  return undefined;
+                },
+              }}
             >
-              <TextInput
-                id="workspace"
-                type="text"
-                placeholder="my-organization"
-                value={workspace}
-                onChange={(e) => setWorkspace(e.target.value.toLowerCase())}
-                disabled={isLoading}
-              />
-            </FormControl>
+              {(field) => (
+                <FormControl
+                  label="Organization Slug"
+                  hint="A unique identifier for your organization (e.g., my-company)"
+                  required
+                  field={field}
+                >
+                  <TextInput
+                    id="workspace"
+                    type="text"
+                    placeholder="my-organization"
+                    value={field.state.value}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value.toLowerCase())
+                    }
+                    onBlur={field.handleBlur}
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
 
-            <FormControl
-              label="Organization Name"
-              hint="Display name for your organization"
-            >
-              <TextInput
-                id="workspaceName"
-                type="text"
-                placeholder="My Organization"
-                value={workspaceName}
-                onChange={(e) => setWorkspaceName(e.target.value)}
-                disabled={isLoading}
-              />
-            </FormControl>
+            <form.Field name="workspaceName">
+              {(field) => (
+                <FormControl
+                  label="Organization Name"
+                  hint="Display name for your organization"
+                  field={field}
+                >
+                  <TextInput
+                    id="workspaceName"
+                    type="text"
+                    placeholder="My Organization"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
           </div>
 
           <div className="space-y-4">
@@ -159,54 +158,126 @@ export default function SignUpScreen() {
               Admin Account
             </h2>
 
-            <FormControl label="Username" required>
-              <TextInput
-                id="username"
-                type="text"
-                placeholder="Enter your username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="username"
-                disabled={isLoading}
-              />
-            </FormControl>
+            <form.Field
+              name="username"
+              validators={{
+                onBlur: ({ value }) =>
+                  !value ? "Username is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormControl label="Username" required field={field}>
+                  <TextInput
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    autoComplete="username"
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
 
-            <FormControl label="Email" required>
-              <TextInput
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                disabled={isLoading}
-              />
-            </FormControl>
+            <form.Field
+              name="email"
+              validators={{
+                onBlur: ({ value }) => {
+                  if (!value) return "Email is required";
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return "Please enter a valid email address";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <FormControl label="Email" required field={field}>
+                  <TextInput
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    autoComplete="email"
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
 
-            <FormControl label="Password" required>
-              <TextInput
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                disabled={isLoading}
-              />
-            </FormControl>
+            <form.Field
+              name="password"
+              validators={{
+                onBlur: ({ value }) => {
+                  if (!value) return "Password is required";
+                  if (value.length < 8) {
+                    return "Password must be at least 8 characters";
+                  }
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <FormControl label="Password" required field={field}>
+                  <TextInput
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    autoComplete="new-password"
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
 
-            <FormControl label="Confirm Password" required>
-              <TextInput
-                id="confirmPassword"
-                type="password"
-                placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                autoComplete="new-password"
-                disabled={isLoading}
-              />
-            </FormControl>
+            <form.Field
+              name="confirmPassword"
+              validators={{
+                onBlur: ({ value, fieldApi }) => {
+                  const password = fieldApi.form.getFieldValue("password");
+                  if (!value) return "Please confirm your password";
+                  if (value !== password) return "Passwords do not match";
+                  return undefined;
+                },
+              }}
+            >
+              {(field) => (
+                <FormControl label="Confirm Password" required field={field}>
+                  <TextInput
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    autoComplete="new-password"
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
           </div>
+
+          <FormValidationErrors form={form} />
 
           <div className="pt-4">
             <Button type="submit" className="w-full" isLoading={isLoading}>

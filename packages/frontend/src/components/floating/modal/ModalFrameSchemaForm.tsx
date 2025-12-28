@@ -7,6 +7,7 @@ import {
   type SchemaFormBodyProps,
 } from "../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
+import { SchemaFormValidationErrors } from "../../form/SchemaForm/SchemaFormValidationErrors";
 import { ModalFrameStructured } from "./ModalFrameStructured";
 
 export type ModalFrameSchemaFormProps<TSchema extends ObjectSchema<any>> = {
@@ -39,7 +40,14 @@ export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
           ) : undefined
         }
         body={
-          <SchemaFormBody form={form} className="h-full" {...schemaFormProps} />
+          <>
+            <SchemaFormBody
+              form={form}
+              className="h-full"
+              {...schemaFormProps}
+            />
+            <SchemaFormValidationErrors form={form} className="mt-4" />
+          </>
         }
         footer={
           <div className="flex items-center justify-between w-full">

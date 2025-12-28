@@ -7,7 +7,6 @@ import type React from "react";
 import type { SchemaFormConfiguration } from "../../../hooks";
 import { useComputedMetadata } from "../../../hooks/useComputedMetadata";
 import { useLayout } from "../../../hooks/useLayout";
-import { Callout } from "../../callout/Callout";
 import { FormFieldRenderer } from "../FormFieldRenderer/FormFieldRenderer";
 import type { PatchResult } from "../FormFieldRenderer/PatchWrapper";
 import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
@@ -179,17 +178,6 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
           }}
         />
       </div>
-
-      {/* Callout to show form-level errors */}
-      <form.api.Subscribe selector={(state) => [state.errorMap]}>
-        {([errorMap]) =>
-          errorMap?.onSubmit && mode !== "view" ? (
-            <Callout variant="danger" className="mt-4">
-              {errorMap.onSubmit}
-            </Callout>
-          ) : null
-        }
-      </form.api.Subscribe>
     </div>
   );
 };

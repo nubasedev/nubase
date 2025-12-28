@@ -8,6 +8,7 @@ import { showToast } from "../../floating/toast";
 import { SchemaForm } from "./SchemaForm";
 import { SchemaFormBody } from "./SchemaFormBody";
 import { SchemaFormButtonBar } from "./SchemaFormButtonBar";
+import { SchemaFormValidationErrors } from "./SchemaFormValidationErrors";
 
 const meta = {
   title: "Form/SchemaForm",
@@ -179,6 +180,7 @@ export const Default: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} submitText="Submit Contact" />
       </SchemaForm>
     );
@@ -204,6 +206,7 @@ export const WithComputed: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} computedMetadata={{ debounceMs: 500 }} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} submitText="Save Contact" />
       </SchemaForm>
     );
@@ -230,6 +233,7 @@ export const WithLayout: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} layoutName="default" />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} submitText="Send Message" />
       </SchemaForm>
     );
@@ -269,6 +273,7 @@ export const ImperativeValueSetting: Story = {
           </Button>
         </div>
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} submitText="Submit" />
       </SchemaForm>
     );
@@ -445,6 +450,7 @@ export const FieldSyncValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
@@ -506,6 +512,7 @@ export const FieldAsyncValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
@@ -580,6 +587,7 @@ export const FieldCombinedValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
@@ -615,6 +623,7 @@ export const FormSyncValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
@@ -661,6 +670,7 @@ export const FormAsyncValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
@@ -720,6 +730,7 @@ export const FormCombinedValidation: Story = {
     return (
       <SchemaForm form={form} className="space-y-4">
         <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} />
       </SchemaForm>
     );
