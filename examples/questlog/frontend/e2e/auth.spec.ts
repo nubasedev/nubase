@@ -67,12 +67,8 @@ test.describe("Authentication", () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Wait for error message
-    const errorMessage = page.getByTestId("signin-error");
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toContainText(
-      "Please enter both username and password",
-    );
+    // Wait for field-level validation error (TanStack Form validates fields on submit)
+    await expect(page.getByText("Username is required")).toBeVisible();
 
     // Should still be on signin page
     expect(page.url()).toContain("/signin");

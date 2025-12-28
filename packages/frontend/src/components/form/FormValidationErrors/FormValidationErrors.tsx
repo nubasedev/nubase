@@ -18,6 +18,7 @@ export type FormValidationErrorsProps = {
     any
   >;
   className?: string;
+  testId?: string;
 };
 
 /**
@@ -54,6 +55,7 @@ function extractErrorMessage(onSubmitError: unknown): string | string[] | null {
 export const FormValidationErrors: React.FC<FormValidationErrorsProps> = ({
   form,
   className = "",
+  testId,
 }) => {
   return (
     <form.Subscribe selector={(state) => [state.errorMap]}>
@@ -67,7 +69,7 @@ export const FormValidationErrors: React.FC<FormValidationErrorsProps> = ({
         if (errorArray.length === 0) return null;
 
         return (
-          <Callout variant="danger" className={className}>
+          <Callout variant="danger" className={className} data-testid={testId}>
             {errorArray.length === 1 ? (
               errorArray[0]
             ) : (

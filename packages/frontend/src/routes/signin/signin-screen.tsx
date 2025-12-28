@@ -41,6 +41,16 @@ export default function SignInScreen() {
         return;
       }
 
+      if (!value.username || !value.password) {
+        form.setErrorMap({
+          onSubmit: {
+            form: "Please enter both username and password",
+            fields: {},
+          },
+        });
+        return;
+      }
+
       setIsLoading(true);
 
       try {
@@ -165,7 +175,11 @@ export default function SignInScreen() {
             ))}
           </div>
 
-          <FormValidationErrors form={form} className="mt-6" />
+          <FormValidationErrors
+            form={form}
+            className="mt-6"
+            testId="signin-error"
+          />
 
           <div className="mt-6 text-center">
             <button
@@ -252,7 +266,7 @@ export default function SignInScreen() {
             )}
           </form.Field>
 
-          <FormValidationErrors form={form} />
+          <FormValidationErrors form={form} testId="signin-error" />
 
           <div className="pt-4">
             <Button type="submit" className="w-full" isLoading={isLoading}>
