@@ -5,14 +5,14 @@ import {
 	loginStartSchema,
 	logoutSchema,
 	signupSchema,
-} from "./schema/auth";
+} from "./endpoints/auth";
 import {
 	deleteTicketSchema,
 	getTicketSchema,
 	getTicketsSchema,
 	patchTicketSchema,
 	postTicketSchema,
-} from "./schema/ticket";
+} from "./endpoints/ticket";
 
 export const apiEndpoints = {
 	// Tickets

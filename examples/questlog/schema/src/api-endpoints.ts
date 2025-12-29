@@ -6,7 +6,7 @@ import {
   loginStartSchema,
   logoutSchema,
   signupSchema,
-} from "./schema/auth";
+} from "./endpoints/auth";
 import {
   getActiveUsersSchema,
   getBrowserStatsSchema,
@@ -14,14 +14,14 @@ import {
   getRevenueChartSchema,
   getSalesChartSchema,
   getTotalRevenueSchema,
-} from "./schema/dashboard";
+} from "./endpoints/dashboard";
 import {
   deleteTicketSchema,
   getTicketSchema,
   getTicketsSchema,
   patchTicketSchema,
   postTicketSchema,
-} from "./schema/ticket";
+} from "./endpoints/ticket";
 
 /**
  * Flattened API endpoints at root level.
