@@ -39,7 +39,22 @@ The generated project includes:
     - package.json
   - schema/ Shared TypeScript schemas
     - src/
-      - schema/ API endpoint definitions
+      - schema/ One folder per resource
+        - auth/ Authentication schemas
+          - user.ts
+          - workspace.ts
+          - login-start.ts
+          - login-complete.ts
+          - ...
+          - index.ts
+        - ticket/ Ticket resource schemas
+          - ticket-base.ts
+          - get-ticket.ts
+          - post-ticket.ts
+          - ...
+          - index.ts
+      - api-endpoints.ts Aggregated API endpoints
+      - index.ts
     - package.json
   - package.json Root workspace configuration
   - turbo.json Turborepo configuration

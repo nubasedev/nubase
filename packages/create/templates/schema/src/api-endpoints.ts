@@ -1,11 +1,4 @@
 import {
-	deleteTicketSchema,
-	getTicketSchema,
-	getTicketsSchema,
-	patchTicketSchema,
-	postTicketSchema,
-} from "./schema/ticket";
-import {
 	getMeSchema,
 	loginCompleteSchema,
 	loginSchema,
@@ -13,6 +6,13 @@ import {
 	logoutSchema,
 	signupSchema,
 } from "./schema/auth";
+import {
+	deleteTicketSchema,
+	getTicketSchema,
+	getTicketsSchema,
+	patchTicketSchema,
+	postTicketSchema,
+} from "./schema/ticket";
 
 export const apiEndpoints = {
 	// Tickets

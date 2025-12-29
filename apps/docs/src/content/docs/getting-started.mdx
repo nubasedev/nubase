@@ -77,7 +77,10 @@ The backend is a Node.js application using Hono. Key files:
 
 Shared TypeScript definitions used by both frontend and backend:
 
-- `src/schema/` - API endpoint and data type definitions
+- `src/schema/` - One folder per resource (e.g., `auth/`, `ticket/`)
+  - Each folder contains one file per schema (base schemas and request schemas)
+  - Each folder has an `index.ts` that re-exports all schemas
+- `src/api-endpoints.ts` - Aggregated API endpoints from all resources
 
 ## Next Steps
 
