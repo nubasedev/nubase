@@ -1,6 +1,6 @@
 {
   "name": "@nubase/create",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "Create a new Nubase application",
   "type": "module",
   "bin": {

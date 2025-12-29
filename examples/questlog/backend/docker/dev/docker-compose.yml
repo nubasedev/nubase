@@ -2,6 +2,10 @@ services:
   postgresql:
     container_name: nubase-db-dev
     image: "postgres:17.5"
+    labels:
+      com.nubase.managed: "true"
+      com.nubase.project: "questlog"
+      com.nubase.env: "dev"
     volumes:
       - ./postgresql-data:/var/lib/postgresql/data
       - ./postgresql-init:/docker-entrypoint-initdb.d
@@ -11,3 +15,8 @@ services:
       - POSTGRES_DB=questlog
       - POSTGRES_USER=questlog
       - POSTGRES_PASSWORD=questlog
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U questlog -d questlog"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

@@ -9,12 +9,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STARTER_DIR="$ROOT_DIR/examples/starter"
 
-# Cleanup function to stop docker containers
+# Cleanup function to stop all nubase-managed docker containers
 cleanup_docker() {
-  echo "Stopping any existing test docker containers..."
-  if [ -d "$STARTER_DIR/backend/docker/test" ]; then
-    cd "$STARTER_DIR/backend"
-    docker compose -f docker/test/docker-compose.yml down -v 2>/dev/null || true
+  echo "Stopping all nubase-managed containers..."
+
+  # Stop containers with nubase label (macOS compatible - no xargs -r)
+  RUNNING=$(docker ps -q --filter "label=com.nubase.managed=true" 2>/dev/null)
+  if [ -n "$RUNNING" ]; then
+    echo "$RUNNING" | xargs docker stop 2>/dev/null || true
+  fi
+
+  # Remove stopped containers
+  STOPPED=$(docker ps -aq --filter "label=com.nubase.managed=true" 2>/dev/null)
+  if [ -n "$STOPPED" ]; then
+    echo "$STOPPED" | xargs docker rm 2>/dev/null || true
   fi
 }
 

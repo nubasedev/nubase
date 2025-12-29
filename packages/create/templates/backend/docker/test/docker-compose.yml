@@ -2,6 +2,10 @@ services:
   postgresql:
     image: postgres:17.5
     container_name: __PROJECT_NAME__-db-test
+    labels:
+      com.nubase.managed: "true"
+      com.nubase.project: "__PROJECT_NAME__"
+      com.nubase.env: "test"
     ports:
       - "__TEST_PORT__:5432"
     environment:
