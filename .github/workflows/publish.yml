@@ -86,62 +86,58 @@ jobs:
       - name: Build packages
         run: npm run build
 
-      - name: Publish @nubase/core (if version changed)
+      - name: Publish @nubase/core (if version not published)
         run: |
           cd packages/core
           LOCAL_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @nubase/core version 2>/dev/null || echo "0.0.0")
-
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
-            echo "Publishing @nubase/core: $NPM_VERSION -> $LOCAL_VERSION"
-            npm publish
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/core@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/core@$LOCAL_VERSION already exists, skipping"
           else
-            echo "@nubase/core is up to date ($LOCAL_VERSION)"
+            echo "Publishing @nubase/core@$LOCAL_VERSION"
+            npm publish
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @nubase/backend (if version changed)
+      - name: Publish @nubase/backend (if version not published)
         run: |
           cd packages/backend
           LOCAL_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @nubase/backend version 2>/dev/null || echo "0.0.0")
-
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
-            echo "Publishing @nubase/backend: $NPM_VERSION -> $LOCAL_VERSION"
-            npm publish
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/backend@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/backend@$LOCAL_VERSION already exists, skipping"
           else
-            echo "@nubase/backend is up to date ($LOCAL_VERSION)"
+            echo "Publishing @nubase/backend@$LOCAL_VERSION"
+            npm publish
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @nubase/frontend (if version changed)
+      - name: Publish @nubase/frontend (if version not published)
         run: |
           cd packages/frontend
           LOCAL_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @nubase/frontend version 2>/dev/null || echo "0.0.0")
-
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
-            echo "Publishing @nubase/frontend: $NPM_VERSION -> $LOCAL_VERSION"
-            npm publish
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/frontend@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/frontend@$LOCAL_VERSION already exists, skipping"
           else
-            echo "@nubase/frontend is up to date ($LOCAL_VERSION)"
+            echo "Publishing @nubase/frontend@$LOCAL_VERSION"
+            npm publish
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish @nubase/create (if version changed)
+      - name: Publish @nubase/create (if version not published)
         run: |
           cd packages/create
           LOCAL_VERSION=$(node -p "require('./package.json').version")
-          NPM_VERSION=$(npm view @nubase/create version 2>/dev/null || echo "0.0.0")
-
-          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
-            echo "Publishing @nubase/create: $NPM_VERSION -> $LOCAL_VERSION"
-            npm publish
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/create@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/create@$LOCAL_VERSION already exists, skipping"
           else
-            echo "@nubase/create is up to date ($LOCAL_VERSION)"
+            echo "Publishing @nubase/create@$LOCAL_VERSION"
+            npm publish
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
