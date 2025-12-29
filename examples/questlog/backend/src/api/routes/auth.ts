@@ -25,7 +25,7 @@ const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
 
 interface LoginTokenPayload {
   userId: number;
-  username: string;
+  email: string;
 }
 
 /**
@@ -34,7 +34,7 @@ interface LoginTokenPayload {
 export const authHandlers = {
   /**
    * Login Start handler - Step 1 of two-step auth.
-   * Validates credentials (username + password) at root level.
+   * Validates credentials (email + password) at root level.
    * Returns a temporary login token and list of workspaces the user belongs to.
    */
   loginStart: createHttpHandler({
@@ -42,14 +42,14 @@ export const authHandlers = {
     handler: async ({ body }) => {
       const adminDb = getAdminDb();
 
-      // Find user by username (users are root-level now)
+      // Find user by email (users are root-level now)
       const users: DbUser[] = await adminDb
         .select()
         .from(usersTable)
-        .where(eq(usersTable.username, body.username));
+        .where(eq(usersTable.email, body.email));
 
       if (users.length === 0) {
-        throw new HttpError(401, "Invalid username or password");
+        throw new HttpError(401, "Invalid email or password");
       }
 
       const user = users[0];
@@ -60,7 +60,7 @@ export const authHandlers = {
         user.passwordHash,
       );
       if (!isValidPassword) {
-        throw new HttpError(401, "Invalid username or password");
+        throw new HttpError(401, "Invalid email or password");
       }
 
       // Get all workspaces this user belongs to via user_workspaces table
@@ -84,7 +84,7 @@ export const authHandlers = {
       const loginToken = jwt.sign(
         {
           userId: user.id,
-          username: body.username,
+          email: body.email,
         } satisfies LoginTokenPayload,
         LOGIN_TOKEN_SECRET,
         { expiresIn: LOGIN_TOKEN_EXPIRY },
@@ -92,7 +92,7 @@ export const authHandlers = {
 
       return {
         loginToken,
-        username: body.username,
+        email: body.email,
         workspaces: workspaces.map((w) => ({
           id: w.id,
           slug: w.slug,
@@ -166,7 +166,7 @@ export const authHandlers = {
       const user: QuestlogUser = {
         id: dbUser.id,
         email: dbUser.email,
-        username: dbUser.username,
+        displayName: dbUser.displayName,
         workspaceId: workspace.id,
       };
 
@@ -178,7 +178,7 @@ export const authHandlers = {
         user: {
           id: user.id,
           email: user.email,
-          username: user.username,
+          displayName: user.displayName,
         },
         workspace: {
           id: workspace.id,
@@ -211,14 +211,14 @@ export const authHandlers = {
 
       const workspace = workspaces[0];
 
-      // Find user by username (users are root-level)
+      // Find user by email (users are root-level)
       const users: DbUser[] = await adminDb
         .select()
         .from(usersTable)
-        .where(eq(usersTable.username, body.username));
+        .where(eq(usersTable.email, body.email));
 
       if (users.length === 0) {
-        throw new HttpError(401, "Invalid username or password");
+        throw new HttpError(401, "Invalid email or password");
       }
 
       const dbUser = users[0];
@@ -229,7 +229,7 @@ export const authHandlers = {
         dbUser.passwordHash,
       );
       if (!isValidPassword) {
-        throw new HttpError(401, "Invalid username or password");
+        throw new HttpError(401, "Invalid email or password");
       }
 
       // Verify user has access to this workspace
@@ -251,7 +251,7 @@ export const authHandlers = {
       const user: QuestlogUser = {
         id: dbUser.id,
         email: dbUser.email,
-        username: dbUser.username,
+        displayName: dbUser.displayName,
         workspaceId: workspace.id,
       };
 
@@ -265,7 +265,7 @@ export const authHandlers = {
         user: {
           id: user.id,
           email: user.email,
-          username: user.username,
+          displayName: user.displayName,
         },
       };
     },
@@ -295,7 +295,7 @@ export const authHandlers = {
           user: {
             id: user.id,
             email: user.email,
-            username: user.username,
+            displayName: user.displayName,
           },
         };
       },
@@ -325,16 +325,6 @@ export const authHandlers = {
 
       if (existingWorkspaces.length > 0) {
         throw new HttpError(409, "Organization slug is already taken");
-      }
-
-      // Check if username already exists (users are root-level, unique globally)
-      const existingUsers = await adminDb
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.username, body.username));
-
-      if (existingUsers.length > 0) {
-        throw new HttpError(409, "Username is already taken");
       }
 
       // Check if email already exists
@@ -369,7 +359,7 @@ export const authHandlers = {
         .insert(usersTable)
         .values({
           email: body.email,
-          username: body.username,
+          displayName: body.displayName,
           passwordHash,
         })
         .returning();
@@ -384,7 +374,7 @@ export const authHandlers = {
       const user: QuestlogUser = {
         id: newUser.id,
         email: newUser.email,
-        username: newUser.username,
+        displayName: newUser.displayName,
         workspaceId: newWorkspace.id,
       };
 
@@ -396,7 +386,7 @@ export const authHandlers = {
         user: {
           id: user.id,
           email: user.email,
-          username: user.username,
+          displayName: user.displayName,
         },
         workspace: {
           id: newWorkspace.id,

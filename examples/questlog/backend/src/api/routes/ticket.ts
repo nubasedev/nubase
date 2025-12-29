@@ -26,7 +26,7 @@ export const ticketHandlers = {
     handler: async ({ user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
-        `User ${user.username} fetching tickets for workspace ${workspace.slug}`,
+        `User ${user.email} fetching tickets for workspace ${workspace.slug}`,
       );
       const db = getDb();
       const tickets: Ticket[] = await db
@@ -53,7 +53,7 @@ export const ticketHandlers = {
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
-        `User ${user.username} fetching ticket ${params.id} for workspace ${workspace.slug}`,
+        `User ${user.email} fetching ticket ${params.id} for workspace ${workspace.slug}`,
       );
       const db = getDb();
       const tickets: Ticket[] = await db
@@ -90,7 +90,7 @@ export const ticketHandlers = {
     handler: async ({ body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
-        `User ${user.username} creating ticket for workspace ${workspace.slug}:`,
+        `User ${user.email} creating ticket for workspace ${workspace.slug}:`,
         body,
       );
       const db = getDb();
@@ -130,7 +130,7 @@ export const ticketHandlers = {
     handler: async ({ params, body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
-        `User ${user.username} updating ticket ${params.id} for workspace ${workspace.slug}:`,
+        `User ${user.email} updating ticket ${params.id} for workspace ${workspace.slug}:`,
         body,
       );
       const db = getDb();
@@ -178,7 +178,7 @@ export const ticketHandlers = {
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
-        `User ${user.username} deleting ticket ${params.id} for workspace ${workspace.slug}`,
+        `User ${user.email} deleting ticket ${params.id} for workspace ${workspace.slug}`,
       );
       const db = getDb();
 

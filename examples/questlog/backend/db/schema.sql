@@ -76,7 +76,7 @@ ALTER TABLE ONLY public.workspaces ADD CONSTRAINT workspaces_slug_unique UNIQUE 
 CREATE TABLE public.users (
     id integer NOT NULL,
     email character varying(255) NOT NULL,
-    username character varying(100) NOT NULL,
+    display_name character varying(100) NOT NULL,
     password_hash character varying(255) NOT NULL,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
@@ -89,7 +89,6 @@ ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 ALTER TABLE ONLY public.users ADD CONSTRAINT users_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.users ADD CONSTRAINT users_email_unique UNIQUE (email);
-ALTER TABLE ONLY public.users ADD CONSTRAINT users_username_unique UNIQUE (username);
 
 
 --

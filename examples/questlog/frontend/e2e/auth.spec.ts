@@ -14,7 +14,7 @@ test.describe("Authentication", () => {
     await expect(page.locator("h1")).toContainText("Sign In");
 
     // Fill in valid credentials
-    await page.fill("#username", TEST_USER.username);
+    await page.fill("#email", TEST_USER.email);
     await page.fill("#password", TEST_USER.password);
 
     // Submit the form
@@ -39,7 +39,7 @@ test.describe("Authentication", () => {
     await page.goto("/signin");
 
     // Fill in invalid credentials
-    await page.fill("#username", "wronguser");
+    await page.fill("#email", "wronguser@example.com");
     await page.fill("#password", "wrongpassword");
 
     // Submit the form
@@ -48,27 +48,27 @@ test.describe("Authentication", () => {
     // Wait for error message to appear
     const errorMessage = page.getByTestId("signin-error");
     await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toContainText("Invalid username or password");
+    await expect(errorMessage).toContainText("Invalid email or password");
 
     // Should still be on signin page
     expect(page.url()).toContain("/signin");
   });
 
-  test("should show error for empty username", async ({
+  test("should show error for empty email", async ({
     page,
     testAPI: _testAPI,
   }) => {
     // Navigate to root-level signin page
     await page.goto("/signin");
 
-    // Leave username empty, fill password
+    // Leave email empty, fill password
     await page.fill("#password", "somepassword");
 
     // Submit the form
     await page.click('button[type="submit"]');
 
     // Wait for field-level validation error (TanStack Form validates fields on submit)
-    await expect(page.getByText("Username is required")).toBeVisible();
+    await expect(page.getByText("Email is required")).toBeVisible();
 
     // Should still be on signin page
     expect(page.url()).toContain("/signin");
@@ -110,8 +110,8 @@ test.describe("Authentication", () => {
     const userAvatar = authenticatedPage.getByTestId("user-avatar");
     await expect(userAvatar).toBeVisible();
 
-    // Avatar should show the user's initials (TE for "testuser")
-    await expect(userAvatar).toContainText("TE");
+    // Avatar should show the user's initials (TU for "Test User")
+    await expect(userAvatar).toContainText("TU");
   });
 
   test("should sign out successfully when clicking sign out", async ({
@@ -162,9 +162,9 @@ test.describe("Authentication", () => {
   }) => {
     // Seed a user with multiple workspaces
     const multiWorkspaceUser = {
-      username: "multiworkspace",
-      password: "password123",
       email: "multiworkspace@example.com",
+      password: "password123",
+      displayName: "Multi Workspace User",
       workspaces: [
         { slug: "guild-alpha", name: "Guild Alpha" },
         { slug: "guild-beta", name: "Guild Beta" },
@@ -177,7 +177,7 @@ test.describe("Authentication", () => {
     await page.goto("/signin");
 
     // Fill in credentials
-    await page.fill("#username", multiWorkspaceUser.username);
+    await page.fill("#email", multiWorkspaceUser.email);
     await page.fill("#password", multiWorkspaceUser.password);
 
     // Submit the form

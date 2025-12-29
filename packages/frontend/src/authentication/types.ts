@@ -5,7 +5,7 @@
 export interface AuthenticatedUser {
   id: number;
   email: string;
-  username: string;
+  displayName: string;
 }
 
 /**
@@ -26,10 +26,10 @@ export interface AuthenticationState {
 export type AuthenticationStateListener = (state: AuthenticationState) => void;
 
 /**
- * Login credentials for username/password authentication.
+ * Login credentials for email/password authentication.
  */
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
   /** Workspace slug for path-based multi-workspace */
   workspace?: string;
@@ -50,8 +50,8 @@ export interface WorkspaceInfo {
 export interface LoginStartResponse {
   /** Temporary token for completing login */
   loginToken: string;
-  /** User's username */
-  username: string;
+  /** User's email */
+  email: string;
   /** List of workspaces the user belongs to */
   workspaces: WorkspaceInfo[];
 }
@@ -72,8 +72,8 @@ export interface LoginCompleteCredentials {
 export interface SignupCredentials {
   workspace: string;
   workspaceName: string;
-  username: string;
   email: string;
+  displayName: string;
   password: string;
 }
 
@@ -107,7 +107,7 @@ export interface AuthenticationController {
   subscribe(listener: AuthenticationStateListener): () => void;
 
   /**
-   * Log in with username and password.
+   * Log in with email and password.
    * On success, updates state to authenticated.
    * On failure, throws an error.
    */
@@ -132,7 +132,7 @@ export interface AuthenticationController {
    * If not implemented, falls back to single-step login.
    */
   loginStart?(credentials: {
-    username: string;
+    email: string;
     password: string;
   }): Promise<LoginStartResponse>;
 

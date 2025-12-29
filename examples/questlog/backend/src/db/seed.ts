@@ -116,7 +116,7 @@ async function seedUsers(workspaceId: number) {
     .insert(usersTable)
     .values({
       email: "admin@example.com",
-      username: "admin",
+      displayName: "Admin User",
       passwordHash,
     })
     .returning();
@@ -128,7 +128,7 @@ async function seedUsers(workspaceId: number) {
   });
 
   console.log(
-    `✅ Created user: ${insertedUsers[0].username} (password: password123)`,
+    `✅ Created user: ${insertedUsers[0].email} (password: password123)`,
   );
 }
 

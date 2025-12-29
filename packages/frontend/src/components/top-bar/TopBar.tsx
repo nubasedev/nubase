@@ -65,7 +65,7 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
         {/* User Menu */}
         {user && (
           <UserMenu
-            name={user.username}
+            name={user.displayName}
             email={user.email}
             onSignOut={handleSignOut}
           />

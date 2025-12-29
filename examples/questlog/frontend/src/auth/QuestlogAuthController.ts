@@ -58,7 +58,7 @@ export class QuestlogAuthController implements AuthenticationController {
         },
         credentials: "include", // Important for cookies
         body: JSON.stringify({
-          username: credentials.username,
+          email: credentials.email,
           password: credentials.password,
           workspace: credentials.workspace,
         }),
@@ -66,7 +66,7 @@ export class QuestlogAuthController implements AuthenticationController {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Invalid username or password");
+        throw new Error(errorData.error || "Invalid email or password");
       }
 
       const data = await response.json();
@@ -153,7 +153,7 @@ export class QuestlogAuthController implements AuthenticationController {
    * Step 1: Validates credentials and returns list of workspaces user belongs to.
    */
   async loginStart(credentials: {
-    username: string;
+    email: string;
     password: string;
   }): Promise<LoginStartResponse> {
     const response = await fetch(`${this.apiBaseUrl}/auth/login/start`, {
@@ -163,14 +163,14 @@ export class QuestlogAuthController implements AuthenticationController {
       },
       credentials: "include",
       body: JSON.stringify({
-        username: credentials.username,
+        email: credentials.email,
         password: credentials.password,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Invalid username or password");
+      throw new Error(errorData.error || "Invalid email or password");
     }
 
     return response.json();

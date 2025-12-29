@@ -22,7 +22,7 @@ export default function SignUpScreen() {
     defaultValues: {
       workspace: "",
       workspaceName: "",
-      username: "",
+      displayName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -51,7 +51,7 @@ export default function SignUpScreen() {
         await authentication.signup({
           workspace: value.workspace,
           workspaceName: value.workspaceName || value.workspace,
-          username: value.username,
+          displayName: value.displayName,
           email: value.email,
           password: value.password,
         });
@@ -159,32 +159,6 @@ export default function SignUpScreen() {
             </h2>
 
             <form.Field
-              name="username"
-              validators={{
-                onBlur: ({ value }) =>
-                  !value ? "Username is required" : undefined,
-              }}
-            >
-              {(field) => (
-                <FormControl label="Username" required field={field}>
-                  <TextInput
-                    id="username"
-                    type="text"
-                    placeholder="Enter your username"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    autoComplete="username"
-                    disabled={isLoading}
-                    hasError={
-                      field.state.meta.isTouched && !field.state.meta.isValid
-                    }
-                  />
-                </FormControl>
-              )}
-            </form.Field>
-
-            <form.Field
               name="email"
               validators={{
                 onBlur: ({ value }) => {
@@ -206,6 +180,32 @@ export default function SignUpScreen() {
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                     autoComplete="email"
+                    disabled={isLoading}
+                    hasError={
+                      field.state.meta.isTouched && !field.state.meta.isValid
+                    }
+                  />
+                </FormControl>
+              )}
+            </form.Field>
+
+            <form.Field
+              name="displayName"
+              validators={{
+                onBlur: ({ value }) =>
+                  !value ? "Display name is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <FormControl label="Display Name" required field={field}>
+                  <TextInput
+                    id="displayName"
+                    type="text"
+                    placeholder="Enter your name"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                    autoComplete="name"
                     disabled={isLoading}
                     hasError={
                       field.state.meta.isTouched && !field.state.meta.isValid

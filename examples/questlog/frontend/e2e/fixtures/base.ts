@@ -11,7 +11,7 @@ const WORKSPACE_PREFIX = `/${TEST_WORKSPACE}`;
  * Can be used directly in tests that need to test login functionality.
  *
  * With the two-step login flow:
- * 1. User enters username + password at /signin
+ * 1. User enters email + password at /signin
  * 2. If user belongs to one workspace, auto-completes and redirects to /$workspace
  * 3. If user belongs to multiple workspaces, shows selection screen
  *
@@ -19,14 +19,14 @@ const WORKSPACE_PREFIX = `/${TEST_WORKSPACE}`;
  */
 export async function performLogin(
   page: Page,
-  username: string = TEST_USER.username,
+  email: string = TEST_USER.email,
   password: string = TEST_USER.password,
 ) {
   // Navigate to root-level signin page
   await page.goto("/signin");
 
   // Fill in credentials
-  await page.fill("#username", username);
+  await page.fill("#email", email);
   await page.fill("#password", password);
 
   // Submit the form

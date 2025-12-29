@@ -13,7 +13,7 @@ export const loginSchema = {
   path: "/auth/login",
   requestParams: emptySchema,
   requestBody: nu.object({
-    username: nu.string(),
+    email: nu.string(),
     password: nu.string(),
     /** Workspace slug for path-based multi-workspace */
     workspace: nu.string(),

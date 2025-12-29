@@ -2,9 +2,9 @@ import type { APIRequestContext } from "@playwright/test";
 
 // Test user credentials - matches what test-utils.ts seeds
 export const TEST_USER = {
-  username: "testuser",
-  password: "password123",
   email: "testuser@example.com",
+  password: "password123",
+  displayName: "Test User",
 };
 
 // Test workspace for path-based multi-workspace
@@ -41,12 +41,12 @@ export class TestAPI {
    * Login as the test user and return cookies for authenticated requests
    */
   async login(
-    username: string = TEST_USER.username,
+    email: string = TEST_USER.email,
     password: string = TEST_USER.password,
     workspace: string = TEST_WORKSPACE,
   ) {
     const response = await this.request.post(`${API_BASE_URL}/auth/login`, {
-      data: { username, password, workspace },
+      data: { email, password, workspace },
     });
 
     if (!response.ok()) {
@@ -108,9 +108,9 @@ export class TestAPI {
    * Seed a user with multiple workspaces for testing workspace selection flow
    */
   async seedMultiWorkspaceUser(data: {
-    username: string;
-    password: string;
     email: string;
+    password: string;
+    displayName: string;
     workspaces: Array<{ slug: string; name: string }>;
   }) {
     const response = await this.request.post(

@@ -81,7 +81,7 @@ export const handleClearDatabase = createHttpHandler({
       .insert(usersTable)
       .values({
         email: "testuser@example.com",
-        username: "testuser",
+        displayName: "Test User",
         passwordHash,
       })
       .returning();
@@ -280,9 +280,9 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
     path: "/api/test/seed-multi-workspace-user",
     requestParams: emptySchema,
     requestBody: nu.object({
-      username: nu.string(),
-      password: nu.string(),
       email: nu.string(),
+      password: nu.string(),
+      displayName: nu.string(),
       workspaces: nu.array(
         nu.object({
           slug: nu.string(),
@@ -319,7 +319,7 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
     const existingUsers = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.username, body.username));
+      .where(eq(usersTable.email, body.email));
 
     if (existingUsers.length > 0) {
       userId = existingUsers[0].id;
@@ -329,7 +329,7 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
         .insert(usersTable)
         .values({
           email: body.email,
-          username: body.username,
+          displayName: body.displayName,
           passwordHash,
         })
         .returning();
@@ -380,7 +380,7 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
 
     return {
       success: true,
-      message: `User ${body.username} seeded in ${createdWorkspaces.length} workspaces`,
+      message: `User ${body.email} seeded in ${createdWorkspaces.length} workspaces`,
       workspaces: createdWorkspaces,
     };
   },

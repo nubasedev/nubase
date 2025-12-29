@@ -6,5 +6,5 @@ import { nu } from "@nubase/core";
 export const userSchema = nu.object({
   id: nu.number(),
   email: nu.string(),
-  username: nu.string(),
+  displayName: nu.string(),
 });

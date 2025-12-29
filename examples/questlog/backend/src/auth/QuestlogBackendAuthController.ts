@@ -26,7 +26,7 @@ type DbUser = InferSelectModel<typeof usersTable>;
 export interface QuestlogUser extends BackendUser {
   id: number;
   email: string;
-  username: string;
+  displayName: string;
   workspaceId: number; // The selected workspace for this session
 }
 
@@ -35,7 +35,7 @@ export interface QuestlogUser extends BackendUser {
  */
 export interface QuestlogTokenPayload extends TokenPayload {
   userId: number;
-  username: string;
+  email: string;
   workspaceId: number; // The selected workspace for this session
 }
 
@@ -193,7 +193,7 @@ export class QuestlogBackendAuthController
         user: {
           id: dbUser.id,
           email: dbUser.email,
-          username: dbUser.username,
+          displayName: dbUser.displayName,
           workspaceId: decoded.workspaceId, // Use workspace from token
         },
       };
@@ -256,7 +256,7 @@ export class QuestlogBackendAuthController
       user: {
         id: dbUser.id,
         email: dbUser.email,
-        username: dbUser.username,
+        displayName: dbUser.displayName,
         workspaceId: workspaceId,
       },
     };
@@ -271,7 +271,7 @@ export class QuestlogBackendAuthController
   ): Promise<string> {
     const payload: QuestlogTokenPayload = {
       userId: user.id,
-      username: user.username,
+      email: user.email,
       workspaceId: user.workspaceId,
       ...additionalPayload,
     };
@@ -310,11 +310,11 @@ export class QuestlogBackendAuthController
 
   /**
    * Validate user credentials during login.
-   * Looks up the user by username (root-level) and verifies the password.
+   * Looks up the user by email (root-level) and verifies the password.
    * Then checks if user has access to the specified workspace.
    */
   async validateCredentials(
-    username: string,
+    email: string,
     password: string,
     workspaceId?: number,
   ): Promise<QuestlogUser | null> {
@@ -325,11 +325,11 @@ export class QuestlogBackendAuthController
     }
     const adminDb = getAdminDb();
 
-    // Find user by username (users are root-level, no workspace filter)
+    // Find user by email (users are root-level, no workspace filter)
     const users: DbUser[] = await adminDb
       .select()
       .from(usersTable)
-      .where(eq(usersTable.username, username));
+      .where(eq(usersTable.email, email));
 
     if (users.length === 0) {
       return null;
@@ -361,7 +361,7 @@ export class QuestlogBackendAuthController
     return {
       id: dbUser.id,
       email: dbUser.email,
-      username: dbUser.username,
+      displayName: dbUser.displayName,
       workspaceId: workspaceId,
     };
   }

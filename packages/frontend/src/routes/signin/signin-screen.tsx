@@ -11,7 +11,7 @@ import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvi
 
 /**
  * Sign-in screen with Shortcut-like two-step flow:
- * 1. Enter username and password
+ * 1. Enter email and password
  * 2. If user belongs to multiple workspaces, select one
  *
  * This is the root-level signin at /signin.
@@ -28,7 +28,7 @@ export default function SignInScreen() {
 
   const form = useForm({
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
     onSubmit: async ({ value }) => {
@@ -41,10 +41,10 @@ export default function SignInScreen() {
         return;
       }
 
-      if (!value.username || !value.password) {
+      if (!value.email || !value.password) {
         form.setErrorMap({
           onSubmit: {
-            form: "Please enter both username and password",
+            form: "Please enter both email and password",
             fields: {},
           },
         });
@@ -57,7 +57,7 @@ export default function SignInScreen() {
         // Check if auth controller supports two-step login
         if (authentication.loginStart) {
           const result = await authentication.loginStart({
-            username: value.username,
+            email: value.email,
             password: value.password,
           });
 
@@ -215,22 +215,21 @@ export default function SignInScreen() {
           }}
         >
           <form.Field
-            name="username"
+            name="email"
             validators={{
-              onBlur: ({ value }) =>
-                !value ? "Username is required" : undefined,
+              onBlur: ({ value }) => (!value ? "Email is required" : undefined),
             }}
           >
             {(field) => (
-              <FormControl label="Username" required field={field}>
+              <FormControl label="Email" required field={field}>
                 <TextInput
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
-                  autoComplete="username"
+                  autoComplete="email"
                   disabled={isLoading}
                   hasError={
                     field.state.meta.isTouched && !field.state.meta.isValid
