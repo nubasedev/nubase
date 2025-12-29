@@ -3,6 +3,7 @@ import { defaultKeybindings, resourceLink } from "@nubase/frontend";
 import { Home, TicketIcon } from "lucide-react";
 import { apiEndpoints } from "schema";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth/__PROJECT_NAME_PASCAL__AuthController";
+import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";
 
 const apiBaseUrl =
@@ -35,4 +36,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
 	defaultThemeId: "dark",
 	authentication: authController,
 	publicRoutes: ["/signin"],
+	dashboards: {
+		[analyticsDashboard.id]: analyticsDashboard,
+	},
 };

@@ -2,9 +2,10 @@ import { serve } from "@hono/node-server";
 import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { ticketHandlers } from "./api/routes/ticket";
 import { authHandlers } from "./api/routes/auth";
+import { dashboardHandlers } from "./api/routes/dashboard";
 import { testUtilsHandlers } from "./api/routes/test-utils";
+import { ticketHandlers } from "./api/routes/ticket";
 import {
 	createPostAuthWorkspaceMiddleware,
 	createWorkspaceMiddleware,
@@ -50,6 +51,7 @@ app.get("/", (c) => c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }
 // Register all handlers - path and method extracted from endpoint metadata
 registerHandlers(app, authHandlers);
 registerHandlers(app, ticketHandlers);
+registerHandlers(app, dashboardHandlers);
 
 // Register test utility handlers (only in test environment)
 if (process.env.NODE_ENV === "test") {
