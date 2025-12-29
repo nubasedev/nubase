@@ -12,7 +12,7 @@ export const userSchema = nu.object({
 /**
  * Workspace info returned during login
  */
-export const workspaceInfoSchema = nu.object({
+export const workspaceSchema = nu.object({
   id: nu.number(),
   slug: nu.string(),
   name: nu.string(),
@@ -40,7 +40,7 @@ export const loginStartSchema = {
     /** User's username (for display) */
     username: nu.string(),
     /** List of workspaces the user belongs to */
-    workspaces: nu.array(workspaceInfoSchema),
+    workspaces: nu.array(workspaceSchema),
   }),
 } satisfies RequestSchema;
 
@@ -62,7 +62,7 @@ export const loginCompleteSchema = {
   }),
   responseBody: nu.object({
     user: userSchema,
-    workspace: workspaceInfoSchema,
+    workspace: workspaceSchema,
   }),
 } satisfies RequestSchema;
 
@@ -139,6 +139,6 @@ export const signupSchema = {
   }),
   responseBody: nu.object({
     user: userSchema,
-    workspace: workspaceInfoSchema,
+    workspace: workspaceSchema,
   }),
 } satisfies RequestSchema;
