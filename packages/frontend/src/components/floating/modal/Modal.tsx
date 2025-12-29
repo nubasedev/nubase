@@ -48,7 +48,7 @@ export const Modal: FC<ModalProps> = ({
       style={{ zIndex }}
     >
       {showBackdrop && (
-        <DialogBackdrop className="fixed inset-0 bg-scrim/30 backdrop-blur-xxs transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
+        <DialogBackdrop className="fixed inset-0 bg-black/50 transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
       )}
 
       <div className={`fixed inset-0 flex p-4 ${alignmentClasses[alignment]}`}>

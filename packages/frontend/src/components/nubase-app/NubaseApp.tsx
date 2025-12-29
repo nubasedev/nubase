@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
-import type { FC } from "react";
+import { type FC, useEffect } from "react";
 import { ToastContainer, ToastProvider } from "../..";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import { router } from "../../routes/router";
@@ -30,6 +30,10 @@ const queryClient = new QueryClient({
 });
 
 export const NubaseApp: FC<NubaseAppProps> = ({ config }) => {
+  useEffect(() => {
+    document.title = config.appName;
+  }, [config.appName]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
