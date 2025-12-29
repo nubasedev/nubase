@@ -35,9 +35,9 @@
     "publish:frontend": "turbo run publish --filter=@nubase/frontend",
     "publish:backend": "turbo run publish --filter=@nubase/backend",
     "publish:all": "turbo run publish --filter=\"@nubase/*\"",
-    "examples:generated:create:local": "./scripts/create-generated-example.sh",
-    "examples:generated:create:npm": "./scripts/create-generated-example-npm.sh",
-    "examples:generated:test": "./scripts/test-generated-example.sh"
+    "examples:starter:create:local": "./scripts/create-starter-example.sh",
+    "examples:starter:create:npm": "./scripts/create-starter-example-npm.sh",
+    "examples:starter:test": "./scripts/test-starter-example.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",

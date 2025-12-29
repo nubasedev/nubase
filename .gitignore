@@ -46,8 +46,8 @@ dist/
 # test:create output
 test-nubase-app
 
-# examples/generated - generated from @nubase/create
-examples/generated
+# examples/starter - created from @nubase/create
+examples/starter
 
 # Affinity Design lock files
 *.afdesign~lock~
