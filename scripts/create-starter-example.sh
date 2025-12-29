@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to create examples/starter from local @nubase/create package
-# This creates the starter example app without running npm install
+# Script to create examples/starter using npx @nubase/create@dev (from npm registry)
+# This creates the starter example app using @dev tagged @nubase/* packages for testing
 
 set -e
 
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STARTER_DIR="$ROOT_DIR/examples/starter"
 
-echo "Creating starter example from local @nubase/create package..."
+echo "Creating starter example using npx @nubase/create@dev..."
 
 # Remove existing starter folder if it exists
 if [ -d "$STARTER_DIR" ]; then
@@ -17,18 +17,17 @@ if [ -d "$STARTER_DIR" ]; then
   rm -rf "$STARTER_DIR"
 fi
 
-# Build the create package
-echo "Building @nubase/create package..."
-cd "$ROOT_DIR/packages/create"
-npm run build
+# Clear npx cache to ensure we get the latest @nubase/create@dev
+echo "Clearing npx cache..."
+rm -rf ~/.npm/_npx
 
-# Create the starter example
+# Create the starter example using npx with @dev tag
 cd "$ROOT_DIR/examples"
 echo "Creating nubase-app in examples/starter..."
-node "$ROOT_DIR/packages/create/dist/index.js" starter --skip-install
+npx @nubase/create@dev starter --skip-install --tag dev
 
 echo ""
-echo "Successfully created examples/starter"
+echo "Successfully created examples/starter (using @nubase/*@dev packages)"
 echo ""
 echo "To complete setup:"
 echo "  cd examples/starter"

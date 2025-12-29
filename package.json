@@ -31,12 +31,10 @@
     "e2e:debug": "cd examples/questlog/frontend && npm run e2e:debug",
     "e2e:report": "cd examples/questlog/frontend && npm run e2e:report",
     "e2e:install": "cd examples/questlog/frontend && npm run e2e:install",
-    "publish:core": "turbo run publish --filter=@nubase/core",
-    "publish:frontend": "turbo run publish --filter=@nubase/frontend",
-    "publish:backend": "turbo run publish --filter=@nubase/backend",
-    "publish:all": "turbo run publish --filter=\"@nubase/*\"",
-    "examples:starter:create:local": "./scripts/create-starter-example.sh",
-    "examples:starter:create:npm": "./scripts/create-starter-example-npm.sh",
+    "bump": "./scripts/bump-versions.sh",
+    "publish": "turbo run publish:latest --filter=\"@nubase/*\"",
+    "publish:dev": "turbo run publish:dev --filter=\"@nubase/*\"",
+    "examples:starter:create": "./scripts/create-starter-example.sh",
     "examples:starter:test": "./scripts/test-starter-example.sh"
   },
   "devDependencies": {

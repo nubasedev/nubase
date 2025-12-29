@@ -18,7 +18,7 @@ import { users, userWorkspaces } from "../db/schema";
 export interface __PROJECT_NAME_PASCAL__User extends BackendUser {
 	id: number;
 	email: string;
-	username: string;
+	displayName: string;
 	workspaceId: number;
 }
 
@@ -27,7 +27,7 @@ export interface __PROJECT_NAME_PASCAL__User extends BackendUser {
  */
 export interface __PROJECT_NAME_PASCAL__TokenPayload extends TokenPayload {
 	userId: number;
-	username: string;
+	email: string;
 	workspaceId: number;
 }
 
@@ -109,7 +109,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 				user: {
 					id: dbUser.id,
 					email: dbUser.email,
-					username: dbUser.username,
+					displayName: dbUser.displayName,
 					workspaceId: decoded.workspaceId,
 				},
 			};
@@ -137,7 +137,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 	): Promise<string> {
 		const payload: __PROJECT_NAME_PASCAL__TokenPayload = {
 			userId: user.id,
-			username: user.username,
+			email: user.email,
 			workspaceId: user.workspaceId,
 			...additionalPayload,
 		};
@@ -169,7 +169,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 	 * Validate user credentials during login.
 	 */
 	async validateCredentials(
-		username: string,
+		email: string,
 		password: string,
 		workspaceId?: number,
 	): Promise<__PROJECT_NAME_PASCAL__User | null> {
@@ -179,11 +179,11 @@ export class __PROJECT_NAME_PASCAL__AuthController
 			);
 		}
 
-		// Find user by username
+		// Find user by email
 		const [dbUser] = await getAdminDb()
 			.select()
 			.from(users)
-			.where(eq(users.username, username));
+			.where(eq(users.email, email));
 
 		if (!dbUser) {
 			return null;
@@ -213,7 +213,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 		return {
 			id: dbUser.id,
 			email: dbUser.email,
-			username: dbUser.username,
+			displayName: dbUser.displayName,
 			workspaceId: workspaceId,
 		};
 	}

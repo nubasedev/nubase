@@ -1,6 +1,6 @@
 {
   "name": "@nubase/frontend",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "description": "React components and utilities for nubase",
   "keywords": [
     "react",
@@ -38,6 +38,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
+    "publish:latest": "npm publish --access public",
+    "publish:dev": "npm publish --access public --tag dev",
     "watch:ts": "tsup --watch",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "storybook": "storybook dev -p 6006 --no-open",

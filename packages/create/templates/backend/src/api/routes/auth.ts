@@ -19,7 +19,7 @@ const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
 
 interface LoginTokenPayload {
 	userId: number;
-	username: string;
+	email: string;
 }
 
 export const authHandlers = {
@@ -30,14 +30,14 @@ export const authHandlers = {
 	loginStart: createHttpHandler({
 		endpoint: apiEndpoints.loginStart,
 		handler: async ({ body }) => {
-			// Find user by username
+			// Find user by email
 			const [user] = await getAdminDb()
 				.select()
 				.from(users)
-				.where(eq(users.username, body.username));
+				.where(eq(users.email, body.email));
 
 			if (!user) {
-				throw new HttpError(401, "Invalid username or password");
+				throw new HttpError(401, "Invalid email or password");
 			}
 
 			// Verify password
@@ -46,7 +46,7 @@ export const authHandlers = {
 				user.passwordHash,
 			);
 			if (!isValidPassword) {
-				throw new HttpError(401, "Invalid username or password");
+				throw new HttpError(401, "Invalid email or password");
 			}
 
 			// Get all workspaces this user belongs to
@@ -70,7 +70,7 @@ export const authHandlers = {
 			const loginToken = jwt.sign(
 				{
 					userId: user.id,
-					username: body.username,
+					email: body.email,
 				} satisfies LoginTokenPayload,
 				LOGIN_TOKEN_SECRET,
 				{ expiresIn: LOGIN_TOKEN_EXPIRY },
@@ -78,7 +78,7 @@ export const authHandlers = {
 
 			return {
 				loginToken,
-				username: body.username,
+				email: body.email,
 				workspaces: workspaceList.map((w) => ({
 					id: w.id,
 					slug: w.slug,
@@ -147,7 +147,7 @@ export const authHandlers = {
 			const user: __PROJECT_NAME_PASCAL__User = {
 				id: dbUser.id,
 				email: dbUser.email,
-				username: dbUser.username,
+				displayName: dbUser.displayName,
 				workspaceId: workspace.id,
 			};
 
@@ -159,7 +159,7 @@ export const authHandlers = {
 				user: {
 					id: user.id,
 					email: user.email,
-					username: user.username,
+					displayName: user.displayName,
 				},
 				workspace: {
 					id: workspace.id,
@@ -189,14 +189,14 @@ export const authHandlers = {
 				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
 			}
 
-			// Find user by username
+			// Find user by email
 			const [dbUser] = await getAdminDb()
 				.select()
 				.from(users)
-				.where(eq(users.username, body.username));
+				.where(eq(users.email, body.email));
 
 			if (!dbUser) {
-				throw new HttpError(401, "Invalid username or password");
+				throw new HttpError(401, "Invalid email or password");
 			}
 
 			// Verify password
@@ -205,7 +205,7 @@ export const authHandlers = {
 				dbUser.passwordHash,
 			);
 			if (!isValidPassword) {
-				throw new HttpError(401, "Invalid username or password");
+				throw new HttpError(401, "Invalid email or password");
 			}
 
 			// Verify user has access to this workspace
@@ -227,7 +227,7 @@ export const authHandlers = {
 			const user: __PROJECT_NAME_PASCAL__User = {
 				id: dbUser.id,
 				email: dbUser.email,
-				username: dbUser.username,
+				displayName: dbUser.displayName,
 				workspaceId: workspace.id,
 			};
 
@@ -239,7 +239,7 @@ export const authHandlers = {
 				user: {
 					id: user.id,
 					email: user.email,
-					username: user.username,
+					displayName: user.displayName,
 				},
 			};
 		},
@@ -272,7 +272,7 @@ export const authHandlers = {
 				user: {
 					id: user.id,
 					email: user.email,
-					username: user.username,
+					displayName: user.displayName,
 				},
 			};
 		},
@@ -300,16 +300,6 @@ export const authHandlers = {
 
 			if (existingWorkspace) {
 				throw new HttpError(409, "Organization slug is already taken");
-			}
-
-			// Check if username already exists
-			const [existingUser] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.username, body.username));
-
-			if (existingUser) {
-				throw new HttpError(409, "Username is already taken");
 			}
 
 			// Check if email already exists
@@ -344,7 +334,7 @@ export const authHandlers = {
 				.insert(users)
 				.values({
 					email: body.email,
-					username: body.username,
+					displayName: body.displayName,
 					passwordHash,
 				})
 				.returning();
@@ -359,7 +349,7 @@ export const authHandlers = {
 			const user: __PROJECT_NAME_PASCAL__User = {
 				id: newUser.id,
 				email: newUser.email,
-				username: newUser.username,
+				displayName: newUser.displayName,
 				workspaceId: newWorkspace.id,
 			};
 
@@ -371,7 +361,7 @@ export const authHandlers = {
 				user: {
 					id: user.id,
 					email: user.email,
-					username: user.username,
+					displayName: user.displayName,
 				},
 				workspace: {
 					id: newWorkspace.id,

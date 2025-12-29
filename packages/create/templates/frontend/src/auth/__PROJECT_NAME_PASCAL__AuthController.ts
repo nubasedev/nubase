@@ -60,7 +60,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 				},
 				credentials: "include", // Important for cookies
 				body: JSON.stringify({
-					username: credentials.username,
+					email: credentials.email,
 					password: credentials.password,
 					workspace: credentials.workspace,
 				}),
@@ -68,7 +68,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.error || "Invalid username or password");
+				throw new Error(errorData.error || "Invalid email or password");
 			}
 
 			const data = await response.json();
@@ -155,7 +155,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
 	 * Step 1: Validates credentials and returns list of workspaces user belongs to.
 	 */
 	async loginStart(credentials: {
-		username: string;
+		email: string;
 		password: string;
 	}): Promise<LoginStartResponse> {
 		const response = await fetch(`${this.apiBaseUrl}/auth/login/start`, {
@@ -165,14 +165,14 @@ export class __PROJECT_NAME_PASCAL__AuthController
 			},
 			credentials: "include",
 			body: JSON.stringify({
-				username: credentials.username,
+				email: credentials.email,
 				password: credentials.password,
 			}),
 		});
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			throw new Error(errorData.error || "Invalid username or password");
+			throw new Error(errorData.error || "Invalid email or password");
 		}
 
 		return response.json();

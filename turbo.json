@@ -42,8 +42,12 @@
       "dependsOn": ["^build"],
       "cache": false
     },
-    "publish": {
+    "publish:latest": {
       "dependsOn": ["build", "typecheck", "lint"],
+      "cache": false
+    },
+    "publish:dev": {
+      "dependsOn": ["build"],
       "cache": false
     }
   }

@@ -14,14 +14,14 @@ export const loginStartSchema = {
 	path: "/auth/login/start",
 	requestParams: emptySchema,
 	requestBody: nu.object({
-		username: nu.string(),
+		email: nu.string(),
 		password: nu.string(),
 	}),
 	responseBody: nu.object({
 		/** Temporary token for completing login (short-lived) */
 		loginToken: nu.string(),
-		/** User's username (for display) */
-		username: nu.string(),
+		/** User's email (for display) */
+		email: nu.string(),
 		/** List of workspaces the user belongs to */
 		workspaces: nu.array(workspaceInfoSchema),
 	}),

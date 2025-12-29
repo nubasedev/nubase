@@ -32,7 +32,7 @@ async function seed() {
 		.insert(users)
 		.values({
 			email: "admin@example.com",
-			username: "admin",
+			displayName: "Admin User",
 			passwordHash,
 		})
 		.onConflictDoNothing()
@@ -63,7 +63,7 @@ async function seed() {
 
 	console.log("Database seeded successfully!");
 	console.log("\nTest credentials:");
-	console.log("  Username: admin");
+	console.log("  Email: admin@example.com");
 	console.log("  Password: password123");
 
 	process.exit(0);

@@ -12,7 +12,7 @@ test.describe("Authentication", () => {
 		await expect(page.locator("h1")).toContainText("Sign In");
 
 		// Fill in valid credentials
-		await page.fill("#username", TEST_USER.username);
+		await page.fill("#email", TEST_USER.email);
 		await page.fill("#password", TEST_USER.password);
 
 		// Submit the form
@@ -35,7 +35,7 @@ test.describe("Authentication", () => {
 		await page.goto("/signin");
 
 		// Fill in invalid credentials
-		await page.fill("#username", "wronguser");
+		await page.fill("#email", "wrong@example.com");
 		await page.fill("#password", "wrongpassword");
 
 		// Submit the form
@@ -44,7 +44,7 @@ test.describe("Authentication", () => {
 		// Wait for error message to appear
 		const errorMessage = page.getByTestId("signin-error");
 		await expect(errorMessage).toBeVisible();
-		await expect(errorMessage).toContainText("Invalid username or password");
+		await expect(errorMessage).toContainText("Invalid email or password");
 
 		// Should still be on signin page
 		expect(page.url()).toContain("/signin");
@@ -85,8 +85,8 @@ test.describe("Authentication", () => {
 		const userAvatar = authenticatedPage.getByTestId("user-avatar");
 		await expect(userAvatar).toBeVisible();
 
-		// Avatar should show the user's initials (AD for "admin")
-		await expect(userAvatar).toContainText("AD");
+		// Avatar should show the user's initials (AU for "Admin User")
+		await expect(userAvatar).toContainText("AU");
 	});
 
 	test("should sign out successfully when clicking sign out", async ({

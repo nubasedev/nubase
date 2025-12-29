@@ -23,6 +23,7 @@ interface ProjectOptions {
 	frontendPort: number;
 	testBackendPort: number;
 	testFrontendPort: number;
+	nubaseTag: string;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "..", "templates");
@@ -54,6 +55,10 @@ function replaceInContent(
 	const pascalName = toPascalCase(options.name);
 	const camelName = toCamelCase(options.name);
 
+	// Determine the @nubase/* package version string
+	// For "latest", use "*" (any version). For other tags like "dev", use the tag name directly.
+	const nubaseVersion = options.nubaseTag === "latest" ? "*" : options.nubaseTag;
+
 	return content
 		.replace(/__PROJECT_NAME__/g, kebabName)
 		.replace(/__PROJECT_NAME_PASCAL__/g, pascalName)
@@ -66,7 +71,11 @@ function replaceInContent(
 		.replace(/__BACKEND_PORT__/g, String(options.backendPort))
 		.replace(/__FRONTEND_PORT__/g, String(options.frontendPort))
 		.replace(/__TEST_BACKEND_PORT__/g, String(options.testBackendPort))
-		.replace(/__TEST_FRONTEND_PORT__/g, String(options.testFrontendPort));
+		.replace(/__TEST_FRONTEND_PORT__/g, String(options.testFrontendPort))
+		.replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
+		.replace(/"@nubase\/frontend": "\*"/g, `"@nubase/frontend": "${nubaseVersion}"`)
+		.replace(/"@nubase\/backend": "\*"/g, `"@nubase/backend": "${nubaseVersion}"`)
+		.replace(/"@nubase\/create": "\*"/g, `"@nubase/create": "${nubaseVersion}"`);
 }
 
 function copyTemplateDir(
@@ -111,6 +120,7 @@ async function main() {
 		.option("--test-backend-port <port>", "Test backend server port", "4001")
 		.option("--test-frontend-port <port>", "Test frontend dev server port", "4002")
 		.option("--skip-install", "Skip npm install")
+		.option("--tag <tag>", "npm tag for @nubase/* packages (latest, dev)", "latest")
 		.parse();
 
 	const args = program.args;
@@ -155,6 +165,7 @@ async function main() {
 		frontendPort: Number.parseInt(opts.frontendPort, 10),
 		testBackendPort: Number.parseInt(opts.testBackendPort, 10),
 		testFrontendPort: Number.parseInt(opts.testFrontendPort, 10),
+		nubaseTag: opts.tag,
 	};
 
 	const targetDir = path.join(process.cwd(), projectName);

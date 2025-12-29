@@ -18,10 +18,10 @@ export const signupSchema = {
 		workspace: nu.string(),
 		/** Display name for the workspace */
 		workspaceName: nu.string(),
-		/** Username for the admin user */
-		username: nu.string(),
 		/** Email for the admin user */
 		email: nu.string(),
+		/** Display name for the admin user */
+		displayName: nu.string(),
 		/** Password for the admin user */
 		password: nu.string(),
 	}),

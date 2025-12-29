@@ -1,6 +1,6 @@
 {
   "name": "@nubase/core",
-  "version": "0.1.4",
+  "version": "0.1.8",
   "description": "Core schema and types for nubase",
   "keywords": [
     "schema",
@@ -32,6 +32,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
+    "publish:latest": "npm publish --access public",
+    "publish:dev": "npm publish --access public --tag dev",
     "watch:ts": "tsup --watch",
     "dev": "concurrently \"npm:watch:ts\""
   },
