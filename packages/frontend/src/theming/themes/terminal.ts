@@ -7,7 +7,8 @@ export const terminal: NubaseTheme = {
   colors: {
     // Base colors - Matrix black background with green text
     background: "oklch(0.05 0 0)", // #000000 pure black
-    foreground: "oklch(0.80 0.15 136)", // #00ff00 bright green
+    // Using hex for foreground to fix 1Password autofill detection (it fails with oklch)
+    foreground: "#00ff00", // bright green
 
     // Card colors
     card: "oklch(0.10 0.02 136)", // very dark green-tinted

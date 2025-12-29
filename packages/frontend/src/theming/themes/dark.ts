@@ -7,7 +7,8 @@ export const dark: NubaseTheme = {
   colors: {
     // Base colors
     background: "oklch(0.145 0 0)",
-    foreground: "oklch(0.985 0 0)",
+    // Using rgb for foreground to fix 1Password autofill detection (it fails with oklch)
+    foreground: "#fafafa",
 
     // Card colors
     card: "oklch(0.205 0 0)",

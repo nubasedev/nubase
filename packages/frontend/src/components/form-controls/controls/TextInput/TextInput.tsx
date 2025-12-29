@@ -12,7 +12,6 @@ const textInputVariants = cva([
 
   // Background & Text
   "bg-transparent text-base",
-  "dark:bg-input/30",
 
   // Visual Effects
   "shadow-xs outline-none",

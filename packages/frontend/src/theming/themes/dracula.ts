@@ -7,7 +7,8 @@ export const dracula: NubaseTheme = {
   colors: {
     // Base colors - Dracula background and foreground
     background: "oklch(0.15 0.01 249.79)", // #282a36 dark purple-gray
-    foreground: "oklch(0.95 0.01 249.79)", // #f8f8f2 light gray
+    // Using hex for foreground to fix 1Password autofill detection (it fails with oklch)
+    foreground: "#f8f8f2", // light gray
 
     // Card colors
     card: "oklch(0.18 0.015 249.79)", // #44475a slightly lighter
