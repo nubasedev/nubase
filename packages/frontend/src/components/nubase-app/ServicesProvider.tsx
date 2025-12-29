@@ -1,22 +1,22 @@
 import type React from "react";
-import type { FC } from "react";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import { ActivityIndicator } from "../activity-indicator";
 import { NubaseContextProvider } from "./NubaseContextProvider";
 import { useCreateNubaseContext } from "./useCreateNubaseContext";
 
-export type ServicesProviderProps = {
-  config: NubaseFrontendConfig;
+export type ServicesProviderProps<TApiEndpoints = any> = {
+  config: NubaseFrontendConfig<TApiEndpoints>;
 };
 
-export const ServicesProvider: FC<
-  React.PropsWithChildren<ServicesProviderProps>
-> = ({ config, children }) => {
+export function ServicesProvider<TApiEndpoints = any>({
+  config,
+  children,
+}: React.PropsWithChildren<ServicesProviderProps<TApiEndpoints>>) {
   const {
     data: nubaseContext,
     isLoading,
     error,
-  } = useCreateNubaseContext({
+  } = useCreateNubaseContext<TApiEndpoints>({
     config,
   });
 
@@ -56,4 +56,4 @@ export const ServicesProvider: FC<
       {children}
     </NubaseContextProvider>
   );
-};
+}

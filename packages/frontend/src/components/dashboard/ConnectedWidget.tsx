@@ -23,7 +23,7 @@ export interface ConnectedWidgetProps {
  * inside a DashboardWidget based on the widget type.
  *
  * This component:
- * 1. Fetches data from the widget's endpoint
+ * 1. Calls the widget's onLoad callback to fetch data
  * 2. Shows loading/error states
  * 3. Renders the appropriate content renderer based on widget type
  * 4. Wraps everything in the DashboardWidget presentation component
@@ -31,26 +31,10 @@ export interface ConnectedWidgetProps {
 export function ConnectedWidget({ widget }: ConnectedWidgetProps) {
   const context = useNubaseContext();
 
-  // Get the endpoint key as a string
-  const endpointKey = widget.endpoint as string;
-
-  // Access the endpoint function from the http client
-  const httpClient = context.http as Record<
-    string,
-    | ((options?: {
-        params?: Record<string, unknown>;
-      }) => Promise<{ data: unknown }>)
-    | undefined
-  >;
-  const endpointFn = httpClient[endpointKey];
-
   const { data, isLoading, error } = useQuery({
-    queryKey: ["dashboard-widget", widget.id, endpointKey],
+    queryKey: ["dashboard-widget", widget.id],
     queryFn: async () => {
-      if (typeof endpointFn !== "function") {
-        throw new Error(`Endpoint ${endpointKey} not found`);
-      }
-      const response = await endpointFn({ params: {} });
+      const response = await widget.onLoad({ context });
       return response.data;
     },
     refetchInterval: widget.refreshInterval,

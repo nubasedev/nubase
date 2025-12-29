@@ -22,14 +22,18 @@ import type {
  *       id: "revenue-chart",
  *       title: "Revenue Trend",
  *       variant: "area",
- *       endpoint: "getRevenueChart", // TypeScript validates this!
+ *       onLoad: async ({ context }) => {
+ *         return context.http.getRevenueChart({ params: {} });
+ *       },
  *       defaultLayout: { x: 0, y: 0, w: 8, h: 3 },
  *     },
  *     {
  *       type: "kpi",
  *       id: "total-revenue",
  *       title: "Total Revenue",
- *       endpoint: "getTotalRevenue", // TypeScript validates this!
+ *       onLoad: async ({ context }) => {
+ *         return context.http.getTotalRevenue({ params: {} });
+ *       },
  *       defaultLayout: { x: 8, y: 0, w: 4, h: 2 },
  *     },
  *   ]);
@@ -49,7 +53,7 @@ class DashboardBuilder<TId extends string, TApiEndpoints = never> {
   }
 
   /**
-   * Configure API endpoints for type-safe widget endpoint references.
+   * Configure API endpoints for type-safe widget data fetching.
    * This must be called before withWidgets() to enable type checking.
    */
   withApiEndpoints<T>(apiEndpoints: T): DashboardBuilder<TId, T> {
@@ -89,11 +93,8 @@ class DashboardBuilder<TId extends string, TApiEndpoints = never> {
    * Configure widgets for this dashboard.
    * This is the final step that produces the DashboardDescriptor.
    *
-   * TypeScript will validate that each widget's endpoint matches its expected data type:
-   * - Series widgets must reference endpoints returning SeriesData
-   * - Proportional widgets must reference endpoints returning ProportionalData
-   * - KPI widgets must reference endpoints returning KpiData
-   * - Table widgets must reference endpoints returning TableData
+   * Each widget must provide an `onLoad` callback that fetches data
+   * using `context.http` for type-safe API calls.
    */
   withWidgets(
     widgets: WidgetDescriptor<TApiEndpoints>[],
@@ -114,7 +115,7 @@ class DashboardBuilder<TId extends string, TApiEndpoints = never> {
  * The builder pattern enables sequential type inference:
  * 1. First, call `.withApiEndpoints(apiEndpoints)` to provide the API type context
  * 2. Then, configure the dashboard with `.withTitle()`, `.withGridConfig()`, etc.
- * 3. Finally, call `.withWidgets([...])` to define the widgets with type-safe endpoint references
+ * 3. Finally, call `.withWidgets([...])` to define the widgets with `onLoad` callbacks
  *
  * @param id Unique identifier for the dashboard
  * @returns A DashboardBuilder instance
@@ -133,7 +134,9 @@ class DashboardBuilder<TId extends string, TApiEndpoints = never> {
  *       id: "revenue",
  *       title: "Revenue",
  *       variant: "area",
- *       endpoint: "getRevenueChart",
+ *       onLoad: async ({ context }) => {
+ *         return context.http.getRevenueChart({ params: {} });
+ *       },
  *       defaultLayout: { x: 0, y: 0, w: 8, h: 3 },
  *     },
  *   ]);

@@ -1,21 +1,22 @@
 import { RouterProvider } from "@tanstack/react-router";
-import type { FC } from "react";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import { router } from "../../routes/router";
 import { ActivityIndicator } from "../activity-indicator";
 import { NubaseContextProvider } from "./NubaseContextProvider";
 import { useCreateNubaseContext } from "./useCreateNubaseContext";
 
-export type NubaseAppInnerProps = {
-  config: NubaseFrontendConfig;
+export type NubaseAppInnerProps<TApiEndpoints = any> = {
+  config: NubaseFrontendConfig<TApiEndpoints>;
 };
 
-export const NubaseAppInner: FC<NubaseAppInnerProps> = ({ config }) => {
+export function NubaseAppInner<TApiEndpoints = any>({
+  config,
+}: NubaseAppInnerProps<TApiEndpoints>) {
   const {
     data: nubaseContext,
     isLoading,
     error,
-  } = useCreateNubaseContext({
+  } = useCreateNubaseContext<TApiEndpoints>({
     config,
   });
 
@@ -55,4 +56,4 @@ export const NubaseAppInner: FC<NubaseAppInnerProps> = ({ config }) => {
       <RouterProvider router={router} />
     </NubaseContextProvider>
   );
-};
+}

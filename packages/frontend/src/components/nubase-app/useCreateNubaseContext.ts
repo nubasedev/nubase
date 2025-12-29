@@ -4,6 +4,7 @@ import { resourceActionsExecutor } from "../../actions/ResourceActionsExecutor";
 import { commandRegistry } from "../../commands";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import type { NubaseContextData } from "../../context/types";
+import type { TypedApiClientFromEndpoints } from "../../http/api-client-factory";
 import { HttpClient } from "../../http/http-client";
 import {
   createTypedApiClient,
@@ -24,12 +25,12 @@ import {
   type NubaseInitializationData,
 } from "./initializeNubaseApp";
 
-export interface UseNubaseContextOptions {
-  config: NubaseFrontendConfig;
+export interface UseNubaseContextOptions<TApiEndpoints = any> {
+  config: NubaseFrontendConfig<TApiEndpoints>;
 }
 
-export interface UseNubaseContextResult {
-  data: NubaseContextData | null;
+export interface UseNubaseContextResult<TApiEndpoints = any> {
+  data: NubaseContextData<TApiEndpoints> | null;
   isLoading: boolean;
   error: Error | null;
   retry: () => void;
@@ -39,9 +40,9 @@ export interface UseNubaseContextResult {
  * Hook that manages the initialization of the Nubase app context
  * Handles async theme loading and other initialization tasks
  */
-export function useCreateNubaseContext({
+export function useCreateNubaseContext<TApiEndpoints = any>({
   config,
-}: UseNubaseContextOptions): UseNubaseContextResult {
+}: UseNubaseContextOptions<TApiEndpoints>): UseNubaseContextResult<TApiEndpoints> {
   const [initializationData, setInitializationData] =
     useState<NubaseInitializationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,7 +93,8 @@ export function useCreateNubaseContext({
     if (!initializationData) return null;
 
     // Create typed API client if endpoints are provided
-    let typedApiClient: any = httpClient;
+    let typedApiClient: TypedApiClientFromEndpoints<TApiEndpoints> =
+      httpClient as unknown as TypedApiClientFromEndpoints<TApiEndpoints>;
     if (initializationData.config.apiEndpoints) {
       try {
         const errorListener: ErrorListener = (error) => {
@@ -109,7 +111,7 @@ export function useCreateNubaseContext({
       }
     }
 
-    const nubaseContextDataInternal: NubaseContextData = {
+    const nubaseContextDataInternal: NubaseContextData<TApiEndpoints> = {
       config: initializationData.config,
       commands: commandRegistry,
       resourceActions: resourceActionsExecutor,

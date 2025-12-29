@@ -5,8 +5,8 @@ import { apiEndpoints } from "questlog-schema";
  * Analytics dashboard configuration.
  *
  * This dashboard demonstrates the type-safe widget system:
- * - Each widget references an endpoint that returns the correct data type
- * - TypeScript will error if you try to use a non-matching endpoint
+ * - Each widget uses an onLoad callback for data fetching
+ * - context.http provides type-safe API access
  * - Layout is defined using react-grid-layout coordinates (x, y, w, h)
  */
 export const analyticsDashboard = createDashboard("analytics")
@@ -19,7 +19,9 @@ export const analyticsDashboard = createDashboard("analytics")
       id: "revenue-chart",
       title: "Revenue Trend",
       variant: "area",
-      endpoint: "getRevenueChart",
+      onLoad: async ({ context }) => {
+        return context.http.getRevenueChart({ params: {} });
+      },
       defaultLayout: { x: 0, y: 0, w: 8, h: 3 },
     },
     // Browser stats - donut chart on the right
@@ -28,7 +30,9 @@ export const analyticsDashboard = createDashboard("analytics")
       id: "browser-stats",
       title: "Browser Usage",
       variant: "donut",
-      endpoint: "getBrowserStats",
+      onLoad: async ({ context }) => {
+        return context.http.getBrowserStats({ params: {} });
+      },
       defaultLayout: { x: 8, y: 0, w: 4, h: 3 },
     },
     // KPI cards - second row
@@ -36,14 +40,18 @@ export const analyticsDashboard = createDashboard("analytics")
       type: "kpi",
       id: "total-revenue",
       title: "Total Revenue",
-      endpoint: "getTotalRevenue",
+      onLoad: async ({ context }) => {
+        return context.http.getTotalRevenue({ params: {} });
+      },
       defaultLayout: { x: 0, y: 3, w: 3, h: 2 },
     },
     {
       type: "kpi",
       id: "active-users",
       title: "Active Users",
-      endpoint: "getActiveUsers",
+      onLoad: async ({ context }) => {
+        return context.http.getActiveUsers({ params: {} });
+      },
       defaultLayout: { x: 3, y: 3, w: 3, h: 2 },
     },
     // Sales chart - bar chart
@@ -52,7 +60,9 @@ export const analyticsDashboard = createDashboard("analytics")
       id: "sales-chart",
       title: "Weekly Sales",
       variant: "bar",
-      endpoint: "getSalesChart",
+      onLoad: async ({ context }) => {
+        return context.http.getSalesChart({ params: {} });
+      },
       defaultLayout: { x: 6, y: 3, w: 6, h: 2 },
     },
     // Recent activity table - bottom row
@@ -60,7 +70,9 @@ export const analyticsDashboard = createDashboard("analytics")
       type: "table",
       id: "recent-activity",
       title: "Recent Activity",
-      endpoint: "getRecentActivity",
+      onLoad: async ({ context }) => {
+        return context.http.getRecentActivity({ params: {} });
+      },
       maxRows: 5,
       defaultLayout: { x: 0, y: 5, w: 12, h: 3 },
     },

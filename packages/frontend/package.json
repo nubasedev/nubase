@@ -1,6 +1,6 @@
 {
   "name": "@nubase/frontend",
-  "version": "0.1.11",
+  "version": "0.1.13",
   "description": "React components and utilities for nubase",
   "keywords": [
     "react",

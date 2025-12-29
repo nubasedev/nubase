@@ -1,9 +1,5 @@
-import type {
-  KpiWidgetRequestSchema,
-  ProportionalWidgetRequestSchema,
-  SeriesWidgetRequestSchema,
-  TableWidgetRequestSchema,
-} from "@nubase/core";
+import type { NubaseContextData } from "../context/types";
+import type { HttpResponse } from "../http/http-client";
 import type { IconComponent } from "../menu/types";
 
 // =============================================================================
@@ -39,50 +35,6 @@ export interface WidgetLayoutConfig {
 }
 
 // =============================================================================
-// TYPE-SAFE ENDPOINT EXTRACTION
-// =============================================================================
-
-/**
- * Extract endpoint keys that return SeriesData.
- * Matches endpoints created with createSeriesWidgetEndpoint.
- */
-type SeriesEndpointKeys<TApiEndpoints> = {
-  [K in keyof TApiEndpoints]: TApiEndpoints[K] extends SeriesWidgetRequestSchema
-    ? K
-    : never;
-}[keyof TApiEndpoints];
-
-/**
- * Extract endpoint keys that return ProportionalData.
- * Matches endpoints created with createProportionalWidgetEndpoint.
- */
-type ProportionalEndpointKeys<TApiEndpoints> = {
-  [K in keyof TApiEndpoints]: TApiEndpoints[K] extends ProportionalWidgetRequestSchema
-    ? K
-    : never;
-}[keyof TApiEndpoints];
-
-/**
- * Extract endpoint keys that return KpiData.
- * Matches endpoints created with createKpiWidgetEndpoint.
- */
-type KpiEndpointKeys<TApiEndpoints> = {
-  [K in keyof TApiEndpoints]: TApiEndpoints[K] extends KpiWidgetRequestSchema
-    ? K
-    : never;
-}[keyof TApiEndpoints];
-
-/**
- * Extract endpoint keys that return TableData.
- * Matches endpoints created with createTableWidgetEndpoint.
- */
-type TableEndpointKeys<TApiEndpoints> = {
-  [K in keyof TApiEndpoints]: TApiEndpoints[K] extends TableWidgetRequestSchema
-    ? K
-    : never;
-}[keyof TApiEndpoints];
-
-// =============================================================================
 // BASE WIDGET DESCRIPTOR
 // =============================================================================
 
@@ -109,10 +61,12 @@ export interface SeriesWidgetDescriptor<TApiEndpoints>
   /** The chart variant to render */
   variant: SeriesChartVariant;
   /**
-   * The API endpoint key that provides data for this widget.
-   * TypeScript will only allow endpoints that return SeriesData.
+   * Loads the series data for this widget.
+   * Called when the widget mounts and on refresh.
    */
-  endpoint: SeriesEndpointKeys<TApiEndpoints>;
+  onLoad: (args: {
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<any>>;
 }
 
 // =============================================================================
@@ -125,10 +79,12 @@ export interface ProportionalWidgetDescriptor<TApiEndpoints>
   /** The chart variant to render */
   variant: ProportionalChartVariant;
   /**
-   * The API endpoint key that provides data for this widget.
-   * TypeScript will only allow endpoints that return ProportionalData.
+   * Loads the proportional data for this widget.
+   * Called when the widget mounts and on refresh.
    */
-  endpoint: ProportionalEndpointKeys<TApiEndpoints>;
+  onLoad: (args: {
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<any>>;
 }
 
 // =============================================================================
@@ -139,10 +95,12 @@ export interface KpiWidgetDescriptor<TApiEndpoints>
   extends BaseWidgetDescriptor {
   type: "kpi";
   /**
-   * The API endpoint key that provides data for this widget.
-   * TypeScript will only allow endpoints that return KpiData.
+   * Loads the KPI data for this widget.
+   * Called when the widget mounts and on refresh.
    */
-  endpoint: KpiEndpointKeys<TApiEndpoints>;
+  onLoad: (args: {
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<any>>;
 }
 
 // =============================================================================
@@ -152,13 +110,15 @@ export interface KpiWidgetDescriptor<TApiEndpoints>
 export interface TableWidgetDescriptor<TApiEndpoints>
   extends BaseWidgetDescriptor {
   type: "table";
-  /**
-   * The API endpoint key that provides data for this widget.
-   * TypeScript will only allow endpoints that return TableData.
-   */
-  endpoint: TableEndpointKeys<TApiEndpoints>;
   /** Maximum rows to display */
   maxRows?: number;
+  /**
+   * Loads the table data for this widget.
+   * Called when the widget mounts and on refresh.
+   */
+  onLoad: (args: {
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<any>>;
 }
 
 // =============================================================================
@@ -167,7 +127,7 @@ export interface TableWidgetDescriptor<TApiEndpoints>
 
 /**
  * Union of all widget descriptor types.
- * Each widget type enforces that its endpoint returns the correct data shape.
+ * Each widget type uses an onLoad callback for data fetching.
  */
 export type WidgetDescriptor<TApiEndpoints> =
   | SeriesWidgetDescriptor<TApiEndpoints>
