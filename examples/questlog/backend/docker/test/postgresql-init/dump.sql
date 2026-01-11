@@ -114,7 +114,8 @@ CREATE TABLE public.tickets (
     id integer NOT NULL,
     workspace_id integer NOT NULL,
     title character varying(255) NOT NULL,
-    description character varying(1000)
+    description character varying(1000),
+    assignee_id integer
 );
 
 ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
@@ -124,6 +125,7 @@ ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
 
 ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_pk PRIMARY KEY (id);
 ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id);
+ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_assignee_fk FOREIGN KEY (assignee_id) REFERENCES public.users(id);
 
 
 -- ============================================================================

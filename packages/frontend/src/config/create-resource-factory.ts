@@ -5,7 +5,7 @@ import type { NubaseContextData } from "../context/types";
 import type { HttpResponse } from "../http/http-client";
 import type { ActionLayout } from "./action-layout";
 import type { BreadcrumbDefinition } from "./breadcrumb";
-import type { ResourceDescriptor } from "./resource";
+import type { ResourceDescriptor, ResourceLookupConfig } from "./resource";
 import type {
   ResourceCreateView,
   ResourceSearchView,
@@ -108,6 +108,30 @@ export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
   | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any>;
 
 /**
+ * Inline lookup configuration for the resource builder.
+ * Uses a dedicated lookup endpoint that returns Lookup[] items.
+ */
+export type InlineLookupConfig<TApiEndpoints> = {
+  /**
+   * The endpoint key to use for lookup search.
+   * This endpoint should accept { q: string } params and return Lookup[].
+   */
+  endpoint: keyof TApiEndpoints;
+
+  /**
+   * Minimum number of characters before triggering search.
+   * @default 1
+   */
+  minQueryLength?: number;
+
+  /**
+   * Debounce delay in milliseconds before triggering search.
+   * @default 300
+   */
+  debounceMs?: number;
+};
+
+/**
  * Resource builder that enables chained, type-safe resource configuration.
  *
  * Usage:
@@ -115,6 +139,7 @@ export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
  * createResource("ticket")
  *   .withApiEndpoints(apiEndpoints)
  *   .withActions({ delete: { ... } })
+ *   .withLookup({ ... })
  *   .withViews({ create: { ... }, view: { ... } })
  * ```
  */
@@ -125,11 +150,13 @@ class ResourceBuilder<
     string,
     InlineResourceActionConfig<TApiEndpoints>
   > = Record<string, never>,
+  TLookup extends InlineLookupConfig<TApiEndpoints> | undefined = undefined,
 > {
   private config: {
     id: TId;
     apiEndpoints?: TApiEndpoints;
     actions?: TActions;
+    lookup?: TLookup;
   };
 
   constructor(id: TId) {
@@ -142,8 +169,8 @@ class ResourceBuilder<
    */
   withApiEndpoints<T>(
     apiEndpoints: T,
-  ): ResourceBuilder<TId, T, Record<string, never>> {
-    return new ResourceBuilder<TId, T, Record<string, never>>(
+  ): ResourceBuilder<TId, T, Record<string, never>, undefined> {
+    return new ResourceBuilder<TId, T, Record<string, never>, undefined>(
       this.config.id,
     ).setApiEndpoints(apiEndpoints);
   }
@@ -154,12 +181,48 @@ class ResourceBuilder<
    */
   withActions<
     T extends Record<string, InlineResourceActionConfig<TApiEndpoints>>,
-  >(actions: T): ResourceBuilder<TId, TApiEndpoints, T> {
-    const builder = new ResourceBuilder<TId, TApiEndpoints, T>(this.config.id);
+  >(actions: T): ResourceBuilder<TId, TApiEndpoints, T, TLookup> {
+    const builder = new ResourceBuilder<TId, TApiEndpoints, T, TLookup>(
+      this.config.id,
+    );
     if (this.config.apiEndpoints !== undefined) {
       builder.setApiEndpoints(this.config.apiEndpoints);
     }
+    if (this.config.lookup !== undefined) {
+      builder.setLookup(this.config.lookup);
+    }
     builder.setActions(actions);
+    return builder;
+  }
+
+  /**
+   * Configure lookup behavior for this resource.
+   * Enables this resource to be used as a lookup/reference target by other resources.
+   *
+   * @example
+   * ```typescript
+   * createResource("user")
+   *   .withApiEndpoints(apiEndpoints)
+   *   .withLookup({
+   *     endpoint: "lookupUsers",
+   *     minQueryLength: 1,
+   *     debounceMs: 300,
+   *   })
+   * ```
+   */
+  withLookup<T extends InlineLookupConfig<TApiEndpoints>>(
+    lookup: T,
+  ): ResourceBuilder<TId, TApiEndpoints, TActions, T> {
+    const builder = new ResourceBuilder<TId, TApiEndpoints, TActions, T>(
+      this.config.id,
+    );
+    if (this.config.apiEndpoints !== undefined) {
+      builder.setApiEndpoints(this.config.apiEndpoints);
+    }
+    if (this.config.actions !== undefined) {
+      builder.setActions(this.config.actions);
+    }
+    builder.setLookup(lookup);
     return builder;
   }
 
@@ -287,10 +350,22 @@ class ResourceBuilder<
       }
     }
 
+    // Transform lookup config if present
+    let transformedLookup: ResourceLookupConfig<TApiEndpoints> | undefined;
+    if (this.config.lookup) {
+      const lookupConfig = this.config.lookup;
+      transformedLookup = {
+        endpoint: lookupConfig.endpoint,
+        minQueryLength: lookupConfig.minQueryLength,
+        debounceMs: lookupConfig.debounceMs,
+      };
+    }
+
     return {
       id: this.config.id,
       views: transformedViews,
       actions: transformedActions,
+      lookup: transformedLookup,
     } as any;
   }
 
@@ -302,6 +377,11 @@ class ResourceBuilder<
 
   private setActions(actions: TActions): this {
     this.config.actions = actions;
+    return this;
+  }
+
+  private setLookup(lookup: TLookup): this {
+    this.config.lookup = lookup;
     return this;
   }
 }
@@ -335,6 +415,6 @@ class ResourceBuilder<
  */
 export function createResource<TId extends string>(
   id: TId,
-): ResourceBuilder<TId, never, Record<string, never>> {
+): ResourceBuilder<TId, never, Record<string, never>, undefined> {
   return new ResourceBuilder(id);
 }

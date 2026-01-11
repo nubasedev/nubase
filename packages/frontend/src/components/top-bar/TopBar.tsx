@@ -1,6 +1,7 @@
 import type React from "react";
 import { forwardRef } from "react";
 import type { NubaseContextData } from "../../context/types";
+import { getWorkspaceFromRouter } from "../../context/WorkspaceContext";
 import { cn } from "../../styling/cn";
 import { ActionBar } from "../buttons/ActionBar";
 import { UserMenu } from "../user-avatar";
@@ -41,7 +42,9 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
             type="button"
             className="text-lg font-semibold text-foreground truncate hover:text-foreground/80 transition-colors cursor-pointer"
             onClick={() => {
-              context.router.navigate({ to: "/" });
+              const workspace = getWorkspaceFromRouter(context.router);
+              const homePath = workspace ? `/${workspace}` : "/";
+              context.router.navigate({ to: homePath });
             }}
             aria-label="Navigate to home"
           >

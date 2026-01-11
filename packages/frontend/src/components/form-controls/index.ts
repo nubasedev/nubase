@@ -1,6 +1,10 @@
 export { Button, type ButtonProps } from "../buttons/Button/Button";
 export { Checkbox, type CheckboxProps } from "./controls/Checkbox/Checkbox";
 export {
+  LookupSelect,
+  type LookupSelectProps,
+} from "./controls/LookupSelect/LookupSelect";
+export {
   SearchTextInput,
   type SearchTextInputProps,
 } from "./controls/SearchTextInput/SearchTextInput";

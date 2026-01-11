@@ -5,11 +5,12 @@ import {
   defaultKeybindings,
   resourceLink,
 } from "@nubase/frontend";
-import { Home, Plus, TicketIcon } from "lucide-react";
+import { Home, Plus, TicketIcon, UsersIcon } from "lucide-react";
 import { apiEndpoints } from "questlog-schema";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";
+import { userResource } from "./resources/user";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 const authController = new QuestlogAuthController(apiBaseUrl);
@@ -29,9 +30,16 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
       label: "Tickets",
       href: resourceLink(ticketResource, "search"),
     },
+    {
+      id: "users",
+      icon: UsersIcon,
+      label: "Users",
+      href: resourceLink(userResource, "search"),
+    },
   ],
   resources: {
     [ticketResource.id]: ticketResource,
+    [userResource.id]: userResource,
   },
   globalActions: [
     createCommandAction(

@@ -6,6 +6,7 @@ import {
   serial,
   varchar,
 } from "drizzle-orm/pg-core";
+import { usersTable } from "./user";
 import { workspacesTable } from "./workspace";
 
 export const ticketsTable = pgTable(
@@ -17,6 +18,7 @@ export const ticketsTable = pgTable(
       .references(() => workspacesTable.id),
     title: varchar("title", { length: 255 }).notNull(),
     description: varchar("description", { length: 1000 }),
+    assigneeId: integer("assignee_id").references(() => usersTable.id),
   },
   (table) => [
     // RLS policy for multi-workspace isolation

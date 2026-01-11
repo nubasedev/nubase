@@ -3,6 +3,8 @@ import type { AnyFieldApi } from "@tanstack/react-form";
 import { FormControl } from "../../form-controls/FormControl/FormControl";
 import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
+import { LookupEditFieldRenderer } from "../renderers/lookup/LookupEditFieldRenderer";
+import { LookupViewFieldRenderer } from "../renderers/lookup/LookupViewFieldRenderer";
 import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
 import { MultilineViewFieldRenderer } from "../renderers/multiline/MultilineViewFieldRenderer";
 import { NumberEditFieldRenderer } from "../renderers/number/NumberEditFieldRenderer";
@@ -24,10 +26,12 @@ import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 // the system will fall back to the type-based renderer
 const viewRenderersByName: Record<string, ViewFieldRenderer> = {
   multiline: MultilineViewFieldRenderer,
+  lookup: LookupViewFieldRenderer,
 };
 
 const editRenderersByName: Record<string, EditFieldRenderer> = {
   multiline: MultilineEditFieldRenderer,
+  lookup: LookupEditFieldRenderer,
 };
 
 // Renderers by schema type

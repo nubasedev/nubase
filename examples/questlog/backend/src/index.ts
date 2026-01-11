@@ -7,6 +7,7 @@ import { authHandlers } from "./api/routes/auth";
 import { dashboardHandlers } from "./api/routes/dashboard";
 import { testUtils } from "./api/routes/test-utils";
 import { ticketHandlers } from "./api/routes/ticket";
+import { userHandlers } from "./api/routes/user";
 import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 import {
@@ -48,6 +49,7 @@ app.get("/", getRoot);
 // Register all handlers - path and method extracted from endpoint metadata
 registerHandlers(app, authHandlers);
 registerHandlers(app, ticketHandlers);
+registerHandlers(app, userHandlers);
 registerHandlers(app, dashboardHandlers);
 
 // Test utility routes - only enabled in test environment

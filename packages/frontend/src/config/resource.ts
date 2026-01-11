@@ -2,6 +2,30 @@ import type { Action } from "../actions/types";
 import type { View } from "./view";
 
 /**
+ * Configuration for lookup/search behavior of a resource.
+ * Defines how to search for entities when this resource is used as a lookup target.
+ */
+export type ResourceLookupConfig<TApiEndpoints = any> = {
+  /**
+   * The endpoint key to use for lookup search.
+   * This endpoint should return Lookup[] (array of { id, title, subtitle?, image? }).
+   */
+  endpoint: keyof TApiEndpoints;
+
+  /**
+   * Minimum number of characters before triggering search.
+   * @default 1
+   */
+  minQueryLength?: number;
+
+  /**
+   * Debounce delay in milliseconds before triggering search.
+   * @default 300
+   */
+  debounceMs?: number;
+};
+
+/**
  * A resource descriptor defines the views available for a resource entity.
  * Views are directly accessible without an intermediate operation wrapper.
  * Can be extended with additional properties as needed.
@@ -12,6 +36,7 @@ export type ResourceDescriptor<
     View<any, any, any, any>
   >,
   TActions extends Record<string, Action> = Record<string, Action>,
+  TLookup extends ResourceLookupConfig<any> | undefined = undefined,
 > = {
   id: string;
   views: TViews;
@@ -20,6 +45,11 @@ export type ResourceDescriptor<
    * This allows views to reference actions by ID in a type-safe manner.
    */
   actions?: TActions;
+  /**
+   * Lookup configuration for when this resource is used as a search/reference target.
+   * Enables other resources to reference this one via lookup fields.
+   */
+  lookup?: TLookup;
 };
 
 /**

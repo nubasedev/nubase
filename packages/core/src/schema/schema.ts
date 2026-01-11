@@ -7,9 +7,14 @@ export interface SchemaMetadata<Output = any> {
   defaultValue?: Output;
   /**
    * Custom renderer identifier to override the default type-based rendering.
-   * Examples: "multiline", "email", "password", "url"
+   * Examples: "multiline", "email", "password", "url", "lookup"
    */
   renderer?: string;
+  /**
+   * When renderer is "lookup", this specifies which resource to use for the lookup.
+   * The resource must have a lookup endpoint configured.
+   */
+  lookupResource?: string;
   validateOnSubmit?: (value: any) => string | undefined;
   validateOnSubmitAsync?: (value: any) => Promise<string | undefined>;
   validateOnBlur?: (value: any) => string | undefined;

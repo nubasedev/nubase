@@ -22,6 +22,14 @@ import {
   patchTicketSchema,
   postTicketSchema,
 } from "./endpoints/ticket";
+import {
+  deleteUserSchema,
+  getUserSchema,
+  getUsersSchema,
+  lookupUsersSchema,
+  patchUserSchema,
+  postUserSchema,
+} from "./endpoints/user";
 
 /**
  * Flattened API endpoints at root level.
@@ -43,9 +51,17 @@ export const apiEndpoints = {
   patchTicket: patchTicketSchema, // PUT /tickets/:id
   deleteTicket: deleteTicketSchema, // DELETE /tickets/:id
 
+  // User endpoints
+  getUsers: getUsersSchema, // GET /users
+  getUser: getUserSchema, // GET /users/:id
+  postUser: postUserSchema, // POST /users
+  patchUser: patchUserSchema, // PATCH /users/:id
+  deleteUser: deleteUserSchema, // DELETE /users/:id
+  lookupUsers: lookupUsersSchema, // GET /lookup/users?q=...
+
   // Dashboard widget endpoints
   getRevenueChart: getRevenueChartSchema, // GET /dashboard/revenue-chart
-  getBrowserStats: getBrowserStatsSchema, // GET /dashboard/browser-stats
+  getBrowserStats: getBrowserStatsSchema, // GET /dashboard/browser-chart
   getTotalRevenue: getTotalRevenueSchema, // GET /dashboard/total-revenue
   getActiveUsers: getActiveUsersSchema, // GET /dashboard/active-users
   getSalesChart: getSalesChartSchema, // GET /dashboard/sales-chart

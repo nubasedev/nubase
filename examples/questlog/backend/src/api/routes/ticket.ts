@@ -38,6 +38,7 @@ export const ticketHandlers = {
         id: ticket.id,
         title: ticket.title,
         description: ticket.description ?? undefined,
+        assigneeId: ticket.assigneeId ?? undefined,
       }));
     },
   }),
@@ -75,6 +76,7 @@ export const ticketHandlers = {
         id: ticket.id,
         title: ticket.title,
         description: ticket.description ?? undefined,
+        assigneeId: ticket.assigneeId ?? undefined,
       };
     },
   }),
@@ -99,6 +101,7 @@ export const ticketHandlers = {
         workspaceId: workspace.id,
         title: body.title,
         description: body.description,
+        assigneeId: body.assigneeId,
       };
 
       const result: Ticket[] = await db
@@ -115,6 +118,7 @@ export const ticketHandlers = {
         id: createdTicket.id,
         title: createdTicket.title,
         description: createdTicket.description ?? undefined,
+        assigneeId: createdTicket.assigneeId ?? undefined,
       };
     },
   }),
@@ -142,6 +146,9 @@ export const ticketHandlers = {
       if (body.description !== undefined) {
         updateData.description = body.description;
       }
+      if (body.assigneeId !== undefined) {
+        updateData.assigneeId = body.assigneeId;
+      }
 
       const result: Ticket[] = await db
         .update(ticketsTable)
@@ -163,6 +170,7 @@ export const ticketHandlers = {
         id: updatedTicket.id,
         title: updatedTicket.title,
         description: updatedTicket.description ?? undefined,
+        assigneeId: updatedTicket.assigneeId ?? undefined,
       };
     },
   }),
