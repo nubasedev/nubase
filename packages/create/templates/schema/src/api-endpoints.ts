@@ -21,6 +21,7 @@ import {
 	patchTicketSchema,
 	postTicketSchema,
 } from "./endpoints/ticket";
+import { lookupUsersSchema } from "./endpoints/user";
 
 export const apiEndpoints = {
 	// Auth
@@ -37,6 +38,9 @@ export const apiEndpoints = {
 	postTicket: postTicketSchema,
 	patchTicket: patchTicketSchema,
 	deleteTicket: deleteTicketSchema,
+
+	// Users
+	lookupUsers: lookupUsersSchema,
 
 	// Dashboard widgets
 	getRevenueChart: getRevenueChartSchema,

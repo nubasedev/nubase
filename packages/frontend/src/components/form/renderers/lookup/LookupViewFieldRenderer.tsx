@@ -7,7 +7,7 @@ import type { ViewFieldRendererProps } from "../types";
 
 /**
  * View renderer for lookup fields.
- * Fetches and displays the referenced entity's display text using the lookup endpoint.
+ * Fetches and displays the referenced entity's display text using the lookup callback.
  */
 export const LookupViewFieldRenderer = ({
   fieldState,
@@ -29,41 +29,29 @@ export const LookupViewFieldRenderer = ({
   // Get the lookup configuration from the resource
   const lookupConfig = resource?.lookup;
 
-  // Get the endpoint key for the lookup
-  const endpointKey = lookupConfig?.endpoint as string | undefined;
-
   // Query to fetch the item for display
   const { data: lookupItem, isLoading } = useQuery({
     queryKey: ["lookup-display", lookupResourceId, value],
     queryFn: async (): Promise<Lookup | null> => {
-      if (!endpointKey || !context.http || value == null) {
+      if (!lookupConfig?.onSearch || value == null) {
         return null;
       }
 
       try {
-        // Call the lookup endpoint with the value as query
-        // This will search for items matching the ID
-        const httpMethod = (context.http as Record<string, unknown>)[
-          endpointKey
-        ] as
-          | ((args: { params: { q: string } }) => Promise<{ data: Lookup[] }>)
-          | undefined;
-
-        if (!httpMethod) {
-          return null;
-        }
-
         // Search with empty string to get all items, then find by ID
         // Note: This is not ideal but works for small datasets
         // In production, you might want a dedicated "get by ID" endpoint
-        const response = await httpMethod({ params: { q: "" } });
+        const response = await lookupConfig.onSearch({
+          query: "",
+          context,
+        });
         const item = response.data.find((r) => r.id === value);
         return item || null;
       } catch {
         return null;
       }
     },
-    enabled: value != null && !!endpointKey && !!context.http,
+    enabled: value != null && !!lookupConfig?.onSearch,
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 

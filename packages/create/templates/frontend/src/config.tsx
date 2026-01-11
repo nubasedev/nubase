@@ -5,6 +5,7 @@ import { apiEndpoints } from "schema";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth/__PROJECT_NAME_PASCAL__AuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";
+import { userResource } from "./resources/user";
 
 const apiBaseUrl =
 	import.meta.env.VITE_API_BASE_URL || "http://localhost:__BACKEND_PORT__";
@@ -28,6 +29,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
 	],
 	resources: {
 		[ticketResource.id]: ticketResource,
+		[userResource.id]: userResource,
 	},
 	keybindings: defaultKeybindings.extend(),
 	apiBaseUrl: apiBaseUrl,

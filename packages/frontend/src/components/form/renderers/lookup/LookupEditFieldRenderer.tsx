@@ -27,37 +27,25 @@ export const LookupEditFieldRenderer = ({
   // Get the lookup configuration from the resource (may be undefined)
   const lookupConfig = resource?.lookup;
 
-  // Get the endpoint key for the lookup
-  const endpointKey = lookupConfig?.endpoint as string | undefined;
-
   // Create the search handler - must be called unconditionally
   const handleSearch = useCallback(
     async (query: string): Promise<Lookup[]> => {
-      if (!endpointKey || !context.http) {
+      if (!lookupConfig?.onSearch) {
         return [];
       }
 
       try {
-        // Call the lookup endpoint with the query parameter
-        const httpMethod = (context.http as Record<string, unknown>)[
-          endpointKey
-        ] as
-          | ((args: { params: { q: string } }) => Promise<{ data: Lookup[] }>)
-          | undefined;
-
-        if (!httpMethod) {
-          console.error(`Lookup endpoint "${endpointKey}" not found`);
-          return [];
-        }
-
-        const response = await httpMethod({ params: { q: query } });
+        const response = await lookupConfig.onSearch({
+          query,
+          context,
+        });
         return response.data;
       } catch (error) {
         console.error("Lookup search failed:", error);
         return [];
       }
     },
-    [endpointKey, context.http],
+    [lookupConfig, context],
   );
 
   const lifecycle: EditFieldLifecycle = {

@@ -1,4 +1,4 @@
-import type { ArraySchema, Infer, ObjectSchema } from "@nubase/core";
+import type { ArraySchema, Infer, Lookup, ObjectSchema } from "@nubase/core";
 import type React from "react";
 import type { ResourceActionExecutionContext } from "../actions/types";
 import type { NubaseContextData } from "../context/types";
@@ -109,14 +109,18 @@ export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
 
 /**
  * Inline lookup configuration for the resource builder.
- * Uses a dedicated lookup endpoint that returns Lookup[] items.
+ * Uses a callback to search for lookup items.
  */
 export type InlineLookupConfig<TApiEndpoints> = {
   /**
-   * The endpoint key to use for lookup search.
-   * This endpoint should accept { q: string } params and return Lookup[].
+   * Callback to search for lookup items.
+   * @param args - Contains the query string and context with typed HTTP client
+   * @returns Promise resolving to an array of Lookup items
    */
-  endpoint: keyof TApiEndpoints;
+  onSearch: (args: {
+    query: string;
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<Lookup[]>>;
 
   /**
    * Minimum number of characters before triggering search.
@@ -351,11 +355,14 @@ class ResourceBuilder<
     }
 
     // Transform lookup config if present
-    let transformedLookup: ResourceLookupConfig<TApiEndpoints> | undefined;
+    let transformedLookup: ResourceLookupConfig | undefined;
     if (this.config.lookup) {
       const lookupConfig = this.config.lookup;
       transformedLookup = {
-        endpoint: lookupConfig.endpoint,
+        onSearch: ({ query, context }) => {
+          // Call the typed onSearch with the context
+          return lookupConfig.onSearch({ query, context: context as any });
+        },
         minQueryLength: lookupConfig.minQueryLength,
         debounceMs: lookupConfig.debounceMs,
       };

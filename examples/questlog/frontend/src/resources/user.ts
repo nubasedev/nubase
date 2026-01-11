@@ -5,9 +5,8 @@ import { apiEndpoints } from "questlog-schema";
 export const userResource = createResource("user")
   .withApiEndpoints(apiEndpoints)
   .withLookup({
-    endpoint: "lookupUsers",
-    minQueryLength: 1,
-    debounceMs: 300,
+    onSearch: ({ query, context }) =>
+      context.http.lookupUsers({ params: { q: query } }),
   })
   .withActions({
     delete: {

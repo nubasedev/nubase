@@ -1,16 +1,23 @@
+import type { Lookup } from "@nubase/core";
 import type { Action } from "../actions/types";
+import type { HttpResponse } from "../http/http-client";
 import type { View } from "./view";
 
 /**
  * Configuration for lookup/search behavior of a resource.
  * Defines how to search for entities when this resource is used as a lookup target.
  */
-export type ResourceLookupConfig<TApiEndpoints = any> = {
+export type ResourceLookupConfig = {
   /**
-   * The endpoint key to use for lookup search.
-   * This endpoint should return Lookup[] (array of { id, title, subtitle?, image? }).
+   * Callback to search for lookup items.
+   * Called by the renderer with the query and context.
+   * @param args - Contains the query string and context
+   * @returns Promise resolving to an HttpResponse with Lookup[] data
    */
-  endpoint: keyof TApiEndpoints;
+  onSearch: (args: {
+    query: string;
+    context: unknown;
+  }) => Promise<HttpResponse<Lookup[]>>;
 
   /**
    * Minimum number of characters before triggering search.
@@ -36,7 +43,7 @@ export type ResourceDescriptor<
     View<any, any, any, any>
   >,
   TActions extends Record<string, Action> = Record<string, Action>,
-  TLookup extends ResourceLookupConfig<any> | undefined = undefined,
+  TLookup extends ResourceLookupConfig | undefined = undefined,
 > = {
   id: string;
   views: TViews;

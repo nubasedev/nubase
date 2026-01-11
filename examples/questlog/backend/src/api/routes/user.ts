@@ -285,11 +285,8 @@ export const userHandlers = {
   >({
     endpoint: apiEndpoints.lookupUsers,
     auth: "required",
-    handler: async ({ params, user, ctx }) => {
+    handler: async ({ params, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
-      console.log(
-        `User ${user.email} looking up users for workspace ${workspace.slug} with query: ${params.q}`,
-      );
       const db = getDb();
 
       // Build where conditions
