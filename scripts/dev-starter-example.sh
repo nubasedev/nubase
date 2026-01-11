@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to run npm install, typecheck, and E2E tests on examples/starter.
+# Script to run the starter example in development mode.
 # Assumes examples/starter already exists (created via create:local or create:npm).
 
 set -e
@@ -65,34 +65,8 @@ check_docker() {
   echo "Docker is running."
 }
 
-# Cleanup function to stop all nubase-managed docker containers
-cleanup_docker() {
-  echo "Stopping all nubase-managed containers..."
-
-  # Stop containers with nubase label (macOS compatible - no xargs -r)
-  # Use timeout to prevent hanging
-  RUNNING=$(run_with_timeout 10 docker ps -q --filter "label=com.nubase.managed=true" 2>/dev/null || echo "")
-  if [ -n "$RUNNING" ]; then
-    echo "Found running containers: $RUNNING"
-    echo "$RUNNING" | xargs docker stop 2>/dev/null || true
-    echo "Stopped containers."
-  else
-    echo "No running nubase-managed containers found."
-  fi
-
-  # Remove stopped containers
-  STOPPED=$(run_with_timeout 10 docker ps -aq --filter "label=com.nubase.managed=true" 2>/dev/null || echo "")
-  if [ -n "$STOPPED" ]; then
-    echo "Removing stopped containers: $STOPPED"
-    echo "$STOPPED" | xargs docker rm 2>/dev/null || true
-    echo "Removed containers."
-  else
-    echo "No stopped nubase-managed containers to remove."
-  fi
-}
-
 echo "========================================"
-echo "Testing starter example"
+echo "Starting starter example (dev mode)"
 echo "========================================"
 echo ""
 
@@ -106,41 +80,35 @@ if [ ! -d "$STARTER_DIR" ]; then
   exit 1
 fi
 
-# Step 0: Check Docker and cleanup any existing containers
-echo "[0/5] Checking Docker and cleaning up previous containers..."
+# Step 0: Check Docker
+echo "[0/4] Checking Docker..."
 check_docker
-cleanup_docker
-echo "Cleanup complete."
 
 cd "$STARTER_DIR"
 
 # Step 1: Install dependencies
 echo ""
-echo "[1/5] Installing dependencies..."
+echo "[1/4] Installing dependencies..."
 npm install
 
-# Step 2: Run typecheck
+# Step 2: Start the dev database
 echo ""
-echo "[2/5] Running typecheck..."
-npm run typecheck
+echo "[2/4] Starting dev database..."
+npm run db:up
 
-# Step 3: Start the test database
+# Step 3: Reset the dev database to ensure clean state with seed data
 echo ""
-echo "[3/5] Starting test database..."
-npm run db:test:up
+echo "[3/4] Resetting dev database..."
+npm run db:reset
 
-# Step 4: Reset the test database to ensure clean state
+# Step 4: Start dev servers
 echo ""
-echo "[4/5] Resetting test database..."
-npm run db:test:reset
-
-# Step 5: Install Playwright and run E2E tests
-echo ""
-echo "[5/5] Installing Playwright and running E2E tests..."
-npm run e2e:install
-npm run e2e
-
+echo "[4/4] Starting dev servers..."
 echo ""
 echo "========================================"
-echo "All tests passed!"
+echo "Dev servers starting..."
+echo "Frontend: http://localhost:3002"
+echo "Backend:  http://localhost:3001"
 echo "========================================"
+echo ""
+npm run dev

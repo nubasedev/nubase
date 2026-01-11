@@ -37,8 +37,9 @@
     "bump": "./scripts/bump-versions.sh",
     "publish": "turbo run publish:latest --filter=\"@nubase/*\"",
     "publish:dev": "turbo run publish:dev --filter=\"@nubase/*\"",
-    "examples:starter:create": "./scripts/create-starter-example.sh",
-    "examples:starter:test": "./scripts/test-starter-example.sh"
+    "starter:create": "./scripts/create-starter-example.sh",
+    "starter:dev": "./scripts/dev-starter-example.sh",
+    "starter:test": "./scripts/test-starter-example.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
