@@ -1,23 +1,10 @@
-import type { BaseSchema, Lookup } from "@nubase/core";
+import type { Lookup } from "@nubase/core";
 import { useCallback, useRef } from "react";
 import type { ResourceLookupConfig } from "../../../../config/resource";
 import { LookupSelect } from "../../../form-controls/controls/LookupSelect/LookupSelect";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
-
-/**
- * Helper to get the base type from a schema, unwrapping optional wrappers.
- * Returns the `type` property of the innermost schema.
- */
-function getBaseSchemaType(schema: BaseSchema<any>): string {
-  // Check if the schema has an 'unwrap' method (OptionalSchema)
-  if ("unwrap" in schema && typeof schema.unwrap === "function") {
-    return getBaseSchemaType(schema.unwrap());
-  }
-  // Return the type of the schema
-  return (schema as any).type || "unknown";
-}
 
 export const LookupEditFieldRenderer = ({
   schema,
@@ -27,9 +14,6 @@ export const LookupEditFieldRenderer = ({
 }: EditFieldRendererProps): EditFieldRendererResult => {
   const context = useNubaseContext();
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Determine the expected type of the field value
-  const expectedType = getBaseSchemaType(schema);
 
   // Get the resource lookup configuration
   const lookupResourceId = metadata.lookupResource;
@@ -112,7 +96,7 @@ export const LookupEditFieldRenderer = ({
     };
   }
 
-  // Coerce the value to the expected type
+  // Coerce the value to the expected type based on schema.baseType
   const coerceValue = (
     value: string | number | null,
   ): string | number | null => {
@@ -120,7 +104,7 @@ export const LookupEditFieldRenderer = ({
       return null;
     }
     // If the schema expects a number, convert string to number
-    if (expectedType === "number") {
+    if (schema.baseType === "number") {
       const numValue = typeof value === "string" ? Number(value) : value;
       return Number.isNaN(numValue) ? null : numValue;
     }

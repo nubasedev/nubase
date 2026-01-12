@@ -43,6 +43,15 @@ export abstract class BaseSchema<Output = any> {
    */
   abstract readonly type: string;
 
+  /**
+   * The base type of this schema, unwrapping any wrapper schemas (like OptionalSchema).
+   * For most schemas, this is the same as `type`. For wrapper schemas like OptionalSchema,
+   * this returns the type of the innermost wrapped schema.
+   */
+  get baseType(): string {
+    return this.type;
+  }
+
   _meta: SchemaMetadata<Output> = {};
 
   /**
@@ -131,6 +140,14 @@ export class OptionalSchema<
    */
   unwrap(): TWrapped {
     return this._wrapped;
+  }
+
+  /**
+   * Returns the base type of the wrapped schema.
+   * This allows getting the underlying type (e.g., "number") even when wrapped in OptionalSchema.
+   */
+  override get baseType(): string {
+    return this._wrapped.baseType;
   }
 
   toZod(): z.ZodOptional<z.ZodNullable<z.ZodSchema<TWrapped["_outputType"]>>> {
