@@ -3,6 +3,7 @@ export { Checkbox, type CheckboxProps } from "./controls/Checkbox/Checkbox";
 export {
   LookupSelect,
   type LookupSelectProps,
+  lookupSelectVariants,
 } from "./controls/LookupSelect/LookupSelect";
 export {
   SearchTextInput,
