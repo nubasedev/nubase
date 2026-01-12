@@ -110,10 +110,22 @@ export function useSchemaForm<
       const defaultValue = baseFieldSchema._meta?.defaultValue;
 
       // Use initial value if provided, otherwise use schema default or type default
-      acc[key] =
-        initialValues?.[key as keyof TData] ??
-        defaultValue ??
-        (baseFieldSchema instanceof BooleanSchema ? false : "");
+      if (initialValues?.[key as keyof TData] !== undefined) {
+        acc[key] = initialValues[key as keyof TData];
+      } else if (defaultValue !== undefined) {
+        acc[key] = defaultValue;
+      } else if (baseFieldSchema instanceof BooleanSchema) {
+        acc[key] = false;
+      } else if (baseFieldSchema instanceof OptionalSchema) {
+        // For optional fields, use undefined (will become null on validation)
+        acc[key] = undefined;
+      } else if (baseFieldSchema instanceof NumberSchema) {
+        // For required number fields, use 0 as default
+        acc[key] = 0;
+      } else {
+        // Default to empty string for other types (strings, etc.)
+        acc[key] = "";
+      }
 
       return acc;
     },
