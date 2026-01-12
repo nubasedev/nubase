@@ -1,8 +1,6 @@
 import {
   type BaseSchema,
-  BooleanSchema,
   type Infer,
-  NumberSchema,
   type ObjectSchema,
   OptionalSchema,
 } from "@nubase/core";
@@ -47,7 +45,7 @@ export type UseSchemaFormOptions<
   initialValues?: Partial<TData>;
 };
 
-// Helper function to transform empty strings and 0 to null for optional fields
+// Helper function to transform empty strings to null for optional fields
 function transformEmptyToNull(
   values: Record<string, any>,
   schema: ObjectSchema<any>,
@@ -57,14 +55,10 @@ function transformEmptyToNull(
   for (const [key, value] of Object.entries(values)) {
     const fieldSchema = schema._shape[key] as BaseSchema<any>;
 
-    // Check if the field is optional
+    // Check if the field is optional and transform empty strings to null
     if (fieldSchema instanceof OptionalSchema) {
-      // Transform empty strings to null for optional fields
       if (value === "" || (typeof value === "string" && value.trim() === "")) {
         transformed[key] = null;
-      } else if (value === 0 && fieldSchema instanceof NumberSchema) {
-        // Only convert 0 to null if it's not a required field and you want this behavior
-        // transformed[key] = null;
       }
     }
     // Note: We don't transform false to null for booleans as false is a valid value
@@ -106,27 +100,9 @@ export function useSchemaForm<
   // Create default values from schema and merge with initial values
   const defaultValues = Object.entries(schema._shape).reduce(
     (acc, [key, fieldSchema]) => {
-      const baseFieldSchema = fieldSchema as BaseSchema<any>;
-      const defaultValue = baseFieldSchema._meta?.defaultValue;
-
-      // Use initial value if provided, otherwise use schema default or type default
-      if (initialValues?.[key as keyof TData] !== undefined) {
-        acc[key] = initialValues[key as keyof TData];
-      } else if (defaultValue !== undefined) {
-        acc[key] = defaultValue;
-      } else if (baseFieldSchema instanceof BooleanSchema) {
-        acc[key] = false;
-      } else if (baseFieldSchema instanceof OptionalSchema) {
-        // For optional fields, use undefined (will become null on validation)
-        acc[key] = undefined;
-      } else if (baseFieldSchema instanceof NumberSchema) {
-        // For required number fields, use 0 as default
-        acc[key] = 0;
-      } else {
-        // Default to empty string for other types (strings, etc.)
-        acc[key] = "";
-      }
-
+      acc[key] =
+        initialValues?.[key as keyof TData] ??
+        (fieldSchema as BaseSchema<any>).defaultValue;
       return acc;
     },
     {} as Record<string, any>,

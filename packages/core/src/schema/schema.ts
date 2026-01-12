@@ -52,6 +52,15 @@ export abstract class BaseSchema<Output = any> {
     return this.type;
   }
 
+  /**
+   * The default value for this schema type.
+   * Returns the user-configured default from metadata, or a sensible type-specific default.
+   * Subclasses override this to provide appropriate defaults (e.g., false for boolean, 0 for number).
+   */
+  get defaultValue(): Output | undefined {
+    return this._meta?.defaultValue;
+  }
+
   _meta: SchemaMetadata<Output> = {};
 
   /**
@@ -94,6 +103,10 @@ export abstract class BaseSchema<Output = any> {
 export class BooleanSchema extends BaseSchema<boolean> {
   readonly type = "boolean" as const;
 
+  override get defaultValue(): boolean {
+    return this._meta?.defaultValue ?? false;
+  }
+
   toZod(): z.ZodBoolean {
     return z.boolean();
   }
@@ -101,7 +114,10 @@ export class BooleanSchema extends BaseSchema<boolean> {
 
 export class StringSchema extends BaseSchema<string> {
   readonly type = "string" as const;
-  // Add string-specific validation methods here (e.g., minLength, pattern)
+
+  override get defaultValue(): string {
+    return this._meta?.defaultValue ?? "";
+  }
 
   toZod(): z.ZodString {
     return z.string();
@@ -110,7 +126,10 @@ export class StringSchema extends BaseSchema<string> {
 
 export class NumberSchema extends BaseSchema<number> {
   readonly type = "number" as const;
-  // Add number-specific validation methods here (e.g., min, max)
+
+  override get defaultValue(): number {
+    return this._meta?.defaultValue ?? 0;
+  }
 
   toZod(): z.ZodNumber {
     return z.number();
@@ -148,6 +167,13 @@ export class OptionalSchema<
    */
   override get baseType(): string {
     return this._wrapped.baseType;
+  }
+
+  /**
+   * Optional fields default to undefined (which becomes null during validation).
+   */
+  override get defaultValue(): TWrapped["_outputType"] | undefined {
+    return this._meta?.defaultValue ?? undefined;
   }
 
   toZod(): z.ZodOptional<z.ZodNullable<z.ZodSchema<TWrapped["_outputType"]>>> {
