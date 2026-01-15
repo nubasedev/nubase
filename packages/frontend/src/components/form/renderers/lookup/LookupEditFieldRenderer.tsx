@@ -1,4 +1,5 @@
 import type { Lookup } from "@nubase/core";
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import type { ResourceLookupConfig } from "../../../../config/resource";
 import { LookupSelect } from "../../../form-controls/controls/LookupSelect/LookupSelect";
@@ -27,6 +28,24 @@ export const LookupEditFieldRenderer = ({
 
   // Get the lookup configuration from the resource (may be undefined)
   const lookupConfig = resource?.lookup;
+
+  // Fetch initial item when we have a value but no display text
+  const { data: initialItem } = useQuery({
+    queryKey: ["lookup-initial", lookupResourceId, fieldState.state.value],
+    queryFn: async (): Promise<Lookup | null> => {
+      if (!lookupConfig?.onSearch || fieldState.state.value == null) {
+        return null;
+      }
+      // Search with empty string to get items, then find by ID
+      const response = await lookupConfig.onSearch({
+        query: "",
+        context,
+      });
+      return response.data.find((r) => r.id === fieldState.state.value) || null;
+    },
+    enabled: fieldState.state.value != null && !!lookupConfig?.onSearch,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   // Create the search handler - must be called unconditionally
   const handleSearch = useCallback(
@@ -124,6 +143,7 @@ export const LookupEditFieldRenderer = ({
       hasError={hasError}
       minQueryLength={lookupConfig.minQueryLength ?? 1}
       debounceMs={lookupConfig.debounceMs ?? 300}
+      initialItem={initialItem ?? undefined}
     />
   );
 
