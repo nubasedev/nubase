@@ -7,9 +7,18 @@ import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
 /**
  * Adjusts the textarea height to fit its content without scrollbars.
+ * Setting height to 'auto' first resets the height so scrollHeight is recalculated.
  */
 const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
   textarea.style.height = "auto";
+  textarea.style.height = `${textarea.scrollHeight}px`;
+};
+
+/**
+ * Sets the initial textarea height without the 'auto' reset.
+ * This prevents a layout flash on initial mount since we go directly to the correct height.
+ */
+const setInitialTextareaHeight = (textarea: HTMLTextAreaElement) => {
   textarea.style.height = `${textarea.scrollHeight}px`;
 };
 
@@ -21,9 +30,10 @@ export const MultilineEditFieldRenderer = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize on initial render - useLayoutEffect runs synchronously before paint to prevent flicker
+  // Use setInitialTextareaHeight (no 'auto' reset) to prevent a flash during initial mount
   useLayoutEffect(() => {
     if (textareaRef.current) {
-      adjustTextareaHeight(textareaRef.current);
+      setInitialTextareaHeight(textareaRef.current);
     }
   }, []);
 
