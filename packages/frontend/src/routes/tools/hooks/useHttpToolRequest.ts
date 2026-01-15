@@ -1,5 +1,9 @@
 import type { RequestSchema } from "@nubase/core";
 import { useCallback, useMemo, useState } from "react";
+import {
+  buildUrlWithPathParams,
+  extractPathParamKeys,
+} from "../../../utils/url-params";
 
 export interface HttpResponse {
   status: number;
@@ -54,27 +58,6 @@ export interface UseHttpToolRequestResult {
 }
 
 /**
- * Extracts path parameter keys from a URL path.
- * Example: "/tickets/:id" => ["id"]
- */
-function extractPathParams(path: string): string[] {
-  const matches = path.match(/:(\w+)/g);
-  return matches ? matches.map((p) => p.slice(1)) : [];
-}
-
-/**
- * Builds a URL by replacing path parameters with their values.
- */
-function buildUrl(path: string, params: Record<string, string>): string {
-  return path.replace(/:(\w+)/g, (_, key) => {
-    const value = params[key];
-    return value !== undefined && value !== ""
-      ? encodeURIComponent(value)
-      : `:${key}`;
-  });
-}
-
-/**
  * Creates a label from an endpoint key and schema.
  * Example: "getTicket" with path "/tickets/:id" => "GET /tickets/:id (getTicket)"
  */
@@ -113,7 +96,7 @@ export function useHttpToolRequest(
 
   const pathParamKeys = useMemo(() => {
     if (!selectedEndpoint) return [];
-    return extractPathParams(selectedEndpoint.path);
+    return extractPathParamKeys(selectedEndpoint.path);
   }, [selectedEndpoint]);
 
   const hasRequestBody = useMemo(() => {
@@ -176,7 +159,10 @@ export function useHttpToolRequest(
 
     try {
       // Build the URL with path params
-      const builtPath = buildUrl(selectedEndpoint.path, pathParams);
+      const builtPath = buildUrlWithPathParams(
+        selectedEndpoint.path,
+        pathParams,
+      );
       const fullUrl = `${apiBaseUrl}${builtPath}`;
 
       // Prepare request options

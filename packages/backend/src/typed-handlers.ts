@@ -112,7 +112,10 @@ function createTypedHandlerInternal<
       // Parse and validate request parameters using schema's built-in coercion
       let params: InferRequestParams<T>;
       try {
-        const rawParams = c.req.param();
+        // Merge path params (e.g., :id from /tickets/:id) and query params (e.g., ?q=admin)
+        const pathParams = c.req.param();
+        const queryParams = c.req.query();
+        const rawParams = { ...pathParams, ...queryParams };
 
         // Use toZodWithCoercion() to automatically convert string params to expected types
         params = schema.requestParams

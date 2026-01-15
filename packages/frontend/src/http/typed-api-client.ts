@@ -6,6 +6,7 @@ import type {
   RequestSchema,
 } from "@nubase/core";
 import { ClientNetworkError } from "../utils/network-errors";
+import { separateUrlParams } from "../utils/url-params";
 import type {
   HttpClient,
   HttpRequestConfig,
@@ -75,13 +76,8 @@ export class TypedApiClient<T> {
     try {
       const { params, data, config } = options;
 
-      // Replace path parameters if they exist
-      let path = schema.path;
-      if (params && typeof params === "object") {
-        for (const [key, value] of Object.entries(params)) {
-          path = path.replace(`:${key}`, String(value));
-        }
-      }
+      // Replace path parameters and collect remaining params for query string
+      const { path, queryParams } = separateUrlParams(schema.path, params);
 
       // Validate request body if provided
       if (data && schema.requestBody) {
@@ -101,9 +97,14 @@ export class TypedApiClient<T> {
 
       // Make the HTTP request
       let response: HttpResponse<any>;
+      // Merge query params with any existing config.params
+      const mergedConfig =
+        Object.keys(queryParams).length > 0
+          ? { ...config, params: { ...config?.params, ...queryParams } }
+          : config;
       switch (schema.method) {
         case "GET":
-          response = await this.httpClient.get(path, config);
+          response = await this.httpClient.get(path, mergedConfig);
           break;
         case "POST":
           response = await this.httpClient.post(path, data, config);
