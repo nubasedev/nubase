@@ -4,6 +4,7 @@ import type { ResourceLookupConfig } from "../../../../config/resource";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import type { ViewFieldRendererProps } from "../types";
+import { EmptyValue, ViewFieldWrapper } from "../ViewFieldWrapper";
 
 /**
  * View renderer for lookup fields.
@@ -58,52 +59,66 @@ export const LookupViewFieldRenderer = ({
   // Handle missing configuration
   if (!lookupResourceId) {
     return (
-      <span className="text-muted-foreground">{value ?? "Not selected"}</span>
+      <ViewFieldWrapper variant="singleLine">
+        {value ?? <EmptyValue />}
+      </ViewFieldWrapper>
     );
   }
 
   if (!resource || !lookupConfig) {
-    return <span className="text-muted-foreground">{value ?? "-"}</span>;
+    return (
+      <ViewFieldWrapper variant="singleLine">
+        {value ?? <EmptyValue />}
+      </ViewFieldWrapper>
+    );
   }
 
   // Handle empty value
   if (value == null) {
-    return <span className="text-muted-foreground">Not selected</span>;
+    return (
+      <ViewFieldWrapper variant="singleLine">
+        <EmptyValue />
+      </ViewFieldWrapper>
+    );
   }
 
   // Show loading state
   if (isLoading) {
     return (
-      <span className="flex items-center gap-2 text-muted-foreground">
-        <ActivityIndicator size="xs" />
-        Loading...
-      </span>
+      <ViewFieldWrapper variant="singleLine">
+        <span className="flex items-center gap-2 text-muted-foreground">
+          <ActivityIndicator size="xs" />
+          Loading...
+        </span>
+      </ViewFieldWrapper>
     );
   }
 
   // Display with avatar if available
   if (lookupItem) {
     return (
-      <span className="flex items-center gap-2">
-        {lookupItem.image && (
-          <img
-            src={lookupItem.image}
-            alt={lookupItem.title}
-            className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          />
-        )}
-        <span>
-          {lookupItem.title}
-          {lookupItem.subtitle && (
-            <span className="text-muted-foreground text-sm ml-1">
-              ({lookupItem.subtitle})
-            </span>
+      <ViewFieldWrapper variant="singleLine">
+        <span className="flex items-center gap-2">
+          {lookupItem.image && (
+            <img
+              src={lookupItem.image}
+              alt={lookupItem.title}
+              className="w-6 h-6 rounded-full object-cover shrink-0"
+            />
           )}
+          <span>
+            {lookupItem.title}
+            {lookupItem.subtitle && (
+              <span className="text-muted-foreground text-sm ml-1">
+                ({lookupItem.subtitle})
+              </span>
+            )}
+          </span>
         </span>
-      </span>
+      </ViewFieldWrapper>
     );
   }
 
   // Fallback to showing just the ID
-  return <span>{value}</span>;
+  return <ViewFieldWrapper variant="singleLine">{value}</ViewFieldWrapper>;
 };
