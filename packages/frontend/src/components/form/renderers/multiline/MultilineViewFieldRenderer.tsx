@@ -2,13 +2,13 @@ import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/styling/cn";
 import { textInputVariants } from "../../../form-controls/controls/TextInput/TextInput";
 import type { ViewFieldRendererProps } from "../types";
+import { EmptyValue, ViewFieldWrapper } from "../ViewFieldWrapper";
 
 /**
- * Adjusts the textarea height to fit its content without scrollbars.
- * Same function used in edit mode to ensure consistent height calculations.
+ * Sets the textarea height to match its content.
+ * This ensures the view textarea has the same height as the edit textarea.
  */
-const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
-  textarea.style.height = "auto";
+const setTextareaHeight = (textarea: HTMLTextAreaElement) => {
   textarea.style.height = `${textarea.scrollHeight}px`;
 };
 
@@ -18,25 +18,19 @@ export const MultilineViewFieldRenderer = ({
   const value = fieldState.state.value || "";
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-resize on initial render to match edit mode height calculation
+  // Auto-resize to match content - ensures same height as edit mode textarea
   useLayoutEffect(() => {
     if (textareaRef.current) {
-      adjustTextareaHeight(textareaRef.current);
+      setTextareaHeight(textareaRef.current);
     }
   });
 
+  // For empty values, use the standard wrapper
   if (!value) {
     return (
-      <div
-        className={cn(
-          "w-full min-w-0 px-3 py-1 rounded-md",
-          "border border-transparent",
-          "text-base text-foreground",
-          "block whitespace-pre-wrap min-h-24",
-        )}
-      >
-        <span className="text-muted-foreground italic">Empty</span>
-      </div>
+      <ViewFieldWrapper variant="multiLine">
+        <EmptyValue />
+      </ViewFieldWrapper>
     );
   }
 
