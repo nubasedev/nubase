@@ -24,6 +24,14 @@ if [ -z "$PROJECT" ]; then
   exit 1
 fi
 
+# Check if Docker daemon is running
+if ! docker info > /dev/null 2>&1; then
+  echo "Error: Cannot connect to Docker daemon."
+  echo ""
+  echo "Please ensure Docker is running and try again."
+  exit 1
+fi
+
 echo "Stopping all nubase-managed containers..."
 
 # Stop containers with nubase label (macOS compatible - no xargs -r)

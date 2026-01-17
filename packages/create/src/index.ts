@@ -101,6 +101,10 @@ function copyTemplateDir(
 			const content = fs.readFileSync(srcPath, "utf-8");
 			const processedContent = replaceInContent(content, options);
 			fs.writeFileSync(destPath, processedContent, "utf-8");
+			// Preserve executable permission for shell scripts
+			if (destName.endsWith(".sh")) {
+				fs.chmodSync(destPath, 0o755);
+			}
 		}
 	}
 }
