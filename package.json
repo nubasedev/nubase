@@ -5,7 +5,7 @@
     "build": "turbo run build",
     "build:docs": "cd apps/docs && npm run build",
     "build:storybook": "cd packages/frontend && npm run build:storybook",
-    "dev": "turbo run dev",
+    "dev": "npm run db:up && turbo run dev",
     "dev:e2e": "turbo run dev dev:e2e",
     "dev:test": "turbo run dev:test",
     "lint": "turbo run lint",
