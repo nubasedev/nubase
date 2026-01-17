@@ -1,6 +1,6 @@
 {
   "name": "@nubase/core",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "Core schema and types for nubase",
   "keywords": [
     "schema",
