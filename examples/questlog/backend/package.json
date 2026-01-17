@@ -30,29 +30,29 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
-    "@hono/node-server": "^1.14.1",
+    "@hono/node-server": "^1.19.9",
     "@nubase/backend": "*",
     "bcrypt": "^6.0.0",
     "commander": "^11.0.0",
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "esbuild": "^0.27.2",
-    "hono": "^4.10.4",
+    "hono": "^4.11.4",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.15.4",
+    "pg": "^8.17.1",
     "questlog-schema": "*",
     "shelljs": "^0.10.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20.11.17",
-    "@types/pg": "^8.15.4",
+    "@types/node": "^20.19.30",
+    "@types/pg": "^8.16.0",
     "@types/shelljs": "^0.8.17",
     "drizzle-kit": "^0.31.8",
-    "tsup": "^8.5.0",
-    "tsx": "^4.20.3",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.17"
   }
 }

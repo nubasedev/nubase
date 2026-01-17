@@ -226,7 +226,7 @@ export const FilledBackground: Story = {
               } = props as {
                 x?: string | number;
                 y?: string | number;
-                textAnchor?: string;
+                textAnchor?: "inherit" | "end" | "start" | "middle";
                 payload?: { value?: string };
                 index?: number;
               };
