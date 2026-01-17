@@ -3,3 +3,17 @@
   background: var(--color-primary, var(--primary));
   border-radius: var(--radius-lg);
 }
+
+/* Disable the initial positioning animation that causes items to animate from top-left */
+.react-grid-item {
+  transition: none;
+}
+
+/* Re-enable transitions only when actively dragging or resizing */
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+}
+
+.react-grid-item.resizing {
+  transition: none;
+}

@@ -8,6 +8,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../charts/Chart";
+import { CHART_ANIMATION_DURATION } from "./constants";
 
 export interface ProportionalChartContentProps {
   data: ProportionalData;
@@ -61,6 +62,7 @@ export function ProportionalChartContent({
           dataKey="value"
           nameKey="label"
           innerRadius={innerRadius}
+          animationDuration={CHART_ANIMATION_DURATION}
         />
       </PieChart>
     </ChartContainer>
