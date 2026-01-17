@@ -1,5 +1,9 @@
 export { Button, type ButtonProps } from "../buttons/Button/Button";
-export { Checkbox, type CheckboxProps } from "./controls/Checkbox/Checkbox";
+export {
+  Checkbox,
+  type CheckboxProps,
+  checkboxVariants,
+} from "./controls/Checkbox/Checkbox";
 export {
   LookupSelect,
   type LookupSelectProps,
