@@ -97,8 +97,11 @@ const TreeNavigatorComponent = ({
           event.preventDefault();
           if (currentItem?.hasChildren) {
             toggleExpanded(currentItem.id);
+          } else if (currentItem?.onExecute) {
+            currentItem.onExecute();
           } else {
-            currentItem?.onExecute?.();
+            // For items with href (rendered as Link), trigger a click on the element
+            itemRefs.current[selectedIndex]?.click();
           }
         }
       }
