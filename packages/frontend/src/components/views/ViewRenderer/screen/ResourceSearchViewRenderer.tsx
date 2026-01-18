@@ -172,6 +172,10 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   // Selection state for DataGrid
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<any>>(new Set());
 
+  // Debounced fetching state - only show overlay if fetch takes longer than 150ms
+  // This prevents flickering for fast fetches
+  const [showFetchingOverlay, setShowFetchingOverlay] = useState(false);
+
   // Use React Query for data fetching with caching
   // isLoading: true only on initial load (no cached data)
   // isFetching: true whenever a fetch is in progress (initial or refetch)
@@ -181,6 +185,18 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     isFetching,
     error,
   } = useResourceSearchQuery(resourceName || "unknown", view, mergedParams);
+
+  // Debounce the fetching overlay - only show if fetch takes longer than 150ms
+  // This prevents flickering for fast fetches
+  useEffect(() => {
+    if (isFetching) {
+      const timer = setTimeout(() => {
+        setShowFetchingOverlay(true);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+    setShowFetchingOverlay(false);
+  }, [isFetching]);
 
   // Handle errors using React Query's error state - use useEffect to avoid setState in render
   useEffect(() => {
@@ -365,7 +381,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           )}
           {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
           <div className="flex-1 relative">
-            {/* Initial loading state - only shown when no data has ever loaded */}
+            {/* Initial loading state - only shown on first load (no cached data) */}
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
                 <ActivityIndicator
@@ -389,8 +405,8 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               </div>
             )}
 
-            {/* Refetch indicator - subtle overlay while fetching new data */}
-            {isFetching && !isLoading && (
+            {/* Refetch indicator - subtle overlay while fetching new data (debounced to prevent flicker) */}
+            {showFetchingOverlay && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center pointer-events-none z-20">
                 <ActivityIndicator size="md" aria-label="Updating results..." />
               </div>
