@@ -42,7 +42,7 @@
     "publish:dev": "npm publish --access public --tag dev",
     "watch:ts": "tsup --watch",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
-    "storybook": "storybook dev -p 6006 --no-open",
+    "storybook": "storybook dev -p 6006",
     "dev": "concurrently \"npm:watch:ts\" \"npm:watch:css\" \"npm:storybook\""
   },
   "peerDependencies": {
