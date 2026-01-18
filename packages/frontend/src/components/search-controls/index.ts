@@ -1,4 +1,8 @@
 export {
+  LookupSelectFilter,
+  type LookupSelectFilterProps,
+} from "./LookupSelectFilter";
+export {
   SearchFilterBar,
   type SearchFilterBarProps,
   searchFilterBarClearButtonVariants,

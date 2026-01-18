@@ -19,3 +19,8 @@ export {
   useResourceSearchQuery,
   useResourceViewQuery,
 } from "./useNubaseQuery";
+export {
+  type UseSchemaFiltersOptions,
+  type UseSchemaFiltersReturn,
+  useSchemaFilters,
+} from "./useSchemaFilters";

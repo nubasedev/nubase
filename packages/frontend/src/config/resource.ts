@@ -38,9 +38,9 @@ export type ResourceLookupConfig = {
  * Can be extended with additional properties as needed.
  */
 export type ResourceDescriptor<
-  TViews extends Record<string, View<any, any, any, any>> = Record<
+  TViews extends Record<string, View<any, any, any, any, any>> = Record<
     string,
-    View<any, any, any, any>
+    View<any, any, any, any, any>
   >,
   TActions extends Record<string, Action> = Record<string, Action>,
   TLookup extends ResourceLookupConfig | undefined = undefined,

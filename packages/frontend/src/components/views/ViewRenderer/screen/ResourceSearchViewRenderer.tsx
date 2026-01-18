@@ -14,12 +14,14 @@ import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
+import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import type { Column } from "../../../data-grid/types";
 import { DataState } from "../../../data-state";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import { SchemaFilterBar } from "../../../schema-filter-bar";
 
 // Default column widths based on field types
 const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
@@ -72,6 +74,22 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const navigate = useNavigate();
   const context = useNubaseContext();
   const workspace = useWorkspace();
+
+  // Schema-derived filter state management
+  const {
+    filterState,
+    setFilterValue,
+    clearFilters,
+    hasActiveFilters,
+    filterDescriptors,
+    getRequestParams,
+  } = useSchemaFilters(view.schemaFilter);
+
+  // Merge URL params with filter state for the query
+  const mergedParams = useMemo(() => {
+    const filterParams = getRequestParams();
+    return { ...params, ...filterParams };
+  }, [params, getRequestParams]);
 
   // Create a function to wrap actions with automatic query invalidation
   const wrapActionsWithInvalidation = useCallback(
@@ -156,7 +174,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     data: response,
     isLoading,
     error,
-  } = useResourceSearchQuery(resourceName || "unknown", view, params);
+  } = useResourceSearchQuery(resourceName || "unknown", view, mergedParams);
 
   // Handle errors using React Query's error state - use useEffect to avoid setState in render
   useEffect(() => {
@@ -309,20 +327,30 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   ]);
 
   return (
-    <DataState
-      isLoading={isLoading}
-      error={error as Error | null}
-      isEmpty={data.length === 0}
-      loadingLabel="Loading search results..."
-    >
-      <div className="h-full w-full">
-        <ResourceContextProvider
-          resourceType={resourceName || "unknown"}
-          selectedIds={selectedRows}
-        >
-          <div className="flex flex-col h-full space-y-2">
-            {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
-            <div className="flex-1">
+    <div className="h-full w-full">
+      <ResourceContextProvider
+        resourceType={resourceName || "unknown"}
+        selectedIds={selectedRows}
+      >
+        <div className="flex flex-col h-full space-y-2">
+          {/* Filter bar is outside DataState to prevent unmounting during loading */}
+          {view.schemaFilter && filterDescriptors.length > 0 && (
+            <SchemaFilterBar
+              filterDescriptors={filterDescriptors}
+              filterState={filterState}
+              onFilterChange={setFilterValue}
+              onClearFilters={clearFilters}
+              showClearFilters={hasActiveFilters}
+            />
+          )}
+          {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
+          <div className="flex-1">
+            <DataState
+              isLoading={isLoading}
+              error={error as Error | null}
+              isEmpty={data.length === 0}
+              loadingLabel="Loading search results..."
+            >
               <DataGrid
                 columns={columns}
                 rows={data}
@@ -331,10 +359,10 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
                 onSelectedRowsChange={setSelectedRows}
                 rowKeyGetter={(row) => row[idField] || row}
               />
-            </div>
+            </DataState>
           </div>
-        </ResourceContextProvider>
-      </div>
-    </DataState>
+        </div>
+      </ResourceContextProvider>
+    </div>
   );
 };

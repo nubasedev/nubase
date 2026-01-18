@@ -1,6 +1,6 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { and, eq } from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
+import { and, eq, ilike, inArray } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
@@ -15,7 +15,7 @@ type NewTicket = InferInsertModel<typeof ticketsTable>;
  * Ticket CRUD endpoints.
  */
 export const ticketHandlers = {
-  /** Get all tickets - workspace-scoped. */
+  /** Get all tickets - workspace-scoped with optional filters. */
   getTickets: createHttpHandler<
     typeof apiEndpoints.getTickets,
     "required",
@@ -23,16 +23,46 @@ export const ticketHandlers = {
   >({
     endpoint: apiEndpoints.getTickets,
     auth: "required",
-    handler: async ({ user, ctx }) => {
+    handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
       console.log(
         `User ${user.email} fetching tickets for workspace ${workspace.slug}`,
+        params,
       );
       const db = getDb();
+
+      // Build filter conditions
+      const conditions: SQL[] = [eq(ticketsTable.workspaceId, workspace.id)];
+
+      // Filter by title (case-insensitive partial match)
+      if (params.title) {
+        conditions.push(ilike(ticketsTable.title, `%${params.title}%`));
+      }
+
+      // Filter by description (case-insensitive partial match)
+      if (params.description) {
+        conditions.push(
+          ilike(ticketsTable.description, `%${params.description}%`),
+        );
+      }
+
+      // Filter by assigneeId (supports single value or array for multi-select)
+      if (params.assigneeId !== undefined) {
+        if (Array.isArray(params.assigneeId)) {
+          if (params.assigneeId.length > 0) {
+            conditions.push(
+              inArray(ticketsTable.assigneeId, params.assigneeId),
+            );
+          }
+        } else {
+          conditions.push(eq(ticketsTable.assigneeId, params.assigneeId));
+        }
+      }
+
       const tickets: Ticket[] = await db
         .select()
         .from(ticketsTable)
-        .where(eq(ticketsTable.workspaceId, workspace.id));
+        .where(and(...conditions));
 
       return tickets.map((ticket) => ({
         id: ticket.id,

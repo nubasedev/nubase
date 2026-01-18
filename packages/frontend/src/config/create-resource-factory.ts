@@ -85,12 +85,18 @@ export type InlineSearchViewConfig<
   TActionIds extends string,
   TSchema extends ArraySchema<any> = ArraySchema<any>,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
+  TFilterSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
   type: "resource-search";
   id: string;
   title: string;
   schemaGet: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
+  /**
+   * Optional schema for filter parameters (typically endpoint.requestParams).
+   * When provided, a filter bar will be automatically generated.
+   */
+  schemaFilter?: (api: TApiEndpoints) => TFilterSchema;
   tableActions?: ActionLayout<TActionIds>;
   rowActions?: ActionLayout<TActionIds>;
   breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
@@ -105,7 +111,7 @@ export type InlineSearchViewConfig<
 export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
   | InlineCreateViewConfig<TApiEndpoints, TActionIds, any, any>
   | InlineViewViewConfig<TApiEndpoints, TActionIds, any, any>
-  | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any>;
+  | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any, any>;
 
 /**
  * Inline lookup configuration for the resource builder.
@@ -276,13 +282,15 @@ class ResourceBuilder<
                   TApiEndpoints,
                   any,
                   infer TSchema,
-                  infer TParamsSchema
+                  infer TParamsSchema,
+                  infer TFilterSchema
                 >
               ? ResourceSearchView<
                   TSchema,
                   TApiEndpoints,
                   TParamsSchema,
-                  keyof TActions & string
+                  keyof TActions & string,
+                  TFilterSchema
                 >
               : never
         : never;
@@ -318,6 +326,9 @@ class ResourceBuilder<
       const resolvedSchemaParams = config.schemaParams?.(
         this.config.apiEndpoints,
       );
+      const resolvedSchemaFilter = config.schemaFilter?.(
+        this.config.apiEndpoints,
+      );
 
       // Use explicit type from config
       transformedViews[key] = {
@@ -326,6 +337,7 @@ class ResourceBuilder<
         schemaGet: resolvedSchemaGet,
         schemaPost: resolvedSchemaPost,
         schemaParams: resolvedSchemaParams,
+        schemaFilter: resolvedSchemaFilter,
       };
     }
 

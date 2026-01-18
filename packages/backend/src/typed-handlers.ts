@@ -114,7 +114,23 @@ function createTypedHandlerInternal<
       try {
         // Merge path params (e.g., :id from /tickets/:id) and query params (e.g., ?q=admin)
         const pathParams = c.req.param();
-        const queryParams = c.req.query();
+
+        // Use queries() to get all query params as arrays, then normalize
+        // This handles both single values (assigneeId=1) and arrays (assigneeId=1&assigneeId=2)
+        // Also handles axios-style array params (assigneeId[]=1&assigneeId[]=2)
+        const queriesMap = c.req.queries();
+        const queryParams: Record<string, string | string[]> = {};
+        for (const [rawKey, values] of Object.entries(queriesMap)) {
+          if (!values || values.length === 0) continue;
+          // Strip [] suffix from keys (axios sends array params as "param[]")
+          const key = rawKey.endsWith("[]") ? rawKey.slice(0, -2) : rawKey;
+          // If only one value, keep it as a string; otherwise keep as array
+          const firstValue = values[0];
+          if (firstValue !== undefined) {
+            queryParams[key] = values.length === 1 ? firstValue : values;
+          }
+        }
+
         const rawParams = { ...pathParams, ...queryParams };
 
         // Use toZodWithCoercion() to automatically convert string params to expected types

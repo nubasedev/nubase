@@ -94,6 +94,7 @@ export type ResourceSearchView<
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
   TActionIds extends string = string,
+  TFilterSchema extends ObjectSchema<any> | undefined = undefined,
 > = ViewBase<TApiEndpoints, TParamsSchema> & {
   type: "resource-search";
   /**
@@ -104,6 +105,11 @@ export type ResourceSearchView<
    * Optional schema for URL parameters this view expects.
    */
   schemaParams?: TParamsSchema;
+  /**
+   * Optional schema for filter parameters (typically endpoint.requestParams).
+   * When provided, a filter bar will be automatically generated.
+   */
+  schemaFilter?: TFilterSchema;
   /**
    * Optional actions to display above the table for bulk operations on selected items.
    */
@@ -127,6 +133,7 @@ export type View<
   TApiEndpoints = any,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
   TActionIds extends string = string,
+  TFilterSchema extends ObjectSchema<any> | undefined = undefined,
 > =
   | ResourceCreateView<
       TSchema extends ObjectSchema<any> ? TSchema : ObjectSchema<any>,
@@ -144,5 +151,6 @@ export type View<
       TSchema extends ArraySchema<any> ? TSchema : ArraySchema<any>,
       TApiEndpoints,
       TParamsSchema,
-      TActionIds
+      TActionIds,
+      TFilterSchema
     >;

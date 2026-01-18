@@ -100,12 +100,13 @@ export const ticketResource = createResource("ticket")
       id: "search-tickets",
       title: "Search Tickets",
       schemaGet: (api) => api.getTickets.responseBody,
+      schemaFilter: (api) => api.getTickets.requestParams,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
       tableActions: ["delete"],
       rowActions: ["delete"],
       onLoad: async ({ context }) => {
         return context.http.getTickets({
-          params: {},
+          params: context.params || {},
         });
       },
     },
