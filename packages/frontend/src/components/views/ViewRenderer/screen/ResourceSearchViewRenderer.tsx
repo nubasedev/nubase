@@ -2,7 +2,7 @@ import type { BaseSchema, ObjectSchema, TableLayoutField } from "@nubase/core";
 import { OptionalSchema } from "@nubase/core";
 import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type {
   ActionOrSeparator,
   HandlerAction,
@@ -15,13 +15,16 @@ import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
+import { ActivityIndicator } from "../../../activity-indicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import type { Column } from "../../../data-grid/types";
-import { DataState } from "../../../data-state";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
-import { SchemaFilterBar } from "../../../schema-filter-bar";
+import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
+
+// Memoize SchemaFilterBar to prevent re-renders when parent re-renders due to query state changes
+const SchemaFilterBar = memo(SchemaFilterBarBase);
 
 // Default column widths based on field types
 const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
@@ -170,9 +173,12 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<any>>(new Set());
 
   // Use React Query for data fetching with caching
+  // isLoading: true only on initial load (no cached data)
+  // isFetching: true whenever a fetch is in progress (initial or refetch)
   const {
     data: response,
     isLoading,
+    isFetching,
     error,
   } = useResourceSearchQuery(resourceName || "unknown", view, mergedParams);
 
@@ -196,6 +202,20 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
 
   // Get the ID field from the schema (defaults to "id")
   const idField = String(elementSchema?.getIdField() || "id");
+
+  // For dynamic column generation fallback (only when no tableLayout), track the first row's keys
+  // This prevents columns from recalculating on every data change
+  // When tableLayout exists, this returns empty string and never changes
+  const dynamicColumnKeys = useMemo(() => {
+    // Only compute dynamic keys when there's no table layout
+    if (tableLayout) {
+      return "";
+    }
+    if (data.length > 0) {
+      return Object.keys(data[0]).join(",");
+    }
+    return "";
+  }, [data, tableLayout]);
 
   // Create columns from table layout or dynamically from data
   const columns: Column<any>[] = useMemo(() => {
@@ -269,9 +289,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               : ({ row }) => row[fieldName]?.toString() || "",
           });
         });
-    } else if (data.length > 0) {
-      // Fallback: create columns dynamically from the first data item
-      Object.keys(data[0]).forEach((key) => {
+    } else if (dynamicColumnKeys) {
+      // Fallback: create columns dynamically from the first data item's keys
+      dynamicColumnKeys.split(",").forEach((key) => {
         cols.push({
           name: key.charAt(0).toUpperCase() + key.slice(1),
           key: key,
@@ -287,7 +307,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   }, [
     tableLayout,
     linkFields,
-    data,
+    dynamicColumnKeys,
     resourceName,
     navigate,
     elementSchema,
@@ -344,22 +364,47 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
             />
           )}
           {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
-          <div className="flex-1">
-            <DataState
-              isLoading={isLoading}
-              error={error as Error | null}
-              isEmpty={data.length === 0}
-              loadingLabel="Loading search results..."
-            >
-              <DataGrid
-                columns={columns}
-                rows={data}
-                className="h-full w-full"
-                selectedRows={selectedRows}
-                onSelectedRowsChange={setSelectedRows}
-                rowKeyGetter={(row) => row[idField] || row}
-              />
-            </DataState>
+          <div className="flex-1 relative">
+            {/* Initial loading state - only shown when no data has ever loaded */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
+                <ActivityIndicator
+                  size="lg"
+                  aria-label="Loading search results..."
+                />
+              </div>
+            )}
+
+            {/* Error state */}
+            {error && !isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center text-destructive z-10">
+                Error loading data
+              </div>
+            )}
+
+            {/* Empty state - only shown when not loading and data is empty */}
+            {!isLoading && !error && data.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground z-10">
+                No items found
+              </div>
+            )}
+
+            {/* Refetch indicator - subtle overlay while fetching new data */}
+            {isFetching && !isLoading && (
+              <div className="absolute inset-0 bg-background/50 flex items-center justify-center pointer-events-none z-20">
+                <ActivityIndicator size="md" aria-label="Updating results..." />
+              </div>
+            )}
+
+            {/* DataGrid is always mounted to prevent flickering */}
+            <DataGrid
+              columns={columns}
+              rows={data}
+              className="h-full w-full"
+              selectedRows={selectedRows}
+              onSelectedRowsChange={setSelectedRows}
+              rowKeyGetter={(row) => row[idField] || row}
+            />
           </div>
         </div>
       </ResourceContextProvider>

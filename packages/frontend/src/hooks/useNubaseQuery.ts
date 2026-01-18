@@ -1,4 +1,8 @@
-import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  type UseQueryOptions,
+  useQuery,
+} from "@tanstack/react-query";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
 import type { HttpResponse } from "../http/http-client";
 
@@ -76,7 +80,12 @@ export function useResourceSearchQuery<TData = any>(
     queryKey: ["resource", resourceId, "search", params],
     queryFn: (context) => view.onLoad({ context }),
     params,
-    options,
+    options: {
+      // Keep previous data visible while fetching new data with different params
+      // This prevents flickering when filters change - isLoading stays false, only isFetching is true
+      placeholderData: keepPreviousData,
+      ...options,
+    },
   });
 }
 
