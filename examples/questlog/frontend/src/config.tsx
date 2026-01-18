@@ -13,7 +13,16 @@ import { ticketResource } from "./resources/ticket";
 import { userResource } from "./resources/user";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-const authController = new QuestlogAuthController(apiBaseUrl);
+
+// Preserve auth controller across HMR to prevent losing authentication state during development
+const authController: QuestlogAuthController =
+  (import.meta.hot?.data?.authController as QuestlogAuthController) ??
+  new QuestlogAuthController(apiBaseUrl);
+
+// Store auth controller in HMR data so it survives hot reloads
+if (import.meta.hot) {
+  import.meta.hot.data.authController = authController;
+}
 
 export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   appName: "Questlog",

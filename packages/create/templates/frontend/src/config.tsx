@@ -9,7 +9,16 @@ import { userResource } from "./resources/user";
 
 const apiBaseUrl =
 	import.meta.env.VITE_API_BASE_URL || "http://localhost:__BACKEND_PORT__";
-const authController = new __PROJECT_NAME_PASCAL__AuthController(apiBaseUrl);
+
+// Preserve auth controller across HMR to prevent losing authentication state during development
+const authController: __PROJECT_NAME_PASCAL__AuthController = (import.meta.hot
+	?.data?.authController as __PROJECT_NAME_PASCAL__AuthController) ??
+	new __PROJECT_NAME_PASCAL__AuthController(apiBaseUrl);
+
+// Store auth controller in HMR data so it survives hot reloads
+if (import.meta.hot) {
+	import.meta.hot.data.authController = authController;
+}
 
 export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
 	appName: "__PROJECT_NAME_PASCAL__",
