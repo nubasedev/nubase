@@ -168,6 +168,13 @@ export default function SignUpScreen() {
                   }
                   return undefined;
                 },
+                onChange: ({ value }) => {
+                  if (!value) return "Email is required";
+                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return "Please enter a valid email address";
+                  }
+                  return undefined;
+                },
               }}
             >
               {(field) => (
@@ -178,6 +185,11 @@ export default function SignUpScreen() {
                     placeholder="Enter your email"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    // onInput handles password managers (e.g. 1Password) that fill values
+                    // without triggering React's onChange event
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     onBlur={field.handleBlur}
                     autoComplete="email"
                     disabled={isLoading}
@@ -225,6 +237,13 @@ export default function SignUpScreen() {
                   }
                   return undefined;
                 },
+                onChange: ({ value }) => {
+                  if (!value) return "Password is required";
+                  if (value.length < 8) {
+                    return "Password must be at least 8 characters";
+                  }
+                  return undefined;
+                },
               }}
             >
               {(field) => (
@@ -235,6 +254,11 @@ export default function SignUpScreen() {
                     placeholder="Enter your password"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    // onInput handles password managers (e.g. 1Password) that fill values
+                    // without triggering React's onChange event
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     onBlur={field.handleBlur}
                     autoComplete="new-password"
                     disabled={isLoading}
@@ -255,6 +279,12 @@ export default function SignUpScreen() {
                   if (value !== password) return "Passwords do not match";
                   return undefined;
                 },
+                onChange: ({ value, fieldApi }) => {
+                  const password = fieldApi.form.getFieldValue("password");
+                  if (!value) return "Please confirm your password";
+                  if (value !== password) return "Passwords do not match";
+                  return undefined;
+                },
               }}
             >
               {(field) => (
@@ -265,6 +295,11 @@ export default function SignUpScreen() {
                     placeholder="Confirm your password"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    // onInput handles password managers (e.g. 1Password) that fill values
+                    // without triggering React's onChange event
+                    onInput={(e) =>
+                      field.handleChange((e.target as HTMLInputElement).value)
+                    }
                     onBlur={field.handleBlur}
                     autoComplete="new-password"
                     disabled={isLoading}

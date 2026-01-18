@@ -218,6 +218,8 @@ export default function SignInScreen() {
             name="email"
             validators={{
               onBlur: ({ value }) => (!value ? "Email is required" : undefined),
+              onChange: ({ value }) =>
+                !value ? "Email is required" : undefined,
             }}
           >
             {(field) => (
@@ -228,6 +230,11 @@ export default function SignInScreen() {
                   placeholder="Enter your email"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  // onInput handles password managers (e.g. 1Password) that fill values
+                  // without triggering React's onChange event
+                  onInput={(e) =>
+                    field.handleChange((e.target as HTMLInputElement).value)
+                  }
                   onBlur={field.handleBlur}
                   autoComplete="email"
                   disabled={isLoading}
@@ -244,6 +251,8 @@ export default function SignInScreen() {
             validators={{
               onBlur: ({ value }) =>
                 !value ? "Password is required" : undefined,
+              onChange: ({ value }) =>
+                !value ? "Password is required" : undefined,
             }}
           >
             {(field) => (
@@ -254,6 +263,11 @@ export default function SignInScreen() {
                   placeholder="Enter your password"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  // onInput handles password managers (e.g. 1Password) that fill values
+                  // without triggering React's onChange event
+                  onInput={(e) =>
+                    field.handleChange((e.target as HTMLInputElement).value)
+                  }
                   onBlur={field.handleBlur}
                   autoComplete="current-password"
                   disabled={isLoading}
