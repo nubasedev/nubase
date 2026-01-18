@@ -1,5 +1,6 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
-import { eq } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import { and, eq, ilike, inArray } from "drizzle-orm";
 import { apiEndpoints } from "schema";
 import { getDb } from "../../db/helpers/drizzle";
 import { tickets } from "../../db/schema";
@@ -7,12 +8,46 @@ import { tickets } from "../../db/schema";
 export const ticketHandlers = {
 	getTickets: createHttpHandler({
 		endpoint: apiEndpoints.getTickets,
-		handler: async () => {
-			const allTickets = await getDb().select().from(tickets);
+		handler: async ({ params }) => {
+			const db = getDb();
+
+			// Build filter conditions
+			const conditions: SQL[] = [];
+
+			// Filter by title (case-insensitive partial match)
+			if (params.title) {
+				conditions.push(ilike(tickets.title, `%${params.title}%`));
+			}
+
+			// Filter by description (case-insensitive partial match)
+			if (params.description) {
+				conditions.push(ilike(tickets.description, `%${params.description}%`));
+			}
+
+			// Filter by assigneeId (supports single value or array for multi-select)
+			if (params.assigneeId !== undefined) {
+				if (Array.isArray(params.assigneeId)) {
+					if (params.assigneeId.length > 0) {
+						conditions.push(inArray(tickets.assigneeId, params.assigneeId));
+					}
+				} else {
+					conditions.push(eq(tickets.assigneeId, params.assigneeId));
+				}
+			}
+
+			const allTickets =
+				conditions.length > 0
+					? await db
+							.select()
+							.from(tickets)
+							.where(and(...conditions))
+					: await db.select().from(tickets);
+
 			return allTickets.map((ticket) => ({
 				id: ticket.id,
 				title: ticket.title,
 				description: ticket.description ?? undefined,
+				assigneeId: ticket.assigneeId ?? undefined,
 			}));
 		},
 	}),
@@ -33,6 +68,7 @@ export const ticketHandlers = {
 				id: ticket.id,
 				title: ticket.title,
 				description: ticket.description ?? undefined,
+				assigneeId: ticket.assigneeId ?? undefined,
 			};
 		},
 	}),
@@ -46,6 +82,7 @@ export const ticketHandlers = {
 					workspaceId: 1, // TODO: Get from context
 					title: body.title,
 					description: body.description,
+					assigneeId: body.assigneeId,
 				})
 				.returning();
 
@@ -57,6 +94,7 @@ export const ticketHandlers = {
 				id: ticket.id,
 				title: ticket.title,
 				description: ticket.description ?? undefined,
+				assigneeId: ticket.assigneeId ?? undefined,
 			};
 		},
 	}),
@@ -64,7 +102,12 @@ export const ticketHandlers = {
 	patchTicket: createHttpHandler({
 		endpoint: apiEndpoints.patchTicket,
 		handler: async ({ params, body }) => {
-			const updateData: { title?: string; description?: string; updatedAt: Date } = {
+			const updateData: {
+				title?: string;
+				description?: string;
+				assigneeId?: number | null;
+				updatedAt: Date;
+			} = {
 				updatedAt: new Date(),
 			};
 
@@ -73,6 +116,9 @@ export const ticketHandlers = {
 			}
 			if (body.description !== undefined) {
 				updateData.description = body.description;
+			}
+			if (body.assigneeId !== undefined) {
+				updateData.assigneeId = body.assigneeId;
 			}
 
 			const [ticket] = await getDb()
@@ -89,6 +135,7 @@ export const ticketHandlers = {
 				id: ticket.id,
 				title: ticket.title,
 				description: ticket.description ?? undefined,
+				assigneeId: ticket.assigneeId ?? undefined,
 			};
 		},
 	}),

@@ -1,6 +1,6 @@
 import type { NubaseFrontendConfig } from "@nubase/frontend";
 import { defaultKeybindings, resourceLink } from "@nubase/frontend";
-import { Home, TicketIcon } from "lucide-react";
+import { Home, TicketIcon, UsersIcon } from "lucide-react";
 import { apiEndpoints } from "schema";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth/__PROJECT_NAME_PASCAL__AuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
@@ -25,6 +25,12 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
 			icon: TicketIcon,
 			label: "Tickets",
 			href: resourceLink(ticketResource, "search"),
+		},
+		{
+			id: "users",
+			icon: UsersIcon,
+			label: "Users",
+			href: resourceLink(userResource, "search"),
 		},
 	],
 	resources: {
