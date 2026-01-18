@@ -23,7 +23,7 @@ const textInputVariants = cva([
 
   // Focus State
   "focus-visible:border-ring",
-  "focus-visible:ring-ring/50",
+  "focus-visible:ring-ring/50 focus-visible:ring-[3px]",
 
   // Invalid State
   "aria-invalid:border-destructive",

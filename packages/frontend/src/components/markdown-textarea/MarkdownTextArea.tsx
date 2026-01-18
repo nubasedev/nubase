@@ -1,11 +1,42 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import type React from "react";
 import { forwardRef, useImperativeHandle, useRef } from "react";
 import { cn } from "../../styling/cn";
 import { TextAreaTextController } from "./text-controller";
 import type { MarkdownCommand, TextController } from "./types";
 
+const markdownTextAreaVariants = cva([
+  // Layout & Sizing
+  "w-full min-h-[200px]",
+
+  // Spacing & Borders
+  "px-3 py-2 rounded-md border border-border",
+
+  // Background & Text
+  "bg-background text-foreground",
+  "font-mono text-sm",
+
+  // Resize behavior
+  "resize-vertical",
+
+  // Visual Effects
+  "outline-none",
+
+  // Placeholder
+  "placeholder:text-muted-foreground",
+
+  // Focus State
+  "focus-visible:border-ring",
+  "focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+
+  // Disabled State
+  "disabled:opacity-50",
+  "disabled:cursor-not-allowed",
+]);
+
 export interface MarkdownTextAreaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+    VariantProps<typeof markdownTextAreaVariants> {
   className?: string;
 }
 
@@ -49,20 +80,12 @@ export const MarkdownTextArea = forwardRef<
   return (
     <textarea
       ref={textAreaRef}
-      className={cn(
-        "w-full min-h-[200px] px-3 py-2",
-        "bg-background text-foreground",
-        "border border-border rounded-md",
-        "resize-vertical",
-        "focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        "placeholder:text-muted-foreground",
-        "font-mono text-sm",
-        className,
-      )}
+      className={cn(markdownTextAreaVariants({ className }))}
       {...props}
     />
   );
 });
 
 MarkdownTextArea.displayName = "MarkdownTextArea";
+
+export { markdownTextAreaVariants };

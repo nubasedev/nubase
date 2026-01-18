@@ -44,7 +44,7 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
         </div>
       )}
 
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 pt-1">
         <SchemaFormVerticalLayout
           layout={layout}
           renderField={(field: FormLayoutField<any>) => {
