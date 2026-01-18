@@ -92,21 +92,6 @@ export function useViewportRows<R>({
       rows.length - 1,
       rowVisibleEndIdx + overscanThreshold,
     );
-
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.info("[DataGrid] viewport rows", {
-        enableVirtualization,
-        clientHeight,
-        scrollTop,
-        rowVisibleStartIdx,
-        rowVisibleEndIdx,
-        rowOverscanStartIdx,
-        rowOverscanEndIdx,
-        totalRowHeight,
-        rowCount: rows.length,
-      });
-    }
   }
 
   return {
