@@ -1,0 +1,351 @@
+---
+title: Searching & Filtering
+description: Learn how to implement schema-driven search and filtering in Nubase applications.
+---
+
+Nubase provides a schema-driven approach to searching and filtering data. Instead of manually configuring filter inputs, you define your filter schema once and Nubase automatically generates the filter UI, handles URL state, and passes parameters to your API.
+
+## How It Works
+
+The search flow in Nubase spans four layers:
+
+1. **Schema** - Define the resource schema with field metadata
+2. **Endpoint** - Create a GET endpoint with `requestParams` derived from the schema
+3. **Backend** - Implement filtering logic using the typed parameters
+4. **Frontend** - Configure the search view with `schemaFilter`
+
+## Step 1: Define Your Schema
+
+Start by defining your resource schema with appropriate metadata. Fields that should be searchable need labels and descriptions:
+
+```typescript
+// schema/src/resources/ticket.ts
+import { nu } from "@nubase/core";
+
+export const ticketSchema = nu
+  .object({
+    id: nu.number(),
+    title: nu.string().withMeta({
+      label: "Title",
+      description: "Enter the title of the ticket",
+    }),
+    description: nu.string().optional().withMeta({
+      label: "Description",
+      description: "Enter the description of the ticket",
+      renderer: "multiline",
+    }),
+    assigneeId: nu.number().optional().withMeta({
+      label: "Assignee",
+      description: "Select a user to assign this ticket to",
+      renderer: "lookup",
+      lookupResource: "user",
+    }),
+  })
+  .withId("id")
+  .withTableLayouts({
+    default: {
+      fields: [
+        { name: "id", columnWidthPx: 80, pinned: true },
+        { name: "title", columnWidthPx: 300, pinned: true },
+        { name: "description", columnWidthPx: 400 },
+        { name: "assigneeId", columnWidthPx: 150 },
+      ],
+      metadata: {
+        linkFields: ["title"],
+      },
+    },
+  });
+```
+
+## Step 2: Create the Search Endpoint
+
+Define a GET endpoint where `requestParams` specifies which fields can be filtered. Use `.omit()` to exclude fields like `id`, and `.partial()` to make all filter fields optional:
+
+```typescript
+// schema/src/endpoints/ticket/get-tickets.ts
+import { nu, type RequestSchema } from "@nubase/core";
+import { ticketSchema } from "../../resources/ticket";
+
+export const getTicketsSchema = {
+  method: "GET" as const,
+  path: "/tickets",
+  requestParams: ticketSchema.omit("id").partial(),
+  responseBody: nu.array(ticketSchema),
+} satisfies RequestSchema;
+```
+
+The `requestParams` schema defines what filters are available:
+- `ticketSchema.omit("id")` - Exclude the ID field from filters
+- `.partial()` - Make all fields optional (users don't need to fill every filter)
+
+## Step 3: Implement Backend Filtering
+
+In your backend route handler, use the typed `params` to build database queries:
+
+```typescript
+// backend/src/api/routes/ticket.ts
+import { createHttpHandler } from "@nubase/backend";
+import { and, eq, ilike, inArray } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
+import { apiEndpoints } from "schema";
+import { getDb } from "../../db/helpers/drizzle";
+import { tickets } from "../../db/schema";
+
+export const ticketHandlers = {
+  getTickets: createHttpHandler({
+    endpoint: apiEndpoints.getTickets,
+    handler: async ({ params }) => {
+      const db = getDb();
+
+      // Build filter conditions dynamically
+      const conditions: SQL[] = [];
+
+      // Text search with case-insensitive partial match
+      if (params.title) {
+        conditions.push(ilike(tickets.title, `%${params.title}%`));
+      }
+
+      if (params.description) {
+        conditions.push(ilike(tickets.description, `%${params.description}%`));
+      }
+
+      // Lookup field - supports both single value and array (multi-select)
+      if (params.assigneeId !== undefined) {
+        if (Array.isArray(params.assigneeId)) {
+          if (params.assigneeId.length > 0) {
+            conditions.push(inArray(tickets.assigneeId, params.assigneeId));
+          }
+        } else {
+          conditions.push(eq(tickets.assigneeId, params.assigneeId));
+        }
+      }
+
+      // Execute query with conditions
+      const results = conditions.length > 0
+        ? await db.select().from(tickets).where(and(...conditions))
+        : await db.select().from(tickets);
+
+      return results.map((ticket) => ({
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description ?? undefined,
+        assigneeId: ticket.assigneeId ?? undefined,
+      }));
+    },
+  }),
+};
+```
+
+### Filtering Patterns
+
+| Field Type | Drizzle Function | Description |
+|------------|------------------|-------------|
+| Text search | `ilike(field, '%value%')` | Case-insensitive partial match |
+| Exact match | `eq(field, value)` | Exact value comparison |
+| Multi-select | `inArray(field, values)` | Match any value in array |
+| Range | `between(field, min, max)` | Value within range |
+
+## Step 4: Configure the Frontend Search View
+
+In your resource definition, use `schemaFilter` to enable the filter bar:
+
+```typescript
+// frontend/src/resources/ticket.ts
+import { createResource } from "@nubase/frontend";
+import { apiEndpoints } from "schema";
+
+export const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    search: {
+      type: "resource-search",
+      id: "search-tickets",
+      title: "Search Tickets",
+      schemaGet: (api) => api.getTickets.responseBody,
+      schemaFilter: (api) => api.getTickets.requestParams,
+      breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
+      onLoad: async ({ context }) => {
+        return context.http.getTickets({
+          params: context.params || {},
+        });
+      },
+    },
+  });
+```
+
+Key properties:
+
+- **`schemaGet`** - Schema for the data grid columns (derived from response)
+- **`schemaFilter`** - Schema for the filter bar (derived from request params)
+- **`onLoad`** - Fetches data, passing `context.params` which contains current filter values
+
+## Lookup Fields in Search
+
+Lookup fields (like `assigneeId` pointing to a user) automatically render as searchable dropdowns in the filter bar. To enable this:
+
+### 1. Define the Lookup Endpoint
+
+```typescript
+// schema/src/endpoints/user/lookup-users.ts
+import { createLookupEndpoint, nu } from "@nubase/core";
+
+export const lookupUsersSchema = createLookupEndpoint("users", nu.number());
+```
+
+### 2. Configure the Lookup Resource
+
+```typescript
+// frontend/src/resources/user.ts
+import { createResource } from "@nubase/frontend";
+import { apiEndpoints } from "schema";
+
+export const userResource = createResource("user")
+  .withApiEndpoints(apiEndpoints)
+  .withLookup({
+    onSearch: ({ query, context }) =>
+      context.http.lookupUsers({ params: { q: query } }),
+  })
+  .withViews({
+    // ... views
+  });
+```
+
+### 3. Implement the Backend Lookup
+
+```typescript
+// backend/src/api/routes/user.ts
+export const userHandlers = {
+  lookupUsers: createHttpHandler({
+    endpoint: apiEndpoints.lookupUsers,
+    handler: async ({ params }) => {
+      const db = getDb();
+
+      const results = params.q
+        ? await db
+            .select()
+            .from(users)
+            .where(ilike(users.displayName, `%${params.q}%`))
+            .limit(10)
+        : await db.select().from(users).limit(10);
+
+      return results.map((user) => ({
+        id: user.id,
+        label: user.displayName,
+      }));
+    },
+  }),
+};
+```
+
+The lookup field in the filter bar will:
+- Show a searchable dropdown
+- Call the lookup endpoint as users type
+- Support multi-select for filtering by multiple assignees
+
+## URL State Management
+
+Filter values are automatically synced to the URL as query parameters:
+
+```
+/r/ticket/search?title=bug&assigneeId=5
+```
+
+This means:
+- Users can bookmark filtered views
+- Browser back/forward navigation works with filters
+- Filters persist across page refreshes
+
+## Complete Example
+
+Here's a complete example showing all the pieces together:
+
+### Schema Package
+
+```typescript
+// schema/src/resources/ticket.ts
+export const ticketSchema = nu
+  .object({
+    id: nu.number(),
+    title: nu.string().withMeta({ label: "Title" }),
+    status: nu.string().withMeta({ label: "Status" }),
+    assigneeId: nu.number().optional().withMeta({
+      label: "Assignee",
+      renderer: "lookup",
+      lookupResource: "user",
+    }),
+  })
+  .withId("id");
+
+// schema/src/endpoints/ticket/get-tickets.ts
+export const getTicketsSchema = {
+  method: "GET" as const,
+  path: "/tickets",
+  requestParams: ticketSchema.omit("id").partial(),
+  responseBody: nu.array(ticketSchema),
+} satisfies RequestSchema;
+```
+
+### Backend
+
+```typescript
+// backend/src/api/routes/ticket.ts
+getTickets: createHttpHandler({
+  endpoint: apiEndpoints.getTickets,
+  handler: async ({ params }) => {
+    const conditions: SQL[] = [];
+
+    if (params.title) {
+      conditions.push(ilike(tickets.title, `%${params.title}%`));
+    }
+    if (params.status) {
+      conditions.push(eq(tickets.status, params.status));
+    }
+    if (params.assigneeId) {
+      conditions.push(
+        Array.isArray(params.assigneeId)
+          ? inArray(tickets.assigneeId, params.assigneeId)
+          : eq(tickets.assigneeId, params.assigneeId)
+      );
+    }
+
+    return db.select().from(tickets)
+      .where(conditions.length ? and(...conditions) : undefined);
+  },
+}),
+```
+
+### Frontend
+
+```typescript
+// frontend/src/resources/ticket.ts
+export const ticketResource = createResource("ticket")
+  .withApiEndpoints(apiEndpoints)
+  .withViews({
+    search: {
+      type: "resource-search",
+      id: "search-tickets",
+      title: "Tickets",
+      schemaGet: (api) => api.getTickets.responseBody,
+      schemaFilter: (api) => api.getTickets.requestParams,
+      onLoad: async ({ context }) => {
+        return context.http.getTickets({
+          params: context.params || {},
+        });
+      },
+    },
+  });
+```
+
+## Best Practices
+
+1. **Use `.partial()` for filters** - All filter fields should be optional since users rarely fill every filter
+
+2. **Use `ilike` for text search** - Case-insensitive partial matching provides the best user experience
+
+3. **Support arrays for lookups** - Allow multi-select by checking `Array.isArray()` and using `inArray()`
+
+4. **Limit lookup results** - Always use `.limit()` on lookup queries to prevent loading too much data
+
+5. **Keep filters focused** - Only expose filters that users actually need; too many filters can overwhelm
+
+6. **Match requestParams to handler** - Every field in `requestParams` should have corresponding filter logic in the backend handler

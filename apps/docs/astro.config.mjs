@@ -29,6 +29,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Schema', link: '/schema/' },
 						{ label: 'Resources', link: '/resources/' },
+						{ label: 'Searching & Filtering', link: '/searching/' },
 						{ label: 'Frontend', link: '/frontend/' },
 						{ label: 'Authentication', link: '/authentication/' },
 						{ label: 'Dashboards', link: '/dashboards/' },
