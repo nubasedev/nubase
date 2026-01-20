@@ -1,14 +1,13 @@
-import { createHttpHandler, HttpError } from "@nubase/backend";
+import { HttpError } from "@nubase/backend";
 import type { SQL } from "drizzle-orm";
 import { and, eq, ilike, or } from "drizzle-orm";
-import { apiEndpoints } from "schema";
 import { getDb } from "../../db/helpers/drizzle";
 import { users } from "../../db/schema";
+import { createHandler } from "../handler-factory";
 
 export const userHandlers = {
 	/** Get all users with optional filters. */
-	getUsers: createHttpHandler({
-		endpoint: apiEndpoints.getUsers,
+	getUsers: createHandler((e) => e.getUsers, {
 		handler: async ({ params }) => {
 			const db = getDb();
 
@@ -53,8 +52,7 @@ export const userHandlers = {
 	}),
 
 	/** Get a single user by ID. */
-	getUser: createHttpHandler({
-		endpoint: apiEndpoints.getUser,
+	getUser: createHandler((e) => e.getUser, {
 		handler: async ({ params }) => {
 			const db = getDb();
 			const [user] = await db.select().from(users).where(eq(users.id, params.id));
@@ -72,8 +70,7 @@ export const userHandlers = {
 	}),
 
 	/** Create a new user. */
-	postUser: createHttpHandler({
-		endpoint: apiEndpoints.postUser,
+	postUser: createHandler((e) => e.postUser, {
 		handler: async ({ body }) => {
 			const db = getDb();
 
@@ -106,8 +103,7 @@ export const userHandlers = {
 	}),
 
 	/** Update a user by ID. */
-	patchUser: createHttpHandler({
-		endpoint: apiEndpoints.patchUser,
+	patchUser: createHandler((e) => e.patchUser, {
 		handler: async ({ params, body }) => {
 			const db = getDb();
 
@@ -138,8 +134,7 @@ export const userHandlers = {
 	}),
 
 	/** Delete a user by ID. */
-	deleteUser: createHttpHandler({
-		endpoint: apiEndpoints.deleteUser,
+	deleteUser: createHandler((e) => e.deleteUser, {
 		handler: async ({ params }) => {
 			const db = getDb();
 
@@ -154,8 +149,7 @@ export const userHandlers = {
 	}),
 
 	/** Lookup users for select/autocomplete fields. */
-	lookupUsers: createHttpHandler({
-		endpoint: apiEndpoints.lookupUsers,
+	lookupUsers: createHandler((e) => e.lookupUsers, {
 		handler: async ({ params }) => {
 			const db = getDb();
 

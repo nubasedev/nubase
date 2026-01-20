@@ -1,12 +1,11 @@
-import { createHttpHandler, HttpError } from "@nubase/backend";
+import { HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { and, eq, ilike, or } from "drizzle-orm";
-import { apiEndpoints } from "questlog-schema";
-import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
 import type { Workspace } from "../../middleware/workspace-middleware";
+import { createHandler } from "../handler-factory";
 
 // Type-safe database types inferred from schema
 type User = InferSelectModel<typeof usersTable>;
@@ -18,12 +17,7 @@ type NewUser = InferInsertModel<typeof usersTable>;
  */
 export const userHandlers = {
   /** Get all users in the current workspace. */
-  getUsers: createHttpHandler<
-    typeof apiEndpoints.getUsers,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getUsers,
+  getUsers: createHandler((e) => e.getUsers, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -78,12 +72,7 @@ export const userHandlers = {
   }),
 
   /** Get a single user - must belong to current workspace. */
-  getUser: createHttpHandler<
-    typeof apiEndpoints.getUser,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getUser,
+  getUser: createHandler((e) => e.getUser, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -120,12 +109,7 @@ export const userHandlers = {
   }),
 
   /** Create a new user and add to current workspace. */
-  postUser: createHttpHandler<
-    typeof apiEndpoints.postUser,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.postUser,
+  postUser: createHandler((e) => e.postUser, {
     auth: "required",
     handler: async ({ body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -198,12 +182,7 @@ export const userHandlers = {
   }),
 
   /** Update a user - must belong to current workspace. */
-  patchUser: createHttpHandler<
-    typeof apiEndpoints.patchUser,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.patchUser,
+  patchUser: createHandler((e) => e.patchUser, {
     auth: "required",
     handler: async ({ params, body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -256,12 +235,7 @@ export const userHandlers = {
   }),
 
   /** Remove a user from current workspace. */
-  deleteUser: createHttpHandler<
-    typeof apiEndpoints.deleteUser,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.deleteUser,
+  deleteUser: createHandler((e) => e.deleteUser, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -290,12 +264,7 @@ export const userHandlers = {
   }),
 
   /** Lookup users for select/autocomplete fields. */
-  lookupUsers: createHttpHandler<
-    typeof apiEndpoints.lookupUsers,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.lookupUsers,
+  lookupUsers: createHandler((e) => e.lookupUsers, {
     auth: "required",
     handler: async ({ params, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;

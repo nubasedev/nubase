@@ -1,11 +1,10 @@
-import { createHttpHandler, HttpError } from "@nubase/backend";
+import { HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { apiEndpoints } from "questlog-schema";
-import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
 import type { Workspace } from "../../middleware/workspace-middleware";
+import { createHandler } from "../handler-factory";
 
 // Type-safe database types inferred from schema
 type Ticket = InferSelectModel<typeof ticketsTable>;
@@ -16,12 +15,7 @@ type NewTicket = InferInsertModel<typeof ticketsTable>;
  */
 export const ticketHandlers = {
   /** Get all tickets - workspace-scoped with optional filters. */
-  getTickets: createHttpHandler<
-    typeof apiEndpoints.getTickets,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getTickets,
+  getTickets: createHandler((e) => e.getTickets, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -86,12 +80,7 @@ export const ticketHandlers = {
   }),
 
   /** Get a single ticket - workspace-scoped. */
-  getTicket: createHttpHandler<
-    typeof apiEndpoints.getTicket,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getTicket,
+  getTicket: createHandler((e) => e.getTicket, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -124,12 +113,7 @@ export const ticketHandlers = {
   }),
 
   /** Create a new ticket - workspace-scoped. */
-  postTicket: createHttpHandler<
-    typeof apiEndpoints.postTicket,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.postTicket,
+  postTicket: createHandler((e) => e.postTicket, {
     auth: "required",
     handler: async ({ body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -166,12 +150,7 @@ export const ticketHandlers = {
   }),
 
   /** Update a ticket - workspace-scoped. */
-  patchTicket: createHttpHandler<
-    typeof apiEndpoints.patchTicket,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.patchTicket,
+  patchTicket: createHandler((e) => e.patchTicket, {
     auth: "required",
     handler: async ({ params, body, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;
@@ -218,12 +197,7 @@ export const ticketHandlers = {
   }),
 
   /** Delete a ticket - workspace-scoped. */
-  deleteTicket: createHttpHandler<
-    typeof apiEndpoints.deleteTicket,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.deleteTicket,
+  deleteTicket: createHandler((e) => e.deleteTicket, {
     auth: "required",
     handler: async ({ params, user, ctx }) => {
       const workspace = ctx.get("workspace") as Workspace;

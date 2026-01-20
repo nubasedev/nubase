@@ -1,20 +1,15 @@
-import {
-	createHttpHandler,
-	getAuthController,
-	HttpError,
-} from "@nubase/backend";
+import { getAuthController, HttpError } from "@nubase/backend";
 import bcrypt from "bcrypt";
 import { and, eq, inArray } from "drizzle-orm";
-import { apiEndpoints } from "schema";
 import jwt from "jsonwebtoken";
 import type { __PROJECT_NAME_PASCAL__User } from "../../auth";
 import { getAdminDb } from "../../db/helpers/drizzle";
 import { users, userWorkspaces, workspaces } from "../../db/schema";
+import { createHandler } from "../handler-factory";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
 const LOGIN_TOKEN_SECRET =
-	process.env.LOGIN_TOKEN_SECRET ||
-	"nubase-login-token-secret-change-in-production";
+	process.env.LOGIN_TOKEN_SECRET || "nubase-login-token-secret-change-in-production";
 const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
 
 interface LoginTokenPayload {
@@ -27,8 +22,7 @@ export const authHandlers = {
 	 * Login Start handler - Step 1 of two-step auth.
 	 * Validates credentials and returns list of workspaces.
 	 */
-	loginStart: createHttpHandler({
-		endpoint: apiEndpoints.loginStart,
+	loginStart: createHandler((e) => e.loginStart, {
 		handler: async ({ body }) => {
 			// Find user by email
 			const [user] = await getAdminDb()
@@ -41,10 +35,7 @@ export const authHandlers = {
 			}
 
 			// Verify password
-			const isValidPassword = await bcrypt.compare(
-				body.password,
-				user.passwordHash,
-			);
+			const isValidPassword = await bcrypt.compare(body.password, user.passwordHash);
 			if (!isValidPassword) {
 				throw new HttpError(401, "Invalid email or password");
 			}
@@ -92,18 +83,14 @@ export const authHandlers = {
 	 * Login Complete handler - Step 2 of two-step auth.
 	 * Validates the login token and selected workspace.
 	 */
-	loginComplete: createHttpHandler({
-		endpoint: apiEndpoints.loginComplete,
+	loginComplete: createHandler((e) => e.loginComplete, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
 			// Verify the login token
 			let decoded: LoginTokenPayload;
 			try {
-				decoded = jwt.verify(
-					body.loginToken,
-					LOGIN_TOKEN_SECRET,
-				) as LoginTokenPayload;
+				decoded = jwt.verify(body.loginToken, LOGIN_TOKEN_SECRET) as LoginTokenPayload;
 			} catch {
 				throw new HttpError(401, "Invalid or expired login token");
 			}
@@ -174,8 +161,7 @@ export const authHandlers = {
 	 * Legacy Login handler - validates credentials and sets HttpOnly cookie.
 	 * @deprecated Use loginStart and loginComplete for two-step flow
 	 */
-	login: createHttpHandler({
-		endpoint: apiEndpoints.login,
+	login: createHandler((e) => e.login, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 
@@ -200,10 +186,7 @@ export const authHandlers = {
 			}
 
 			// Verify password
-			const isValidPassword = await bcrypt.compare(
-				body.password,
-				dbUser.passwordHash,
-			);
+			const isValidPassword = await bcrypt.compare(body.password, dbUser.passwordHash);
 			if (!isValidPassword) {
 				throw new HttpError(401, "Invalid email or password");
 			}
@@ -246,8 +229,7 @@ export const authHandlers = {
 	}),
 
 	/** Logout handler - clears the auth cookie. */
-	logout: createHttpHandler({
-		endpoint: apiEndpoints.logout,
+	logout: createHandler((e) => e.logout, {
 		handler: async ({ ctx }) => {
 			const authController = getAuthController(ctx);
 			authController.clearTokenFromResponse(ctx);
@@ -256,12 +238,7 @@ export const authHandlers = {
 	}),
 
 	/** Get current user handler. */
-	getMe: createHttpHandler<
-		typeof apiEndpoints.getMe,
-		"optional",
-		__PROJECT_NAME_PASCAL__User
-	>({
-		endpoint: apiEndpoints.getMe,
+	getMe: createHandler((e) => e.getMe, {
 		auth: "optional",
 		handler: async ({ user }) => {
 			if (!user) {
@@ -279,8 +256,7 @@ export const authHandlers = {
 	}),
 
 	/** Signup handler - creates a new workspace and admin user. */
-	signup: createHttpHandler({
-		endpoint: apiEndpoints.signup,
+	signup: createHandler((e) => e.signup, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
 

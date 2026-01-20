@@ -1,6 +1,4 @@
-import { createHttpHandler } from "@nubase/backend";
-import { apiEndpoints } from "questlog-schema";
-import type { QuestlogUser } from "../../auth";
+import { createHandler } from "../handler-factory";
 
 /**
  * Dashboard widget endpoints.
@@ -8,12 +6,7 @@ import type { QuestlogUser } from "../../auth";
  */
 export const dashboardHandlers = {
   /** Revenue chart - returns series data for area/line/bar charts. */
-  getRevenueChart: createHttpHandler<
-    typeof apiEndpoints.getRevenueChart,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getRevenueChart,
+  getRevenueChart: createHandler((e) => e.getRevenueChart, {
     auth: "required",
     handler: async () => ({
       type: "series",
@@ -32,12 +25,7 @@ export const dashboardHandlers = {
   }),
 
   /** Browser stats - returns proportional data for pie/donut charts. */
-  getBrowserStats: createHttpHandler<
-    typeof apiEndpoints.getBrowserStats,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getBrowserStats,
+  getBrowserStats: createHandler((e) => e.getBrowserStats, {
     auth: "required",
     handler: async () => ({
       type: "proportional",
@@ -52,12 +40,7 @@ export const dashboardHandlers = {
   }),
 
   /** Total revenue KPI - returns single value with trend. */
-  getTotalRevenue: createHttpHandler<
-    typeof apiEndpoints.getTotalRevenue,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getTotalRevenue,
+  getTotalRevenue: createHandler((e) => e.getTotalRevenue, {
     auth: "required",
     handler: async () => ({
       type: "kpi",
@@ -69,12 +52,7 @@ export const dashboardHandlers = {
   }),
 
   /** Active users KPI - returns single value with trend. */
-  getActiveUsers: createHttpHandler<
-    typeof apiEndpoints.getActiveUsers,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getActiveUsers,
+  getActiveUsers: createHandler((e) => e.getActiveUsers, {
     auth: "required",
     handler: async () => ({
       type: "kpi",
@@ -86,12 +64,7 @@ export const dashboardHandlers = {
   }),
 
   /** Sales chart - returns series data for bar charts. */
-  getSalesChart: createHttpHandler<
-    typeof apiEndpoints.getSalesChart,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getSalesChart,
+  getSalesChart: createHandler((e) => e.getSalesChart, {
     auth: "required",
     handler: async () => ({
       type: "series",
@@ -111,12 +84,7 @@ export const dashboardHandlers = {
   }),
 
   /** Recent activity - returns table data. */
-  getRecentActivity: createHttpHandler<
-    typeof apiEndpoints.getRecentActivity,
-    "required",
-    QuestlogUser
-  >({
-    endpoint: apiEndpoints.getRecentActivity,
+  getRecentActivity: createHandler((e) => e.getRecentActivity, {
     auth: "required",
     handler: async () => ({
       type: "table",

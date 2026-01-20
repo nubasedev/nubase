@@ -1,13 +1,12 @@
-import { createHttpHandler, HttpError } from "@nubase/backend";
+import { HttpError } from "@nubase/backend";
 import type { SQL } from "drizzle-orm";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { apiEndpoints } from "schema";
 import { getDb } from "../../db/helpers/drizzle";
 import { tickets } from "../../db/schema";
+import { createHandler } from "../handler-factory";
 
 export const ticketHandlers = {
-	getTickets: createHttpHandler({
-		endpoint: apiEndpoints.getTickets,
+	getTickets: createHandler((e) => e.getTickets, {
 		handler: async ({ params }) => {
 			const db = getDb();
 
@@ -64,8 +63,7 @@ export const ticketHandlers = {
 		},
 	}),
 
-	getTicket: createHttpHandler({
-		endpoint: apiEndpoints.getTicket,
+	getTicket: createHandler((e) => e.getTicket, {
 		handler: async ({ params }) => {
 			const [ticket] = await getDb()
 				.select()
@@ -85,8 +83,7 @@ export const ticketHandlers = {
 		},
 	}),
 
-	postTicket: createHttpHandler({
-		endpoint: apiEndpoints.postTicket,
+	postTicket: createHandler((e) => e.postTicket, {
 		handler: async ({ body }) => {
 			const [ticket] = await getDb()
 				.insert(tickets)
@@ -111,8 +108,7 @@ export const ticketHandlers = {
 		},
 	}),
 
-	patchTicket: createHttpHandler({
-		endpoint: apiEndpoints.patchTicket,
+	patchTicket: createHandler((e) => e.patchTicket, {
 		handler: async ({ params, body }) => {
 			const updateData: {
 				title?: string;
@@ -152,8 +148,7 @@ export const ticketHandlers = {
 		},
 	}),
 
-	deleteTicket: createHttpHandler({
-		endpoint: apiEndpoints.deleteTicket,
+	deleteTicket: createHandler((e) => e.deleteTicket, {
 		handler: async ({ params }) => {
 			const [deleted] = await getDb()
 				.delete(tickets)

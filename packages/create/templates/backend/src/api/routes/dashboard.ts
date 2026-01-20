@@ -1,5 +1,4 @@
-import { createHttpHandler } from "@nubase/backend";
-import { apiEndpoints } from "schema";
+import { createHandler } from "../handler-factory";
 
 /**
  * Dashboard widget endpoints.
@@ -7,8 +6,7 @@ import { apiEndpoints } from "schema";
  */
 export const dashboardHandlers = {
 	/** Revenue chart - returns series data for area/line/bar charts. */
-	getRevenueChart: createHttpHandler({
-		endpoint: apiEndpoints.getRevenueChart,
+	getRevenueChart: createHandler((e) => e.getRevenueChart, {
 		handler: async () => ({
 			type: "series",
 			config: {
@@ -26,8 +24,7 @@ export const dashboardHandlers = {
 	}),
 
 	/** Browser stats - returns proportional data for pie/donut charts. */
-	getBrowserStats: createHttpHandler({
-		endpoint: apiEndpoints.getBrowserStats,
+	getBrowserStats: createHandler((e) => e.getBrowserStats, {
 		handler: async () => ({
 			type: "proportional",
 			data: [
@@ -41,8 +38,7 @@ export const dashboardHandlers = {
 	}),
 
 	/** Total revenue KPI - returns single value with trend. */
-	getTotalRevenue: createHttpHandler({
-		endpoint: apiEndpoints.getTotalRevenue,
+	getTotalRevenue: createHandler((e) => e.getTotalRevenue, {
 		handler: async () => ({
 			type: "kpi",
 			value: "$45,231.89",
@@ -53,8 +49,7 @@ export const dashboardHandlers = {
 	}),
 
 	/** Active users KPI - returns single value with trend. */
-	getActiveUsers: createHttpHandler({
-		endpoint: apiEndpoints.getActiveUsers,
+	getActiveUsers: createHandler((e) => e.getActiveUsers, {
 		handler: async () => ({
 			type: "kpi",
 			value: "+2,350",
@@ -65,8 +60,7 @@ export const dashboardHandlers = {
 	}),
 
 	/** Sales chart - returns series data for bar charts. */
-	getSalesChart: createHttpHandler({
-		endpoint: apiEndpoints.getSalesChart,
+	getSalesChart: createHandler((e) => e.getSalesChart, {
 		handler: async () => ({
 			type: "series",
 			config: {
@@ -85,8 +79,7 @@ export const dashboardHandlers = {
 	}),
 
 	/** Recent activity - returns table data. */
-	getRecentActivity: createHttpHandler({
-		endpoint: apiEndpoints.getRecentActivity,
+	getRecentActivity: createHandler((e) => e.getRecentActivity, {
 		handler: async () => ({
 			type: "table",
 			columns: [

@@ -81,18 +81,7 @@ This is a standalone application created by `npx @nubase/create`. It uses publis
 
 **Use this when**: Testing the CLI output, verifying that published packages work correctly, or seeing what end users will experience.
 
-**Creating and testing the starter example:**
-
-```bash
-# Create using local @nubase/create (for testing local changes)
-npm run examples:starter:create:local
-
-# Create using npm (tests the published CLI)
-npm run examples:starter:create:npm
-
-# Run full E2E tests on the starter example
-npm run examples:starter:test
-```
+**Note:** The starter example is git-ignored and meant to be created manually for testing. The E2E test scripts are not currently configured in the root package.json.
 
 ### Example Application Architecture
 

@@ -1,18 +1,14 @@
-import {
-  createHttpHandler,
-  getAuthController,
-  HttpError,
-} from "@nubase/backend";
+import { getAuthController, HttpError } from "@nubase/backend";
 import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
-import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getAdminDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
 import { workspacesTable } from "../../db/schema/workspace";
+import { createHandler } from "../handler-factory";
 
 type DbUser = InferSelectModel<typeof usersTable>;
 type DbWorkspace = InferSelectModel<typeof workspacesTable>;
@@ -37,8 +33,7 @@ export const authHandlers = {
    * Validates credentials (email + password) at root level.
    * Returns a temporary login token and list of workspaces the user belongs to.
    */
-  loginStart: createHttpHandler({
-    endpoint: apiEndpoints.loginStart,
+  loginStart: createHandler((e) => e.loginStart, {
     handler: async ({ body }) => {
       const adminDb = getAdminDb();
 
@@ -106,8 +101,7 @@ export const authHandlers = {
    * Login Complete handler - Step 2 of two-step auth.
    * Validates the login token and selected workspace, then issues the full auth token.
    */
-  loginComplete: createHttpHandler({
-    endpoint: apiEndpoints.loginComplete,
+  loginComplete: createHandler((e) => e.loginComplete, {
     handler: async ({ body, ctx }) => {
       const authController = getAuthController<QuestlogUser>(ctx);
       const adminDb = getAdminDb();
@@ -193,8 +187,7 @@ export const authHandlers = {
    * Legacy Login handler - validates credentials and sets HttpOnly cookie.
    * @deprecated Use loginStart and loginComplete for two-step flow
    */
-  login: createHttpHandler({
-    endpoint: apiEndpoints.login,
+  login: createHandler((e) => e.login, {
     handler: async ({ body, ctx }) => {
       const authController = getAuthController<QuestlogUser>(ctx);
 
@@ -272,8 +265,7 @@ export const authHandlers = {
   }),
 
   /** Logout handler - clears the auth cookie. */
-  logout: createHttpHandler({
-    endpoint: apiEndpoints.logout,
+  logout: createHandler((e) => e.logout, {
     handler: async ({ ctx }) => {
       const authController = getAuthController(ctx);
       authController.clearTokenFromResponse(ctx);
@@ -282,29 +274,25 @@ export const authHandlers = {
   }),
 
   /** Get current user handler. */
-  getMe: createHttpHandler<typeof apiEndpoints.getMe, "optional", QuestlogUser>(
-    {
-      endpoint: apiEndpoints.getMe,
-      auth: "optional",
-      handler: async ({ user }) => {
-        if (!user) {
-          return { user: undefined };
-        }
+  getMe: createHandler((e) => e.getMe, {
+    auth: "optional",
+    handler: async ({ user }) => {
+      if (!user) {
+        return { user: undefined };
+      }
 
-        return {
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName,
-          },
-        };
-      },
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+      };
     },
-  ),
+  }),
 
   /** Signup handler - creates a new workspace and admin user. */
-  signup: createHttpHandler({
-    endpoint: apiEndpoints.signup,
+  signup: createHandler((e) => e.signup, {
     handler: async ({ body, ctx }) => {
       const authController = getAuthController<QuestlogUser>(ctx);
       const adminDb = getAdminDb();
