@@ -1,6 +1,6 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
 import type { SQL } from "drizzle-orm";
-import { and, eq, ilike, inArray } from "drizzle-orm";
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { apiEndpoints } from "schema";
 import { getDb } from "../../db/helpers/drizzle";
 import { tickets } from "../../db/schema";
@@ -13,6 +13,18 @@ export const ticketHandlers = {
 
 			// Build filter conditions
 			const conditions: SQL[] = [];
+
+			// Global text search - OR across searchable text fields
+			if (params.q) {
+				const searchTerm = `%${params.q}%`;
+				const searchCondition = or(
+					ilike(tickets.title, searchTerm),
+					ilike(tickets.description, searchTerm),
+				);
+				if (searchCondition) {
+					conditions.push(searchCondition);
+				}
+			}
 
 			// Filter by title (case-insensitive partial match)
 			if (params.title) {

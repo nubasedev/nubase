@@ -1,5 +1,5 @@
 import type { BaseSchema, ObjectSchema, SchemaMetadata } from "@nubase/core";
-import { OptionalSchema } from "@nubase/core";
+import { OptionalSchema, SEARCH_FIELD_NAME } from "@nubase/core";
 import type { FilterFieldDescriptor, SchemaFilterConfig } from "./types";
 
 /**
@@ -77,6 +77,11 @@ export function introspectSchemaForFilters<TSchema extends ObjectSchema<any>>(
   const shape = schema._shape;
 
   for (const [fieldName, fieldSchema] of Object.entries(shape)) {
+    // Always skip the search field - it's handled by SearchFilterBar
+    if (fieldName === SEARCH_FIELD_NAME) {
+      continue;
+    }
+
     // Skip excluded fields
     if (config?.excludeFields?.includes(fieldName)) {
       continue;

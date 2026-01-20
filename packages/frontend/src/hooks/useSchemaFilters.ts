@@ -1,4 +1,4 @@
-import type { ObjectSchema } from "@nubase/core";
+import { type ObjectSchema, SEARCH_FIELD_NAME } from "@nubase/core";
 import { useCallback, useMemo, useState } from "react";
 import { introspectSchemaForFilters } from "../components/schema-filter-bar/introspect-schema";
 import type {
@@ -30,6 +30,15 @@ export type UseSchemaFiltersReturn<TSchema extends ObjectSchema<any>> = {
 
   /** Get params for API call (removes empty/undefined values) */
   getRequestParams: () => Record<string, unknown>;
+
+  /** Global search value (if schema has "q" field) */
+  searchValue: string;
+
+  /** Update global search value */
+  setSearchValue: (value: string) => void;
+
+  /** Whether the schema supports global text search (has "q" field) */
+  hasTextSearch: boolean;
 };
 
 /**
@@ -62,7 +71,14 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
   schema: TSchema | undefined,
   options?: UseSchemaFiltersOptions,
 ): UseSchemaFiltersReturn<TSchema> {
+  // Check if schema supports global text search (has search field)
+  const hasTextSearch = useMemo(() => {
+    if (!schema) return false;
+    return SEARCH_FIELD_NAME in schema._shape;
+  }, [schema]);
+
   // Introspect schema to get filter descriptors
+  // Note: "q" is excluded from introspection in introspect-schema.ts
   const filterDescriptors = useMemo(() => {
     if (!schema) return [];
     return introspectSchemaForFilters(schema, options);
@@ -72,6 +88,14 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
   const [filterState, setFilterState] = useState<SchemaFilterState<TSchema>>(
     {} as SchemaFilterState<TSchema>,
   );
+
+  // Global search state (separate from field filters)
+  const [searchValue, setSearchValueState] = useState("");
+
+  // Update global search value
+  const setSearchValue = useCallback((value: string) => {
+    setSearchValueState(value);
+  }, []);
 
   // Update a single filter value
   const setFilterValue = useCallback((field: string, value: unknown) => {
@@ -92,13 +116,20 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     [],
   );
 
-  // Clear all filters
+  // Clear all filters (including search)
   const clearFilters = useCallback(() => {
     setFilterState({} as SchemaFilterState<TSchema>);
+    setSearchValueState("");
   }, []);
 
-  // Check if any filters are active
+  // Check if any filters are active (including search)
   const hasActiveFilters = useMemo(() => {
+    // Check if search value is active
+    if (searchValue.trim() !== "") {
+      return true;
+    }
+
+    // Check if any field filters are active
     return Object.entries(filterState).some(([, value]) => {
       if (value === undefined || value === null || value === "") {
         return false;
@@ -108,11 +139,16 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
       }
       return true;
     });
-  }, [filterState]);
+  }, [filterState, searchValue]);
 
-  // Get params for API call (removes empty/undefined values)
+  // Get params for API call (removes empty/undefined values, includes search)
   const getRequestParams = useCallback((): Record<string, unknown> => {
     const params: Record<string, unknown> = {};
+
+    // Include global search if present
+    if (searchValue.trim() !== "") {
+      params[SEARCH_FIELD_NAME] = searchValue.trim();
+    }
 
     for (const [key, value] of Object.entries(filterState)) {
       // Skip empty values
@@ -127,7 +163,7 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     }
 
     return params;
-  }, [filterState]);
+  }, [filterState, searchValue]);
 
   return {
     filterState,
@@ -137,5 +173,8 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     hasActiveFilters,
     filterDescriptors,
     getRequestParams,
+    searchValue,
+    setSearchValue,
+    hasTextSearch,
   };
 }

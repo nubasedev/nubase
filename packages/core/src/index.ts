@@ -9,6 +9,7 @@ export * from "./schema/lookup";
 export * from "./schema/nu";
 export * from "./schema/request-schema";
 export * from "./schema/schema";
+export * from "./schema/search";
 
 // Widget schemas
 export * from "./schema/widget-data-schema";

@@ -1,6 +1,6 @@
 import { createHttpHandler, HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { and, eq, ilike } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { apiEndpoints } from "questlog-schema";
 import type { QuestlogUser } from "../../auth";
 import { getDb } from "../../db/helpers/drizzle";
@@ -34,6 +34,18 @@ export const userHandlers = {
 
       // Build where conditions
       const conditions = [eq(userWorkspacesTable.workspaceId, workspace.id)];
+
+      // Global text search - OR across searchable text fields
+      if (params.q) {
+        const searchTerm = `%${params.q}%`;
+        const searchCondition = or(
+          ilike(usersTable.displayName, searchTerm),
+          ilike(usersTable.email, searchTerm),
+        );
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
+      }
 
       // Filter by displayName if provided (case-insensitive partial match)
       if (params.displayName) {

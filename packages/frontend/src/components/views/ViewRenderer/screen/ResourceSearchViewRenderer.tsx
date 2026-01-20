@@ -86,6 +86,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     hasActiveFilters,
     filterDescriptors,
     getRequestParams,
+    searchValue,
+    setSearchValue,
+    hasTextSearch,
   } = useSchemaFilters(view.schemaFilter);
 
   // Merge URL params with filter state for the query
@@ -377,6 +380,8 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               onFilterChange={setFilterValue}
               onClearFilters={clearFilters}
               showClearFilters={hasActiveFilters}
+              searchValue={hasTextSearch ? searchValue : ""}
+              onSearchChange={hasTextSearch ? setSearchValue : undefined}
             />
           )}
           {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}

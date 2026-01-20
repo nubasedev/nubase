@@ -100,12 +100,13 @@ export const userResource = createResource("user")
 			id: "search-users",
 			title: "Users",
 			schemaGet: (api) => api.getUsers.responseBody,
+			schemaFilter: (api) => api.getUsers.requestParams,
 			breadcrumbs: () => [{ label: "Users", to: "/r/user/search" }],
 			tableActions: ["delete"],
 			rowActions: ["delete"],
 			onLoad: async ({ context }) => {
 				return context.http.getUsers({
-					params: {},
+					params: context.params || {},
 				});
 			},
 		},
