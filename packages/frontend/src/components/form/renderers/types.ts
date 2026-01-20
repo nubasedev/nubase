@@ -23,6 +23,11 @@ export type EditFieldRendererProps = {
 export type EditFieldRendererResult = {
   element: React.ReactElement<{ id?: string; hasError?: boolean }>;
   lifecycle?: EditFieldLifecycle;
+  /**
+   * When true, the field will auto-commit on value change without requiring
+   * the user to click the check button. Suitable for Toggle and Select fields.
+   */
+  autoCommit?: boolean;
 };
 
 export type EditFieldRenderer = (

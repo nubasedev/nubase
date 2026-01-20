@@ -1,7 +1,7 @@
 import type { Lookup } from "@nubase/core";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useCombobox } from "downshift";
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { cn } from "../../../../styling/cn";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
 
@@ -228,18 +228,30 @@ const LookupSelectInner = (
   const [selectedItem, setSelectedItem] = useState<Lookup | null>(
     initialItem || null,
   );
+  // Track the last value we initialized inputValue for, to avoid re-setting
+  // inputValue when items change (which would override user typing)
+  const lastInitializedValueRef = useRef<string | number | null | undefined>(
+    undefined,
+  );
 
   // Find selected item when value changes
   useEffect(() => {
     if (value === null || value === undefined) {
       setSelectedItem(null);
+      lastInitializedValueRef.current = value;
       return;
     }
+
+    // Only initialize inputValue if value has changed since last initialization
+    const shouldInitialize = lastInitializedValueRef.current !== value;
 
     // If we have an initial item that matches, use it
     if (initialItem && initialItem.id === value) {
       setSelectedItem(initialItem);
-      setInputValue(initialItem.title);
+      if (shouldInitialize) {
+        setInputValue(initialItem.title);
+        lastInitializedValueRef.current = value;
+      }
       return;
     }
 
@@ -247,7 +259,10 @@ const LookupSelectInner = (
     const foundItem = items.find((item) => item.id === value);
     if (foundItem) {
       setSelectedItem(foundItem);
-      setInputValue(foundItem.title);
+      if (shouldInitialize) {
+        setInputValue(foundItem.title);
+        lastInitializedValueRef.current = value;
+      }
     }
   }, [value, initialItem, items]);
 
@@ -327,6 +342,14 @@ const LookupSelectInner = (
             "aria-invalid": hasError,
             "data-slot": "input",
             onFocus: () => {
+              // Reset input to show selected item's title when entering edit mode
+              // This ensures a clean state when re-entering the field
+              const resetValue = selectedItem?.title || "";
+              if (inputValue !== resetValue) {
+                setInputValue(resetValue);
+                setItems([]);
+                setHasSearched(false);
+              }
               if (inputValue.length >= minQueryLength) {
                 openMenu();
               }
@@ -341,7 +364,7 @@ const LookupSelectInner = (
             <button
               type="button"
               onClick={handleClear}
-              className="text-muted-foreground hover:text-foreground transition-colors p-1"
+              className="text-muted-foreground hover:text-foreground transition-colors p-1 cursor-pointer"
               aria-label="Clear selection"
             >
               <svg

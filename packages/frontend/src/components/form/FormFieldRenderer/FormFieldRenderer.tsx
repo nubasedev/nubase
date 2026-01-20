@@ -57,9 +57,12 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
       setOriginalValue(fieldState.state.value);
       setIsPatching(true);
     },
-    onApplyPatch: async (): Promise<PatchResult> => {
+    onApplyPatch: async (overrideValue?: unknown): Promise<PatchResult> => {
       if (onPatch) {
-        const result = await onPatch(fieldState.state.value, fieldState);
+        // Use overrideValue if provided, otherwise read from form state
+        const valueToUse =
+          overrideValue !== undefined ? overrideValue : fieldState.state.value;
+        const result = await onPatch(valueToUse, fieldState);
         if (result.success) {
           setIsPatching(false);
         }
@@ -70,6 +73,10 @@ export const FormFieldRenderer: React.FC<FormFieldRendererProps> = ({
     },
     onCancelPatch: () => {
       fieldState.handleChange(originalValue);
+      setIsPatching(false);
+    },
+    onPatchSuccess: () => {
+      // Exit edit mode without resetting the value (for auto-commit success)
       setIsPatching(false);
     },
     validationError,
