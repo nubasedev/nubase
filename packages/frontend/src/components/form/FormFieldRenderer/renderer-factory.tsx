@@ -91,6 +91,16 @@ const resolveViewRenderer = (
 export interface EditFieldLifecycle {
   onEnterEdit?: () => void;
   onExitEdit?: () => void;
+  /**
+   * Called by auto-commit renderers when a value should be committed.
+   * This is set by the PatchWrapper and should be called by the renderer
+   * when a selection is made (e.g., Toggle clicked, Select item chosen).
+   *
+   * @param value - Optional value to commit. If provided, this value will be
+   * used for the patch instead of reading from fieldState. This avoids race
+   * conditions when the value change hasn't propagated through React state yet.
+   */
+  onValueCommit?: (value?: unknown) => void;
 }
 
 export interface FormFieldRendererContext {
@@ -106,6 +116,10 @@ export interface PatchContext extends FormFieldRendererContext {
   onStartPatch: () => void;
   onApplyPatch: () => Promise<PatchResult>;
   onCancelPatch: () => void;
+  /**
+   * Called when patch succeeds. Unlike onCancelPatch, this should NOT reset the value.
+   */
+  onPatchSuccess?: () => void;
   editFieldLifecycle?: EditFieldLifecycle;
   validationError?: string;
   isValidating?: boolean;
@@ -181,6 +195,7 @@ export const createViewRenderer = (context: FormFieldRendererContext) => {
  * Creates a patch field with:
  * - View mode: Label + view element (no hint)
  * - Edit mode: Label + edit element + floating action bar with hint/validation
+ * - Auto-commit mode: No floating bar, patches immediately on value change
  */
 export const createPatchRenderer = (context: PatchContext) => {
   const viewElement = createRawViewRenderer(context);
@@ -195,12 +210,14 @@ export const createPatchRenderer = (context: PatchContext) => {
         onStartEdit={context.onStartPatch}
         onPatch={context.onApplyPatch}
         onCancel={context.onCancelPatch}
+        onPatchSuccess={context.onPatchSuccess}
         editComponent={(_errors) => editResult.element}
         editFieldLifecycle={editResult.lifecycle}
         id={context.fieldState.name}
         hint={context.metadata.description}
         validationError={context.validationError}
         isValidating={context.isValidating}
+        autoCommit={editResult.autoCommit}
       >
         {viewElement}
       </PatchWrapper>

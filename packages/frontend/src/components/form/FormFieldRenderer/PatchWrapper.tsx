@@ -11,7 +11,12 @@ export interface PatchResult {
   errors?: string[];
 }
 
-export type PatchFunction = () => Promise<PatchResult>;
+/**
+ * Function to perform the patch operation.
+ * @param overrideValue - Optional value to use instead of reading from form state.
+ *                        This is useful when the form state hasn't updated yet (async).
+ */
+export type PatchFunction = (overrideValue?: unknown) => Promise<PatchResult>;
 
 export type EditComponentRenderer = (errors: string[]) => React.ReactNode;
 
@@ -21,12 +26,22 @@ interface PatchWrapperProps {
   onStartEdit: () => void;
   onPatch: PatchFunction;
   onCancel: () => void;
+  /**
+   * Called when patch succeeds. Unlike onCancel, this should NOT reset the value.
+   * If not provided, falls back to onCancel.
+   */
+  onPatchSuccess?: () => void;
   editComponent: EditComponentRenderer;
   editFieldLifecycle?: EditFieldLifecycle;
   id?: string;
   hint?: string;
   validationError?: string;
   isValidating?: boolean;
+  /**
+   * When true, the field will auto-commit on value change without requiring
+   * the user to click the check button. No floating action bar is shown.
+   */
+  autoCommit?: boolean;
 }
 
 // Threshold in pixels - if mouse moves more than this, it's a selection not a click
@@ -38,12 +53,14 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   onStartEdit,
   onPatch,
   onCancel,
+  onPatchSuccess,
   editComponent,
   editFieldLifecycle,
   id,
   hint,
   validationError,
   isValidating,
+  autoCommit = false,
 }) => {
   const [isPatching, setIsPatching] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -151,6 +168,56 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
   };
 
   /**
+   * Handles auto-commit: called by the renderer via lifecycle.onValueCommit
+   * when a selection is made (e.g., Toggle clicked, Select item chosen).
+   * This triggers the patch operation and exits edit mode on success.
+   *
+   * @param overrideValue - Optional value to use for the patch. If provided,
+   * this value is passed to onPatch instead of reading from form state.
+   * This avoids race conditions when React state hasn't updated yet.
+   */
+  const handleAutoCommitPatch = useCallback(
+    async (overrideValue?: unknown) => {
+      if (isPatching) return;
+
+      setIsPatching(true);
+      setHasUserModified(false);
+
+      try {
+        const result = await onPatch(overrideValue);
+
+        if (result.success) {
+          setValidationErrors([]);
+          // Exit edit mode on success for auto-commit fields
+          // Use onPatchSuccess (which doesn't reset value) if available, otherwise fall back to onCancel
+          (onPatchSuccess ?? onCancel)();
+        } else {
+          setValidationErrors(result.errors || []);
+        }
+      } catch (_error) {
+        setValidationErrors([
+          "An unexpected error occurred. Please try again.",
+        ]);
+      } finally {
+        setIsPatching(false);
+      }
+    },
+    [isPatching, onPatch, onCancel, onPatchSuccess],
+  );
+
+  // Set up the onValueCommit callback for auto-commit fields
+  useEffect(() => {
+    if (autoCommit && editFieldLifecycle) {
+      editFieldLifecycle.onValueCommit = handleAutoCommitPatch;
+    }
+    return () => {
+      if (editFieldLifecycle) {
+        editFieldLifecycle.onValueCommit = undefined;
+      }
+    };
+  }, [autoCommit, editFieldLifecycle, handleAutoCommitPatch]);
+
+  /**
    * Records the mouse position when the user starts pressing.
    * Used to distinguish between a click and a text selection drag.
    */
@@ -218,16 +285,33 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
       {/* Edit mode - input wrapper */}
       {/* Use visibility:hidden instead of display:none so scrollHeight works for textarea auto-sizing */}
       <div
-        className={isEditing ? "" : "invisible absolute inset-0"}
-        onInput={handleUserModification}
-        onChange={handleUserModification}
+        className={isEditing ? "relative" : "invisible absolute inset-0"}
+        onInput={autoCommit ? undefined : handleUserModification}
+        onChange={autoCommit ? undefined : handleUserModification}
         aria-hidden={!isEditing}
       >
         {editComponent(errorsToShow)}
+        {/* Auto-commit loading indicator overlay */}
+        {autoCommit && isPatching && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded">
+            <ActivityIndicator
+              size="sm"
+              color="primary"
+              aria-label="Saving..."
+            />
+          </div>
+        )}
       </div>
 
-      {/* Floating action bar - only visible in edit mode */}
-      {isEditing && (
+      {/* Inline error display for auto-commit fields */}
+      {autoCommit && isEditing && showNetworkErrors && (
+        <div className="text-destructive text-xs mt-1">
+          {errorsToShow.join(", ")}
+        </div>
+      )}
+
+      {/* Floating action bar - only visible in edit mode for non-auto-commit fields */}
+      {isEditing && !autoCommit && (
         <div className="absolute left-0 top-full mt-2 flex items-center gap-2 p-2 bg-muted rounded-lg shadow-xl z-10">
           <Button variant="default" onClick={handlePatch} disabled={isPatching}>
             {isPatching ? (

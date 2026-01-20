@@ -68,7 +68,10 @@ export const LookupEditFieldRenderer = ({
     [lookupConfig, context],
   );
 
-  const lifecycle: EditFieldLifecycle = {
+  // Use useRef to keep the same lifecycle object across renders.
+  // PatchWrapper's useEffect sets onValueCommit on this object, so we need
+  // a stable reference that persists across renders.
+  const lifecycleRef = useRef<EditFieldLifecycle>({
     onEnterEdit: () => {
       setTimeout(() => {
         if (containerRef.current) {
@@ -79,7 +82,8 @@ export const LookupEditFieldRenderer = ({
         }
       }, 0);
     },
-  };
+  });
+  const lifecycle = lifecycleRef.current;
 
   // Handle error cases after all hooks have been called
   if (!lookupResourceId) {
@@ -90,6 +94,7 @@ export const LookupEditFieldRenderer = ({
         </div>
       ),
       lifecycle,
+      autoCommit: true,
     };
   }
 
@@ -101,6 +106,7 @@ export const LookupEditFieldRenderer = ({
         </div>
       ),
       lifecycle,
+      autoCommit: true,
     };
   }
 
@@ -112,6 +118,7 @@ export const LookupEditFieldRenderer = ({
         </div>
       ),
       lifecycle,
+      autoCommit: true,
     };
   }
 
@@ -139,6 +146,12 @@ export const LookupEditFieldRenderer = ({
       onChange={(value) => {
         fieldState.handleChange(coerceValue(value));
       }}
+      onItemSelect={(item) => {
+        // Pass the coerced value directly to onValueCommit to avoid race conditions
+        // where React state hasn't updated yet when the patch reads fieldState.state.value
+        const coercedValue = item ? coerceValue(item.id) : null;
+        lifecycle.onValueCommit?.(coercedValue);
+      }}
       placeholder={metadata.description || `Search ${lookupResourceId}...`}
       hasError={hasError}
       minQueryLength={lookupConfig.minQueryLength ?? 1}
@@ -147,5 +160,5 @@ export const LookupEditFieldRenderer = ({
     />
   );
 
-  return { element, lifecycle };
+  return { element, lifecycle, autoCommit: true };
 };
