@@ -59,22 +59,23 @@ export const ticketSchema = nu
 
 ## Step 2: Create the Search Endpoint
 
-Define a GET endpoint where `requestParams` specifies which fields can be filtered. Use `.omit()` to exclude fields like `id`, and `.partial()` to make all filter fields optional:
+Define a GET endpoint where `requestParams` specifies which fields can be filtered. Use `.omit()` to exclude fields like `id`, `.partial()` to make all filter fields optional, and `withSearchParams()` to enable global text search:
 
 ```typescript
 // schema/src/endpoints/ticket/get-tickets.ts
-import { nu, type RequestSchema } from "@nubase/core";
+import { nu, type RequestSchema, withSearchParams } from "@nubase/core";
 import { ticketSchema } from "../../resources/ticket";
 
 export const getTicketsSchema = {
   method: "GET" as const,
   path: "/tickets",
-  requestParams: ticketSchema.omit("id").partial(),
+  requestParams: withSearchParams(ticketSchema.omit("id").partial()),
   responseBody: nu.array(ticketSchema),
 } satisfies RequestSchema;
 ```
 
 The `requestParams` schema defines what filters are available:
+- `withSearchParams()` - Adds a global `q` parameter for text search across multiple fields
 - `ticketSchema.omit("id")` - Exclude the ID field from filters
 - `.partial()` - Make all fields optional (users don't need to fill every filter)
 
@@ -85,7 +86,7 @@ In your backend route handler, use the typed `params` to build database queries:
 ```typescript
 // backend/src/api/routes/ticket.ts
 import { createHttpHandler } from "@nubase/backend";
-import { and, eq, ilike, inArray } from "drizzle-orm";
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { apiEndpoints } from "schema";
 import { getDb } from "../../db/helpers/drizzle";
@@ -100,7 +101,19 @@ export const ticketHandlers = {
       // Build filter conditions dynamically
       const conditions: SQL[] = [];
 
-      // Text search with case-insensitive partial match
+      // Global text search - OR across multiple text fields
+      if (params.q) {
+        const searchTerm = `%${params.q}%`;
+        const searchCondition = or(
+          ilike(tickets.title, searchTerm),
+          ilike(tickets.description, searchTerm),
+        );
+        if (searchCondition) {
+          conditions.push(searchCondition);
+        }
+      }
+
+      // Field-specific filters (AND with global search)
       if (params.title) {
         conditions.push(ilike(tickets.title, `%${params.title}%`));
       }
@@ -140,10 +153,34 @@ export const ticketHandlers = {
 
 | Field Type | Drizzle Function | Description |
 |------------|------------------|-------------|
+| Global search | `or(ilike(field1, q), ilike(field2, q))` | Search across multiple fields |
 | Text search | `ilike(field, '%value%')` | Case-insensitive partial match |
 | Exact match | `eq(field, value)` | Exact value comparison |
 | Multi-select | `inArray(field, values)` | Match any value in array |
 | Range | `between(field, min, max)` | Value within range |
+
+## Global Text Search
+
+The global text search feature allows users to search across multiple fields at once using a single search input. This is enabled by the `withSearchParams()` helper from `@nubase/core`.
+
+### How It Works
+
+1. **Schema**: Use `withSearchParams()` to add a `q` parameter to your endpoint
+2. **Backend**: Check for `params.q` and search across relevant text fields using `or()`
+3. **Frontend**: The search input is automatically rendered when the schema has a `q` field
+
+The search input appears at the top of the filter bar and searches across all text fields you define in your backend handler. Field-specific filters are combined with global search using AND logic.
+
+### Example: Global Search + Field Filters
+
+```typescript
+// When a user types "bug" in search and selects an assignee:
+// URL: /r/ticket/search?q=bug&assigneeId=5
+//
+// Backend query conditions:
+// 1. (title ILIKE '%bug%' OR description ILIKE '%bug%')  <- from q
+// 2. AND assigneeId = 5                                   <- from filter
+```
 
 ## Step 4: Configure the Frontend Search View
 
@@ -277,10 +314,12 @@ export const ticketSchema = nu
   .withId("id");
 
 // schema/src/endpoints/ticket/get-tickets.ts
+import { withSearchParams } from "@nubase/core";
+
 export const getTicketsSchema = {
   method: "GET" as const,
   path: "/tickets",
-  requestParams: ticketSchema.omit("id").partial(),
+  requestParams: withSearchParams(ticketSchema.omit("id").partial()),
   responseBody: nu.array(ticketSchema),
 } satisfies RequestSchema;
 ```
@@ -289,11 +328,26 @@ export const getTicketsSchema = {
 
 ```typescript
 // backend/src/api/routes/ticket.ts
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
+
 getTickets: createHttpHandler({
   endpoint: apiEndpoints.getTickets,
   handler: async ({ params }) => {
     const conditions: SQL[] = [];
 
+    // Global text search
+    if (params.q) {
+      const searchTerm = `%${params.q}%`;
+      const searchCondition = or(
+        ilike(tickets.title, searchTerm),
+        ilike(tickets.status, searchTerm),
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+
+    // Field-specific filters
     if (params.title) {
       conditions.push(ilike(tickets.title, `%${params.title}%`));
     }
@@ -338,14 +392,18 @@ export const ticketResource = createResource("ticket")
 
 ## Best Practices
 
-1. **Use `.partial()` for filters** - All filter fields should be optional since users rarely fill every filter
+1. **Use `withSearchParams()` for global search** - Enable the search input by wrapping your requestParams with `withSearchParams()`
 
-2. **Use `ilike` for text search** - Case-insensitive partial matching provides the best user experience
+2. **Use `.partial()` for filters** - All filter fields should be optional since users rarely fill every filter
 
-3. **Support arrays for lookups** - Allow multi-select by checking `Array.isArray()` and using `inArray()`
+3. **Use `ilike` for text search** - Case-insensitive partial matching provides the best user experience
 
-4. **Limit lookup results** - Always use `.limit()` on lookup queries to prevent loading too much data
+4. **Use `or()` for global search** - Search across multiple text fields using OR logic so users find matches in any field
 
-5. **Keep filters focused** - Only expose filters that users actually need; too many filters can overwhelm
+5. **Support arrays for lookups** - Allow multi-select by checking `Array.isArray()` and using `inArray()`
 
-6. **Match requestParams to handler** - Every field in `requestParams` should have corresponding filter logic in the backend handler
+6. **Limit lookup results** - Always use `.limit()` on lookup queries to prevent loading too much data
+
+7. **Keep filters focused** - Only expose filters that users actually need; too many filters can overwhelm
+
+8. **Match requestParams to handler** - Every field in `requestParams` should have corresponding filter logic in the backend handler
