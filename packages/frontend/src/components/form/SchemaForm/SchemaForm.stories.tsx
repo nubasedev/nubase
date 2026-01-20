@@ -36,21 +36,21 @@ type Story = StoryObj;
 
 // Basic contact schema
 const ContactSchema = nu.object({
-  firstName: nu.string().withMeta({
+  firstName: nu.string().withComputedMeta({
     label: "First Name",
     description: "Enter your first name",
     defaultValue: "John",
   }),
-  lastName: nu.string().withMeta({
+  lastName: nu.string().withComputedMeta({
     label: "Last Name",
     description: "Enter your last name",
     defaultValue: "Doe",
   }),
-  email: nu.string().withMeta({
+  email: nu.string().withComputedMeta({
     label: "Email",
     description: "Enter your email address",
   }),
-  phone: nu.string().optional().withMeta({
+  phone: nu.string().optional().withComputedMeta({
     label: "Phone",
     description: "Enter your phone number",
   }),
@@ -59,21 +59,21 @@ const ContactSchema = nu.object({
 // Contact schema with computed metadata
 const ContactWithComputedSchema = nu
   .object({
-    firstName: nu.string().withMeta({
+    firstName: nu.string().withComputedMeta({
       label: "First Name",
       description: "Enter your first name",
       defaultValue: "Jane",
     }),
-    lastName: nu.string().withMeta({
+    lastName: nu.string().withComputedMeta({
       label: "Last Name",
       description: "Enter your last name",
       defaultValue: "Smith",
     }),
-    company: nu.string().withMeta({
+    company: nu.string().withComputedMeta({
       label: "Company",
       description: "Enter your company name",
     }),
-    title: nu.string().optional().withMeta({
+    title: nu.string().optional().withComputedMeta({
       label: "Job Title",
       description: "Enter your job title",
     }),
@@ -87,19 +87,19 @@ const ContactWithComputedSchema = nu
 // Contact schema with layout configuration
 const ContactWithLayoutSchema = nu
   .object({
-    name: nu.string().withMeta({
+    name: nu.string().withComputedMeta({
       label: "Full Name",
       description: "Enter your full name",
     }),
-    email: nu.string().withMeta({
+    email: nu.string().withComputedMeta({
       label: "Email Address",
       description: "Enter your email address",
     }),
-    message: nu.string().withMeta({
+    message: nu.string().withComputedMeta({
       label: "Message",
       description: "Enter your message",
     }),
-    subscribe: nu.boolean().optional().withMeta({
+    subscribe: nu.boolean().optional().withComputedMeta({
       label: "Subscribe to newsletter",
       description: "Get updates about our services",
       defaultValue: false,
@@ -123,15 +123,15 @@ const ContactWithLayoutSchema = nu
 
 // Schema for error handling demo
 const _ErrorDemoSchema = nu.object({
-  username: nu.string().withMeta({
+  username: nu.string().withComputedMeta({
     label: "Username",
     description: "Enter 'error' to simulate an error",
   }),
-  password: nu.string().withMeta({
+  password: nu.string().withComputedMeta({
     label: "Password",
     description: "Enter a secure password",
   }),
-  confirmPassword: nu.string().withMeta({
+  confirmPassword: nu.string().withComputedMeta({
     label: "Confirm Password",
     description: "Re-enter your password",
   }),

@@ -71,7 +71,7 @@ export const StringFieldEdit: Story = {
     const [value, setValue] = useState("This text is too long");
     const [hasError, setHasError] = useState(true);
 
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Text Field",
       description: "Enter some text",
     });
@@ -102,7 +102,7 @@ export const StringFieldEdit: Story = {
 
 export const StringFieldView: Story = {
   render: () => {
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Text Field",
       description: "Enter some text",
     });
@@ -132,7 +132,7 @@ export const StringFieldPatch: Story = {
   render: () => {
     const [value, setValue] = useState("Click to edit this text");
 
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Text Field",
       description: "Click to edit",
     });
@@ -171,7 +171,7 @@ export const MultilineFieldEdit: Story = {
       "This is a longer text that spans multiple lines.\n\nIt demonstrates the multiline renderer which uses a textarea instead of a regular text input.",
     );
 
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Description",
       description: "Enter a detailed description",
       renderer: "multiline",
@@ -200,7 +200,7 @@ export const MultilineFieldEdit: Story = {
 
 export const MultilineFieldView: Story = {
   render: () => {
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Description",
       description: "Enter a detailed description",
       renderer: "multiline",
@@ -234,7 +234,7 @@ export const MultilineFieldPatch: Story = {
       "Click to edit this multiline text.\n\nYou can add multiple paragraphs here.",
     );
 
-    const schema = nu.string().withMeta({
+    const schema = nu.string().withComputedMeta({
       label: "Description",
       description: "Click to edit",
       renderer: "multiline",
@@ -273,7 +273,7 @@ export const NumberFieldEdit: Story = {
     const [value, setValue] = useState(-5);
     const [hasError, setHasError] = useState(true);
 
-    const schema = nu.number().withMeta({
+    const schema = nu.number().withComputedMeta({
       label: "Number Field",
       description: "Enter a number",
     });
@@ -304,7 +304,7 @@ export const NumberFieldEdit: Story = {
 
 export const NumberFieldView: Story = {
   render: () => {
-    const schema = nu.number().withMeta({
+    const schema = nu.number().withComputedMeta({
       label: "Number Field",
       description: "Enter a number",
     });
@@ -334,7 +334,7 @@ export const NumberFieldPatch: Story = {
   render: () => {
     const [value, setValue] = useState(100);
 
-    const schema = nu.number().withMeta({
+    const schema = nu.number().withComputedMeta({
       label: "Number Field",
       description: "Click to edit",
     });
@@ -371,7 +371,7 @@ export const BooleanFieldEdit: Story = {
   render: () => {
     const [value, setValue] = useState(true);
 
-    const schema = nu.boolean().withMeta({
+    const schema = nu.boolean().withComputedMeta({
       label: "Checkbox Field",
       description: "Toggle this option",
     });
@@ -399,7 +399,7 @@ export const BooleanFieldEdit: Story = {
 
 export const BooleanFieldView: Story = {
   render: () => {
-    const schema = nu.boolean().withMeta({
+    const schema = nu.boolean().withComputedMeta({
       label: "Checkbox Field",
       description: "Toggle this option",
     });
@@ -429,7 +429,7 @@ export const BooleanFieldPatch: Story = {
   render: () => {
     const [value, setValue] = useState(false);
 
-    const schema = nu.boolean().withMeta({
+    const schema = nu.boolean().withComputedMeta({
       label: "Checkbox Field",
       description: "Click to toggle",
     });

@@ -21,17 +21,17 @@ Computed metadata enables you to:
 import { nu } from '@nubase/core';
 
 const productSchema = nu.object({
-  name: nu.string().withMeta({
+  name: nu.string().withComputedMeta({
     label: 'Product Name',
     description: 'Enter the name of the product',
   }),
-  category: nu.string().withMeta({
+  category: nu.string().withComputedMeta({
     label: 'Category',
   }),
-  price: nu.number().withMeta({
+  price: nu.number().withComputedMeta({
     label: 'Price',
   }),
-  discount: nu.number().withMeta({
+  discount: nu.number().withComputedMeta({
     label: 'Discount %',
   }),
 }).withComputed({
@@ -82,8 +82,8 @@ All computed metadata functions are async, allowing you to:
 
 ```typescript
 const userSchema = nu.object({
-  username: nu.string().withMeta({ label: 'Username' }),
-  email: nu.string().withMeta({ label: 'Email' }),
+  username: nu.string().withComputedMeta({ label: 'Username' }),
+  email: nu.string().withComputedMeta({ label: 'Email' }),
 }).withComputed({
   username: {
     description: async (obj) => {
@@ -122,7 +122,7 @@ The form gracefully handles errors in computed metadata:
 
 ```typescript
 const schema = nu.object({
-  data: nu.string().withMeta({ label: 'Data' }),
+  data: nu.string().withComputedMeta({ label: 'Data' }),
 }).withComputed({
   data: {
     description: async (obj) => {
@@ -221,11 +221,11 @@ Computed functions should handle their own errors gracefully and return meaningf
 
 ```typescript
 const productSchema = nu.object({
-  name: nu.string().withMeta({ label: 'Product Name' }),
-  category: nu.string().withMeta({ label: 'Category' }),
-  basePrice: nu.number().withMeta({ label: 'Base Price' }),
-  discountPercent: nu.number().withMeta({ label: 'Discount %' }),
-  taxRate: nu.number().withMeta({ label: 'Tax Rate %' }),
+  name: nu.string().withComputedMeta({ label: 'Product Name' }),
+  category: nu.string().withComputedMeta({ label: 'Category' }),
+  basePrice: nu.number().withComputedMeta({ label: 'Base Price' }),
+  discountPercent: nu.number().withComputedMeta({ label: 'Discount %' }),
+  taxRate: nu.number().withComputedMeta({ label: 'Tax Rate %' }),
 }).withComputed({
   name: {
     label: async (obj) => obj.category ? `${obj.category} Product Name` : 'Product Name',
@@ -246,10 +246,10 @@ const productSchema = nu.object({
 
 ```typescript
 const userSchema = nu.object({
-  firstName: nu.string().withMeta({ label: 'First Name' }),
-  lastName: nu.string().withMeta({ label: 'Last Name' }),
-  email: nu.string().withMeta({ label: 'Email' }),
-  role: nu.string().withMeta({ label: 'Role' }),
+  firstName: nu.string().withComputedMeta({ label: 'First Name' }),
+  lastName: nu.string().withComputedMeta({ label: 'Last Name' }),
+  email: nu.string().withComputedMeta({ label: 'Email' }),
+  role: nu.string().withComputedMeta({ label: 'Role' }),
 }).withComputed({
   email: {
     label: async (obj) => `Email for ${obj.firstName || ''} ${obj.lastName || ''}`.trim() || 'Email',

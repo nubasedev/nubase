@@ -3,16 +3,16 @@ import { nu } from "@nubase/core";
 export const ticketSchema = nu
   .object({
     id: nu.number(),
-    title: nu.string().withMeta({
+    title: nu.string().withComputedMeta({
       label: "Title",
       description: "Enter the title of the ticket",
     }),
-    description: nu.string().optional().withMeta({
+    description: nu.string().optional().withComputedMeta({
       label: "Description",
       description: "Enter the description of the ticket",
       renderer: "multiline",
     }),
-    assigneeId: nu.number().optional().withMeta({
+    assigneeId: nu.number().optional().withComputedMeta({
       label: "Assignee",
       description: "Select a user to assign this ticket to",
       renderer: "lookup",

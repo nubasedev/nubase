@@ -90,8 +90,8 @@ export function introspectSchemaForFilters<TSchema extends ObjectSchema<any>>(
     const field = fieldSchema as BaseSchema<any>;
 
     // Get metadata from either the optional wrapper or the base schema
-    // Metadata can be on the OptionalSchema (when using .optional().withMeta())
-    // or on the base schema (when using .withMeta().optional())
+    // Metadata can be on the OptionalSchema (when using .optional().withComputedMeta())
+    // or on the base schema (when using .withComputedMeta().optional())
     const optionalMetadata: SchemaMetadata = field._meta || {};
 
     // Unwrap optional schema to get the base schema

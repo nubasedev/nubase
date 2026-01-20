@@ -286,10 +286,10 @@ export const SchemaFormModalFrame: Story = {
     const { openModal, closeModal } = useModal();
 
     const ContactSchema = nu.object({
-      name: nu.string().withMeta({ label: "Name" }),
-      email: nu.string().withMeta({ label: "Email" }),
-      phone: nu.string().optional().withMeta({ label: "Phone" }),
-      message: nu.string().withMeta({ label: "Message" }),
+      name: nu.string().withComputedMeta({ label: "Name" }),
+      email: nu.string().withComputedMeta({ label: "Email" }),
+      phone: nu.string().optional().withComputedMeta({ label: "Phone" }),
+      message: nu.string().withComputedMeta({ label: "Message" }),
     });
 
     const form = useSchemaForm({
@@ -324,78 +324,87 @@ export const SchemaFormWithScrolling: Story = {
 
     const ComprehensiveSchema = nu.object({
       // Personal Information Section
-      firstName: nu.string().withMeta({ label: "First Name" }),
-      lastName: nu.string().withMeta({ label: "Last Name" }),
-      middleName: nu.string().optional().withMeta({ label: "Middle Name" }),
-      dateOfBirth: nu.string().withMeta({ label: "Date of Birth" }),
-      gender: nu.string().withMeta({ label: "Gender" }),
-      nationality: nu.string().withMeta({ label: "Nationality" }),
+      firstName: nu.string().withComputedMeta({ label: "First Name" }),
+      lastName: nu.string().withComputedMeta({ label: "Last Name" }),
+      middleName: nu
+        .string()
+        .optional()
+        .withComputedMeta({ label: "Middle Name" }),
+      dateOfBirth: nu.string().withComputedMeta({ label: "Date of Birth" }),
+      gender: nu.string().withComputedMeta({ label: "Gender" }),
+      nationality: nu.string().withComputedMeta({ label: "Nationality" }),
 
       // Contact Information
-      email: nu.string().withMeta({ label: "Email Address" }),
+      email: nu.string().withComputedMeta({ label: "Email Address" }),
       secondaryEmail: nu
         .string()
         .optional()
-        .withMeta({ label: "Secondary Email" }),
-      phoneNumber: nu.string().withMeta({ label: "Phone Number" }),
+        .withComputedMeta({ label: "Secondary Email" }),
+      phoneNumber: nu.string().withComputedMeta({ label: "Phone Number" }),
       alternatePhone: nu
         .string()
         .optional()
-        .withMeta({ label: "Alternate Phone" }),
+        .withComputedMeta({ label: "Alternate Phone" }),
 
       // Address Information
-      streetAddress: nu.string().withMeta({ label: "Street Address" }),
+      streetAddress: nu.string().withComputedMeta({ label: "Street Address" }),
       addressLine2: nu
         .string()
         .optional()
-        .withMeta({ label: "Address Line 2" }),
-      city: nu.string().withMeta({ label: "City" }),
-      state: nu.string().withMeta({ label: "State/Province" }),
-      postalCode: nu.string().withMeta({ label: "Postal Code" }),
-      country: nu.string().withMeta({ label: "Country" }),
+        .withComputedMeta({ label: "Address Line 2" }),
+      city: nu.string().withComputedMeta({ label: "City" }),
+      state: nu.string().withComputedMeta({ label: "State/Province" }),
+      postalCode: nu.string().withComputedMeta({ label: "Postal Code" }),
+      country: nu.string().withComputedMeta({ label: "Country" }),
 
       // Employment Information
-      jobTitle: nu.string().withMeta({ label: "Job Title" }),
-      department: nu.string().withMeta({ label: "Department" }),
-      employeeId: nu.string().withMeta({ label: "Employee ID" }),
-      startDate: nu.string().withMeta({ label: "Start Date" }),
-      salary: nu.number().withMeta({ label: "Salary" }),
+      jobTitle: nu.string().withComputedMeta({ label: "Job Title" }),
+      department: nu.string().withComputedMeta({ label: "Department" }),
+      employeeId: nu.string().withComputedMeta({ label: "Employee ID" }),
+      startDate: nu.string().withComputedMeta({ label: "Start Date" }),
+      salary: nu.number().withComputedMeta({ label: "Salary" }),
 
       // Emergency Contact
       emergencyContactName: nu
         .string()
-        .withMeta({ label: "Emergency Contact Name" }),
+        .withComputedMeta({ label: "Emergency Contact Name" }),
       emergencyContactPhone: nu
         .string()
-        .withMeta({ label: "Emergency Contact Phone" }),
-      emergencyContactRelation: nu.string().withMeta({ label: "Relationship" }),
+        .withComputedMeta({ label: "Emergency Contact Phone" }),
+      emergencyContactRelation: nu
+        .string()
+        .withComputedMeta({ label: "Relationship" }),
 
       // Additional Information
-      bio: nu.string().withMeta({
+      bio: nu.string().withComputedMeta({
         label: "Biography",
         description: "Tell us about yourself",
       }),
-      interests: nu.string().withMeta({ label: "Interests and Hobbies" }),
+      interests: nu
+        .string()
+        .withComputedMeta({ label: "Interests and Hobbies" }),
       specialRequirements: nu
         .string()
         .optional()
-        .withMeta({ label: "Special Requirements" }),
+        .withComputedMeta({ label: "Special Requirements" }),
 
       // Preferences
-      preferredLanguage: nu.string().withMeta({ label: "Preferred Language" }),
-      timezone: nu.string().withMeta({ label: "Timezone" }),
+      preferredLanguage: nu
+        .string()
+        .withComputedMeta({ label: "Preferred Language" }),
+      timezone: nu.string().withComputedMeta({ label: "Timezone" }),
       newsletterSubscription: nu
         .boolean()
-        .withMeta({ label: "Subscribe to Newsletter" }),
+        .withComputedMeta({ label: "Subscribe to Newsletter" }),
       smsNotifications: nu
         .boolean()
-        .withMeta({ label: "Enable SMS Notifications" }),
+        .withComputedMeta({ label: "Enable SMS Notifications" }),
 
       // Final Notes
       additionalNotes: nu
         .string()
         .optional()
-        .withMeta({ label: "Additional Notes" }),
+        .withComputedMeta({ label: "Additional Notes" }),
     });
 
     const form = useSchemaForm({

@@ -13,12 +13,12 @@ The simplest form layout groups fields into sections:
 import { nu } from '@nubase/core';
 
 const contactSchema = nu.object({
-  firstName: nu.string().withMeta({ label: 'First Name' }),
-  lastName: nu.string().withMeta({ label: 'Last Name' }),
-  email: nu.string().email().withMeta({ label: 'Email' }),
-  phone: nu.string().withMeta({ label: 'Phone' }),
-  company: nu.string().withMeta({ label: 'Company' }),
-  notes: nu.string().withMeta({ label: 'Notes' }),
+  firstName: nu.string().withComputedMeta({ label: 'First Name' }),
+  lastName: nu.string().withComputedMeta({ label: 'Last Name' }),
+  email: nu.string().email().withComputedMeta({ label: 'Email' }),
+  phone: nu.string().withComputedMeta({ label: 'Phone' }),
+  company: nu.string().withComputedMeta({ label: 'Company' }),
+  notes: nu.string().withComputedMeta({ label: 'Notes' }),
 }).withLayout({
   type: 'form',
   groups: [
@@ -181,11 +181,11 @@ Form layouts automatically display validation errors:
 
 ```typescript
 const schema = nu.object({
-  email: nu.string().email().withMeta({
+  email: nu.string().email().withComputedMeta({
     label: 'Email',
     description: 'Enter a valid email address',
   }),
-  age: nu.number().min(18).max(120).withMeta({
+  age: nu.number().min(18).max(120).withComputedMeta({
     label: 'Age',
     description: 'Must be between 18 and 120',
   }),

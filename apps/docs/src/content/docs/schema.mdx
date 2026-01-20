@@ -42,14 +42,14 @@ const isActive = nu.boolean();
 
 ```typescript
 const userSchema = nu.object({
-  name: nu.string().withMeta({
+  name: nu.string().withComputedMeta({
     label: 'Full Name',
     description: 'Enter your full name',
   }),
-  email: nu.string().email().withMeta({
+  email: nu.string().email().withComputedMeta({
     label: 'Email Address',
   }),
-  age: nu.number().min(18).withMeta({
+  age: nu.number().min(18).withComputedMeta({
     label: 'Age',
     description: 'Must be 18 or older',
   }),
@@ -61,7 +61,7 @@ const userSchema = nu.object({
 The `withMeta()` method allows you to attach UI metadata to fields:
 
 ```typescript
-nu.string().withMeta({
+nu.string().withComputedMeta({
   label: 'Field Label',           // Display label for the field
   description: 'Help text',       // Description shown below the field
   placeholder: 'Enter value...',  // Placeholder text
@@ -114,10 +114,10 @@ Object schemas can include layout information for form generation:
 
 ```typescript
 const ticketSchema = nu.object({
-  title: nu.string().withMeta({ label: 'Title' }),
-  description: nu.string().withMeta({ label: 'Description' }),
-  priority: nu.number().withMeta({ label: 'Priority' }),
-  assignee: nu.string().withMeta({ label: 'Assignee' }),
+  title: nu.string().withComputedMeta({ label: 'Title' }),
+  description: nu.string().withComputedMeta({ label: 'Description' }),
+  priority: nu.number().withComputedMeta({ label: 'Priority' }),
+  assignee: nu.string().withComputedMeta({ label: 'Assignee' }),
 }).withLayout({
   type: 'form',
   groups: [
@@ -141,10 +141,10 @@ For dynamic field metadata based on form state, use computed metadata:
 
 ```typescript
 const productSchema = nu.object({
-  name: nu.string().withMeta({ label: 'Product Name' }),
-  category: nu.string().withMeta({ label: 'Category' }),
-  price: nu.number().withMeta({ label: 'Price' }),
-  discount: nu.number().withMeta({ label: 'Discount %' }),
+  name: nu.string().withComputedMeta({ label: 'Product Name' }),
+  category: nu.string().withComputedMeta({ label: 'Category' }),
+  price: nu.number().withComputedMeta({ label: 'Price' }),
+  discount: nu.number().withComputedMeta({ label: 'Discount %' }),
 }).withComputed({
   price: {
     description: async (obj) => {

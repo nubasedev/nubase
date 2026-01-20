@@ -12,9 +12,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * Handles nested OptionalSchemas (e.g., from calling .partial() on an already optional field).
  *
  * Metadata can be attached at any level of wrapping:
- * - nu.string().withMeta({ label: "Name" }) - metadata on base schema
- * - nu.string().optional().withMeta({ label: "Name" }) - metadata on OptionalSchema
- * - nu.string().withMeta({ label: "Name" }).optional() - metadata on inner schema
+ * - nu.string().withComputedMeta({ label: "Name" }) - metadata on base schema
+ * - nu.string().optional().withComputedMeta({ label: "Name" }) - metadata on OptionalSchema
+ * - nu.string().withComputedMeta({ label: "Name" }).optional() - metadata on inner schema
  *
  * This function collects metadata from all layers, with outer layers taking precedence.
  */

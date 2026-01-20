@@ -7,8 +7,8 @@ describe("getFieldMeta", () => {
     it("should extract metadata from simple schema fields", () => {
       const nameField = nu
         .string()
-        .withMeta({ label: "Name", description: "Enter name" });
-      const ageField = nu.number().withMeta({ label: "Age" });
+        .withComputedMeta({ label: "Name", description: "Enter name" });
+      const ageField = nu.number().withComputedMeta({ label: "Age" });
 
       expect(getFieldMeta(nameField).label).toBe("Name");
       expect(getFieldMeta(nameField).description).toBe("Enter name");
@@ -16,11 +16,11 @@ describe("getFieldMeta", () => {
     });
 
     it("should extract metadata from optional fields (single OptionalSchema wrapper)", () => {
-      const nameField = nu.string().withMeta({ label: "Name" });
+      const nameField = nu.string().withComputedMeta({ label: "Name" });
       const nicknameField = nu
         .string()
         .optional()
-        .withMeta({ label: "Nickname" });
+        .withComputedMeta({ label: "Nickname" });
 
       expect(getFieldMeta(nameField).label).toBe("Name");
       expect(getFieldMeta(nicknameField).label).toBe("Nickname");
@@ -28,8 +28,8 @@ describe("getFieldMeta", () => {
 
     it("should extract metadata from partial schema (all fields wrapped in OptionalSchema)", () => {
       const baseSchema = nu.object({
-        title: nu.string().withMeta({ label: "Title" }),
-        description: nu.string().withMeta({ label: "Description" }),
+        title: nu.string().withComputedMeta({ label: "Title" }),
+        description: nu.string().withComputedMeta({ label: "Description" }),
       });
 
       const partialSchema = baseSchema.partial();
@@ -44,11 +44,11 @@ describe("getFieldMeta", () => {
     it("should extract metadata from nested OptionalSchema (optional field in partial schema)", () => {
       // This is the bug case: description is already optional, then .partial() wraps it again
       const baseSchema = nu.object({
-        title: nu.string().withMeta({ label: "Title" }),
+        title: nu.string().withComputedMeta({ label: "Title" }),
         description: nu
           .string()
           .optional()
-          .withMeta({ label: "Description", renderer: "multiline" }),
+          .withComputedMeta({ label: "Description", renderer: "multiline" }),
       });
 
       const partialSchema = baseSchema.partial();
@@ -64,9 +64,12 @@ describe("getFieldMeta", () => {
 
     it("should handle schema with omit and partial combined", () => {
       const baseSchema = nu.object({
-        id: nu.number().withMeta({ label: "ID" }),
-        title: nu.string().withMeta({ label: "Title" }),
-        description: nu.string().optional().withMeta({ label: "Description" }),
+        id: nu.number().withComputedMeta({ label: "ID" }),
+        title: nu.string().withComputedMeta({ label: "Title" }),
+        description: nu
+          .string()
+          .optional()
+          .withComputedMeta({ label: "Description" }),
       });
 
       // Common pattern: omit id, make everything else optional for search/filter
@@ -92,7 +95,7 @@ describe("getFieldMeta", () => {
     it("should handle deeply nested OptionalSchema (3+ levels)", () => {
       // Create a schema where optional is called multiple times
       const baseSchema = nu.object({
-        field: nu.string().optional().withMeta({ label: "Field" }),
+        field: nu.string().optional().withComputedMeta({ label: "Field" }),
       });
 
       // Apply partial twice to create deeper nesting

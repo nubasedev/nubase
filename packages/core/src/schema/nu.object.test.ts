@@ -40,7 +40,7 @@ describe("nubase Schema Library (nu) - Object Types", () => {
     const objectSchema = nu
       .object({
         id: nu.number(),
-        name: nu.string().withMeta({
+        name: nu.string().withComputedMeta({
           label: "Full Name",
         }),
         address: nu
@@ -49,12 +49,12 @@ describe("nubase Schema Library (nu) - Object Types", () => {
             city: nu.string(),
             zip: nu.string(),
           })
-          .withMeta({
+          .withComputedMeta({
             label: "Address",
             description: "User's mailing address",
           }),
       })
-      .withMeta({
+      .withComputedMeta({
         description: "User Profile",
       });
 

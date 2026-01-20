@@ -4,25 +4,25 @@ import { nu } from "./nu";
 describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
   const baseObjectSchema = nu
     .object({
-      id: nu.number().withMeta({ label: "ID" }),
-      name: nu.string().withMeta({
+      id: nu.number().withComputedMeta({ label: "ID" }),
+      name: nu.string().withComputedMeta({
         label: "Full Name",
         description: "Person's full name",
       }),
-      email: nu.string().withMeta({ label: "Email Address" }),
-      age: nu.number().withMeta({ label: "Age" }),
+      email: nu.string().withComputedMeta({ label: "Email Address" }),
+      age: nu.number().withComputedMeta({ label: "Age" }),
       address: nu
         .object({
-          street: nu.string().withMeta({ label: "Street" }),
-          city: nu.string().withMeta({ label: "City" }),
-          zip: nu.string().withMeta({ label: "ZIP Code" }),
+          street: nu.string().withComputedMeta({ label: "Street" }),
+          city: nu.string().withComputedMeta({ label: "City" }),
+          zip: nu.string().withComputedMeta({ label: "ZIP Code" }),
         })
-        .withMeta({
+        .withComputedMeta({
           label: "Address",
           description: "User's mailing address",
         }),
     })
-    .withMeta({
+    .withComputedMeta({
       description: "User Profile",
     })
     .withComputed({
@@ -183,8 +183,8 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
   describe("extend function", () => {
     it("should create a new schema with additional properties", () => {
       const extendedSchema = baseObjectSchema.extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
-        isActive: nu.boolean().withMeta({ label: "Active Status" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
+        isActive: nu.boolean().withComputedMeta({ label: "Active Status" }),
       });
 
       expect(extendedSchema._shape).toHaveProperty("phone");
@@ -198,7 +198,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
 
     it("should preserve original schema metadata when extending", () => {
       const extendedSchema = baseObjectSchema.extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
       });
 
       expect(extendedSchema._meta.description).toBe("User Profile");
@@ -208,7 +208,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
 
     it("should preserve computed metadata when extending", () => {
       const extendedSchema = baseObjectSchema.extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
       });
 
       expect(extendedSchema._computedMeta).toHaveProperty("name");
@@ -218,7 +218,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
 
     it("should preserve layouts when extending", () => {
       const extendedSchema = baseObjectSchema.extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
       });
 
       const defaultLayout = extendedSchema.getLayout("default");
@@ -234,8 +234,8 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
 
     it("should allow overriding existing properties", () => {
       const extendedSchema = baseObjectSchema.extend({
-        name: nu.string().withMeta({ label: "Display Name" }), // Override name with different metadata
-        newField: nu.string().withMeta({ label: "New Field" }),
+        name: nu.string().withComputedMeta({ label: "Display Name" }), // Override name with different metadata
+        newField: nu.string().withComputedMeta({ label: "New Field" }),
       });
 
       expect(extendedSchema._shape.name._meta.label).toBe("Display Name");
@@ -246,8 +246,8 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
 
     it("should parse data correctly with extended properties", () => {
       const extendedSchema = baseObjectSchema.extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
-        isActive: nu.boolean().withMeta({ label: "Active Status" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
+        isActive: nu.boolean().withComputedMeta({ label: "Active Status" }),
       });
 
       const validData = {
@@ -297,7 +297,7 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
             theme: nu.string(),
             language: nu.string(),
           })
-          .withMeta({ label: "User Preferences" }),
+          .withComputedMeta({ label: "User Preferences" }),
       });
 
       expect(extendedSchema._shape).toHaveProperty("preferences");
@@ -329,8 +329,8 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
   describe("chaining omit and extend", () => {
     it("should allow chaining omit and extend operations", () => {
       const modifiedSchema = baseObjectSchema.omit("age", "email").extend({
-        phone: nu.string().withMeta({ label: "Phone Number" }),
-        department: nu.string().withMeta({ label: "Department" }),
+        phone: nu.string().withComputedMeta({ label: "Phone Number" }),
+        department: nu.string().withComputedMeta({ label: "Department" }),
       });
 
       // Should not have omitted properties
@@ -350,8 +350,8 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
     it("should allow chaining extend and omit operations", () => {
       const modifiedSchema = baseObjectSchema
         .extend({
-          phone: nu.string().withMeta({ label: "Phone Number" }),
-          department: nu.string().withMeta({ label: "Department" }),
+          phone: nu.string().withComputedMeta({ label: "Phone Number" }),
+          department: nu.string().withComputedMeta({ label: "Department" }),
         })
         .omit("age", "email");
 

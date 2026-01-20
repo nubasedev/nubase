@@ -22,12 +22,12 @@ Define layouts using the `withLayout()` method on object schemas:
 import { nu } from '@nubase/core';
 
 const ticketSchema = nu.object({
-  title: nu.string().withMeta({ label: 'Title' }),
-  description: nu.string().withMeta({ label: 'Description' }),
-  priority: nu.number().withMeta({ label: 'Priority' }),
-  status: nu.string().withMeta({ label: 'Status' }),
-  assignee: nu.string().withMeta({ label: 'Assignee' }),
-  dueDate: nu.string().withMeta({ label: 'Due Date' }),
+  title: nu.string().withComputedMeta({ label: 'Title' }),
+  description: nu.string().withComputedMeta({ label: 'Description' }),
+  priority: nu.number().withComputedMeta({ label: 'Priority' }),
+  status: nu.string().withComputedMeta({ label: 'Status' }),
+  assignee: nu.string().withComputedMeta({ label: 'Assignee' }),
+  dueDate: nu.string().withComputedMeta({ label: 'Due Date' }),
 }).withLayout({
   type: 'form',
   groups: [

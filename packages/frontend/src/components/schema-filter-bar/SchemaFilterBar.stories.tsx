@@ -18,21 +18,21 @@ type Story = StoryObj<typeof meta>;
 
 // Sample schema that demonstrates different field types
 const ticketFilterSchema = nu.object({
-  title: nu.string().optional().withMeta({
+  title: nu.string().optional().withComputedMeta({
     label: "Title",
     description: "Filter by ticket title",
   }),
-  assigneeId: nu.number().optional().withMeta({
+  assigneeId: nu.number().optional().withComputedMeta({
     label: "Assignee",
     description: "Filter by assignee",
     renderer: "lookup",
     lookupResource: "user",
   }),
-  isActive: nu.boolean().optional().withMeta({
+  isActive: nu.boolean().optional().withComputedMeta({
     label: "Active",
     description: "Filter by active status",
   }),
-  priority: nu.string().optional().withMeta({
+  priority: nu.string().optional().withComputedMeta({
     label: "Priority",
     description: "Filter by priority level",
   }),
@@ -112,15 +112,15 @@ export const WithActiveTextFilter: Story = {
 
 // Schema with text fields only
 const textOnlySchema = nu.object({
-  name: nu.string().optional().withMeta({
+  name: nu.string().optional().withComputedMeta({
     label: "Name",
     description: "Filter by name",
   }),
-  email: nu.string().optional().withMeta({
+  email: nu.string().optional().withComputedMeta({
     label: "Email",
     description: "Filter by email address",
   }),
-  department: nu.string().optional().withMeta({
+  department: nu.string().optional().withComputedMeta({
     label: "Department",
     description: "Filter by department",
   }),
@@ -163,11 +163,11 @@ export const TextFiltersOnly: Story = {
 
 // Schema with boolean filter
 const booleanSchema = nu.object({
-  isVerified: nu.boolean().optional().withMeta({
+  isVerified: nu.boolean().optional().withComputedMeta({
     label: "Verified",
     description: "Filter by verification status",
   }),
-  isActive: nu.boolean().optional().withMeta({
+  isActive: nu.boolean().optional().withComputedMeta({
     label: "Active",
     description: "Filter by active status",
   }),
@@ -258,10 +258,13 @@ export const WithCustomLabels: Story = {
 
 // Schema with excluded fields
 const excludeFieldsSchema = nu.object({
-  title: nu.string().optional().withMeta({ label: "Title" }),
-  description: nu.string().optional().withMeta({ label: "Description" }),
-  createdAt: nu.string().optional().withMeta({ label: "Created At" }),
-  updatedAt: nu.string().optional().withMeta({ label: "Updated At" }),
+  title: nu.string().optional().withComputedMeta({ label: "Title" }),
+  description: nu
+    .string()
+    .optional()
+    .withComputedMeta({ label: "Description" }),
+  createdAt: nu.string().optional().withComputedMeta({ label: "Created At" }),
+  updatedAt: nu.string().optional().withComputedMeta({ label: "Updated At" }),
 });
 
 export const WithExcludedFields: Story = {

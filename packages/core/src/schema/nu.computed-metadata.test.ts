@@ -5,11 +5,11 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should add computed metadata to string property", async () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({
+        name: nu.string().withComputedMeta({
           label: "Product Name",
           description: "Enter the name of the product",
         }),
-        category: nu.string().withMeta({
+        category: nu.string().withComputedMeta({
           label: "Category",
         }),
       })
@@ -42,9 +42,9 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should add computed metadata to number property", async () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({ label: "Product Name" }),
-        price: nu.number().withMeta({ label: "Price" }),
-        discount: nu.number().withMeta({ label: "Discount %" }),
+        name: nu.string().withComputedMeta({ label: "Product Name" }),
+        price: nu.number().withComputedMeta({ label: "Price" }),
+        discount: nu.number().withComputedMeta({ label: "Discount %" }),
       })
       .withComputed({
         price: {
@@ -67,9 +67,9 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should add computed metadata to boolean property", async () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({ label: "Product Name" }),
-        inStock: nu.boolean().withMeta({ label: "In Stock" }),
-        quantity: nu.number().withMeta({ label: "Quantity" }),
+        name: nu.string().withComputedMeta({ label: "Product Name" }),
+        inStock: nu.boolean().withComputedMeta({ label: "In Stock" }),
+        quantity: nu.number().withComputedMeta({ label: "Quantity" }),
       })
       .withComputed({
         inStock: {
@@ -105,10 +105,10 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should add computed metadata to multiple properties", async () => {
     const userSchema = nu
       .object({
-        firstName: nu.string().withMeta({ label: "First Name" }),
-        lastName: nu.string().withMeta({ label: "Last Name" }),
-        age: nu.number().withMeta({ label: "Age" }),
-        email: nu.string().withMeta({ label: "Email" }),
+        firstName: nu.string().withComputedMeta({ label: "First Name" }),
+        lastName: nu.string().withComputedMeta({ label: "Last Name" }),
+        age: nu.number().withComputedMeta({ label: "Age" }),
+        email: nu.string().withComputedMeta({ label: "Email" }),
       })
       .withComputed({
         firstName: {
@@ -148,9 +148,9 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should handle computed defaultValue property", async () => {
     const settingsSchema = nu
       .object({
-        username: nu.string().withMeta({ label: "Username" }),
-        theme: nu.string().withMeta({ label: "Theme" }),
-        displayName: nu.string().withMeta({ label: "Display Name" }),
+        username: nu.string().withComputedMeta({ label: "Username" }),
+        theme: nu.string().withComputedMeta({ label: "Theme" }),
+        displayName: nu.string().withComputedMeta({ label: "Display Name" }),
       })
       .withComputed({
         displayName: {
@@ -194,14 +194,14 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should allow computed metadata for nested object properties", async () => {
     const orderSchema = nu
       .object({
-        id: nu.string().withMeta({ label: "Order ID" }),
+        id: nu.string().withComputedMeta({ label: "Order ID" }),
         customer: nu
           .object({
-            name: nu.string().withMeta({ label: "Customer Name" }),
-            email: nu.string().withMeta({ label: "Email" }),
+            name: nu.string().withComputedMeta({ label: "Customer Name" }),
+            email: nu.string().withComputedMeta({ label: "Email" }),
           })
-          .withMeta({ label: "Customer Info" }),
-        total: nu.number().withMeta({ label: "Total" }),
+          .withComputedMeta({ label: "Customer Info" }),
+        total: nu.number().withComputedMeta({ label: "Total" }),
       })
       .withComputed({
         id: {
@@ -232,15 +232,15 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should preserve original schema functionality with computed metadata", () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({
+        name: nu.string().withComputedMeta({
           label: "Product Name",
           description: "Enter the name of the product",
         }),
-        price: nu.number().withMeta({
+        price: nu.number().withComputedMeta({
           label: "Price",
           description: "Enter the price of the product",
         }),
-        inStock: nu.boolean().withMeta({
+        inStock: nu.boolean().withComputedMeta({
           label: "In Stock",
           description: "Is the product currently in stock?",
         }),
@@ -270,11 +270,11 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should get all merged metadata for an object schema", async () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({
+        name: nu.string().withComputedMeta({
           label: "Product Name",
           description: "Static description for name",
         }),
-        price: nu.number().withMeta({
+        price: nu.number().withComputedMeta({
           label: "Price",
         }),
       })
@@ -305,14 +305,14 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
   it("should handle partial form data gracefully in merged metadata", async () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({
+        name: nu.string().withComputedMeta({
           label: "Product Name",
         }),
-        category: nu.string().withMeta({
+        category: nu.string().withComputedMeta({
           label: "Category",
           defaultValue: "General",
         }),
-        price: nu.number().withMeta({
+        price: nu.number().withComputedMeta({
           label: "Price",
           defaultValue: 0,
         }),
@@ -338,7 +338,7 @@ describe("nubase Schema Library (nu) - Computed Metadata", () => {
 
   it("should handle empty computed metadata gracefully", async () => {
     const simpleSchema = nu.object({
-      name: nu.string().withMeta({
+      name: nu.string().withComputedMeta({
         label: "Name",
         description: "Static description",
       }),

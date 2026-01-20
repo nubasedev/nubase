@@ -5,9 +5,9 @@ import { getLayout } from "./useLayout";
 describe("getLayout (useLayout logic)", () => {
   // Create a test schema
   const testSchema = nu.object({
-    name: nu.string().withMeta({ label: "Name" }),
-    email: nu.string().withMeta({ label: "Email" }),
-    age: nu.number().withMeta({ label: "Age" }),
+    name: nu.string().withComputedMeta({ label: "Name" }),
+    email: nu.string().withComputedMeta({ label: "Email" }),
+    age: nu.number().withComputedMeta({ label: "Age" }),
   });
 
   it("should return a default layout when no layout name is provided", () => {

@@ -68,7 +68,7 @@ export abstract class BaseSchema<Output = any> {
    * @param meta The new metadata object.
    * @returns The schema instance for chaining.
    */
-  withMeta(meta: SchemaMetadata<Output>): this {
+  withComputedMeta(meta: SchemaMetadata<Output>): this {
     this._meta = meta;
     return this;
   }

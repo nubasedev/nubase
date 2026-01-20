@@ -601,7 +601,7 @@ describe("toZod converter", () => {
 
   describe("edge cases and error handling", () => {
     it("should preserve metadata comment but not translate it", () => {
-      const nuSchema = nu.string().withMeta({
+      const nuSchema = nu.string().withComputedMeta({
         label: "Username",
         description: "The user's login name",
       });

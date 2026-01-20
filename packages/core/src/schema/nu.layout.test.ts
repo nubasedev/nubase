@@ -5,10 +5,10 @@ describe("nubase Schema Library (nu) - Layout System", () => {
   it("should create an object schema with form layouts", () => {
     const productSchema = nu
       .object({
-        name: nu.string().withMeta({ label: "Product Name" }),
-        price: nu.number().withMeta({ label: "Price" }),
-        inStock: nu.boolean().withMeta({ label: "In Stock" }),
-        description: nu.string().withMeta({ label: "Description" }),
+        name: nu.string().withComputedMeta({ label: "Product Name" }),
+        price: nu.number().withComputedMeta({ label: "Price" }),
+        inStock: nu.boolean().withComputedMeta({ label: "In Stock" }),
+        description: nu.string().withComputedMeta({ label: "Description" }),
       })
       .withFormLayouts({
         default: {
@@ -291,12 +291,12 @@ describe("nubase Schema Library (nu) - Layout System", () => {
     it("should create an object schema with table layouts", () => {
       const ticketSchema = nu
         .object({
-          id: nu.number().withMeta({ label: "ID" }),
-          title: nu.string().withMeta({ label: "Title" }),
-          status: nu.string().withMeta({ label: "Status" }),
-          priority: nu.string().withMeta({ label: "Priority" }),
-          assignee: nu.string().withMeta({ label: "Assignee" }),
-          createdAt: nu.string().withMeta({ label: "Created" }),
+          id: nu.number().withComputedMeta({ label: "ID" }),
+          title: nu.string().withComputedMeta({ label: "Title" }),
+          status: nu.string().withComputedMeta({ label: "Status" }),
+          priority: nu.string().withComputedMeta({ label: "Priority" }),
+          assignee: nu.string().withComputedMeta({ label: "Assignee" }),
+          createdAt: nu.string().withComputedMeta({ label: "Created" }),
         })
         .withTableLayouts({
           default: {

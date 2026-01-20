@@ -3,19 +3,19 @@ import { type RequestSchema, nu } from "@nubase/core";
 export const ticketBaseSchema = nu
 	.object({
 		id: nu.number(),
-		title: nu.string().withMeta({
+		title: nu.string().withComputedMeta({
 			label: "Title",
 			placeholder: "Enter ticket title",
 		}),
-		description: nu.string().optional().withMeta({
+		description: nu.string().optional().withComputedMeta({
 			label: "Description",
 			placeholder: "Enter ticket description",
 			renderer: "multiline",
 		}),
-		createdAt: nu.string().optional().withMeta({
+		createdAt: nu.string().optional().withComputedMeta({
 			label: "Created At",
 		}),
-		updatedAt: nu.string().optional().withMeta({
+		updatedAt: nu.string().optional().withComputedMeta({
 			label: "Updated At",
 		}),
 	})

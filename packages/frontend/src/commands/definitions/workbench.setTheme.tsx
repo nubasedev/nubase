@@ -10,7 +10,7 @@ import { createCommand } from "../defineCommand";
 const workbenchSetThemeArgsSchema = nu.object({
   themeId: nu
     .string()
-    .withMeta({
+    .withComputedMeta({
       label: "Theme ID",
       description: "The ID of the theme to set",
     })

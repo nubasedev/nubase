@@ -5,16 +5,16 @@ import { OptionalSchema } from "./schema";
 describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   const baseObjectSchema = nu
     .object({
-      id: nu.number().withMeta({ label: "ID" }),
-      name: nu.string().withMeta({
+      id: nu.number().withComputedMeta({ label: "ID" }),
+      name: nu.string().withComputedMeta({
         label: "Full Name",
         description: "Person's full name",
       }),
-      email: nu.string().withMeta({ label: "Email Address" }),
-      age: nu.number().withMeta({ label: "Age" }),
-      isActive: nu.boolean().withMeta({ label: "Active Status" }),
+      email: nu.string().withComputedMeta({ label: "Email Address" }),
+      age: nu.number().withComputedMeta({ label: "Age" }),
+      isActive: nu.boolean().withComputedMeta({ label: "Active Status" }),
     })
-    .withMeta({
+    .withComputedMeta({
       description: "User Profile",
     })
     .withComputed({
@@ -171,15 +171,17 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     const nestedSchema = nu
       .object({
         user: nu.object({
-          name: nu.string().withMeta({ label: "Name" }),
-          age: nu.number().withMeta({ label: "Age" }),
+          name: nu.string().withComputedMeta({ label: "Name" }),
+          age: nu.number().withComputedMeta({ label: "Age" }),
         }),
         preferences: nu.object({
-          theme: nu.string().withMeta({ label: "Theme" }),
-          notifications: nu.boolean().withMeta({ label: "Notifications" }),
+          theme: nu.string().withComputedMeta({ label: "Theme" }),
+          notifications: nu
+            .boolean()
+            .withComputedMeta({ label: "Notifications" }),
         }),
       })
-      .withMeta({ description: "User with preferences" });
+      .withComputedMeta({ description: "User with preferences" });
 
     const partialSchema = nestedSchema.partial();
 
@@ -234,11 +236,11 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   it("should handle array properties in partial schemas", () => {
     const schemaWithArray = nu
       .object({
-        name: nu.string().withMeta({ label: "Name" }),
-        tags: nu.array(nu.string()).withMeta({ label: "Tags" }),
-        scores: nu.array(nu.number()).withMeta({ label: "Scores" }),
+        name: nu.string().withComputedMeta({ label: "Name" }),
+        tags: nu.array(nu.string()).withComputedMeta({ label: "Tags" }),
+        scores: nu.array(nu.number()).withComputedMeta({ label: "Scores" }),
       })
-      .withMeta({ description: "Schema with arrays" });
+      .withComputedMeta({ description: "Schema with arrays" });
 
     const partialSchema = schemaWithArray.partial();
 
@@ -298,8 +300,8 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
     // When extending a partial schema, the original fields are optional
     // but new fields keep their defined optionality
     const partialExtendedSchema = originalSchema.partial().extend({
-      email: nu.string().optional().withMeta({ label: "Email" }),
-      age: nu.number().optional().withMeta({ label: "Age" }),
+      email: nu.string().optional().withComputedMeta({ label: "Email" }),
+      age: nu.number().optional().withComputedMeta({ label: "Age" }),
     });
 
     expect(partialExtendedSchema).toBeDefined();
@@ -363,11 +365,11 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   it("should work correctly with boolean schemas", () => {
     const schemaWithBooleans = nu
       .object({
-        isActive: nu.boolean().withMeta({ label: "Active" }),
-        isVerified: nu.boolean().withMeta({ label: "Verified" }),
-        hasPermission: nu.boolean().withMeta({ label: "Permission" }),
+        isActive: nu.boolean().withComputedMeta({ label: "Active" }),
+        isVerified: nu.boolean().withComputedMeta({ label: "Verified" }),
+        hasPermission: nu.boolean().withComputedMeta({ label: "Permission" }),
       })
-      .withMeta({ description: "Boolean schema test" });
+      .withComputedMeta({ description: "Boolean schema test" });
 
     const partialSchema = schemaWithBooleans.partial();
 

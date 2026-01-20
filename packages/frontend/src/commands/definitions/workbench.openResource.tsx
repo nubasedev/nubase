@@ -10,14 +10,14 @@ import { createCommand } from "../defineCommand";
 const workbenchOpenResourceOperationArgsSchema = nu.object({
   resourceId: nu
     .string()
-    .withMeta({
+    .withComputedMeta({
       label: "Resource ID",
       description: "The ID of the resource to open",
     })
     .optional(),
   operation: nu
     .string()
-    .withMeta({
+    .withComputedMeta({
       label: "Operation",
       description: "The operation to perform on the resource",
     })

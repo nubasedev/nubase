@@ -6,11 +6,11 @@ import { nu } from "@nubase/core";
 export const userSchema = nu
 	.object({
 		id: nu.number(),
-		email: nu.string().withMeta({
+		email: nu.string().withComputedMeta({
 			label: "Email",
 			description: "The user's email address",
 		}),
-		displayName: nu.string().withMeta({
+		displayName: nu.string().withComputedMeta({
 			label: "Display Name",
 			description: "The user's display name",
 		}),

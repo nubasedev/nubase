@@ -5,7 +5,7 @@ import { nu } from "./nu";
 describe("nubase Schema Library (nu) - Primitive Types", () => {
   // --- Basic Schema Creation and Metadata ---
   it("should create a string schema with metadata", () => {
-    const stringSchema = nu.string().withMeta({
+    const stringSchema = nu.string().withComputedMeta({
       label: "Username",
       description: "The user's login name",
     });
@@ -15,7 +15,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   });
 
   it("should create a number schema with metadata", () => {
-    const numberSchema = nu.number().withMeta({
+    const numberSchema = nu.number().withComputedMeta({
       label: "Age",
     });
     expect(numberSchema).toBeDefined();
@@ -24,8 +24,8 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
 
   it("should create an array schema with an element schema", () => {
     const arraySchema = nu
-      .array(nu.string().withMeta({ label: "Item" }))
-      .withMeta({ label: "List of Items" });
+      .array(nu.string().withComputedMeta({ label: "Item" }))
+      .withComputedMeta({ label: "List of Items" });
     expect(arraySchema).toBeDefined();
     expect(arraySchema._element).toBeDefined();
     expect(arraySchema._element._meta.label).toBe("Item");
@@ -128,7 +128,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   it("should infer correct type for array schema", () => {
     const numberArraySchema = nu.array(nu.number()); // Removed unsupported minValue metadata
     const stringArraySchema = nu.array(
-      nu.string().withMeta({ label: "Entry" }),
+      nu.string().withComputedMeta({ label: "Entry" }),
     );
     const arrayOfObjectsSchema = nu.array(
       nu.object({ id: nu.number(), value: nu.string() }),
@@ -150,7 +150,7 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
   });
 
   it("should infer correct Zod schema type after toZod conversion", () => {
-    const nuString = nu.string().withMeta({ label: "ID" });
+    const nuString = nu.string().withComputedMeta({ label: "ID" });
     const zodString = nuString.toZod();
     expectTypeOf(zodString).toMatchTypeOf<z.ZodString>(); // Should be a ZodString
     expectTypeOf(zodString._output).toBeString(); // Should infer string output
