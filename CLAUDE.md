@@ -635,17 +635,7 @@ const handlePatch = async (fieldName: string, value: any) => {
 
 ### Testing @nubase/create Changes
 
-Whenever you make changes to `packages/create`, you MUST test them by running:
-
-```bash
-# 1. Create the starter example using local @nubase/create
-npm run examples:starter:create:local
-
-# 2. Run E2E tests on the starter example
-npm run examples:starter:test
-```
-
-This ensures the CLI produces a working application that passes all E2E tests.
+When making changes to `packages/create`, verify the templates are valid by running `npm run typecheck` and `npm run lint:fix`. The templates in `packages/create/templates/` should follow the same patterns as the questlog example.
 
 ### Event Handler Guidelines
 
