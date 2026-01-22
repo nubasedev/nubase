@@ -1,0 +1,18 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Nubase',
+    template: 'splash',
+    hero: {
+      tagline: 'Build business applications and internal tools at the speed of light.',
+      actions: [
+        { text: 'Get Started', link: '/docs/intro/', icon: 'right-arrow' },
+        { text: 'GitHub', link: 'https://github.com/nubasedev/nubase', icon: 'external', variant: 'minimal' },
+      ],
+    },
+  }}
+>
+</StarlightPage>
