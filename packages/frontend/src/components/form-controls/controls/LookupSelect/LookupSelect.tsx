@@ -302,10 +302,22 @@ const LookupSelectInner = (
     items,
     selectedItem,
     inputValue,
+    stateReducer: (state, actionAndChanges) => {
+      const { type, changes } = actionAndChanges;
+      // Prevent menu from closing on input click - we handle opening via onFocus
+      if (type === useCombobox.stateChangeTypes.InputClick) {
+        return { ...changes, isOpen: state.isOpen };
+      }
+      return changes;
+    },
+    onIsOpenChange: ({ isOpen: newIsOpen, type }) => {
+      console.info("onIsOpenChange", { isOpen: newIsOpen, type });
+    },
     onInputValueChange: ({ inputValue: newInputValue }) => {
       setInputValue(newInputValue || "");
     },
     onSelectedItemChange: ({ selectedItem: newSelectedItem }) => {
+      console.info("onSelectedItemChange", { newSelectedItem });
       if (newSelectedItem) {
         onChange?.(newSelectedItem.id);
         onItemSelect?.(newSelectedItem);
@@ -342,15 +354,25 @@ const LookupSelectInner = (
             "aria-invalid": hasError,
             "data-slot": "input",
             onFocus: () => {
+              console.info("onFocus called", {
+                selectedItem: selectedItem?.title,
+                inputValue,
+                isOpen,
+              });
               // Reset input to show selected item's title when entering edit mode
               // This ensures a clean state when re-entering the field
               const resetValue = selectedItem?.title || "";
               if (inputValue !== resetValue) {
+                console.info("Resetting inputValue", {
+                  from: inputValue,
+                  to: resetValue,
+                });
                 setInputValue(resetValue);
                 setItems([]);
                 setHasSearched(false);
               }
               if (inputValue.length >= minQueryLength) {
+                console.info("Opening menu");
                 openMenu();
               }
             },
