@@ -161,13 +161,8 @@ export default function SignUpScreen() {
             <form.Field
               name="email"
               validators={{
-                onBlur: ({ value }) => {
-                  if (!value) return "Email is required";
-                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return "Please enter a valid email address";
-                  }
-                  return undefined;
-                },
+                // Note: no onBlur validator - password managers (1Password) blur the field
+                // BEFORE filling it, which would trigger a false "required" error
                 onChange: ({ value }) => {
                   if (!value) return "Email is required";
                   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -185,11 +180,6 @@ export default function SignUpScreen() {
                     placeholder="Enter your email"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    // onInput handles password managers (e.g. 1Password) that fill values
-                    // without triggering React's onChange event
-                    onInput={(e) =>
-                      field.handleChange((e.target as HTMLInputElement).value)
-                    }
                     onBlur={field.handleBlur}
                     autoComplete="email"
                     disabled={isLoading}
@@ -230,13 +220,8 @@ export default function SignUpScreen() {
             <form.Field
               name="password"
               validators={{
-                onBlur: ({ value }) => {
-                  if (!value) return "Password is required";
-                  if (value.length < 8) {
-                    return "Password must be at least 8 characters";
-                  }
-                  return undefined;
-                },
+                // Note: no onBlur validator - password managers (1Password) blur the field
+                // BEFORE filling it, which would trigger a false "required" error
                 onChange: ({ value }) => {
                   if (!value) return "Password is required";
                   if (value.length < 8) {
@@ -254,11 +239,6 @@ export default function SignUpScreen() {
                     placeholder="Enter your password"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    // onInput handles password managers (e.g. 1Password) that fill values
-                    // without triggering React's onChange event
-                    onInput={(e) =>
-                      field.handleChange((e.target as HTMLInputElement).value)
-                    }
                     onBlur={field.handleBlur}
                     autoComplete="new-password"
                     disabled={isLoading}
@@ -273,12 +253,8 @@ export default function SignUpScreen() {
             <form.Field
               name="confirmPassword"
               validators={{
-                onBlur: ({ value, fieldApi }) => {
-                  const password = fieldApi.form.getFieldValue("password");
-                  if (!value) return "Please confirm your password";
-                  if (value !== password) return "Passwords do not match";
-                  return undefined;
-                },
+                // Note: no onBlur validator - password managers (1Password) blur the field
+                // BEFORE filling it, which would trigger a false "required" error
                 onChange: ({ value, fieldApi }) => {
                   const password = fieldApi.form.getFieldValue("password");
                   if (!value) return "Please confirm your password";
@@ -295,11 +271,6 @@ export default function SignUpScreen() {
                     placeholder="Confirm your password"
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    // onInput handles password managers (e.g. 1Password) that fill values
-                    // without triggering React's onChange event
-                    onInput={(e) =>
-                      field.handleChange((e.target as HTMLInputElement).value)
-                    }
                     onBlur={field.handleBlur}
                     autoComplete="new-password"
                     disabled={isLoading}

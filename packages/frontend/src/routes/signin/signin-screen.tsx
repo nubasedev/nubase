@@ -217,7 +217,8 @@ export default function SignInScreen() {
           <form.Field
             name="email"
             validators={{
-              onBlur: ({ value }) => (!value ? "Email is required" : undefined),
+              // Note: no onBlur validator - password managers (1Password) blur the field
+              // BEFORE filling it, which would trigger a false "required" error
               onChange: ({ value }) =>
                 !value ? "Email is required" : undefined,
             }}
@@ -230,11 +231,6 @@ export default function SignInScreen() {
                   placeholder="Enter your email"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  // onInput handles password managers (e.g. 1Password) that fill values
-                  // without triggering React's onChange event
-                  onInput={(e) =>
-                    field.handleChange((e.target as HTMLInputElement).value)
-                  }
                   onBlur={field.handleBlur}
                   autoComplete="email"
                   disabled={isLoading}
@@ -249,8 +245,8 @@ export default function SignInScreen() {
           <form.Field
             name="password"
             validators={{
-              onBlur: ({ value }) =>
-                !value ? "Password is required" : undefined,
+              // Note: no onBlur validator - password managers (1Password) blur the field
+              // BEFORE filling it, which would trigger a false "required" error
               onChange: ({ value }) =>
                 !value ? "Password is required" : undefined,
             }}
@@ -263,11 +259,6 @@ export default function SignInScreen() {
                   placeholder="Enter your password"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  // onInput handles password managers (e.g. 1Password) that fill values
-                  // without triggering React's onChange event
-                  onInput={(e) =>
-                    field.handleChange((e.target as HTMLInputElement).value)
-                  }
                   onBlur={field.handleBlur}
                   autoComplete="current-password"
                   disabled={isLoading}
