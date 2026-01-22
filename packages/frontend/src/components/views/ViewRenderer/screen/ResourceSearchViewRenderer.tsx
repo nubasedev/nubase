@@ -269,7 +269,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           }
 
           cols.push({
-            name: fieldName.charAt(0).toUpperCase() + fieldName.slice(1),
+            name: field.label || fieldName,
             key: fieldName,
             width,
             resizable: true,

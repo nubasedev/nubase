@@ -69,7 +69,7 @@ export const ResourceSearchViewModalRenderer: FC<
 
           return {
             key: fieldName,
-            name: fieldName.charAt(0).toUpperCase() + fieldName.slice(1),
+            name: (field as any).label || fieldName,
             width: (field as any).columnWidthPx || 150,
             resizable: true,
             renderCell: ({ row }) => {

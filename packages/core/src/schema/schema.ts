@@ -286,6 +286,8 @@ export interface FormLayout<TShape extends ObjectShape> extends Layout<TShape> {
 export interface TableLayoutField<TShape extends ObjectShape> {
   /** The name of the field - must be a valid property key from the object shape */
   name: keyof TShape;
+  /** Display label for the column header. If not provided, the field name is used. */
+  label?: string;
   /** Additional CSS classes for styling */
   className?: string;
   /** Whether the field should be hidden */

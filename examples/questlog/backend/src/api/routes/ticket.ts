@@ -3,6 +3,7 @@ import type { InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
+import { usersTable } from "../../db/schema/user";
 import type { Workspace } from "../../middleware/workspace-middleware";
 import { createHandler } from "../handler-factory";
 
@@ -65,9 +66,17 @@ export const ticketHandlers = {
         }
       }
 
-      const tickets: Ticket[] = await db
-        .select()
+      const tickets = await db
+        .select({
+          id: ticketsTable.id,
+          title: ticketsTable.title,
+          description: ticketsTable.description,
+          assigneeId: ticketsTable.assigneeId,
+          assigneeName: usersTable.displayName,
+          assigneeEmail: usersTable.email,
+        })
         .from(ticketsTable)
+        .leftJoin(usersTable, eq(ticketsTable.assigneeId, usersTable.id))
         .where(and(...conditions));
 
       return tickets.map((ticket) => ({
@@ -75,6 +84,8 @@ export const ticketHandlers = {
         title: ticket.title,
         description: ticket.description ?? undefined,
         assigneeId: ticket.assigneeId ?? undefined,
+        assigneeName: ticket.assigneeName ?? undefined,
+        assigneeEmail: ticket.assigneeEmail ?? undefined,
       }));
     },
   }),
