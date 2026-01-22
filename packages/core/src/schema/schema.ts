@@ -232,15 +232,13 @@ export interface FormLayoutField<TShape extends ObjectShape> {
 }
 
 /**
- * Represents a group of fields within a layout.
+ * Base properties for layout groups.
  */
-export interface LayoutGroup<TShape extends ObjectShape> {
+interface LayoutGroupBase {
   /** Label for the group */
   label?: string;
   /** Description for the group */
   description?: string;
-  /** Array of fields in this group */
-  fields: FormLayoutField<TShape>[];
   /** Additional CSS classes for the group */
   className?: string;
   /** Whether the group should be collapsible */
@@ -250,13 +248,32 @@ export interface LayoutGroup<TShape extends ObjectShape> {
 }
 
 /**
- * Represents a complete layout configuration.
+ * Represents a group of fields within a form layout.
  */
-export interface Layout<TShape extends ObjectShape> {
-  /** Type of layout */
-  type: "form" | "grid" | "tabs" | "accordion" | "custom" | "table";
-  /** Groups of fields within the layout */
-  groups: LayoutGroup<TShape>[];
+export interface FormLayoutGroup<TShape extends ObjectShape>
+  extends LayoutGroupBase {
+  /** Array of form fields in this group */
+  fields: FormLayoutField<TShape>[];
+}
+
+/**
+ * Represents a group of fields within a table layout.
+ */
+export interface TableLayoutGroup<TShape extends ObjectShape>
+  extends LayoutGroupBase {
+  /** Array of table fields in this group */
+  fields: TableLayoutField<TShape>[];
+}
+
+/**
+ * @deprecated Use FormLayoutGroup instead
+ */
+export type LayoutGroup<TShape extends ObjectShape> = FormLayoutGroup<TShape>;
+
+/**
+ * Base layout configuration shared by all layout types.
+ */
+interface LayoutBase {
   /** Additional CSS classes for the layout */
   className?: string;
   /** Layout-specific configuration */
@@ -275,9 +292,10 @@ export interface Layout<TShape extends ObjectShape> {
 /**
  * Form layout specific interface
  */
-export interface FormLayout<TShape extends ObjectShape> extends Layout<TShape> {
-  type: "form";
-  groups: LayoutGroup<TShape>[];
+export interface FormLayout<TShape extends ObjectShape> extends LayoutBase {
+  type: "form" | "grid" | "tabs" | "accordion" | "custom";
+  /** Groups of form fields within the layout */
+  groups: FormLayoutGroup<TShape>[];
 }
 
 /**
@@ -301,11 +319,10 @@ export interface TableLayoutField<TShape extends ObjectShape> {
 /**
  * Table layout specific interface
  */
-export interface TableLayout<TShape extends ObjectShape>
-  extends Layout<TShape> {
+export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   type: "table";
-  /** For tables, we only have one group internally but expose fields directly */
-  groups: LayoutGroup<TShape>[];
+  /** Groups of table fields - typically one group containing all columns */
+  groups: TableLayoutGroup<TShape>[];
   /** Table-specific metadata */
   metadata?: {
     /** Fields that should be clickable links to view the entity */
@@ -314,6 +331,14 @@ export interface TableLayout<TShape extends ObjectShape>
     [key: string]: any;
   };
 }
+
+/**
+ * Discriminated union of all layout types.
+ * Use type narrowing (e.g., `if (layout.type === "table")`) to access type-specific properties.
+ */
+export type Layout<TShape extends ObjectShape> =
+  | FormLayout<TShape>
+  | TableLayout<TShape>;
 
 /**
  * Type representing multiple layouts for an object schema.
@@ -460,7 +485,7 @@ export class ObjectSchema<
     [layoutName: string]: {
       fields: TableLayoutField<TShape>[];
       className?: string;
-      config?: Layout<TShape>["config"];
+      config?: LayoutBase["config"];
       metadata?: {
         linkFields?: (keyof TShape)[];
         [key: string]: any;
@@ -472,17 +497,22 @@ export class ObjectSchema<
 
     for (const [name, tableConfig] of Object.entries(layouts)) {
       // Create a single group with all fields for internal consistency
-      tableLayouts[name] = {
+      const layout: TableLayout<TShape> = {
         type: "table",
         groups: [
           {
             fields: tableConfig.fields,
           },
         ],
-        className: tableConfig.className,
-        config: tableConfig.config,
         metadata: tableConfig.metadata,
       };
+      if (tableConfig.className) {
+        layout.className = tableConfig.className;
+      }
+      if (tableConfig.config) {
+        layout.config = tableConfig.config;
+      }
+      tableLayouts[name] = layout;
     }
 
     this._layouts = { ...this._layouts, ...tableLayouts };

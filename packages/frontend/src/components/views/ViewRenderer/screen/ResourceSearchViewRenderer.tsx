@@ -1,4 +1,4 @@
-import type { BaseSchema, ObjectSchema, TableLayoutField } from "@nubase/core";
+import type { BaseSchema, ObjectSchema } from "@nubase/core";
 import { OptionalSchema } from "@nubase/core";
 import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
@@ -254,7 +254,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
 
     if (tableLayout && tableLayout.type === "table" && tableLayout.groups[0]) {
       // Use table layout to define columns
-      (tableLayout.groups[0].fields as TableLayoutField<any>[])
+      tableLayout.groups[0].fields
         .filter((field) => !field.hidden)
         .forEach((field) => {
           const fieldName = field.name as string;

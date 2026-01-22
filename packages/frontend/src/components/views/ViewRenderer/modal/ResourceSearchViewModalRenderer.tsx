@@ -69,8 +69,8 @@ export const ResourceSearchViewModalRenderer: FC<
 
           return {
             key: fieldName,
-            name: (field as any).label || fieldName,
-            width: (field as any).columnWidthPx || 150,
+            name: field.label || fieldName,
+            width: field.columnWidthPx || 150,
             resizable: true,
             renderCell: ({ row }) => {
               const value = row[fieldName];
