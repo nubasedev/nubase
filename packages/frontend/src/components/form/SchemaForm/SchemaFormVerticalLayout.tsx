@@ -1,10 +1,10 @@
-import type { FormLayoutField, Layout, ObjectShape } from "@nubase/core";
+import type { FormLayout, FormLayoutField, ObjectShape } from "@nubase/core";
 import type React from "react";
 
 export interface SchemaFormVerticalLayoutProps<
   TShape extends ObjectShape = any,
 > {
-  layout: Layout<TShape>;
+  layout: FormLayout<TShape>;
   renderField: (field: FormLayoutField<TShape>) => React.ReactNode;
 }
 

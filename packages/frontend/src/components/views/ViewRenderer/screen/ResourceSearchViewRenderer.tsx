@@ -252,9 +252,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
       cols.push(createActionColumn(wrappedActions, context, idField));
     }
 
-    if (tableLayout && tableLayout.type === "table" && tableLayout.groups[0]) {
+    if (tableLayout && tableLayout.type === "table") {
       // Use table layout to define columns
-      tableLayout.groups[0].fields
+      tableLayout.fields
         .filter((field) => !field.hidden)
         .forEach((field) => {
           const fieldName = field.name as string;

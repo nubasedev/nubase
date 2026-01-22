@@ -59,9 +59,9 @@ export const ResourceSearchViewModalRenderer: FC<
 
   // Create columns from table layout or dynamically from data
   const columns: Column<any>[] = (() => {
-    if (tableLayout && tableLayout.type === "table" && tableLayout.groups[0]) {
+    if (tableLayout && tableLayout.type === "table") {
       // Use table layout to define columns
-      return tableLayout.groups[0].fields
+      return tableLayout.fields
         .filter((field) => !field.hidden)
         .map((field) => {
           const fieldName = field.name as string;

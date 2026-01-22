@@ -232,37 +232,21 @@ export interface FormLayoutField<TShape extends ObjectShape> {
 }
 
 /**
- * Base properties for layout groups.
+ * Represents a group of fields within a form layout.
  */
-interface LayoutGroupBase {
+export interface FormLayoutGroup<TShape extends ObjectShape> {
   /** Label for the group */
   label?: string;
   /** Description for the group */
   description?: string;
+  /** Array of form fields in this group */
+  fields: FormLayoutField<TShape>[];
   /** Additional CSS classes for the group */
   className?: string;
   /** Whether the group should be collapsible */
   collapsible?: boolean;
   /** Whether the group is initially collapsed (if collapsible) */
   defaultCollapsed?: boolean;
-}
-
-/**
- * Represents a group of fields within a form layout.
- */
-export interface FormLayoutGroup<TShape extends ObjectShape>
-  extends LayoutGroupBase {
-  /** Array of form fields in this group */
-  fields: FormLayoutField<TShape>[];
-}
-
-/**
- * Represents a group of fields within a table layout.
- */
-export interface TableLayoutGroup<TShape extends ObjectShape>
-  extends LayoutGroupBase {
-  /** Array of table fields in this group */
-  fields: TableLayoutField<TShape>[];
 }
 
 /**
@@ -321,8 +305,8 @@ export interface TableLayoutField<TShape extends ObjectShape> {
  */
 export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   type: "table";
-  /** Groups of table fields - typically one group containing all columns */
-  groups: TableLayoutGroup<TShape>[];
+  /** Table columns */
+  fields: TableLayoutField<TShape>[];
   /** Table-specific metadata */
   metadata?: {
     /** Fields that should be clickable links to view the entity */
@@ -492,18 +476,12 @@ export class ObjectSchema<
       };
     };
   }): this {
-    // Convert the table-specific format to internal Layout format
     const tableLayouts: TableLayouts<TShape> = {};
 
     for (const [name, tableConfig] of Object.entries(layouts)) {
-      // Create a single group with all fields for internal consistency
       const layout: TableLayout<TShape> = {
         type: "table",
-        groups: [
-          {
-            fields: tableConfig.fields,
-          },
-        ],
+        fields: tableConfig.fields,
         metadata: tableConfig.metadata,
       };
       if (tableConfig.className) {
@@ -737,16 +715,27 @@ export class ObjectSchema<
     for (const layoutName in this._layouts) {
       const originalLayout = this._layouts[layoutName];
       if (originalLayout) {
-        const newGroups = originalLayout.groups.map((group) => ({
-          ...group,
-          fields: group.fields.filter(
-            (field) => !keysToOmit.has(field.name as any),
-          ),
-        }));
-        newLayouts[layoutName] = {
-          ...originalLayout,
-          groups: newGroups,
-        };
+        if (originalLayout.type === "table") {
+          // TableLayout has fields directly
+          newLayouts[layoutName] = {
+            ...originalLayout,
+            fields: originalLayout.fields.filter(
+              (field) => !keysToOmit.has(field.name as any),
+            ),
+          };
+        } else {
+          // FormLayout has groups with fields
+          const newGroups = originalLayout.groups.map((group) => ({
+            ...group,
+            fields: group.fields.filter(
+              (field) => !keysToOmit.has(field.name as any),
+            ),
+          }));
+          newLayouts[layoutName] = {
+            ...originalLayout,
+            groups: newGroups,
+          };
+        }
       }
     }
     newSchema._layouts = newLayouts;
