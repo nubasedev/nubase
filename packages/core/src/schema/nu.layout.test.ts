@@ -334,14 +334,17 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       const defaultLayout = ticketSchema.getLayout("default");
       expect(defaultLayout).toBeDefined();
       expect(defaultLayout?.type).toBe("table");
-      expect(defaultLayout?.groups).toHaveLength(1);
-      expect(defaultLayout?.groups[0]?.fields).toHaveLength(6);
+      if (defaultLayout?.type === "table") {
+        expect(defaultLayout.fields).toHaveLength(6);
+      }
       expect(defaultLayout?.metadata?.linkFields).toEqual(["title"]);
 
       const compactLayout = ticketSchema.getLayout("compact");
       expect(compactLayout).toBeDefined();
       expect(compactLayout?.type).toBe("table");
-      expect(compactLayout?.groups[0]?.fields).toHaveLength(3);
+      if (compactLayout?.type === "table") {
+        expect(compactLayout.fields).toHaveLength(3);
+      }
       expect(compactLayout?.metadata?.linkFields).toEqual(["id", "title"]);
     });
 
@@ -500,15 +503,20 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       const publicLayout = schema.getLayout("public");
       const adminLayout = schema.getLayout("admin");
 
-      const publicFields = publicLayout?.groups[0]?.fields;
-      expect(publicFields?.find((f) => f.name === "internalCode")?.hidden).toBe(
-        true,
-      );
+      // Table layouts have fields directly, not nested in groups
+      if (publicLayout?.type === "table") {
+        const publicFields = publicLayout.fields;
+        expect(
+          publicFields.find((f) => f.name === "internalCode")?.hidden,
+        ).toBe(true);
+      }
 
-      const adminFields = adminLayout?.groups[0]?.fields;
-      expect(
-        adminFields?.find((f) => f.name === "internalCode")?.hidden,
-      ).toBeUndefined();
+      if (adminLayout?.type === "table") {
+        const adminFields = adminLayout.fields;
+        expect(
+          adminFields.find((f) => f.name === "internalCode")?.hidden,
+        ).toBeUndefined();
+      }
     });
   });
 });
