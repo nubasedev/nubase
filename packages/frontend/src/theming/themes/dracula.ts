@@ -30,9 +30,9 @@ export const dracula: NubaseTheme = {
     muted: "oklch(0.22 0.015 249.79)", // darker gray
     mutedForeground: "oklch(0.65 0.01 249.79)", // medium gray
 
-    // Accent colors - Dracula pink
-    accent: "oklch(0.65 0.25 340)", // #ff79c6 pink
-    accentForeground: "oklch(0.15 0.01 249.79)", // dark background
+    // Accent colors - subtle hover, keeps Dracula feel
+    accent: "oklch(0.22 0.02 249.79)", // subtle dark purple-gray for hover states
+    accentForeground: "oklch(0.95 0.01 249.79)", // light foreground
 
     // Destructive colors - Dracula red
     destructive: "oklch(0.60 0.25 25)", // #ff5555 red

@@ -30,9 +30,9 @@ export const terminal: NubaseTheme = {
     muted: "oklch(0.15 0.05 136)", // muted dark green
     mutedForeground: "oklch(0.60 0.12 136)", // muted green
 
-    // Accent colors - phosphor green
-    accent: "oklch(0.85 0.20 136)", // #33ff33 phosphor green
-    accentForeground: "oklch(0.05 0 0)", // black
+    // Accent colors - subtle hover, keeps terminal feel
+    accent: "oklch(0.15 0.05 136)", // subtle dark green for hover states
+    accentForeground: "oklch(0.80 0.15 136)", // bright green foreground
 
     // Destructive colors - Matrix red (error state)
     destructive: "oklch(0.60 0.25 25)", // #ff3333 red
