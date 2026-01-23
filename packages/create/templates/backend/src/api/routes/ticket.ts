@@ -2,7 +2,7 @@ import { HttpError } from "@nubase/backend";
 import type { SQL } from "drizzle-orm";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { getDb } from "../../db/helpers/drizzle";
-import { tickets } from "../../db/schema";
+import { tickets, users } from "../../db/schema";
 import { createHandler } from "../handler-factory";
 
 export const ticketHandlers = {
@@ -46,19 +46,30 @@ export const ticketHandlers = {
 				}
 			}
 
+			const query = db
+				.select({
+					id: tickets.id,
+					title: tickets.title,
+					description: tickets.description,
+					assigneeId: tickets.assigneeId,
+					assigneeName: users.displayName,
+					assigneeEmail: users.email,
+				})
+				.from(tickets)
+				.leftJoin(users, eq(tickets.assigneeId, users.id));
+
 			const allTickets =
 				conditions.length > 0
-					? await db
-							.select()
-							.from(tickets)
-							.where(and(...conditions))
-					: await db.select().from(tickets);
+					? await query.where(and(...conditions))
+					: await query;
 
 			return allTickets.map((ticket) => ({
 				id: ticket.id,
 				title: ticket.title,
 				description: ticket.description ?? undefined,
 				assigneeId: ticket.assigneeId ?? undefined,
+				assigneeName: ticket.assigneeName ?? undefined,
+				assigneeEmail: ticket.assigneeEmail ?? undefined,
 			}));
 		},
 	}),
