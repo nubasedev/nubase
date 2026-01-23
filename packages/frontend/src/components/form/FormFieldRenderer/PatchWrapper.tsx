@@ -312,7 +312,10 @@ export const PatchWrapper: React.FC<PatchWrapperProps> = ({
 
       {/* Floating action bar - only visible in edit mode for non-auto-commit fields */}
       {isEditing && !autoCommit && (
-        <div className="absolute left-0 top-full mt-2 flex items-center gap-2 p-2 bg-muted rounded-lg shadow-xl z-10">
+        <div
+          className="absolute left-0 top-full mt-2 flex items-center gap-2 p-2 pr-3 bg-muted rounded-lg shadow-xl z-10"
+          data-testid="patch-wrapper-action-bar"
+        >
           <Button variant="default" onClick={handlePatch} disabled={isPatching}>
             {isPatching ? (
               <ActivityIndicator
