@@ -13,6 +13,7 @@ import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useWorkspace } from "../../../../context/WorkspaceContext";
+import { emitEvent } from "../../../../events";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { ActivityIndicator } from "../../../activity-indicator";
@@ -216,8 +217,26 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           });
         }
 
+        // Emit event for successful cell patch (silent by default per notification rules)
+        if (resourceName) {
+          emitEvent("resource.patched", {
+            resourceName,
+            fieldName: params.fieldName,
+            value: params.value,
+            source: "datagrid",
+          });
+        }
+
         return { success: true };
       } catch (error) {
+        // Emit event for failed cell patch
+        if (resourceName) {
+          emitEvent("resource.saveFailed", {
+            resourceName,
+            error: error as Error,
+            source: "datagrid",
+          });
+        }
         return {
           success: false,
           errors: [(error as Error).message || "Failed to update"],

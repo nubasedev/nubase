@@ -42,6 +42,8 @@ export {
   useWorkspaceOptional,
   type WorkspaceContext,
 } from "./context/WorkspaceContext";
+// Export events system
+export * from "./events";
 // Export all hooks
 export * from "./hooks";
 export * from "./http/api-client-factory";

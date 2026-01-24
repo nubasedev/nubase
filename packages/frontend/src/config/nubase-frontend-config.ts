@@ -1,5 +1,6 @@
 import type { AuthenticationController } from "../authentication/types";
 import type { Keybinding } from "../commands/types";
+import type { NotificationRules } from "../events";
 import type { MenuItem } from "../menu/types";
 import type { DashboardDescriptor } from "./dashboard-widget";
 import type { GlobalActionsConfig } from "./global-action";
@@ -64,4 +65,22 @@ export type NubaseFrontendConfig<TApiEndpoints = any> = {
    * ```
    */
   dashboards?: Record<string, DashboardDescriptor<TApiEndpoints>>;
+  /**
+   * Custom notification rules for application events.
+   * Controls which events show toasts and with what messages.
+   * If not provided, default rules will be used.
+   *
+   * @example
+   * ```typescript
+   * // Disable DataGrid patch notifications by returning null
+   * notificationRules: {
+   *   ...defaultNotificationRules,
+   *   "resource.patched": {
+   *     toastType: "default",
+   *     getMessage: (p) => p.source === "datagrid" ? null : `Resource ${p.resourceName} updated`,
+   *   },
+   * }
+   * ```
+   */
+  notificationRules?: NotificationRules;
 };

@@ -8,6 +8,7 @@ import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/
 import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceViewViewRenderer";
 import type { BreadcrumbItem } from "../../config/breadcrumb";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { emitEvent } from "../../events";
 
 /**
  * URL Parameter Coercion System
@@ -103,10 +104,7 @@ export default function ResourceScreen() {
           view={resourceView}
           resourceName={resourceName}
           onCreate={(data) => {
-            showToast(
-              `Resource ${resourceName} created successfully`,
-              "default",
-            );
+            emitEvent("resource.created", { resourceName, source: "form" });
 
             // Check if resource has a "view" view and redirect to it
             if (resource.views.view && data) {
@@ -134,10 +132,11 @@ export default function ResourceScreen() {
             }
           }}
           onError={(error) => {
-            showToast(
-              `Error creating resource ${resourceName}: ${error.message}`,
-              "error",
-            );
+            emitEvent("resource.saveFailed", {
+              resourceName,
+              error,
+              source: "form",
+            });
           }}
         />
       );
@@ -165,16 +164,14 @@ export default function ResourceScreen() {
           view={resourceView}
           params={validatedParams}
           onPatch={(_data) => {
-            showToast(
-              `Resource ${resourceName} updated successfully`,
-              "default",
-            );
+            emitEvent("resource.patched", { resourceName, source: "form" });
           }}
           onError={(error) => {
-            showToast(
-              `Error updating resource ${resourceName}: ${error.message}`,
-              "error",
-            );
+            emitEvent("resource.saveFailed", {
+              resourceName,
+              error,
+              source: "form",
+            });
           }}
         />
       );
@@ -203,10 +200,7 @@ export default function ResourceScreen() {
           resourceName={resourceName}
           resource={resource}
           onError={(error) => {
-            showToast(
-              `Error loading search results for ${resourceName}: ${error.message}`,
-              "error",
-            );
+            emitEvent("resource.loadFailed", { resourceName, error });
           }}
         />
       );

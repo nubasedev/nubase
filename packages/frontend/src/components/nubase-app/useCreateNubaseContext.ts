@@ -4,6 +4,11 @@ import { resourceActionsExecutor } from "../../actions/ResourceActionsExecutor";
 import { commandRegistry } from "../../commands";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
 import type { NubaseContextData } from "../../context/types";
+import {
+  defaultNotificationRules,
+  eventManager,
+  setGlobalEventEmitter,
+} from "../../events";
 import type { TypedApiClientFromEndpoints } from "../../http/api-client-factory";
 import { HttpClient } from "../../http/http-client";
 import {
@@ -167,6 +172,12 @@ export function useCreateNubaseContext<TApiEndpoints = any>({
 
       // Register keybindings
       registerKeybindings(nubaseContextData.keybindings);
+
+      // Initialize event manager with notification rules
+      eventManager.setNotificationRules(
+        nubaseContextData.config.notificationRules || defaultNotificationRules,
+      );
+      setGlobalEventEmitter(eventManager.emit.bind(eventManager));
     }
   }, [nubaseContextData]);
 

@@ -12,12 +12,21 @@ import {
   ToastContainer,
   ToastProvider,
 } from "../src/components/floating/toast";
+import {
+  defaultNotificationRules,
+  eventManager,
+  setGlobalEventEmitter,
+} from "../src/events";
 import { injectThemeVariables } from "../src/theming/runtime-theme-generator";
 import { dark } from "../src/theming/themes/dark";
 import { light } from "../src/theming/themes/light";
 
 // Inject theme CSS variables globally for Storybook
 injectThemeVariables([light, dark]);
+
+// Initialize event system for Storybook
+eventManager.setNotificationRules(defaultNotificationRules);
+setGlobalEventEmitter(eventManager.emit.bind(eventManager));
 
 const preview: Preview = {
   parameters: {
