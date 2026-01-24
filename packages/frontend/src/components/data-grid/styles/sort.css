@@ -1,16 +1,14 @@
 @layer rdg.SortIcon {
   .rdg-sort-arrow {
-    fill: currentColor;
-  }
-
-  .rdg-sort-arrow > path {
-    transition: d 0.1s;
+    color: currentColor;
+    flex-shrink: 0;
   }
 }
 
 @layer rdg.SortableHeaderCell {
   .rdg-header-sort-cell {
     display: flex;
+    align-items: center;
   }
 }
 

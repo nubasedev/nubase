@@ -30,6 +30,7 @@ export {
   useRowSelection,
 } from "./hooks/useRowSelection";
 export {
+  BooleanCellEditRenderer,
   type CellEditLifecycle,
   type CellEditRendererProps,
   type CellEditRendererResult,
@@ -38,9 +39,11 @@ export {
   createPatchableColumns,
   DataGridCellPatchWrapper,
   type DataGridCellPatchWrapperProps,
+  NumberCellEditRenderer,
   type PatchResult,
   resolveEditRenderer,
   resolveViewRenderer,
+  StringCellEditRenderer,
 } from "./patching";
 export { default as Row } from "./Row";
 export { default as renderHeaderCell } from "./renderHeaderCell";

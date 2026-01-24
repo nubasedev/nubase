@@ -1,11 +1,10 @@
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { sortArrowClassname } from "./styles";
 import type {
   RenderSortIconProps,
   RenderSortPriorityProps,
   RenderSortStatusProps,
 } from "./types";
-
-const arrowClassname = sortArrowClassname;
 
 export default function renderSortStatus({
   sortDirection,
@@ -22,17 +21,9 @@ export default function renderSortStatus({
 export function renderSortIcon({ sortDirection }: RenderSortIconProps) {
   if (sortDirection === undefined) return null;
 
-  return (
-    <svg
-      viewBox="0 0 12 8"
-      width="12"
-      height="8"
-      className={arrowClassname}
-      aria-hidden
-    >
-      <path d={sortDirection === "ASC" ? "M0 8 6 0 12 8" : "M0 0 6 8 12 0"} />
-    </svg>
-  );
+  const Icon = sortDirection === "ASC" ? ChevronUp : ChevronDown;
+
+  return <Icon size={14} className={sortArrowClassname} aria-hidden="true" />;
 }
 
 export function renderSortPriority({ priority }: RenderSortPriorityProps) {

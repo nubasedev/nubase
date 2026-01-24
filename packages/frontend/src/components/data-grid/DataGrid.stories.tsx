@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useMemo, useState } from "react";
 import { DataGrid } from "./DataGrid";
+import textEditor from "./editors/textEditor";
 import type { Column, SortColumn } from "./types";
 
 const meta: Meta<typeof DataGrid> = {
@@ -376,6 +377,51 @@ export const EmptyState: Story = {
     return (
       <div style={{ height: "300px", width: "100%" }}>
         <DataGrid columns={columns} rows={rows} />
+      </div>
+    );
+  },
+};
+
+// Basic string editing
+export const WithEditing: Story = {
+  render: () => {
+    const [rows, setRows] = useState(() => generatePeople(20));
+
+    const columns: Column<Person>[] = useMemo(
+      () => [
+        { key: "id", name: "ID", width: 60 },
+        {
+          key: "name",
+          name: "Name",
+          width: 150,
+          renderEditCell: textEditor,
+        },
+        {
+          key: "email",
+          name: "Email",
+          width: 200,
+          renderEditCell: textEditor,
+        },
+        { key: "age", name: "Age", width: 80 },
+        {
+          key: "city",
+          name: "City",
+          width: 120,
+          renderEditCell: textEditor,
+        },
+        {
+          key: "country",
+          name: "Country",
+          width: 120,
+          renderEditCell: textEditor,
+        },
+      ],
+      [],
+    );
+
+    return (
+      <div style={{ height: "500px", width: "100%" }}>
+        <DataGrid columns={columns} rows={rows} onRowsChange={setRows} />
       </div>
     );
   },
