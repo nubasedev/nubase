@@ -74,6 +74,8 @@
 @layer rdg.EditCell {
   .rdg-cell-editing {
     padding: 0;
+    /* Add focus ring to distinguish editing from selected state */
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 50%, transparent);
   }
 }
 
