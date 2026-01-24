@@ -3,11 +3,11 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { WorkspaceInfo } from "../../authentication";
 import { Button } from "../../components/buttons/Button/Button";
-import { showToast } from "../../components/floating/toast";
 import { FormValidationErrors } from "../../components/form";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
 import { FormControl } from "../../components/form-controls/FormControl/FormControl";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
+import { emitEvent } from "../../events";
 
 /**
  * Sign-in screen with Shortcut-like two-step flow:
@@ -77,7 +77,10 @@ export default function SignInScreen() {
               loginToken: result.loginToken,
               workspace: singleWorkspace.slug,
             });
-            showToast("Successfully signed in!");
+            emitEvent("auth.signedIn", {
+              email: value.email,
+              workspace: workspace.slug,
+            });
             navigate({
               to: "/$workspace",
               params: { workspace: workspace.slug },
@@ -99,7 +102,7 @@ export default function SignInScreen() {
       } catch (err) {
         const message = err instanceof Error ? err.message : "Sign in failed";
         form.setErrorMap({ onSubmit: { form: message, fields: {} } });
-        showToast(message, "error");
+        emitEvent("auth.signInFailed", { email: value.email, error: message });
       } finally {
         setIsLoading(false);
       }
@@ -122,7 +125,7 @@ export default function SignInScreen() {
         loginToken,
         workspace: workspace.slug,
       });
-      showToast("Successfully signed in!");
+      emitEvent("auth.signedIn", { workspace: selectedWorkspace.slug });
       navigate({
         to: "/$workspace",
         params: { workspace: selectedWorkspace.slug },
@@ -130,7 +133,7 @@ export default function SignInScreen() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Sign in failed";
       form.setErrorMap({ onSubmit: { form: message, fields: {} } });
-      showToast(message, "error");
+      emitEvent("auth.signInFailed", { error: message });
     } finally {
       setIsLoading(false);
     }

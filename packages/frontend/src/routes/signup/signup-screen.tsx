@@ -2,11 +2,11 @@ import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../../components/buttons/Button/Button";
-import { showToast } from "../../components/floating/toast";
 import { FormValidationErrors } from "../../components/form";
 import { TextInput } from "../../components/form-controls/controls/TextInput/TextInput";
 import { FormControl } from "../../components/form-controls/FormControl/FormControl";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
+import { emitEvent } from "../../events";
 
 /**
  * Sign-up screen for creating a new user and workspace.
@@ -55,12 +55,15 @@ export default function SignUpScreen() {
           email: value.email,
           password: value.password,
         });
-        showToast("Account created successfully!");
+        emitEvent("auth.signedUp", {
+          email: value.email,
+          workspace: value.workspace,
+        });
         navigate({ to: "/$workspace", params: { workspace: value.workspace } });
       } catch (err) {
         const message = err instanceof Error ? err.message : "Sign up failed";
         form.setErrorMap({ onSubmit: { form: message, fields: {} } });
-        showToast(message, "error");
+        emitEvent("auth.signUpFailed", { email: value.email, error: message });
       } finally {
         setIsLoading(false);
       }

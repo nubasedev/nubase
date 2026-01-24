@@ -43,4 +43,56 @@ export const defaultNotificationRules: NotificationRules = {
     getMessage: (p) =>
       `Error saving resource ${p.resourceName}: ${p.error.message}`,
   },
+
+  // Authentication events
+  "auth.signedIn": {
+    toastType: "default",
+    getMessage: () => "Successfully signed in!",
+  },
+
+  "auth.signedUp": {
+    toastType: "default",
+    getMessage: () => "Account created successfully!",
+  },
+
+  "auth.signInFailed": {
+    toastType: "error",
+    getMessage: (p) => p.error,
+  },
+
+  "auth.signUpFailed": {
+    toastType: "error",
+    getMessage: (p) => p.error,
+  },
+
+  // Command events
+  "command.notFound": {
+    toastType: "error",
+    getMessage: (p) => `Command "${p.commandId}" not found`,
+  },
+
+  "command.invalidArgs": {
+    toastType: "error",
+    getMessage: (p) =>
+      p.error || `Invalid arguments for "${p.commandName || p.commandId}"`,
+  },
+
+  // Navigation events
+  "navigation.invalidParams": {
+    toastType: "error",
+    getMessage: (p) => `Invalid URL parameters: ${p.error}`,
+  },
+
+  // Theme events
+  "theme.notFound": {
+    toastType: "default",
+    getMessage: (p) =>
+      `Theme "${p.themeId}" not found. Available themes: ${p.availableThemes.join(", ")}`,
+  },
+
+  // View error events (modals)
+  "view.error": {
+    toastType: "error",
+    getMessage: (p) => `Error in ${p.resourceId} ${p.viewId}: ${p.error}`,
+  },
 };
