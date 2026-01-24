@@ -8,5 +8,5 @@ export const StringCellViewRenderer: CellViewRenderer = ({ value }) => {
   if (value === null || value === undefined) {
     return "";
   }
-  return "bola";
+  return String(value);
 };
