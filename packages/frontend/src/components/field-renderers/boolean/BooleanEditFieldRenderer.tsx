@@ -1,5 +1,5 @@
-import { Toggle } from "../../../form-controls/controls/Toggle/Toggle";
-import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
+import type { EditFieldLifecycle } from "../../form/FormFieldRenderer/renderer-factory";
+import { Toggle } from "../../form-controls/controls/Toggle/Toggle";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
 export const BooleanEditFieldRenderer = ({

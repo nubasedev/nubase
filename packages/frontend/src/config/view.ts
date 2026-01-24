@@ -95,6 +95,7 @@ export type ResourceSearchView<
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
   TActionIds extends string = string,
   TFilterSchema extends ObjectSchema<any> | undefined = undefined,
+  TPatchSchema extends ObjectSchema<any> | undefined = undefined,
 > = ViewBase<TApiEndpoints, TParamsSchema> & {
   type: "resource-search";
   /**
@@ -111,6 +112,12 @@ export type ResourceSearchView<
    */
   schemaFilter?: TFilterSchema;
   /**
+   * Optional schema for patchable fields in inline editing.
+   * Only fields present in this schema will be editable in the table.
+   * Typically this is the requestBody schema of the patch endpoint.
+   */
+  schemaPatch?: TPatchSchema;
+  /**
    * Optional actions to display above the table for bulk operations on selected items.
    */
   tableActions?: ActionLayout<TActionIds>;
@@ -126,6 +133,21 @@ export type ResourceSearchView<
   }: {
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<Infer<TSchema>>>;
+  /**
+   * Optional handler for inline patching of individual fields.
+   * Required when schemaPatch is provided and tableLayout.metadata.patchable is true.
+   */
+  onPatch?: ({
+    id,
+    fieldName,
+    value,
+    context,
+  }: {
+    id: string | number;
+    fieldName: string;
+    value: any;
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<any>>;
 };
 
 export type View<
@@ -134,6 +156,7 @@ export type View<
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
   TActionIds extends string = string,
   TFilterSchema extends ObjectSchema<any> | undefined = undefined,
+  TPatchSchema extends ObjectSchema<any> | undefined = undefined,
 > =
   | ResourceCreateView<
       TSchema extends ObjectSchema<any> ? TSchema : ObjectSchema<any>,
@@ -152,5 +175,6 @@ export type View<
       TApiEndpoints,
       TParamsSchema,
       TActionIds,
-      TFilterSchema
+      TFilterSchema,
+      TPatchSchema
     >;

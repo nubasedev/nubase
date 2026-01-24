@@ -1,10 +1,10 @@
 import type { Lookup } from "@nubase/core";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
-import type { ResourceLookupConfig } from "../../../../config/resource";
-import { LookupSelect } from "../../../form-controls/controls/LookupSelect/LookupSelect";
-import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
-import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
+import type { ResourceLookupConfig } from "../../../config/resource";
+import type { EditFieldLifecycle } from "../../form/FormFieldRenderer/renderer-factory";
+import { LookupSelect } from "../../form-controls/controls/LookupSelect/LookupSelect";
+import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
 export const LookupEditFieldRenderer = ({

@@ -29,6 +29,19 @@ export {
   useHeaderRowSelection,
   useRowSelection,
 } from "./hooks/useRowSelection";
+export {
+  type CellEditLifecycle,
+  type CellEditRendererProps,
+  type CellEditRendererResult,
+  type CreatePatchableColumnOptions,
+  createPatchableColumn,
+  createPatchableColumns,
+  DataGridCellPatchWrapper,
+  type DataGridCellPatchWrapperProps,
+  type PatchResult,
+  resolveEditRenderer,
+  resolveViewRenderer,
+} from "./patching";
 export { default as Row } from "./Row";
 export { default as renderHeaderCell } from "./renderHeaderCell";
 export { renderSortIcon, renderSortPriority } from "./sortStatus";

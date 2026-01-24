@@ -1,23 +1,31 @@
 import type React from "react";
 import { useRef } from "react";
-import { TextInput } from "../../../form-controls/controls/TextInput/TextInput";
-import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
+import type { EditFieldLifecycle } from "../../form/FormFieldRenderer/renderer-factory";
+import { TextInput } from "../../form-controls/controls/TextInput/TextInput";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
-export const StringEditFieldRenderer = ({
+export const NumberEditFieldRenderer = ({
   fieldState,
   hasError,
   metadata,
 }: EditFieldRendererProps): EditFieldRendererResult => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasSelectedRef = useRef(false);
 
   const lifecycle: EditFieldLifecycle = {
     onEnterEdit: () => {
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
+          if (!hasSelectedRef.current) {
+            inputRef.current.select();
+            hasSelectedRef.current = true;
+          }
         }
       }, 0);
+    },
+    onExitEdit: () => {
+      hasSelectedRef.current = false;
     },
   };
 
@@ -27,10 +35,10 @@ export const StringEditFieldRenderer = ({
       id={fieldState.name}
       name={fieldState.name}
       onBlur={fieldState.handleBlur}
-      type="text"
-      value={fieldState.state.value ?? ""}
+      type="number"
+      value={fieldState.state.value ?? 0}
       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        fieldState.handleChange(e.target.value)
+        fieldState.handleChange(Number(e.target.value))
       }
       placeholder={metadata.description}
       hasError={hasError}

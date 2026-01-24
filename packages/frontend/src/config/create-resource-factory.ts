@@ -86,6 +86,7 @@ export type InlineSearchViewConfig<
   TSchema extends ArraySchema<any> = ArraySchema<any>,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
   TFilterSchema extends ObjectSchema<any> | undefined = undefined,
+  TPatchSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
   type: "resource-search";
   id: string;
@@ -97,12 +98,28 @@ export type InlineSearchViewConfig<
    * When provided, a filter bar will be automatically generated.
    */
   schemaFilter?: (api: TApiEndpoints) => TFilterSchema;
+  /**
+   * Optional schema for patchable fields in inline editing.
+   * Only fields present in this schema will be editable in the table.
+   * Typically this is the requestBody schema of the patch endpoint.
+   */
+  schemaPatch?: (api: TApiEndpoints) => TPatchSchema;
   tableActions?: ActionLayout<TActionIds>;
   rowActions?: ActionLayout<TActionIds>;
   breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
   onLoad: (args: {
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<Infer<TSchema>>>;
+  /**
+   * Optional handler for inline patching of individual fields.
+   * Required when schemaPatch is provided and tableLayout.metadata.patchable is true.
+   */
+  onPatch?: (args: {
+    id: string | number;
+    fieldName: string;
+    value: any;
+    context: NubaseContextData<TApiEndpoints, TParamsSchema>;
+  }) => Promise<HttpResponse<any>>;
 };
 
 /**
@@ -111,7 +128,7 @@ export type InlineSearchViewConfig<
 export type InlineViewConfig<TApiEndpoints, TActionIds extends string> =
   | InlineCreateViewConfig<TApiEndpoints, TActionIds, any, any>
   | InlineViewViewConfig<TApiEndpoints, TActionIds, any, any>
-  | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any, any>;
+  | InlineSearchViewConfig<TApiEndpoints, TActionIds, any, any, any, any>;
 
 /**
  * Inline lookup configuration for the resource builder.
@@ -283,14 +300,16 @@ class ResourceBuilder<
                   any,
                   infer TSchema,
                   infer TParamsSchema,
-                  infer TFilterSchema
+                  infer TFilterSchema,
+                  any
                 >
               ? ResourceSearchView<
                   TSchema,
                   TApiEndpoints,
                   TParamsSchema,
                   keyof TActions & string,
-                  TFilterSchema
+                  TFilterSchema,
+                  any
                 >
               : never
         : never;
@@ -329,6 +348,9 @@ class ResourceBuilder<
       const resolvedSchemaFilter = config.schemaFilter?.(
         this.config.apiEndpoints,
       );
+      const resolvedSchemaPatch = config.schemaPatch?.(
+        this.config.apiEndpoints,
+      );
 
       // Use explicit type from config
       transformedViews[key] = {
@@ -338,6 +360,7 @@ class ResourceBuilder<
         schemaPost: resolvedSchemaPost,
         schemaParams: resolvedSchemaParams,
         schemaFilter: resolvedSchemaFilter,
+        schemaPatch: resolvedSchemaPatch,
       };
     }
 

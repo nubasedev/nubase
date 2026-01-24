@@ -42,12 +42,19 @@ export const ticketListSchema = ticketSchema
     default: {
       fields: [
         { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
-        { name: "title", label: "Title", columnWidthPx: 300, pinned: true },
+        {
+          name: "title",
+          label: "Title",
+          columnWidthPx: 300,
+          pinned: true,
+          editable: true,
+        },
         { name: "assigneeName", label: "Assignee Name", columnWidthPx: 150 },
         { name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
       ],
       metadata: {
-        linkFields: ["title"],
+        linkFields: ["id"],
+        patchable: true,
       },
     },
   });

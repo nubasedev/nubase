@@ -1,24 +1,24 @@
 import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { FormControl } from "../../form-controls/FormControl/FormControl";
-import { BooleanEditFieldRenderer } from "../renderers/boolean/BooleanEditFieldRenderer";
-import { BooleanViewFieldRenderer } from "../renderers/boolean/BooleanViewFieldRenderer";
-import { LookupEditFieldRenderer } from "../renderers/lookup/LookupEditFieldRenderer";
-import { LookupViewFieldRenderer } from "../renderers/lookup/LookupViewFieldRenderer";
-import { MultilineEditFieldRenderer } from "../renderers/multiline/MultilineEditFieldRenderer";
-import { MultilineViewFieldRenderer } from "../renderers/multiline/MultilineViewFieldRenderer";
-import { NumberEditFieldRenderer } from "../renderers/number/NumberEditFieldRenderer";
-import { NumberViewFieldRenderer } from "../renderers/number/NumberViewFieldRenderer";
-import { StringEditFieldRenderer } from "../renderers/string/StringEditFieldRenderer";
-import { StringViewFieldRenderer } from "../renderers/string/StringViewFieldRenderer";
+import { BooleanEditFieldRenderer } from "../../field-renderers/boolean/BooleanEditFieldRenderer";
+import { BooleanViewFieldRenderer } from "../../field-renderers/boolean/BooleanViewFieldRenderer";
+import { LookupEditFieldRenderer } from "../../field-renderers/lookup/LookupEditFieldRenderer";
+import { LookupViewFieldRenderer } from "../../field-renderers/lookup/LookupViewFieldRenderer";
+import { MultilineEditFieldRenderer } from "../../field-renderers/multiline/MultilineEditFieldRenderer";
+import { MultilineViewFieldRenderer } from "../../field-renderers/multiline/MultilineViewFieldRenderer";
+import { NumberEditFieldRenderer } from "../../field-renderers/number/NumberEditFieldRenderer";
+import { NumberViewFieldRenderer } from "../../field-renderers/number/NumberViewFieldRenderer";
+import { StringEditFieldRenderer } from "../../field-renderers/string/StringEditFieldRenderer";
+import { StringViewFieldRenderer } from "../../field-renderers/string/StringViewFieldRenderer";
 import type {
   EditFieldRenderer,
   EditFieldRendererMap,
   ViewFieldRenderer,
   ViewFieldRendererMap,
-} from "../renderers/types";
-import { UnsupportedEditFieldRenderer } from "../renderers/unsupported/UnsupportedEditFieldRenderer";
-import { UnsupportedViewFieldRenderer } from "../renderers/unsupported/UnsupportedViewFieldRenderer";
+} from "../../field-renderers/types";
+import { UnsupportedEditFieldRenderer } from "../../field-renderers/unsupported/UnsupportedEditFieldRenderer";
+import { UnsupportedViewFieldRenderer } from "../../field-renderers/unsupported/UnsupportedViewFieldRenderer";
+import { FormControl } from "../../form-controls/FormControl/FormControl";
 import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 
 // Renderers by custom renderer name (from metadata.renderer)

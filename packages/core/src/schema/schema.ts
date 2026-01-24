@@ -298,6 +298,13 @@ export interface TableLayoutField<TShape extends ObjectShape> {
   columnWidthPx?: number;
   /** Whether the column should be pinned/frozen to the left */
   pinned?: boolean;
+  /**
+   * Whether this field is editable in the table.
+   * - `true`: Field is editable with manual commit (save/cancel buttons)
+   * - `'auto-commit'`: Field commits immediately on change (for toggles, selects)
+   * - `false` or undefined: Field is read-only
+   */
+  editable?: boolean | "auto-commit";
 }
 
 /**
@@ -311,6 +318,8 @@ export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   metadata?: {
     /** Fields that should be clickable links to view the entity */
     linkFields?: (keyof TShape)[];
+    /** Whether inline patching/editing is enabled for this table */
+    patchable?: boolean;
     /** Other metadata */
     [key: string]: any;
   };
@@ -472,6 +481,8 @@ export class ObjectSchema<
       config?: LayoutBase["config"];
       metadata?: {
         linkFields?: (keyof TShape)[];
+        /** Whether inline patching/editing is enabled for this table */
+        patchable?: boolean;
         [key: string]: any;
       };
     };

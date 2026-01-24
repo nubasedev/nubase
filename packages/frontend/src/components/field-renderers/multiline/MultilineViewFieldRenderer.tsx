@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/styling/cn";
-import { textInputVariants } from "../../../form-controls/controls/TextInput/TextInput";
+import { textInputVariants } from "../../form-controls/controls/TextInput/TextInput";
 import type { ViewFieldRendererProps } from "../types";
 import { EmptyValue, ViewFieldWrapper } from "../ViewFieldWrapper";
 

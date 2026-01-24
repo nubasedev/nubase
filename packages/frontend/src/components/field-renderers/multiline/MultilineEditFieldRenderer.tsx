@@ -1,8 +1,8 @@
 import type React from "react";
 import { useLayoutEffect, useRef } from "react";
 import { cn } from "@/styling/cn";
-import { textInputVariants } from "../../../form-controls/controls/TextInput/TextInput";
-import type { EditFieldLifecycle } from "../../FormFieldRenderer/renderer-factory";
+import type { EditFieldLifecycle } from "../../form/FormFieldRenderer/renderer-factory";
+import { textInputVariants } from "../../form-controls/controls/TextInput/TextInput";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
 /**

@@ -1,4 +1,4 @@
-import type { BaseSchema, ObjectSchema } from "@nubase/core";
+import type { BaseSchema, ObjectSchema, TableLayoutField } from "@nubase/core";
 import { OptionalSchema } from "@nubase/core";
 import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
@@ -19,6 +19,10 @@ import { ActivityIndicator } from "../../../activity-indicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
+import {
+  createPatchableColumn,
+  type PatchResult,
+} from "../../../data-grid/patching";
 import type { Column } from "../../../data-grid/types";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
@@ -172,6 +176,57 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     [resourceName, context.queryClient],
   );
 
+  // Create a function to handle cell patching
+  const handleCellPatch = useCallback(
+    async (params: {
+      rowId: string | number;
+      fieldName: string;
+      value: any;
+    }): Promise<PatchResult> => {
+      // Check if the view has an onPatch handler configured
+      if (!view.onPatch) {
+        return {
+          success: false,
+          errors: ["Patching is not configured for this view"],
+        };
+      }
+
+      try {
+        // Call the view's onPatch handler
+        await view.onPatch({
+          id: params.rowId,
+          fieldName: params.fieldName,
+          value: params.value,
+          context,
+        });
+
+        // Invalidate the query to refresh the data
+        if (resourceName && context.queryClient) {
+          await context.queryClient.invalidateQueries({
+            predicate: (query) => {
+              const key = query.queryKey;
+              return (
+                Array.isArray(key) &&
+                key.length >= 3 &&
+                key[0] === "resource" &&
+                key[1] === resourceName &&
+                key[2] === "search"
+              );
+            },
+          });
+        }
+
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          errors: [(error as Error).message || "Failed to update"],
+        };
+      }
+    },
+    [view, context, resourceName],
+  );
+
   // Selection state for DataGrid
   const [selectedRows, setSelectedRows] = useState<ReadonlySet<any>>(new Set());
 
@@ -222,6 +277,15 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   // Get the ID field from the schema (defaults to "id")
   const idField = String(elementSchema?.getIdField() || "id");
 
+  // Check if patching is enabled and get the patch schema
+  const patchSchema = (view as any).schemaPatch as
+    | ObjectSchema<any>
+    | undefined;
+  const isPatchEnabled =
+    tableLayout?.metadata?.patchable === true &&
+    view.onPatch !== undefined &&
+    patchSchema !== undefined;
+
   // For dynamic column generation fallback (only when no tableLayout), track the first row's keys
   // This prevents columns from recalculating on every data change
   // When tableLayout exists, this returns empty string and never changes
@@ -260,53 +324,80 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           const fieldName = field.name as string;
           const isLinkField = linkFields?.includes(fieldName);
 
-          // Use columnWidthPx if defined, otherwise get default based on field type
-          let width = field.columnWidthPx;
-          if (width === undefined) {
-            // Get the field schema from the element schema to determine type
-            const fieldSchema = elementSchema?._shape[fieldName];
-            width = fieldSchema ? getDefaultColumnWidth(fieldSchema) : 150;
-          }
+          // Determine if this field is patchable:
+          // 1. Patching must be enabled for the view
+          // 2. The field must have editable: true or editable: 'auto-commit' in the layout
+          // 3. The field must exist in the patch schema (schemaPatch)
+          const fieldIsEditable =
+            field.editable === true || field.editable === "auto-commit";
+          const fieldExistsInPatchSchema =
+            patchSchema && fieldName in patchSchema._shape;
+          const shouldUsePatchableColumn =
+            isPatchEnabled &&
+            fieldIsEditable &&
+            fieldExistsInPatchSchema &&
+            !isLinkField;
 
-          cols.push({
-            name: field.label || fieldName,
-            key: fieldName,
-            width,
-            resizable: true,
-            frozen: field.pinned === true,
-            renderCell: isLinkField
-              ? ({ row }) => {
-                  const value = row[fieldName];
-                  const displayValue = value?.toString() || "";
+          if (shouldUsePatchableColumn && elementSchema) {
+            // Create a patchable column with inline editing
+            cols.push(
+              createPatchableColumn({
+                field: field as TableLayoutField<any>,
+                schema: elementSchema,
+                getRowId: (row: any) => row[idField],
+                onPatch: handleCellPatch,
+              }),
+            );
+          } else {
+            // Create a regular read-only column
+            // Use columnWidthPx if defined, otherwise get default based on field type
+            let width = field.columnWidthPx;
+            if (width === undefined) {
+              // Get the field schema from the element schema to determine type
+              const fieldSchema = elementSchema?._shape[fieldName];
+              width = fieldSchema ? getDefaultColumnWidth(fieldSchema) : 150;
+            }
 
-                  if (row.id) {
-                    return (
-                      <button
-                        type="button"
-                        className="text-primary hover:underline text-left"
-                        onClick={() => {
-                          // Navigate to view screen using the resourceName
-                          if (resourceName) {
-                            navigate({
-                              to: "/$workspace/r/$resourceName/$operation",
-                              params: {
-                                workspace: workspace.slug,
-                                resourceName,
-                                operation: "view",
-                              },
-                              search: { id: row.id },
-                            });
-                          }
-                        }}
-                      >
-                        {displayValue}
-                      </button>
-                    );
+            cols.push({
+              name: field.label || fieldName,
+              key: fieldName,
+              width,
+              resizable: true,
+              frozen: field.pinned === true,
+              renderCell: isLinkField
+                ? ({ row }) => {
+                    const value = row[fieldName];
+                    const displayValue = value?.toString() || "";
+
+                    if (row.id) {
+                      return (
+                        <button
+                          type="button"
+                          className="text-primary hover:underline text-left"
+                          onClick={() => {
+                            // Navigate to view screen using the resourceName
+                            if (resourceName) {
+                              navigate({
+                                to: "/$workspace/r/$resourceName/$operation",
+                                params: {
+                                  workspace: workspace.slug,
+                                  resourceName,
+                                  operation: "view",
+                                },
+                                search: { id: row.id },
+                              });
+                            }
+                          }}
+                        >
+                          {displayValue}
+                        </button>
+                      );
+                    }
+                    return displayValue;
                   }
-                  return displayValue;
-                }
-              : ({ row }) => row[fieldName]?.toString() || "",
-          });
+                : ({ row }) => row[fieldName]?.toString() || "",
+            });
+          }
         });
     } else if (dynamicColumnKeys) {
       // Fallback: create columns dynamically from the first data item's keys
@@ -336,6 +427,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     wrapActionsWithInvalidation,
     idField,
     workspace.slug,
+    isPatchEnabled,
+    patchSchema,
+    handleCellPatch,
   ]);
 
   // Filter resource actions for the ActionBar (bulk operations)

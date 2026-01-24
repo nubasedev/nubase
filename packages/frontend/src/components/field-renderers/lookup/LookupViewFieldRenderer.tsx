@@ -1,8 +1,8 @@
 import type { Lookup } from "@nubase/core";
 import { useQuery } from "@tanstack/react-query";
-import type { ResourceLookupConfig } from "../../../../config/resource";
-import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
-import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import type { ResourceLookupConfig } from "../../../config/resource";
+import { ActivityIndicator } from "../../activity-indicator/ActivityIndicator";
+import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 import type { ViewFieldRendererProps } from "../types";
 import { EmptyValue, ViewFieldWrapper } from "../ViewFieldWrapper";
 
