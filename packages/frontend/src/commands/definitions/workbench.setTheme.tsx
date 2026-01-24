@@ -1,8 +1,8 @@
 import { nu } from "@nubase/core";
 import { Moon, Palette, Sun } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
-import { showToast } from "../../components/floating/toast";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
+import { emitEvent } from "../../events";
 import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
@@ -33,10 +33,7 @@ export const workbenchSetTheme = createCommand({
         context.theming.setActiveThemeId(themeId);
         return;
       }
-      showToast(
-        `Theme "${themeId}" not found. Available themes: ${availableThemes.join(", ")}`,
-        "default",
-      );
+      emitEvent("theme.notFound", { themeId, availableThemes });
       // Fall through to show theme selection modal
     }
     // Get available themes from context or use defaults

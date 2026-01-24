@@ -1,10 +1,10 @@
 import { nu } from "@nubase/core";
 import { Settings } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
-import { showToast } from "../../components/floating/toast";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
 import { ModalViewRenderer } from "../../components/views/ViewRenderer/modal";
 import type { View } from "../../config/view";
+import { emitEvent } from "../../events";
 import type { MenuItem } from "../../menu/types";
 import { createCommand } from "../defineCommand";
 
@@ -49,10 +49,11 @@ export const workbenchOpenResourceOperationInModal = createCommand({
               resourceName={resourceId}
               onClose={() => context.modal.closeModal()}
               onError={(error) => {
-                showToast(
-                  `Error in ${resourceId} ${operation}: ${error.message}`,
-                  "error",
-                );
+                emitEvent("view.error", {
+                  resourceId,
+                  viewId: operation,
+                  error: error.message,
+                });
               }}
             />
           ),
@@ -111,10 +112,11 @@ export const workbenchOpenResourceOperationInModal = createCommand({
                     resourceName={resourceId}
                     onClose={() => context.modal.closeModal()}
                     onError={(error) => {
-                      showToast(
-                        `Error in ${resourceId} ${viewId}: ${error.message}`,
-                        "error",
-                      );
+                      emitEvent("view.error", {
+                        resourceId,
+                        viewId,
+                        error: error.message,
+                      });
                     }}
                   />
                 ),

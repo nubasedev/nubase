@@ -1,7 +1,6 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { FullScreenFixedHeaderLayout } from "@/components/page-layouts/FullScreenFixedHeaderLayout";
-import { showToast } from "../../components";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
 import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceCreateViewRenderer";
 import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceSearchViewRenderer";
@@ -151,10 +150,10 @@ export default function ResourceScreen() {
             .toZodWithCoercion()
             .parse(searchParams);
         } catch (error) {
-          showToast(
-            `Invalid URL parameters: ${(error as Error).message}`,
-            "error",
-          );
+          emitEvent("navigation.invalidParams", {
+            error: (error as Error).message,
+            path: `${resourceName}/${operation}`,
+          });
           return <div>Invalid URL parameters</div>;
         }
       }
@@ -185,10 +184,10 @@ export default function ResourceScreen() {
             .toZodWithCoercion()
             .parse(searchParams);
         } catch (error) {
-          showToast(
-            `Invalid URL parameters: ${(error as Error).message}`,
-            "error",
-          );
+          emitEvent("navigation.invalidParams", {
+            error: (error as Error).message,
+            path: `${resourceName}/${operation}`,
+          });
           return <div>Invalid URL parameters</div>;
         }
       }

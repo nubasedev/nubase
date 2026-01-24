@@ -1,4 +1,4 @@
-import { showToast } from "../components/floating/toast";
+import { emitEvent } from "../events";
 import type {
   CommandRegistry,
   NubaseContextData,
@@ -26,7 +26,7 @@ class CommandRegistryImpl implements CommandRegistry {
 
     const command = this.commands.get(commandId);
     if (!command) {
-      showToast(`Command "${commandId}" not found`, "error");
+      emitEvent("command.notFound", { commandId });
       return;
     }
 
@@ -51,7 +51,11 @@ class CommandRegistryImpl implements CommandRegistry {
               ? `Invalid arguments for "${command.name}": ${(validationError as any).issues[0]?.message || "Unknown validation error"}`
               : `Invalid arguments for "${command.name}"`;
 
-          showToast(errorMessage, "error");
+          emitEvent("command.invalidArgs", {
+            commandId,
+            commandName: command.name,
+            error: errorMessage,
+          });
           return;
         }
       } else {

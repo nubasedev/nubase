@@ -29,15 +29,99 @@ export interface ErrorPayload {
 }
 
 /**
+ * Payload for authentication events
+ */
+export interface AuthEventPayload {
+  /** Email of the user (if applicable) */
+  email?: string;
+  /** Workspace slug (if applicable) */
+  workspace?: string;
+}
+
+/**
+ * Payload for authentication error events
+ */
+export interface AuthErrorPayload {
+  /** Email of the user (if applicable) */
+  email?: string;
+  /** Error message */
+  error: string;
+}
+
+/**
+ * Payload for command error events
+ */
+export interface CommandErrorPayload {
+  /** ID of the command */
+  commandId: string;
+  /** Name of the command (if available) */
+  commandName?: string;
+  /** Error message */
+  error?: string;
+}
+
+/**
+ * Payload for navigation error events
+ */
+export interface NavigationErrorPayload {
+  /** Error message */
+  error: string;
+  /** Path or context where the error occurred */
+  path?: string;
+}
+
+/**
+ * Payload for theme events
+ */
+export interface ThemeErrorPayload {
+  /** ID of the theme that was not found */
+  themeId: string;
+  /** List of available theme IDs */
+  availableThemes: string[];
+}
+
+/**
+ * Payload for view error events (in modals)
+ */
+export interface ViewErrorPayload {
+  /** Resource ID */
+  resourceId: string;
+  /** View/operation ID */
+  viewId: string;
+  /** Error message */
+  error: string;
+}
+
+/**
  * Map of event types to their payload types.
  * This enables type-safe event emission and subscription.
  */
 export interface NubaseEventMap {
+  // Resource events
   "resource.created": ResourceEventPayload;
   "resource.patched": ResourceEventPayload;
   "resource.deleted": ResourceEventPayload;
   "resource.loadFailed": ErrorPayload;
   "resource.saveFailed": ErrorPayload;
+
+  // Authentication events
+  "auth.signedIn": AuthEventPayload;
+  "auth.signedUp": AuthEventPayload;
+  "auth.signInFailed": AuthErrorPayload;
+  "auth.signUpFailed": AuthErrorPayload;
+
+  // Command events
+  "command.notFound": CommandErrorPayload;
+  "command.invalidArgs": CommandErrorPayload;
+
+  // Navigation events
+  "navigation.invalidParams": NavigationErrorPayload;
+
+  // Theme events
+  "theme.notFound": ThemeErrorPayload;
+
+  // View error events (modals)
+  "view.error": ViewErrorPayload;
 }
 
 /**
