@@ -46,8 +46,5 @@ export const ticketListSchema = ticketSchema
 				{ name: "assigneeName", label: "Assignee Name", columnWidthPx: 150 },
 				{ name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
 			],
-			metadata: {
-				linkFields: ["title"],
-			},
 		},
 	});

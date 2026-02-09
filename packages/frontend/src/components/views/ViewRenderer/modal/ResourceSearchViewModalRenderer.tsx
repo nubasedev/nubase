@@ -21,7 +21,7 @@ export type ResourceSearchViewModalRendererProps = {
 export const ResourceSearchViewModalRenderer: FC<
   ResourceSearchViewModalRendererProps
 > = (props) => {
-  const { view, context, params, onClose, onRowClick, onError } = props;
+  const { view, context, params, onClose, onError } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
 
@@ -55,7 +55,6 @@ export const ResourceSearchViewModalRenderer: FC<
     | undefined;
   const tableLayout =
     elementSchema?.getLayout("default") || elementSchema?.getLayout("table");
-  const linkFields = tableLayout?.metadata?.linkFields as string[] | undefined;
 
   // Create columns from table layout or dynamically from data
   const columns: Column<any>[] = (() => {
@@ -65,7 +64,6 @@ export const ResourceSearchViewModalRenderer: FC<
         .filter((field) => !field.hidden)
         .map((field) => {
           const fieldName = field.name as string;
-          const isLinkField = linkFields?.includes(fieldName);
 
           return {
             key: fieldName,
@@ -74,25 +72,7 @@ export const ResourceSearchViewModalRenderer: FC<
             resizable: true,
             renderCell: ({ row }) => {
               const value = row[fieldName];
-              const displayValue = value?.toString() || "";
-
-              if (isLinkField && row.id) {
-                // Make this field a clickable link, but in modal context
-                // Instead of navigating, trigger the onRowClick callback
-                return (
-                  <button
-                    type="button"
-                    className="text-primary hover:underline text-left"
-                    onClick={() => {
-                      onRowClick?.(row);
-                    }}
-                  >
-                    {displayValue}
-                  </button>
-                );
-              }
-
-              return displayValue;
+              return value?.toString() || "";
             },
           };
         });

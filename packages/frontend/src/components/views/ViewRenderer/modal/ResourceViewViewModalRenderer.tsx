@@ -3,6 +3,7 @@ import { type FC, useEffect, useState } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
 import { useSchemaForm } from "../../../../hooks";
+import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
 import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
@@ -13,6 +14,7 @@ export type ResourceViewViewModalRendererProps = {
   view: ResourceViewView;
   context: NubaseContextData;
   params?: Record<string, any>;
+  resourceName?: string;
   onClose?: () => void;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
@@ -25,6 +27,7 @@ export const ResourceViewViewModalRenderer: FC<
     view,
     context,
     params,
+    resourceName,
     onClose,
     onPatch: onPatchCallback,
     onError,
@@ -74,6 +77,7 @@ export const ResourceViewViewModalRenderer: FC<
         view={view}
         initialData={initialData}
         params={params}
+        resourceName={resourceName}
         onPatch={onPatchCallback}
         onError={onError}
         context={context}
@@ -97,6 +101,7 @@ const ResourceViewForm: FC<{
   view: ResourceViewView;
   initialData: Record<string, any>;
   params?: Record<string, any>;
+  resourceName?: string;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
   context: any;
@@ -104,10 +109,13 @@ const ResourceViewForm: FC<{
   view,
   initialData,
   params,
+  resourceName,
   onPatch: onPatchCallback,
   onError,
   context,
 }) => {
+  const { invalidateResourceSearch } = useResourceInvalidation();
+
   const form = useSchemaForm({
     schema: view.schemaGet,
     mode: "patch",
@@ -123,6 +131,11 @@ const ResourceViewForm: FC<{
           data: patchData,
           context: contextWithParams as any,
         });
+
+        // Invalidate search queries so the list view reflects the update
+        if (resourceName) {
+          await invalidateResourceSearch(resourceName);
+        }
 
         onPatchCallback?.(result);
       } catch (error) {

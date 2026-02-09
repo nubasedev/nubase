@@ -1,3 +1,4 @@
+import { SquareArrowOutUpRight } from "lucide-react";
 import type { ActionOrSeparator } from "../../actions/types";
 import {
   ActionCellRendererCell,
@@ -122,5 +123,45 @@ export function createActionColumn<R>(
     renderGroupCell: (props) => (
       <ActionCellRendererGroup {...props} actions={actions} context={context} />
     ),
+  };
+}
+
+export const NAVIGATE_COLUMN_KEY = "rdg-navigate-column";
+
+/**
+ * Creates a navigate column for a DataGrid that displays an icon button to navigate to the entity's view screen.
+ * @param onNavigate - Callback invoked with the row when the navigate button is clicked
+ * @param idField - The field name used as the row identifier (defaults to "id")
+ * @returns Column configuration for the DataGrid
+ */
+export function createNavigateColumn<R>(
+  onNavigate: (row: R) => void,
+  idField = "id",
+): Column<R, any> {
+  return {
+    key: NAVIGATE_COLUMN_KEY,
+    name: "",
+    width: 40,
+    minWidth: 40,
+    maxWidth: 40,
+    resizable: false,
+    sortable: false,
+    frozen: true,
+    renderHeaderCell: () => null,
+    renderCell: ({ row }) => {
+      const id = (row as any)[idField];
+      if (id == null) return null;
+
+      return (
+        <button
+          type="button"
+          className="flex items-center justify-center w-full h-full text-onSurfaceVariant hover:text-primary cursor-pointer"
+          onClick={() => onNavigate(row)}
+          aria-label="View details"
+        >
+          <SquareArrowOutUpRight size={16} />
+        </button>
+      );
+    },
   };
 }

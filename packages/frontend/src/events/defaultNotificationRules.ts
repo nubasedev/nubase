@@ -45,11 +45,6 @@ export const defaultNotificationRules: NotificationRules = {
   },
 
   // Authentication events
-  "auth.signedIn": {
-    toastType: "default",
-    getMessage: () => "Successfully signed in!",
-  },
-
   "auth.signedUp": {
     toastType: "default",
     getMessage: () => "Account created successfully!",

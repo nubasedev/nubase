@@ -23,9 +23,6 @@ export const ticketBaseSchema = nu
 	.withTableLayouts({
 		default: {
 			fields: ["id", "title", "description", "createdAt"],
-			metadata: {
-				linkFields: ["title"],
-			},
 		},
 	});
 

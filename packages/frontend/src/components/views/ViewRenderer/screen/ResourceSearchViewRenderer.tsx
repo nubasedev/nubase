@@ -18,7 +18,11 @@ import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { ActivityIndicator } from "../../../activity-indicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
-import { createActionColumn, SelectColumn } from "../../../data-grid/Columns";
+import {
+  createActionColumn,
+  createNavigateColumn,
+  SelectColumn,
+} from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import {
   createPatchableColumn,
@@ -291,10 +295,12 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     | undefined;
   const tableLayout =
     elementSchema?.getLayout("default") || elementSchema?.getLayout("table");
-  const linkFields = tableLayout?.metadata?.linkFields as string[] | undefined;
 
   // Get the ID field from the schema (defaults to "id")
   const idField = String(elementSchema?.getIdField() || "id");
+
+  // Determine if the resource is navigable (has a "view" operation)
+  const isNavigable = Boolean(resource?.views?.view);
 
   // Check if patching is enabled and get the patch schema
   const patchSchema = (view as any).schemaPatch as
@@ -335,13 +341,29 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
       cols.push(createActionColumn(wrappedActions, context, idField));
     }
 
+    // Add navigate column if the resource has a "view" operation
+    if (isNavigable && resourceName) {
+      cols.push(
+        createNavigateColumn((row: any) => {
+          navigate({
+            to: "/$workspace/r/$resourceName/$operation",
+            params: {
+              workspace: workspace.slug,
+              resourceName,
+              operation: "view",
+            },
+            search: { [idField]: row[idField] },
+          });
+        }, idField),
+      );
+    }
+
     if (tableLayout && tableLayout.type === "table") {
       // Use table layout to define columns
       tableLayout.fields
         .filter((field) => !field.hidden)
         .forEach((field) => {
           const fieldName = field.name as string;
-          const isLinkField = linkFields?.includes(fieldName);
 
           // Determine if this field is patchable:
           // 1. Patching must be enabled for the view
@@ -352,10 +374,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           const fieldExistsInPatchSchema =
             patchSchema && fieldName in patchSchema._shape;
           const shouldUsePatchableColumn =
-            isPatchEnabled &&
-            fieldIsEditable &&
-            fieldExistsInPatchSchema &&
-            !isLinkField;
+            isPatchEnabled && fieldIsEditable && fieldExistsInPatchSchema;
 
           if (shouldUsePatchableColumn && elementSchema) {
             // Create a patchable column with inline editing
@@ -383,38 +402,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               width,
               resizable: true,
               frozen: field.pinned === true,
-              renderCell: isLinkField
-                ? ({ row }) => {
-                    const value = row[fieldName];
-                    const displayValue = value?.toString() || "";
-
-                    if (row.id) {
-                      return (
-                        <button
-                          type="button"
-                          className="text-primary hover:underline text-left"
-                          onClick={() => {
-                            // Navigate to view screen using the resourceName
-                            if (resourceName) {
-                              navigate({
-                                to: "/$workspace/r/$resourceName/$operation",
-                                params: {
-                                  workspace: workspace.slug,
-                                  resourceName,
-                                  operation: "view",
-                                },
-                                search: { id: row.id },
-                              });
-                            }
-                          }}
-                        >
-                          {displayValue}
-                        </button>
-                      );
-                    }
-                    return displayValue;
-                  }
-                : ({ row }) => row[fieldName]?.toString() || "",
+              renderCell: ({ row }) => row[fieldName]?.toString() || "",
             });
           }
         });
@@ -435,7 +423,6 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     return cols;
   }, [
     tableLayout,
-    linkFields,
     dynamicColumnKeys,
     resourceName,
     navigate,
@@ -449,6 +436,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     isPatchEnabled,
     patchSchema,
     handleCellPatch,
+    isNavigable,
   ]);
 
   // Filter resource actions for the ActionBar (bulk operations)

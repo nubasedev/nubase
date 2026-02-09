@@ -2,6 +2,7 @@ import type { ObjectOutput } from "@nubase/core";
 import { type FC, useEffect, useState } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
+import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { DataState } from "../../../data-state";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
@@ -11,6 +12,7 @@ import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 export type ResourceViewViewRendererProps = {
   view: ResourceViewView;
   params?: Record<string, any>;
+  resourceName?: string;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
 };
@@ -18,7 +20,13 @@ export type ResourceViewViewRendererProps = {
 export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
   props,
 ) => {
-  const { view, params, onPatch: onPatchCallback, onError } = props;
+  const {
+    view,
+    params,
+    resourceName,
+    onPatch: onPatchCallback,
+    onError,
+  } = props;
   const context = useNubaseContext();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -64,6 +72,7 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
           view={view}
           initialData={initialData}
           params={params}
+          resourceName={resourceName}
           onPatch={onPatchCallback}
           onError={onError}
           context={context}
@@ -78,6 +87,7 @@ const ResourceViewForm: FC<{
   view: ResourceViewView;
   initialData: Record<string, any>;
   params?: Record<string, any>;
+  resourceName?: string;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
   context: any;
@@ -85,10 +95,13 @@ const ResourceViewForm: FC<{
   view,
   initialData,
   params,
+  resourceName,
   onPatch: onPatchCallback,
   onError,
   context,
 }) => {
+  const { invalidateResourceSearch } = useResourceInvalidation();
+
   const form = useSchemaForm({
     schema: view.schemaGet,
     mode: "patch",
@@ -106,6 +119,11 @@ const ResourceViewForm: FC<{
           data: patchData,
           context: contextWithParams as any,
         });
+
+        // Invalidate search queries so the list view reflects the update
+        if (resourceName) {
+          await invalidateResourceSearch(resourceName);
+        }
 
         onPatchCallback?.(result);
       } catch (error) {

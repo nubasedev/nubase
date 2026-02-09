@@ -308,9 +308,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
               { name: "assignee", columnWidthPx: 150 },
               { name: "createdAt", columnWidthPx: 100 },
             ],
-            metadata: {
-              linkFields: ["title"],
-            },
           },
           compact: {
             fields: [
@@ -318,9 +315,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
               { name: "title", columnWidthPx: 300 },
               { name: "status", columnWidthPx: 250 },
             ],
-            metadata: {
-              linkFields: ["id", "title"],
-            },
           },
         });
 
@@ -337,7 +331,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       if (defaultLayout?.type === "table") {
         expect(defaultLayout.fields).toHaveLength(6);
       }
-      expect(defaultLayout?.metadata?.linkFields).toEqual(["title"]);
 
       const compactLayout = ticketSchema.getLayout("compact");
       expect(compactLayout).toBeDefined();
@@ -345,10 +338,9 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       if (compactLayout?.type === "table") {
         expect(compactLayout.fields).toHaveLength(3);
       }
-      expect(compactLayout?.metadata?.linkFields).toEqual(["id", "title"]);
     });
 
-    it("should support table layouts without linkFields", () => {
+    it("should support table layouts without metadata", () => {
       const schema = nu
         .object({
           name: nu.string(),
@@ -368,7 +360,7 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       const layout = schema.getLayout("simple");
       expect(layout).toBeDefined();
       expect(layout?.type).toBe("table");
-      expect(layout?.metadata?.linkFields).toBeUndefined();
+      expect(layout?.metadata).toBeUndefined();
     });
 
     it("should support table layouts with custom metadata", () => {
@@ -384,7 +376,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
               { name: "col2", columnWidthPx: 300 },
             ],
             metadata: {
-              linkFields: ["col1"],
               sortable: true,
               paginated: true,
               pageSize: 25,
@@ -395,40 +386,9 @@ describe("nubase Schema Library (nu) - Layout System", () => {
       const layout = schema.getLayout("custom");
       expect(layout).toBeDefined();
       expect(layout?.type).toBe("table");
-      expect(layout?.metadata?.linkFields).toEqual(["col1"]);
       expect(layout?.metadata?.sortable).toBe(true);
       expect(layout?.metadata?.paginated).toBe(true);
       expect(layout?.metadata?.pageSize).toBe(25);
-    });
-
-    it("should type-check linkFields to ensure only valid fields are allowed", () => {
-      const schema = nu.object({
-        validField1: nu.string(),
-        validField2: nu.number(),
-      });
-
-      // This should compile successfully with valid field names
-      const validLayout = schema.withTableLayouts({
-        validTable: {
-          fields: [
-            { name: "validField1", columnWidthPx: 300 },
-            { name: "validField2", columnWidthPx: 300 },
-          ],
-          metadata: {
-            linkFields: ["validField1", "validField2"],
-          },
-        },
-      });
-
-      expect(validLayout).toBeDefined();
-      expect(validLayout.hasLayout("validTable")).toBe(true);
-
-      const layout = validLayout.getLayout("validTable");
-      expect(layout).toBeDefined();
-      expect(layout?.metadata?.linkFields).toEqual([
-        "validField1",
-        "validField2",
-      ]);
     });
 
     it("should support mixing form and table layouts", () => {
@@ -459,9 +419,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
               { name: "name", columnWidthPx: 300 },
               { name: "description", columnWidthPx: 400 },
             ],
-            metadata: {
-              linkFields: ["name"],
-            },
           },
         });
 
@@ -473,7 +430,6 @@ describe("nubase Schema Library (nu) - Layout System", () => {
 
       const tableLayout = schema.getLayout("listView");
       expect(tableLayout?.type).toBe("table");
-      expect(tableLayout?.metadata?.linkFields).toEqual(["name"]);
     });
 
     it("should support table field visibility control", () => {

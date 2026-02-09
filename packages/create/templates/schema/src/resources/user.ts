@@ -23,8 +23,5 @@ export const userSchema = nu
 				{ name: "displayName", columnWidthPx: 200, pinned: true },
 				{ name: "email", columnWidthPx: 300 },
 			],
-			metadata: {
-				linkFields: ["displayName"],
-			},
 		},
 	});

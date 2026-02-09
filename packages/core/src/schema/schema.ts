@@ -316,8 +316,6 @@ export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   fields: TableLayoutField<TShape>[];
   /** Table-specific metadata */
   metadata?: {
-    /** Fields that should be clickable links to view the entity */
-    linkFields?: (keyof TShape)[];
     /** Whether inline patching/editing is enabled for this table */
     patchable?: boolean;
     /** Other metadata */

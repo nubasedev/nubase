@@ -162,6 +162,7 @@ export default function ResourceScreen() {
         <ResourceViewViewRenderer
           view={resourceView}
           params={validatedParams}
+          resourceName={resourceName}
           onPatch={(_data) => {
             emitEvent("resource.patched", { resourceName, source: "form" });
           }}

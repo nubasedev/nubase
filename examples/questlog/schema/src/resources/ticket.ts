@@ -53,7 +53,6 @@ export const ticketListSchema = ticketSchema
         { name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
       ],
       metadata: {
-        linkFields: ["id"],
         patchable: true,
       },
     },
