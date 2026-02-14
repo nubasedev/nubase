@@ -1,0 +1,43 @@
+{
+  "name": "@nubase/pg",
+  "version": "0.1.26",
+  "description": "PostgreSQL schema extraction, diffing, and migration generation",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --reporter=verbose --passWithNoTests",
+    "test:integration": "vitest run --reporter=verbose --config vitest.integration.config.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
+    "prepublishOnly": "npm run build",
+    "publish:latest": "npm publish --access public",
+    "publish:dev": "npm publish --access public --tag dev",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d --wait",
+    "docker:down": "docker compose -f docker/docker-compose.yml down -v",
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "pg": "^8.17.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.16.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17"
+  }
+}

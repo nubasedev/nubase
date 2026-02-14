@@ -1,0 +1,38 @@
+services:
+  pg-source:
+    image: postgres:17.5
+    container_name: nubase-pg-test-source
+    ports:
+      - "5450:5432"
+    environment:
+      POSTGRES_USER: nubase
+      POSTGRES_PASSWORD: nubase
+      POSTGRES_DB: nubase_source
+    labels:
+      com.nubase.managed: "true"
+      com.nubase.project: "pg-tests"
+      com.nubase.env: "test"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nubase -d nubase_source"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  pg-target:
+    image: postgres:17.5
+    container_name: nubase-pg-test-target
+    ports:
+      - "5451:5432"
+    environment:
+      POSTGRES_USER: nubase
+      POSTGRES_PASSWORD: nubase
+      POSTGRES_DB: nubase_target
+    labels:
+      com.nubase.managed: "true"
+      com.nubase.project: "pg-tests"
+      com.nubase.env: "test"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nubase -d nubase_target"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
