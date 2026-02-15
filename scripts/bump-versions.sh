@@ -9,6 +9,8 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PACKAGES=(
   "packages/core"
+  "packages/pg"
+  "packages/cli"
   "packages/frontend"
   "packages/backend"
   "packages/create"
