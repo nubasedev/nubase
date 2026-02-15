@@ -72,6 +72,19 @@ db.command("reset")
   });
 
 program
+  .command("init")
+  .description("Initialize a nubase/ directory in the current project")
+  .action(async () => {
+    try {
+      const { init } = await import("./commands/init.js");
+      await init();
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+program
   .command("envs")
   .description("List configured environments")
   .action(async () => {

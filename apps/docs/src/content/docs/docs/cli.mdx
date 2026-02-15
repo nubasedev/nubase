@@ -23,6 +23,22 @@ The CLI expects a `nubase/nubase.config.ts` file in your project. See [Configura
 
 ## Commands
 
+### `nubase init`
+
+Initialize a `nubase/` directory in the current project.
+
+```bash
+npx nubase init
+```
+
+**What it does:**
+1. Checks if a `nubase/` directory already exists (aborts if so)
+2. Creates `nubase/nubase.config.ts` with a generic config using `DATABASE_URL`
+3. Creates `nubase/.gitignore` to exclude snapshots from version control
+4. Creates empty `nubase/migrations/` and `nubase/snapshots/` directories
+
+Use this when adding Nubase to an existing project. Projects created with `npx @nubase/create` already include a `nubase/` directory.
+
 ### `nubase db pull`
 
 Extract the current schema from a live database and save it as a snapshot.

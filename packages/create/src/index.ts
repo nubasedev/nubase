@@ -75,6 +75,7 @@ function replaceInContent(
 		.replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
 		.replace(/"@nubase\/frontend": "\*"/g, `"@nubase/frontend": "${nubaseVersion}"`)
 		.replace(/"@nubase\/backend": "\*"/g, `"@nubase/backend": "${nubaseVersion}"`)
+		.replace(/"@nubase\/cli": "\*"/g, `"@nubase/cli": "${nubaseVersion}"`)
 		.replace(/"@nubase\/create": "\*"/g, `"@nubase/create": "${nubaseVersion}"`);
 }
 
@@ -193,7 +194,7 @@ async function main() {
 	console.log(chalk.blue(`\nCreating project in ${chalk.bold(targetDir)}...\n`));
 
 	// Copy templates
-	const templates = ["root", "schema", "backend", "frontend"];
+	const templates = ["root", "schema", "backend", "frontend", "nubase"];
 	for (const template of templates) {
 		const templatePath = path.join(TEMPLATE_DIR, template);
 		if (!fs.existsSync(templatePath)) {
