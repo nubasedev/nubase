@@ -32,7 +32,7 @@ Note: All URLs use the subdomain format: tavern.localhost:4002 (frontend), taver
 
 1. **Install Playwright dependencies:**
    ```bash
-   cd examples/questlog/frontend
+   cd apps/questlog/frontend
    npm install
    npm run e2e:install
    ```
@@ -253,23 +253,23 @@ For CI environments, add these steps:
 ```yaml
 - name: Setup Test Database
   run: |
-    cd examples/questlog/backend
+    cd apps/questlog/backend
     docker-compose -f docker/test/docker-compose.yml up -d
     
 - name: Install Playwright
   run: |
-    cd examples/questlog/frontend
+    cd apps/questlog/frontend
     npm install
     npm run e2e:install
     
 - name: Run E2E Tests
   run: |
-    cd examples/questlog/frontend
+    cd apps/questlog/frontend
     npm run e2e
     
 - name: Cleanup
   run: |
-    cd examples/questlog/backend
+    cd apps/questlog/backend
     docker-compose -f docker/test/docker-compose.yml down
 ```
 

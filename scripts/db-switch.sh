@@ -53,19 +53,19 @@ fi
 
 if [ "$PROJECT" = "questlog" ]; then
   echo "Starting questlog databases..."
-  cd "$ROOT_DIR/examples/questlog/backend"
+  cd "$ROOT_DIR/apps/questlog/backend"
   npm run db:dev:up
   npm run db:test:up
 elif [ "$PROJECT" = "starter" ]; then
-  if [ ! -d "$ROOT_DIR/examples/starter" ]; then
-    echo "Error: examples/starter does not exist."
+  if [ ! -d "$ROOT_DIR/apps/starter" ]; then
+    echo "Error: apps/starter does not exist."
     echo ""
     echo "Create it first with one of:"
     echo "  npm run examples:starter:create"
     exit 1
   fi
   echo "Starting starter databases..."
-  cd "$ROOT_DIR/examples/starter/backend"
+  cd "$ROOT_DIR/apps/starter/backend"
   npm run db:dev:up
   npm run db:test:up
 else

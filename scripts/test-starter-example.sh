@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Script to run npm install, typecheck, and E2E tests on examples/starter.
-# Assumes examples/starter already exists (created via create:local or create:npm).
+# Script to run npm install, typecheck, and E2E tests on apps/starter.
+# Assumes apps/starter already exists (created via create:local or create:npm).
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-STARTER_DIR="$ROOT_DIR/examples/starter"
+STARTER_DIR="$ROOT_DIR/apps/starter"
 
 # Cross-platform timeout function (macOS doesn't have GNU timeout)
 run_with_timeout() {
@@ -96,9 +96,9 @@ echo "Testing starter example"
 echo "========================================"
 echo ""
 
-# Check that examples/starter exists
+# Check that apps/starter exists
 if [ ! -d "$STARTER_DIR" ]; then
-  echo "Error: examples/starter does not exist."
+  echo "Error: apps/starter does not exist."
   echo ""
   echo "Create it first with one of:"
   echo "  npm run examples:starter:create:local"

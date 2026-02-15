@@ -48,9 +48,9 @@ This is a Turborepo-based monorepo with the following structure:
 ### Example Applications
 
 - **[apps/docs](./apps/docs)** - Docusaurus documentation site
-- **[examples/questlog/frontend](./examples/questlog/frontend)** - React frontend example using Vite
-- **[examples/questlog/backend](./examples/questlog/backend)** - Node.js backend example
-- **[examples/questlog/schema](./examples/questlog/schema)** - Shared schema definitions for example app
+- **[apps/questlog/frontend](./apps/questlog/frontend)** - React frontend example using Vite
+- **[apps/questlog/backend](./apps/questlog/backend)** - Node.js backend example
+- **[apps/questlog/schema](./apps/questlog/schema)** - Shared schema definitions for example app
 
 ## Getting Started
 
