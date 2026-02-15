@@ -100,6 +100,20 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish @nubase/pg (if version not published)
+        run: |
+          cd packages/pg
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/pg@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/pg@$LOCAL_VERSION already exists, skipping"
+          else
+            echo "Publishing @nubase/pg@$LOCAL_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish @nubase/backend (if version not published)
         run: |
           cd packages/backend
@@ -123,6 +137,20 @@ jobs:
             echo "@nubase/frontend@$LOCAL_VERSION already exists, skipping"
           else
             echo "Publishing @nubase/frontend@$LOCAL_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @nubase/cli (if version not published)
+        run: |
+          cd packages/cli
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/cli@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/cli@$LOCAL_VERSION already exists, skipping"
+          else
+            echo "Publishing @nubase/cli@$LOCAL_VERSION"
             npm publish
           fi
         env:
