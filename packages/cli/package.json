@@ -1,6 +1,6 @@
 {
   "name": "@nubase/cli",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "CLI tool for Nubase database schema management",
   "type": "module",
   "bin": {
@@ -29,6 +29,7 @@
     "@nubase/pg": "*",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
     "jiti": "^2.4.2",
     "pg": "^8.17.1",
     "prompts": "^2.4.2"

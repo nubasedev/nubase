@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
+import dotenv from "dotenv";
 import { createJiti } from "jiti";
 import { findProjectRoot } from "./find-project-root.js";
 import type { NubaseConfig, ResolvedConfig } from "./types.js";
@@ -8,6 +9,11 @@ const jiti = createJiti(import.meta.url);
 
 export async function loadConfig(envFlag?: string): Promise<ResolvedConfig> {
   const projectRoot = findProjectRoot();
+
+  // Load .env from the project root (parent of nubase/ folder)
+  const appRoot = path.dirname(projectRoot);
+  dotenv.config({ path: path.join(appRoot, ".env") });
+
   const configPath = path.join(projectRoot, "nubase.config.ts");
 
   const module = await jiti.import(configPath);

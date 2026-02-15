@@ -72,6 +72,19 @@ db.command("reset")
   });
 
 program
+  .command("envs")
+  .description("List configured environments")
+  .action(async () => {
+    try {
+      const { envs } = await import("./commands/envs.js");
+      await envs();
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+program
   .command("migration")
   .description("Migration commands")
   .command("new")
