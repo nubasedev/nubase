@@ -1,6 +1,6 @@
 {
   "name": "@nubase/pg",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "PostgreSQL schema extraction, diffing, and migration generation",
   "sideEffects": false,
   "files": [

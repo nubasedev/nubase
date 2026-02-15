@@ -39,7 +39,14 @@
     "publish:dev": "turbo run publish:dev --filter=\"@nubase/*\"",
     "starter:create": "./scripts/create-starter-example.sh",
     "starter:dev": "./scripts/dev-starter-example.sh",
-    "starter:test": "./scripts/test-starter-example.sh"
+    "starter:test": "./scripts/test-starter-example.sh",
+    "cli": "npm run -w @nubase/cli build && cd apps/questlog && node ../../packages/cli/dist/cli.js",
+    "cli:envs": "npm run cli -- envs",
+    "cli:db:diff": "npm run cli -- db diff",
+    "cli:db:pull": "npm run cli -- db pull",
+    "cli:db:push": "npm run cli -- db push",
+    "cli:db:reset": "npm run cli -- db reset",
+    "cli:init": "npm run cli -- init"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.11",
