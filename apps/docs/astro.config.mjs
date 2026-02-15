@@ -14,7 +14,7 @@ export default defineConfig({
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/nubasedev/nubase' },
 			],
 			editLink: {
-				baseUrl: 'https://github.com/nubasedev/nubase/edit/main/apps/docs-starlight/',
+				baseUrl: 'https://github.com/nubasedev/nubase/edit/main/apps/docs/',
 			},
 			sidebar: [
 				{
@@ -50,6 +50,13 @@ export default defineConfig({
 					items: [
 						{ label: 'Computed Metadata', link: '/docs/computed-metadata/' },
 						{ label: 'E2E Testing', link: '/docs/e2e-testing/' },
+					],
+				},
+				{
+					label: 'Database',
+					items: [
+						{ label: 'Configuration', link: '/docs/configuration/' },
+						{ label: 'CLI Reference', link: '/docs/cli/' },
 					],
 				},
 				{

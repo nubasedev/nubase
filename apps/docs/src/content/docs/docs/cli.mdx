@@ -1,0 +1,197 @@
+---
+title: CLI Reference
+description: Complete reference for the @nubase/cli command-line tool for database management.
+---
+
+The `@nubase/cli` provides commands for managing your database schema, migrations, and environments.
+
+## Installation
+
+In a Nubase project, the CLI is already available. Run commands with `npx`:
+
+```bash
+npx nubase <command>
+```
+
+Or install it as a dev dependency:
+
+```bash
+npm install -D @nubase/cli
+```
+
+The CLI expects a `nubase/nubase.config.ts` file in your project. See [Configuration](/docs/configuration) for setup details.
+
+## Commands
+
+### `nubase db pull`
+
+Extract the current schema from a live database and save it as a snapshot.
+
+```bash
+npx nubase db pull [--env <name>]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--env <name>` | Target environment (default: from config or `"local"`) |
+
+**What it does:**
+1. Connects to the database and extracts the complete schema
+2. Saves it to `nubase/snapshots/<env>.json`
+3. If no migrations exist yet, generates an `initial.sql` migration automatically
+
+Use this when starting with an existing database or when you want to capture the current state.
+
+### `nubase db diff`
+
+Show the differences between the snapshot and the live database.
+
+```bash
+npx nubase db diff [--env <name>] [-f <name>]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--env <name>` | Target environment (default: from config or `"local"`) |
+| `-f, --file <name>` | Generate a migration file with this name |
+
+**What it does:**
+1. Extracts the current schema from the live database
+2. Compares it against the stored snapshot
+3. Prints the differences to the console
+
+When `-f` is provided and differences exist:
+1. Generates migration SQL from the diff
+2. Saves it to `nubase/migrations/<timestamp>_<name>.sql`
+3. Updates the snapshot to match the live database
+
+### `nubase db push`
+
+Apply pending migrations to the database.
+
+```bash
+npx nubase db push [--env <name>] [--dry-run] [--yes]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--env <name>` | Target environment (default: from config or `"local"`) |
+| `--dry-run` | Show pending migrations without applying them |
+| `--yes` | Skip the confirmation prompt |
+
+**What it does:**
+1. Checks the `_nubase_migrations` tracking table for already-applied migrations
+2. Compares with migration files in `nubase/migrations/`
+3. Lists pending migrations
+4. Applies each pending migration in a transaction
+5. Records each migration in the `_nubase_migrations` table
+6. Updates the snapshot after all migrations are applied
+
+### `nubase db reset`
+
+Drop and recreate the database schema, then replay all migrations from scratch.
+
+```bash
+npx nubase db reset [--env <name>] [--force] [--yes]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--env <name>` | Target environment (default: from config or `"local"`) |
+| `--force` | Allow reset on non-local environments |
+| `--yes` | Skip the confirmation prompt |
+
+**Safety:** This command refuses to run on non-local environments unless `--force` is specified. It will always prompt for confirmation unless `--yes` is passed.
+
+**What it does:**
+1. Drops the `public` schema with CASCADE
+2. Recreates the `public` schema
+3. Creates the `_nubase_migrations` tracking table
+4. Replays all migrations from `nubase/migrations/` in order
+5. Updates the snapshot to match the final state
+
+### `nubase migration new`
+
+Create a new empty migration file.
+
+```bash
+npx nubase migration new <name>
+```
+
+| Argument | Description |
+|----------|-------------|
+| `<name>` | Migration name (required) |
+
+Creates `nubase/migrations/<timestamp>_<name>.sql` with a comment header. Use this when you need to write a migration manually instead of generating one with `db diff`.
+
+### `nubase envs`
+
+List all configured environments.
+
+```bash
+npx nubase envs
+```
+
+Displays each environment name, its database URL (with credentials masked), and highlights the default environment. Also shows the path to your config file.
+
+## Typical Workflow
+
+### Starting from an existing database
+
+```bash
+# 1. Pull the current schema to create the initial snapshot and migration
+npx nubase db pull
+
+# 2. Make changes to the database (via Drizzle, raw SQL, etc.)
+
+# 3. See what changed
+npx nubase db diff
+
+# 4. Generate a migration file from the changes
+npx nubase db diff -f add_users_table
+
+# 5. Apply migrations to another environment
+npx nubase db push --env staging
+```
+
+### Starting from scratch
+
+```bash
+# 1. Create a migration manually
+npx nubase migration new initial_schema
+
+# 2. Write your SQL in nubase/migrations/<timestamp>_initial_schema.sql
+
+# 3. Apply it to your local database
+npx nubase db push
+
+# 4. Pull to create the snapshot
+npx nubase db pull
+```
+
+### Day-to-day development
+
+```bash
+# Make schema changes in your local database, then:
+npx nubase db diff                    # Preview changes
+npx nubase db diff -f add_status_col  # Generate migration
+npx nubase db push --env staging      # Deploy to staging
+npx nubase db push --env production   # Deploy to production
+```
+
+## Migration Tracking
+
+Nubase tracks which migrations have been applied using a `_nubase_migrations` table in your database:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `SERIAL` | Auto-incrementing primary key |
+| `name` | `TEXT` | Migration name (unique, without `.sql` extension) |
+| `applied_at` | `TIMESTAMPTZ` | When the migration was applied |
+
+This table is created automatically by `db push` and `db reset`. Migration files are sorted by filename (the timestamp prefix ensures chronological order).
+
+## Next Steps
+
+- Set up your [Configuration](/docs/configuration) file
+- Learn about [Getting Started](/docs/getting-started) for initial project setup
