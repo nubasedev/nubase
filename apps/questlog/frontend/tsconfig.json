@@ -18,5 +18,10 @@
     "target": "ES2022",
     "jsx": "react-jsx"
   },
-  "exclude": ["vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
+  "exclude": [
+    "vite.config.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "dist"
+  ]
 }
