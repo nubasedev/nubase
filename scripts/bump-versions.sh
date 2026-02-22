@@ -13,7 +13,6 @@ PACKAGES=(
   "packages/cli"
   "packages/frontend"
   "packages/backend"
-  "packages/create"
 )
 
 echo "Bumping patch version for all @nubase/* packages..."

@@ -155,17 +155,3 @@ jobs:
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/create (if version not published)
-        run: |
-          cd packages/create
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/create@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/create@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/create@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

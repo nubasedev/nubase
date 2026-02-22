@@ -621,10 +621,6 @@ const handlePatch = async (fieldName: string, value: any) => {
 - Fix any remaining type errors or linting issues before considering a task complete
 - Use proper TypeScript types for all APIs and components
 
-### Testing @nubase/create Changes
-
-When making changes to `packages/create`, verify the templates are valid by running `npm run typecheck` and `npm run lint:fix`. The templates in `packages/create/templates/` should follow the same patterns as the nubase example.
-
 ### Event Handler Guidelines
 
 - **Prefer inline event handlers** for short, simple functions to improve readability and reduce code clutter

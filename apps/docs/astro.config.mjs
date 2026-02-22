@@ -22,8 +22,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', link: '/docs/intro/' },
 						{ label: 'Getting Started', link: '/docs/getting-started/' },
-						{ label: 'Create a Nubase App', link: '/docs/create-nubase-app/' },
-						{ label: 'Development Environment', link: '/docs/development-environment/' },
+		{ label: 'Development Environment', link: '/docs/development-environment/' },
 					],
 				},
 				{
