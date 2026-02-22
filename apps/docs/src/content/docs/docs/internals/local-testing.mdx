@@ -1,9 +1,9 @@
 ---
 title: Local Testing
-description: How to test @nubase/cli and @nubase/create locally during development without publishing to npm.
+description: How to test @nubase/cli locally during development without publishing to npm.
 ---
 
-During development, you'll want to test the CLI and the project scaffolding tool locally before publishing. This guide covers the convenience scripts available in the root `package.json` for both.
+During development, you'll want to test the CLI locally before publishing. This guide covers the convenience scripts available in the root `package.json`.
 
 ## Testing `@nubase/cli`
 
@@ -44,68 +44,3 @@ npm run cli:db:diff -- -f add_users_table
 ### Why it runs from `apps/nubase/`
 
 The CLI walks up from the current working directory to find `nubase/nubase.config.ts`. Running from `apps/nubase/` ensures it discovers the nubase configuration, which defines the local and production database environments.
-
----
-
-## Testing `@nubase/create`
-
-The `@nubase/create` package scaffolds new Nubase projects (what users run via `npx @nubase/create`). Three scripts let you test the full lifecycle locally.
-
-### Step 1: Create the starter app
-
-```bash
-npm run starter:create
-```
-
-This script:
-
-1. Builds `@nubase/create` from `packages/create/` source
-2. Removes any existing `apps/starter/` directory
-3. Runs the built CLI to generate a new project in `apps/starter/` with `--tag dev` (so it references `@nubase/*@dev` packages)
-
-:::note
-The `apps/starter/` directory is git-ignored. It's meant to be regenerated for testing.
-:::
-
-### Step 2: Run the starter app
-
-```bash
-npm run starter:dev
-```
-
-This script:
-
-1. Installs dependencies in `apps/starter/`
-2. Starts the Docker dev database
-3. Resets the database schema
-4. Starts the dev servers
-
-### Step 3: Run E2E tests on the starter app
-
-```bash
-npm run starter:test
-```
-
-This script:
-
-1. Installs dependencies
-2. Runs `npm run typecheck` to verify template correctness
-3. Starts a test database in Docker
-4. Runs E2E tests with Playwright
-
-### Quick reference
-
-| Script | Purpose |
-|--------|---------|
-| `npm run starter:create` | Scaffold `apps/starter/` from local source |
-| `npm run starter:dev` | Run the starter app in dev mode |
-| `npm run starter:test` | Run typecheck and E2E tests on the starter |
-
----
-
-## Summary
-
-| What you're testing | Command |
-|---------------------|---------|
-| CLI against nubase | `npm run cli -- <command>` or `npm run cli:<command>` |
-| Project scaffolding | `npm run starter:create` then `npm run starter:dev` or `npm run starter:test` |

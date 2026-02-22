@@ -63,25 +63,13 @@ This is a Turborepo-based monorepo with the following structure:
 
 - `apps/docs` - Docusaurus documentation site
 
-There are two types of example applications in the repository:
+**apps/nubase (Example Application)**
 
-**1. apps/nubase (Monorepo Example)**
-
-This is the primary example application used for framework development. It's part of the Turborepo workspace and uses local (unpublished) `@nubase/*` packages.
+This is the example application used for framework development. It's part of the Turborepo workspace and uses local (unpublished) `@nubase/*` packages.
 
 - `apps/nubase/frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in tavern.localhost:3002
 - `apps/nubase/backend` - Node.js backend example with API endpoints. It runs in tavern.localhost:3001
 - `apps/nubase/schema` - Shared schema definitions for the example app
-
-**Use this when**: Contributing to Nubase, testing local package changes, or understanding the framework internals.
-
-**2. apps/starter (Standalone Example)**
-
-This is a standalone application created by `npx @nubase/create`. It uses published `@nubase/*` packages from npm and has its own Turborepo configuration. This folder is git-ignored since it's meant to be regenerated for testing.
-
-**Use this when**: Testing the CLI output, verifying that published packages work correctly, or seeing what end users will experience.
-
-**Note:** The starter example is git-ignored and meant to be created manually for testing. The E2E test scripts are not currently configured in the root package.json.
 
 ### Example Application Architecture
 
