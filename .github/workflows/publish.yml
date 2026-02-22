@@ -34,7 +34,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: rm package-lock.json && npm install
 
       - name: Initialize test database
         run: |
@@ -81,7 +81,7 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: npm install
+        run: rm package-lock.json && npm install
 
       - name: Build packages
         run: npm run build
