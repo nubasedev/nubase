@@ -27,7 +27,7 @@
     "db:up": "npm run db:nubase",
     "db:down": "npm run db:stop",
     "db:seed": "cd apps/nubase/backend && npm run db:dev:seed",
-    "db:reset": "cd apps/nubase/backend && npm run db:dev:reset",
+    "db:reset": "cd apps/nubase/backend && npm run db:dev:reset && npm run db:test:reset",
     "e2e": "turbo run e2e",
     "e2e:ui": "cd apps/nubase/frontend && npm run e2e:ui",
     "e2e:headed": "cd apps/nubase/frontend && npm run e2e:headed",
