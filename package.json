@@ -43,7 +43,7 @@
     "cli:init": "npm run cli -- init"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.11",
+    "@biomejs/biome": "^2.4.4",
     "turbo": "^2.7.5",
     "vitest": "^4.0.17"
   },
@@ -51,7 +51,7 @@
     "node": ">=18",
     "npm": ">=10.9.2"
   },
-  "packageManager": "npm@10.9.2",
+  "packageManager": "npm@11.10.1",
   "workspaces": [
     "apps/docs",
     "apps/nubase/*",
