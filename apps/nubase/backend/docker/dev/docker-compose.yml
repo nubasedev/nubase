@@ -12,11 +12,11 @@ services:
     ports:
       - "5434:5432"
     environment:
-      - POSTGRES_DB=nubase
+      - POSTGRES_DB=nubase_db
       - POSTGRES_USER=nubase
       - POSTGRES_PASSWORD=nubase
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nubase -d nubase"]
+      test: ["CMD-SHELL", "pg_isready -U nubase -d nubase_db"]
       interval: 5s
       timeout: 5s
       retries: 5

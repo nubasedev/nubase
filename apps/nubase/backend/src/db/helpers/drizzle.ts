@@ -8,11 +8,16 @@ declare global {
   var db: NodePgDatabase | undefined;
   // eslint-disable-next-line no-var
   var dbAdmin: NodePgDatabase | undefined;
+  // eslint-disable-next-line no-var
+  var dataDb: NodePgDatabase | undefined;
+  // eslint-disable-next-line no-var
+  var dataDbAdmin: NodePgDatabase | undefined;
 }
 
 /**
- * Get the application database connection (nubase_app user).
+ * Get the application database connection (nubase_db_app user).
  * This connection is subject to Row Level Security policies.
+ * Connects to nubase_db (system database).
  */
 export function getDb() {
   if (!global.db) {
@@ -36,6 +41,7 @@ export function getDb() {
 /**
  * Get the admin database connection (nubase superuser).
  * This connection bypasses Row Level Security - use for migrations and seeding only.
+ * Connects to nubase_db (system database).
  */
 export function getAdminDb() {
   if (!global.dbAdmin) {
@@ -58,9 +64,58 @@ export function getAdminDb() {
 }
 
 /**
+ * Get the data database connection (data_db_app user).
+ * No RLS on data_db — the entire database belongs to the customer.
+ * Connects to data_db (customer data database).
+ */
+export function getDataDb() {
+  if (!global.dataDb) {
+    if (!process.env.DATA_DATABASE_URL) {
+      throw new Error(
+        "DATA_DATABASE_URL is not defined in the environment variables.",
+      );
+    }
+    const databaseUrl = process.env.DATA_DATABASE_URL;
+    const client = new Client({ connectionString: databaseUrl });
+    client.connect().catch((err) => {
+      console.error("Failed to connect to data database:", err);
+      throw err;
+    });
+    global.dataDb = drizzle(client);
+  }
+
+  return global.dataDb;
+}
+
+/**
+ * Get the admin data database connection (nubase superuser).
+ * Connects to data_db — use for seeding and truncation only.
+ */
+export function getDataAdminDb() {
+  if (!global.dataDbAdmin) {
+    const databaseUrl =
+      process.env.DATA_DATABASE_URL_ADMIN || process.env.DATA_DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error(
+        "DATA_DATABASE_URL_ADMIN or DATA_DATABASE_URL is not defined in the environment variables.",
+      );
+    }
+    const client = new Client({ connectionString: databaseUrl });
+    client.connect().catch((err) => {
+      console.error("Failed to connect to data admin database:", err);
+      throw err;
+    });
+    global.dataDbAdmin = drizzle(client);
+  }
+
+  return global.dataDbAdmin;
+}
+
+/**
  * Set the current workspace context for Row Level Security (RLS).
  * This must be called before any database operations that involve
- * workspace-scoped tables (tickets, user_workspaces).
+ * workspace-scoped tables in nubase_db (user_workspaces).
+ * Note: data_db does not use RLS.
  */
 export async function setWorkspaceContext(workspaceId: number) {
   const db = getDb();

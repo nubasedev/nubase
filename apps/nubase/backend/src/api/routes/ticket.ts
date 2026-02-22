@@ -1,7 +1,7 @@
 import { HttpError } from "@nubase/backend";
 import type { InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { getDb } from "../../db/helpers/drizzle";
+import { getDataDb, getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
 import type { Workspace } from "../../middleware/workspace-middleware";
@@ -24,7 +24,7 @@ export const ticketHandlers = {
         `User ${user.email} fetching tickets for workspace ${workspace.slug}`,
         params,
       );
-      const db = getDb();
+      const dataDb = getDataDb();
 
       // Build filter conditions
       const conditions: SQL[] = [eq(ticketsTable.workspaceId, workspace.id)];
@@ -66,27 +66,56 @@ export const ticketHandlers = {
         }
       }
 
-      const tickets = await db
-        .select({
-          id: ticketsTable.id,
-          title: ticketsTable.title,
-          description: ticketsTable.description,
-          assigneeId: ticketsTable.assigneeId,
-          assigneeName: usersTable.displayName,
-          assigneeEmail: usersTable.email,
-        })
+      // Query tickets from data_db
+      const tickets = await dataDb
+        .select()
         .from(ticketsTable)
-        .leftJoin(usersTable, eq(ticketsTable.assigneeId, usersTable.id))
         .where(and(...conditions));
 
-      return tickets.map((ticket) => ({
-        id: ticket.id,
-        title: ticket.title,
-        description: ticket.description ?? undefined,
-        assigneeId: ticket.assigneeId ?? undefined,
-        assigneeName: ticket.assigneeName ?? undefined,
-        assigneeEmail: ticket.assigneeEmail ?? undefined,
-      }));
+      // Collect unique assignee IDs for cross-db lookup
+      const assigneeIds = [
+        ...new Set(
+          tickets
+            .map((t) => t.assigneeId)
+            .filter((id): id is number => id !== null),
+        ),
+      ];
+
+      // Query users from nubase_db
+      let usersMap = new Map<number, { displayName: string; email: string }>();
+      if (assigneeIds.length > 0) {
+        const db = getDb();
+        const users = await db
+          .select({
+            id: usersTable.id,
+            displayName: usersTable.displayName,
+            email: usersTable.email,
+          })
+          .from(usersTable)
+          .where(inArray(usersTable.id, assigneeIds));
+
+        usersMap = new Map(
+          users.map((u) => [
+            u.id,
+            { displayName: u.displayName, email: u.email },
+          ]),
+        );
+      }
+
+      // Merge results in JS
+      return tickets.map((ticket) => {
+        const assignee = ticket.assigneeId
+          ? usersMap.get(ticket.assigneeId)
+          : undefined;
+        return {
+          id: ticket.id,
+          title: ticket.title,
+          description: ticket.description ?? undefined,
+          assigneeId: ticket.assigneeId ?? undefined,
+          assigneeName: assignee?.displayName ?? undefined,
+          assigneeEmail: assignee?.email ?? undefined,
+        };
+      });
     },
   }),
 
@@ -98,8 +127,8 @@ export const ticketHandlers = {
       console.log(
         `User ${user.email} fetching ticket ${params.id} for workspace ${workspace.slug}`,
       );
-      const db = getDb();
-      const tickets: Ticket[] = await db
+      const dataDb = getDataDb();
+      const tickets: Ticket[] = await dataDb
         .select()
         .from(ticketsTable)
         .where(
@@ -132,7 +161,7 @@ export const ticketHandlers = {
         `User ${user.email} creating ticket for workspace ${workspace.slug}:`,
         body,
       );
-      const db = getDb();
+      const dataDb = getDataDb();
 
       const insertData: NewTicket = {
         workspaceId: workspace.id,
@@ -141,7 +170,7 @@ export const ticketHandlers = {
         assigneeId: body.assigneeId,
       };
 
-      const result: Ticket[] = await db
+      const result: Ticket[] = await dataDb
         .insert(ticketsTable)
         .values(insertData)
         .returning();
@@ -169,7 +198,7 @@ export const ticketHandlers = {
         `User ${user.email} updating ticket ${params.id} for workspace ${workspace.slug}:`,
         body,
       );
-      const db = getDb();
+      const dataDb = getDataDb();
 
       const updateData: Partial<NewTicket> = {};
       if (body.title !== undefined) {
@@ -182,7 +211,7 @@ export const ticketHandlers = {
         updateData.assigneeId = body.assigneeId;
       }
 
-      const result: Ticket[] = await db
+      const result: Ticket[] = await dataDb
         .update(ticketsTable)
         .set(updateData)
         .where(
@@ -215,9 +244,9 @@ export const ticketHandlers = {
       console.log(
         `User ${user.email} deleting ticket ${params.id} for workspace ${workspace.slug}`,
       );
-      const db = getDb();
+      const dataDb = getDataDb();
 
-      const result: Ticket[] = await db
+      const result: Ticket[] = await dataDb
         .delete(ticketsTable)
         .where(
           and(

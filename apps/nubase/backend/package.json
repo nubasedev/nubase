@@ -26,7 +26,7 @@
     "db:test:down": "docker compose -p nubase-test -f docker/test/docker-compose.yml down",
     "db:test:kill": "docker compose -p nubase-test -f docker/test/docker-compose.yml down -v && rm -rf docker/test/postgresql-data",
     "db:test:reset": "npm run db:test:kill && npm run db:schema-sync && npm run db:test:up",
-    "db:schema-sync": "cp db/schema.sql docker/dev/postgresql-init/dump.sql && cp db/schema.sql docker/test/postgresql-init/dump.sql"
+    "db:schema-sync": "mkdir -p docker/dev/postgresql-init/sql docker/test/postgresql-init/sql && cp db/nubase-db-schema.sql db/data-db-schema.sql docker/dev/postgresql-init/sql/ && cp db/nubase-db-schema.sql db/data-db-schema.sql docker/test/postgresql-init/sql/ && cp db/init-databases.sh docker/dev/postgresql-init/ && cp db/init-databases.sh docker/test/postgresql-init/"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",

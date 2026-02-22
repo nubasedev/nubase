@@ -23,6 +23,7 @@
     "build:frontend:storybook": "cd packages/frontend && npm run build:storybook",
     "db:up": "cd apps/nubase/backend && npm run db:dev:up && npm run db:test:up",
     "db:down": "cd apps/nubase/backend && npm run db:dev:down && npm run db:test:down",
+    "db:kill": "cd apps/nubase/backend && npm run db:dev:kill && npm run db:test:kill",
     "db:seed": "cd apps/nubase/backend && npm run db:dev:seed",
     "db:reset": "cd apps/nubase/backend && npm run db:dev:reset && npm run db:test:reset",
     "e2e": "turbo run e2e",

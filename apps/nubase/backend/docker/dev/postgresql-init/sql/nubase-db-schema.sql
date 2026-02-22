@@ -1,6 +1,7 @@
 --
--- Nubase Database Schema
--- This is the source of truth for the database structure.
+-- Nubase System Database Schema (nubase_db)
+-- This is the source of truth for the system database structure.
+-- Contains: workspaces, users, user_workspaces
 -- Run `npm run db:schema-sync` to copy this to Docker init folders.
 --
 
@@ -30,14 +31,14 @@ COMMENT ON EXTENSION pg_stat_statements IS 'track planning and execution statist
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nubase_app') THEN
-    CREATE ROLE nubase_app WITH LOGIN PASSWORD 'nubase_app';
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nubase_db') THEN
+    CREATE ROLE nubase_db WITH LOGIN PASSWORD 'nubase_db';
   END IF;
 END
 $$;
 
-GRANT CONNECT ON DATABASE nubase TO nubase_app;
-GRANT USAGE ON SCHEMA public TO nubase_app;
+GRANT CONNECT ON DATABASE nubase_db TO nubase_db;
+GRANT USAGE ON SCHEMA public TO nubase_db;
 
 
 SET default_tablespace = '';
@@ -106,55 +107,24 @@ ALTER TABLE ONLY public.user_workspaces ADD CONSTRAINT user_workspaces_user_fk F
 ALTER TABLE ONLY public.user_workspaces ADD CONSTRAINT user_workspaces_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
 
 
---
--- Tickets
---
-
-CREATE TABLE public.tickets (
-    id integer NOT NULL,
-    workspace_id integer NOT NULL,
-    title character varying(255) NOT NULL,
-    description character varying(1000),
-    assignee_id integer
-);
-
-ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
-    SEQUENCE NAME public.tickets_id_seq
-    START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1
-);
-
-ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_pk PRIMARY KEY (id);
-ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id);
-ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_assignee_fk FOREIGN KEY (assignee_id) REFERENCES public.users(id);
-
-
 -- ============================================================================
 -- PERMISSIONS
 -- ============================================================================
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nubase_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO nubase_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nubase_db;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO nubase_db;
 
 
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================================
 
--- Tickets: only visible/modifiable for the current workspace
-ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY tickets_workspace_isolation ON public.tickets
-    TO nubase_app
-    USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
-    WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
-
-
 -- User-Workspaces: only visible/modifiable for the current workspace
 -- This allows users to see which users belong to their workspace
 ALTER TABLE public.user_workspaces ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY user_workspaces_workspace_isolation ON public.user_workspaces
-    TO nubase_app
+    TO nubase_db
     USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
     WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
 

@@ -6,8 +6,11 @@ loadEnvironment();
 
 // Verify database connectivity before starting the server
 try {
-  await validateEnvironment();
-  console.log("Preflight check passed: Database connection verified");
+  await validateEnvironment({ databaseUrl: process.env.DATABASE_URL });
+  console.log("Preflight check passed: nubase_db connection verified");
+
+  await validateEnvironment({ databaseUrl: process.env.DATA_DATABASE_URL });
+  console.log("Preflight check passed: data_db connection verified");
 } catch (err) {
   console.error(
     "Preflight check failed:",

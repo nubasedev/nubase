@@ -3,7 +3,7 @@ import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcrypt";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getAdminDb } from "../../db/helpers/drizzle";
+import { getAdminDb, getDataAdminDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
@@ -54,23 +54,18 @@ export const handleClearDatabase = createHttpHandler({
 
     const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
 
-    // Clear all tickets for this workspace
-    await db
+    // Clear tickets from data_db
+    const dataDb = getDataAdminDb();
+    await dataDb
       .delete(ticketsTable)
       .where(eq(ticketsTable.workspaceId, workspace.id));
+    await dataDb.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
 
-    // Reset the ID sequence to start from 1
-    await db.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
-
-    // Clear all user_workspaces associations (for all workspaces in test env)
+    // Clear nubase_db tables
+    const db = getAdminDb();
     await db.delete(userWorkspacesTable);
-
-    // Clear all users (in test env we start fresh each time)
     await db.delete(usersTable);
-
-    // Reset the users ID sequence
     await db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
 
     // Seed a default test user for this workspace
@@ -134,12 +129,12 @@ export const handleSeedTestData = createHttpHandler({
 
     const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
+    const dataDb = getDataAdminDb();
     const insertedTicketIds: number[] = [];
 
     if (body?.tickets) {
       for (const ticket of body.tickets) {
-        const result = await db
+        const result = await dataDb
           .insert(ticketsTable)
           .values({
             workspaceId: workspace.id,
@@ -187,8 +182,8 @@ export const handleGetDatabaseStats = createHttpHandler({
 
     const workspaceSlug = params?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
-    const tickets = await db
+    const dataDb = getDataAdminDb();
+    const tickets = await dataDb
       .select()
       .from(ticketsTable)
       .where(eq(ticketsTable.workspaceId, workspace.id));

@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import type { InferInsertModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";
-import { getAdminDb } from "./helpers/drizzle";
+import { getAdminDb, getDataAdminDb } from "./helpers/drizzle";
 import { ticketsTable } from "./schema/ticket";
 import { usersTable } from "./schema/user";
 import { userWorkspacesTable } from "./schema/user-workspace";
@@ -78,11 +78,17 @@ async function seedWorkspaces() {
   console.log("🏠 Seeding workspaces...");
 
   const db = getAdminDb();
+  const dataDb = getDataAdminDb();
 
-  // Clear existing data using TRUNCATE (bypasses RLS, respects FKs with CASCADE)
+  // Clear existing data from both databases
   console.log("🗑️  Clearing existing data...");
+
+  // Clear data_db first (tickets)
+  await dataDb.execute(sql`TRUNCATE TABLE tickets RESTART IDENTITY CASCADE`);
+
+  // Clear nubase_db tables
   await db.execute(
-    sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE TABLE user_workspaces, users, workspaces RESTART IDENTITY CASCADE`,
   );
 
   // Create default workspace
@@ -138,7 +144,7 @@ async function seedUsers(workspaceId: number) {
 async function seedTickets(count: number, workspaceId: number) {
   console.log(`📝 Generating ${count} fake tickets...`);
 
-  const db = getAdminDb();
+  const dataDb = getDataAdminDb();
 
   // Generate and insert fake tickets
   const fakeTickets = Array.from({ length: count }, () =>
@@ -146,7 +152,7 @@ async function seedTickets(count: number, workspaceId: number) {
   );
 
   console.log("💾 Inserting tickets into database...");
-  const insertedTickets = await db
+  const insertedTickets = await dataDb
     .insert(ticketsTable)
     .values(fakeTickets)
     .returning();
