@@ -10,7 +10,10 @@ config({ path: ".env.development" });
 const originalAction = Command.prototype.action;
 
 // Override the action method with our timed version
-Command.prototype.action = function (fn) {
+Command.prototype.action = function (
+  this: Command,
+  fn: (...args: any[]) => any,
+) {
   // Wrap the action function with timing logic
   const timedFn = async (...args: any[]) => {
     const commandName = this.name();

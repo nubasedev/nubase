@@ -43,10 +43,10 @@
     "@types/pg": "^8.16.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@nubase/core": "*",
-    "pg": "^8.17.1"
+    "pg": "^8.18.0"
   }
 }
