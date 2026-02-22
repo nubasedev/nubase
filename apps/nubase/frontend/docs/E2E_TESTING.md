@@ -1,6 +1,6 @@
 # E2E Testing Setup with Playwright
 
-This document describes the complete Playwright end-to-end testing setup for the Questlog application.
+This document describes the complete Playwright end-to-end testing setup for the Nubase application.
 
 ## Overview
 
@@ -32,7 +32,7 @@ Note: All URLs use the subdomain format: tavern.localhost:4002 (frontend), taver
 
 1. **Install Playwright dependencies:**
    ```bash
-   cd apps/questlog/frontend
+   cd apps/nubase/frontend
    npm install
    npm run e2e:install
    ```
@@ -201,9 +201,9 @@ The backend uses these environment variables for test mode:
 NODE_ENV=test          # Enables test endpoints
 DB_HOST=localhost      # Test database host
 DB_PORT=5435          # Test database port (different from dev)
-DB_USER=questlog      # Test database user
-DB_PASSWORD=questlog  # Test database password
-DB_NAME=questlog      # Test database name
+DB_USER=nubase      # Test database user
+DB_PASSWORD=nubase  # Test database password
+DB_NAME=nubase      # Test database name
 ```
 
 ## Troubleshooting
@@ -253,23 +253,23 @@ For CI environments, add these steps:
 ```yaml
 - name: Setup Test Database
   run: |
-    cd apps/questlog/backend
+    cd apps/nubase/backend
     docker-compose -f docker/test/docker-compose.yml up -d
     
 - name: Install Playwright
   run: |
-    cd apps/questlog/frontend
+    cd apps/nubase/frontend
     npm install
     npm run e2e:install
     
 - name: Run E2E Tests
   run: |
-    cd apps/questlog/frontend
+    cd apps/nubase/frontend
     npm run e2e
     
 - name: Cleanup
   run: |
-    cd apps/questlog/backend
+    cd apps/nubase/backend
     docker-compose -f docker/test/docker-compose.yml down
 ```
 

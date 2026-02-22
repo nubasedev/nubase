@@ -6,7 +6,7 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**", "storybook-static/**"]
     },
-    "apps/questlog/*#build": {
+    "apps/nubase/*#build": {
       "dependsOn": ["packages/*#build"],
       "outputs": ["dist/**", "build/**"]
     },

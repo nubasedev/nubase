@@ -1,5 +1,5 @@
 {
-  "name": "questlog-backend",
+  "name": "nubase-backend",
   "type": "module",
   "scripts": {
     "build:cli": "tsup --config tsup.config.cli.js",
@@ -40,7 +40,7 @@
     "hono": "^4.11.4",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.17.1",
-    "questlog-schema": "*",
+    "nubase-schema": "*",
     "shelljs": "^0.10.0"
   },
   "devDependencies": {

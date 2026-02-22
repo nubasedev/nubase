@@ -81,12 +81,12 @@
       }
     },
     {
-      "label": "questlog-backend:db:pg-dump",
+      "label": "nubase-backend:db:pg-dump",
       "type": "shell",
       "command": "node",
       "args": ["dist-cli/index.cjs", "pg-dump"],
       "options": {
-        "cwd": "${workspaceFolder}/apps/questlog/backend",
+        "cwd": "${workspaceFolder}/apps/nubase/backend",
         "env": {
           "NODE_ENV": "development"
         }

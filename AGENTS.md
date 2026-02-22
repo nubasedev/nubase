@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `packages/` contains the publishable libraries: `@nubase/core`, `@nubase/frontend`, and `@nubase/backend`, with source in `src/` and tests in `tests/`.
 - `apps/docs` builds the Docusaurus site; sync it whenever public concepts shift.
-- `apps/questlog/` holds the Questlog demo split into frontend, backend, and schema so runtime, API, and typing evolve together.
+- `apps/nubase/` holds the Nubase demo split into frontend, backend, and schema so runtime, API, and typing evolve together.
 - Store shared assets under `assets/`, `docs/`, and `coordination/`. Touch root configs (`package.json`, `turbo.json`, `biome.json`) only when coordinated.
 
 ## Build, Test, and Development Commands
@@ -33,5 +33,5 @@
 - Mirror configuration changes that affect automation in `coordination/` so downstream contributors and agents stay synced.
 
 ## Architecture Overview
-- Nubase is schema-driven: the Questlog schema workspace defines resources and views consumed by both frontend and backend runtimes.
+- Nubase is schema-driven: the Nubase schema workspace defines resources and views consumed by both frontend and backend runtimes.
 - `packages/frontend/src/components/nubase-app/NubaseApp.tsx` assembles navigation, routing, theming, and CRUD flows automatically from configuration; reflect schema contract changes in the demo apps and `apps/docs`.

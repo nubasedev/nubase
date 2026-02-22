@@ -1,5 +1,5 @@
 {
-  "name": "questlog-schema",
+  "name": "nubase-schema",
   "version": "0.1.0",
   "description": "Schema for the example app",
   "type": "module",

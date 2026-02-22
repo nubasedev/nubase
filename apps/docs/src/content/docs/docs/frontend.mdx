@@ -129,9 +129,9 @@ export const customTheme: NubaseTheme = {
 To enable authentication, provide an `AuthenticationController`:
 
 ```typescript
-import { QuestlogAuthController } from './auth/QuestlogAuthController';
+import { NubaseAuthController } from './auth/NubaseAuthController';
 
-const authController = new QuestlogAuthController(apiBaseUrl);
+const authController = new NubaseAuthController(apiBaseUrl);
 
 export const config: NubaseFrontendConfig = {
   // ...

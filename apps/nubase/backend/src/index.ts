@@ -8,7 +8,7 @@ import { dashboardHandlers } from "./api/routes/dashboard";
 import { testUtils } from "./api/routes/test-utils";
 import { ticketHandlers } from "./api/routes/ticket";
 import { userHandlers } from "./api/routes/user";
-import { questlogAuthController } from "./auth";
+import { nubaseAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 import {
   createPostAuthWorkspaceMiddleware,
@@ -39,7 +39,7 @@ app.use(
 app.use("*", createWorkspaceMiddleware());
 
 // Auth middleware - extracts and verifies JWT, sets user in context
-app.use("*", createAuthMiddleware({ controller: questlogAuthController }));
+app.use("*", createAuthMiddleware({ controller: nubaseAuthController }));
 
 // Post-auth workspace middleware - sets RLS context from authenticated user's workspace
 app.use("*", createPostAuthWorkspaceMiddleware());

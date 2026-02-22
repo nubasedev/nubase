@@ -3,7 +3,7 @@ import { defineConfig } from "@nubase/cli";
 export default defineConfig({
   environments: {
     local: {
-      url: "postgres://questlog:questlog@localhost:5434/questlog",
+      url: "postgres://nubase:nubase@localhost:5434/nubase",
     },
     production: {
       url: process.env.PRODUCTION_DATABASE_URL!,

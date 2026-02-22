@@ -6,8 +6,8 @@ import {
   resourceLink,
 } from "@nubase/frontend";
 import { Home, Plus, TicketIcon, UsersIcon } from "lucide-react";
-import { apiEndpoints } from "questlog-schema";
-import { QuestlogAuthController } from "./auth/QuestlogAuthController";
+import { apiEndpoints } from "nubase-schema";
+import { NubaseAuthController } from "./auth/NubaseAuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
 import { ticketResource } from "./resources/ticket";
 import { userResource } from "./resources/user";
@@ -15,9 +15,9 @@ import { userResource } from "./resources/user";
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
 // Preserve auth controller across HMR to prevent losing authentication state during development
-const authController: QuestlogAuthController =
-  (import.meta.hot?.data?.authController as QuestlogAuthController) ??
-  new QuestlogAuthController(apiBaseUrl);
+const authController: NubaseAuthController =
+  (import.meta.hot?.data?.authController as NubaseAuthController) ??
+  new NubaseAuthController(apiBaseUrl);
 
 // Store auth controller in HMR data so it survives hot reloads
 if (import.meta.hot) {
@@ -25,7 +25,7 @@ if (import.meta.hot) {
 }
 
 export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
-  appName: "Questlog",
+  appName: "Nubase",
   mainMenu: [
     {
       id: "home",

@@ -11,10 +11,10 @@ import type {
 } from "@nubase/frontend";
 
 /**
- * Questlog-specific implementation of AuthenticationController.
- * Communicates with the questlog-backend auth endpoints using HttpOnly cookies.
+ * Nubase-specific implementation of AuthenticationController.
+ * Communicates with the nubase-backend auth endpoints using HttpOnly cookies.
  */
-export class QuestlogAuthController implements AuthenticationController {
+export class NubaseAuthController implements AuthenticationController {
   private state: AuthenticationState = {
     status: "loading",
     user: null,

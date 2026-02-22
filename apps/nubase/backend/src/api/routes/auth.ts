@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import type { InferSelectModel } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
-import type { QuestlogUser } from "../../auth";
+import type { NubaseUser } from "../../auth";
 import { getAdminDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
@@ -103,7 +103,7 @@ export const authHandlers = {
    */
   loginComplete: createHandler((e) => e.loginComplete, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<QuestlogUser>(ctx);
+      const authController = getAuthController<NubaseUser>(ctx);
       const adminDb = getAdminDb();
 
       // Verify the login token
@@ -157,7 +157,7 @@ export const authHandlers = {
       const dbUser = users[0];
 
       // Create user object for token (includes selected workspaceId)
-      const user: QuestlogUser = {
+      const user: NubaseUser = {
         id: dbUser.id,
         email: dbUser.email,
         displayName: dbUser.displayName,
@@ -189,7 +189,7 @@ export const authHandlers = {
    */
   login: createHandler((e) => e.login, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<QuestlogUser>(ctx);
+      const authController = getAuthController<NubaseUser>(ctx);
 
       // Look up workspace from the request body (path-based multi-workspace)
       const adminDb = getAdminDb();
@@ -241,7 +241,7 @@ export const authHandlers = {
       }
 
       // Create user object for token (includes selected workspaceId)
-      const user: QuestlogUser = {
+      const user: NubaseUser = {
         id: dbUser.id,
         email: dbUser.email,
         displayName: dbUser.displayName,
@@ -294,7 +294,7 @@ export const authHandlers = {
   /** Signup handler - creates a new workspace and admin user. */
   signup: createHandler((e) => e.signup, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<QuestlogUser>(ctx);
+      const authController = getAuthController<NubaseUser>(ctx);
       const adminDb = getAdminDb();
 
       // Validate workspace slug format
@@ -359,7 +359,7 @@ export const authHandlers = {
       });
 
       // Create user object for token (includes selected workspaceId)
-      const user: QuestlogUser = {
+      const user: NubaseUser = {
         id: newUser.id,
         email: newUser.email,
         displayName: newUser.displayName,

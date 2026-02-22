@@ -10,17 +10,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
 if [ -z "$PROJECT" ]; then
-  echo "Usage: $0 <questlog|starter|stop>"
+  echo "Usage: $0 <nubase|starter|stop>"
   echo ""
   echo "Commands:"
-  echo "  questlog  Start questlog databases (stops others first)"
+  echo "  nubase    Start nubase databases (stops others first)"
   echo "  starter   Start starter databases (stops others first)"
   echo "  stop      Stop all nubase-managed databases"
   echo ""
   echo "Examples:"
-  echo "  $0 questlog    # Switch to questlog development"
-  echo "  $0 starter     # Switch to starter example testing"
-  echo "  $0 stop        # Stop all databases"
+  echo "  $0 nubase     # Switch to nubase development"
+  echo "  $0 starter    # Switch to starter example testing"
+  echo "  $0 stop       # Stop all databases"
   exit 1
 fi
 
@@ -51,9 +51,9 @@ if [ "$PROJECT" = "stop" ]; then
   exit 0
 fi
 
-if [ "$PROJECT" = "questlog" ]; then
-  echo "Starting questlog databases..."
-  cd "$ROOT_DIR/apps/questlog/backend"
+if [ "$PROJECT" = "nubase" ]; then
+  echo "Starting nubase databases..."
+  cd "$ROOT_DIR/apps/nubase/backend"
   npm run db:dev:up
   npm run db:test:up
 elif [ "$PROJECT" = "starter" ]; then
@@ -70,7 +70,7 @@ elif [ "$PROJECT" = "starter" ]; then
   npm run db:test:up
 else
   echo "Unknown project: $PROJECT"
-  echo "Valid projects: questlog, starter, stop"
+  echo "Valid projects: nubase, starter, stop"
   exit 1
 fi
 

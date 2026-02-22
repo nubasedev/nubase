@@ -17,13 +17,13 @@ import { userWorkspacesTable } from "../db/schema/user-workspace";
 type DbUser = InferSelectModel<typeof usersTable>;
 
 /**
- * User type for Questlog application.
+ * User type for Nubase application.
  * This is what gets passed to handlers when auth is required/optional.
  *
  * Note: Users exist at root level (no workspace). The workspaceId here represents
  * the currently selected workspace for this session.
  */
-export interface QuestlogUser extends BackendUser {
+export interface NubaseUser extends BackendUser {
   id: number;
   email: string;
   displayName: string;
@@ -31,9 +31,9 @@ export interface QuestlogUser extends BackendUser {
 }
 
 /**
- * Token payload for Questlog JWTs.
+ * Token payload for Nubase JWTs.
  */
-export interface QuestlogTokenPayload extends TokenPayload {
+export interface NubaseTokenPayload extends TokenPayload {
   userId: number;
   email: string;
   workspaceId: number; // The selected workspace for this session
@@ -68,11 +68,11 @@ function getDebugAuthToken(): string | undefined {
 }
 
 /**
- * Questlog-specific implementation of BackendAuthController.
+ * Nubase-specific implementation of BackendAuthController.
  * Handles JWT-based authentication using HttpOnly cookies.
  */
-export class QuestlogBackendAuthController
-  implements BackendAuthController<QuestlogUser, QuestlogTokenPayload>
+export class NubaseBackendAuthController
+  implements BackendAuthController<NubaseUser, NubaseTokenPayload>
 {
   /**
    * Extract the authentication token from the request.
@@ -123,7 +123,7 @@ export class QuestlogBackendAuthController
   async verifyToken(
     token: string,
     requestWorkspaceId?: number,
-  ): Promise<VerifyTokenResult<QuestlogUser>> {
+  ): Promise<VerifyTokenResult<NubaseUser>> {
     // Handle debug token (format: "debug:<userId>:<workspaceId>")
     if (token.startsWith("debug:") && getDebugAuthToken()) {
       const parts = token.slice(6).split(":"); // Remove "debug:" prefix
@@ -144,7 +144,7 @@ export class QuestlogBackendAuthController
 
     try {
       // Verify JWT signature and expiration
-      const decoded = jwt.verify(token, JWT_SECRET) as QuestlogTokenPayload;
+      const decoded = jwt.verify(token, JWT_SECRET) as NubaseTokenPayload;
 
       // Validate workspace if provided
       if (
@@ -219,7 +219,7 @@ export class QuestlogBackendAuthController
   private async authenticateAsUserId(
     userId: number,
     workspaceId: number,
-  ): Promise<VerifyTokenResult<QuestlogUser>> {
+  ): Promise<VerifyTokenResult<NubaseUser>> {
     const adminDb = getAdminDb();
 
     // Fetch user (no RLS on users table)
@@ -266,10 +266,10 @@ export class QuestlogBackendAuthController
    * Create a JWT token for a user.
    */
   async createToken(
-    user: QuestlogUser,
-    additionalPayload?: Partial<QuestlogTokenPayload>,
+    user: NubaseUser,
+    additionalPayload?: Partial<NubaseTokenPayload>,
   ): Promise<string> {
-    const payload: QuestlogTokenPayload = {
+    const payload: NubaseTokenPayload = {
       userId: user.id,
       email: user.email,
       workspaceId: user.workspaceId,
@@ -317,7 +317,7 @@ export class QuestlogBackendAuthController
     email: string,
     password: string,
     workspaceId?: number,
-  ): Promise<QuestlogUser | null> {
+  ): Promise<NubaseUser | null> {
     if (workspaceId === undefined) {
       throw new Error(
         "workspaceId is required for multi-workspace authentication",
@@ -371,4 +371,4 @@ export class QuestlogBackendAuthController
  * Singleton instance of the auth controller.
  * Use this in your Hono app setup.
  */
-export const questlogAuthController = new QuestlogBackendAuthController();
+export const nubaseAuthController = new NubaseBackendAuthController();

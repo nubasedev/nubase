@@ -11,7 +11,7 @@ declare global {
 }
 
 /**
- * Get the application database connection (questlog_app user).
+ * Get the application database connection (nubase_app user).
  * This connection is subject to Row Level Security policies.
  */
 export function getDb() {
@@ -34,7 +34,7 @@ export function getDb() {
 }
 
 /**
- * Get the admin database connection (questlog superuser).
+ * Get the admin database connection (nubase superuser).
  * This connection bypasses Row Level Security - use for migrations and seeding only.
  */
 export function getAdminDb() {

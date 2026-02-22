@@ -1,17 +1,17 @@
 import { createHandlerFactory } from "@nubase/backend";
-import { type ApiEndpoints, apiEndpoints } from "questlog-schema";
-import type { QuestlogUser } from "../auth";
+import { type ApiEndpoints, apiEndpoints } from "nubase-schema";
+import type { NubaseUser } from "../auth";
 
 /**
- * Pre-configured handler factory for Questlog.
+ * Pre-configured handler factory for Nubase.
  *
  * This factory pre-binds:
  * - The apiEndpoints object for endpoint schema inference
- * - The QuestlogUser type for authenticated handlers
+ * - The NubaseUser type for authenticated handlers
  *
  * @example
  * ```typescript
- * // Required auth - user is guaranteed to be QuestlogUser
+ * // Required auth - user is guaranteed to be NubaseUser
  * getTickets: createHandler((e) => e.getTickets, {
  *   auth: "required",
  *   handler: async ({ params, user, ctx }) => { ... },
@@ -29,6 +29,6 @@ import type { QuestlogUser } from "../auth";
  * }),
  * ```
  */
-export const createHandler = createHandlerFactory<ApiEndpoints, QuestlogUser>({
+export const createHandler = createHandlerFactory<ApiEndpoints, NubaseUser>({
   endpoints: apiEndpoints,
 });

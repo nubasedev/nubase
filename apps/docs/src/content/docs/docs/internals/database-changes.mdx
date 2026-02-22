@@ -3,11 +3,11 @@ title: Database Changes
 description: How to modify the database schema in Nubase example applications.
 ---
 
-This guide explains how to modify the database schema in the questlog example application. This workflow is designed for **development and testing only**.
+This guide explains how to modify the database schema in the nubase example application. This workflow is designed for **development and testing only**.
 
 ## Overview
 
-The questlog-backend uses:
+The nubase-backend uses:
 - **PostgreSQL 17.5** running in Docker containers
 - **Drizzle ORM** for type-safe schema definitions
 - **Two separate databases**: dev (port 5434) and test (port 5435)
@@ -17,22 +17,22 @@ The questlog-backend uses:
 
 | User | Purpose | Permissions |
 |------|---------|-------------|
-| `questlog` | Admin (migrations, seeding) | Superuser, bypasses RLS |
-| `questlog_app` | Application runtime | DML only, subject to RLS |
+| `nubase` | Admin (migrations, seeding) | Superuser, bypasses RLS |
+| `nubase_app` | Application runtime | DML only, subject to RLS |
 
 ## Database Credentials
 
 | Environment | Port | Database | App User | App Password |
 |-------------|------|----------|----------|--------------|
-| Development | 5434 | questlog | questlog_app | questlog_app |
-| Test | 5435 | questlog | questlog_app | questlog_app |
+| Development | 5434 | nubase | nubase_app | nubase_app |
+| Test | 5435 | nubase | nubase_app | nubase_app |
 
 ## Source of Truth
 
 The database schema is defined in a single SQL file:
 
 ```
-apps/questlog/backend/db/schema.sql
+apps/nubase/backend/db/schema.sql
 ```
 
 This file is the **source of truth** for the database structure.
@@ -44,7 +44,7 @@ This file is the **source of truth** for the database structure.
 #### Step 1: Edit the Schema File
 
 ```bash
-code apps/questlog/backend/db/schema.sql
+code apps/nubase/backend/db/schema.sql
 ```
 
 Add your changes following existing patterns:
@@ -63,7 +63,7 @@ ALTER TABLE ONLY public.categories ADD CONSTRAINT categories_pk PRIMARY KEY (id)
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY categories_tenant_isolation ON public.categories
-    TO questlog_app
+    TO nubase_app
     USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::integer);
 ```
 
@@ -111,17 +111,17 @@ export const categoriesTable = pgTable(
 
 ### Development Database (Admin)
 ```bash
-PGPASSWORD=questlog psql -h localhost -p 5434 -U questlog -d questlog
+PGPASSWORD=nubase psql -h localhost -p 5434 -U nubase -d nubase
 ```
 
 ### Development Database (App User)
 ```bash
-PGPASSWORD=questlog_app psql -h localhost -p 5434 -U questlog_app -d questlog
+PGPASSWORD=nubase_app psql -h localhost -p 5434 -U nubase_app -d nubase
 ```
 
 ### Test Database
 ```bash
-PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog
+PGPASSWORD=nubase psql -h localhost -p 5435 -U nubase -d nubase
 ```
 
 ## Troubleshooting

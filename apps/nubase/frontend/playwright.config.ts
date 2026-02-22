@@ -65,7 +65,7 @@ export default defineConfig({
       timeout: 120 * 1000,
       env: {
         NODE_ENV: "test",
-        DATABASE_URL: "postgresql://questlog:questlog@localhost:5435/questlog",
+        DATABASE_URL: "postgresql://nubase:nubase@localhost:5435/nubase",
       },
     },
   ],

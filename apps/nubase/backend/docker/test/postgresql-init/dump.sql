@@ -1,5 +1,5 @@
 --
--- Questlog Database Schema
+-- Nubase Database Schema
 -- This is the source of truth for the database structure.
 -- Run `npm run db:schema-sync` to copy this to Docker init folders.
 --
@@ -30,14 +30,14 @@ COMMENT ON EXTENSION pg_stat_statements IS 'track planning and execution statist
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'questlog_app') THEN
-    CREATE ROLE questlog_app WITH LOGIN PASSWORD 'questlog_app';
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nubase_app') THEN
+    CREATE ROLE nubase_app WITH LOGIN PASSWORD 'nubase_app';
   END IF;
 END
 $$;
 
-GRANT CONNECT ON DATABASE questlog TO questlog_app;
-GRANT USAGE ON SCHEMA public TO questlog_app;
+GRANT CONNECT ON DATABASE nubase TO nubase_app;
+GRANT USAGE ON SCHEMA public TO nubase_app;
 
 
 SET default_tablespace = '';
@@ -132,8 +132,8 @@ ALTER TABLE ONLY public.tickets ADD CONSTRAINT tickets_assignee_fk FOREIGN KEY (
 -- PERMISSIONS
 -- ============================================================================
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO questlog_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO questlog_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO nubase_app;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO nubase_app;
 
 
 -- ============================================================================
@@ -144,7 +144,7 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO questlog_app;
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tickets_workspace_isolation ON public.tickets
-    TO questlog_app
+    TO nubase_app
     USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
     WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
 
@@ -154,7 +154,7 @@ CREATE POLICY tickets_workspace_isolation ON public.tickets
 ALTER TABLE public.user_workspaces ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY user_workspaces_workspace_isolation ON public.user_workspaces
-    TO questlog_app
+    TO nubase_app
     USING (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer)
     WITH CHECK (workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::integer);
 

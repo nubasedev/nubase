@@ -4,7 +4,7 @@ services:
     image: "postgres:17.5"
     labels:
       com.nubase.managed: "true"
-      com.nubase.project: "questlog"
+      com.nubase.project: "nubase"
       com.nubase.env: "dev"
     volumes:
       - ./postgresql-data:/var/lib/postgresql/data
@@ -12,11 +12,11 @@ services:
     ports:
       - "5434:5432"
     environment:
-      - POSTGRES_DB=questlog
-      - POSTGRES_USER=questlog
-      - POSTGRES_PASSWORD=questlog
+      - POSTGRES_DB=nubase
+      - POSTGRES_USER=nubase
+      - POSTGRES_PASSWORD=nubase
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U questlog -d questlog"]
+      test: ["CMD-SHELL", "pg_isready -U nubase -d nubase"]
       interval: 5s
       timeout: 5s
       retries: 5
