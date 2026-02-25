@@ -50,7 +50,7 @@ CREATE TABLE public.tickets (
     workspace_id integer NOT NULL,
     title character varying(255) NOT NULL,
     description character varying(1000),
-    assignee_id integer
+    assignee_email character varying(255)
 );
 
 ALTER TABLE public.tickets ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (

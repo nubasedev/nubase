@@ -16,7 +16,7 @@ export const ticketSchema = nu
       description: "Enter the description of the ticket",
       renderer: "multiline",
     }),
-    assigneeId: nu.number().optional().withComputedMeta({
+    assigneeEmail: nu.string().optional().withComputedMeta({
       label: "Assignee",
       description: "Select a user to assign this ticket to",
       renderer: "lookup",
@@ -33,9 +33,6 @@ export const ticketListSchema = ticketSchema
   .extend({
     assigneeName: nu.string().optional().withComputedMeta({
       label: "Assignee Name",
-    }),
-    assigneeEmail: nu.string().optional().withComputedMeta({
-      label: "Assignee Email",
     }),
   })
   .withTableLayouts({

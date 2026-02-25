@@ -293,12 +293,11 @@ export const userHandlers = {
         .where(and(...conditions))
         .limit(20);
 
-      // Transform to Lookup format
+      // Transform to Lookup format - use email as ID for cross-database reference
       return users.map((u) => ({
-        id: u.id,
+        id: u.email,
         title: u.displayName,
         subtitle: u.email,
-        // image: u.avatarUrl, // Add if you have avatar URLs
       }));
     },
   }),

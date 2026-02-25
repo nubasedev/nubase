@@ -5,5 +5,5 @@ export const ticketsTable = pgTable("tickets", {
   workspaceId: integer("workspace_id").notNull(),
   title: varchar("title", { length: 255 }).notNull(),
   description: varchar("description", { length: 1000 }),
-  assigneeId: integer("assignee_id"),
+  assigneeEmail: varchar("assignee_email", { length: 255 }),
 });

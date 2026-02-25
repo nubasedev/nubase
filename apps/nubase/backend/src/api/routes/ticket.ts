@@ -53,16 +53,16 @@ export const ticketHandlers = {
         );
       }
 
-      // Filter by assigneeId (supports single value or array for multi-select)
-      if (params.assigneeId !== undefined) {
-        if (Array.isArray(params.assigneeId)) {
-          if (params.assigneeId.length > 0) {
+      // Filter by assigneeEmail (supports single value or array for multi-select)
+      if (params.assigneeEmail !== undefined) {
+        if (Array.isArray(params.assigneeEmail)) {
+          if (params.assigneeEmail.length > 0) {
             conditions.push(
-              inArray(ticketsTable.assigneeId, params.assigneeId),
+              inArray(ticketsTable.assigneeEmail, params.assigneeEmail),
             );
           }
         } else {
-          conditions.push(eq(ticketsTable.assigneeId, params.assigneeId));
+          conditions.push(eq(ticketsTable.assigneeEmail, params.assigneeEmail));
         }
       }
 
@@ -72,48 +72,43 @@ export const ticketHandlers = {
         .from(ticketsTable)
         .where(and(...conditions));
 
-      // Collect unique assignee IDs for cross-db lookup
-      const assigneeIds = [
+      // Collect unique assignee emails for cross-db lookup
+      const assigneeEmails = [
         ...new Set(
           tickets
-            .map((t) => t.assigneeId)
-            .filter((id): id is number => id !== null),
+            .map((t) => t.assigneeEmail)
+            .filter((email): email is string => email !== null),
         ),
       ];
 
-      // Query users from nubase_db
-      let usersMap = new Map<number, { displayName: string; email: string }>();
-      if (assigneeIds.length > 0) {
+      // Query users from nubase_db by email
+      let usersMap = new Map<string, { displayName: string }>();
+      if (assigneeEmails.length > 0) {
         const db = getDb();
         const users = await db
           .select({
-            id: usersTable.id,
             displayName: usersTable.displayName,
             email: usersTable.email,
           })
           .from(usersTable)
-          .where(inArray(usersTable.id, assigneeIds));
+          .where(inArray(usersTable.email, assigneeEmails));
 
         usersMap = new Map(
-          users.map((u) => [
-            u.id,
-            { displayName: u.displayName, email: u.email },
-          ]),
+          users.map((u) => [u.email, { displayName: u.displayName }]),
         );
       }
 
       // Merge results in JS
       return tickets.map((ticket) => {
-        const assignee = ticket.assigneeId
-          ? usersMap.get(ticket.assigneeId)
+        const assignee = ticket.assigneeEmail
+          ? usersMap.get(ticket.assigneeEmail)
           : undefined;
         return {
           id: ticket.id,
           title: ticket.title,
           description: ticket.description ?? undefined,
-          assigneeId: ticket.assigneeId ?? undefined,
+          assigneeEmail: ticket.assigneeEmail ?? undefined,
           assigneeName: assignee?.displayName ?? undefined,
-          assigneeEmail: assignee?.email ?? undefined,
         };
       });
     },
@@ -147,7 +142,7 @@ export const ticketHandlers = {
         id: ticket.id,
         title: ticket.title,
         description: ticket.description ?? undefined,
-        assigneeId: ticket.assigneeId ?? undefined,
+        assigneeEmail: ticket.assigneeEmail ?? undefined,
       };
     },
   }),
@@ -167,7 +162,7 @@ export const ticketHandlers = {
         workspaceId: workspace.id,
         title: body.title,
         description: body.description,
-        assigneeId: body.assigneeId,
+        assigneeEmail: body.assigneeEmail,
       };
 
       const result: Ticket[] = await dataDb
@@ -184,7 +179,7 @@ export const ticketHandlers = {
         id: createdTicket.id,
         title: createdTicket.title,
         description: createdTicket.description ?? undefined,
-        assigneeId: createdTicket.assigneeId ?? undefined,
+        assigneeEmail: createdTicket.assigneeEmail ?? undefined,
       };
     },
   }),
@@ -207,8 +202,8 @@ export const ticketHandlers = {
       if (body.description !== undefined) {
         updateData.description = body.description;
       }
-      if (body.assigneeId !== undefined) {
-        updateData.assigneeId = body.assigneeId;
+      if (body.assigneeEmail !== undefined) {
+        updateData.assigneeEmail = body.assigneeEmail;
       }
 
       const result: Ticket[] = await dataDb
@@ -231,7 +226,7 @@ export const ticketHandlers = {
         id: updatedTicket.id,
         title: updatedTicket.title,
         description: updatedTicket.description ?? undefined,
-        assigneeId: updatedTicket.assigneeId ?? undefined,
+        assigneeEmail: updatedTicket.assigneeEmail ?? undefined,
       };
     },
   }),

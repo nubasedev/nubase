@@ -17,7 +17,7 @@ The schema is defined in apps/nubase/schema and both the frontend and backend us
 
 ## Documentation
 
-If you're curious about how the architecture works internally you can read the docs at apps/docs/docs/ and apps/docs/docs/internal/
+If you're curious about how the architecture works internally you can read the docs at apps/docs/src/content/docs/ and apps/docs/docs/internal/
 
 ## Development Commands
 
