@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 import { getRoot } from "./api/routes";
 import { authHandlers } from "./api/routes/auth";
 import { dashboardHandlers } from "./api/routes/dashboard";
+import { nubaseRoutes } from "./api/routes/nubase";
 import { testUtils } from "./api/routes/test-utils";
 import { ticketHandlers } from "./api/routes/ticket";
 import { userHandlers } from "./api/routes/user";
@@ -51,6 +52,9 @@ registerHandlers(app, authHandlers);
 registerHandlers(app, ticketHandlers);
 registerHandlers(app, userHandlers);
 registerHandlers(app, dashboardHandlers);
+
+// Nubase platform routes (schema introspection, app deployments)
+app.route("/api/nubase", nubaseRoutes);
 
 // Test utility routes - only enabled in test environment
 if (process.env.NODE_ENV === "test" || process.env.DB_PORT === "5435") {

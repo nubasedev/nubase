@@ -98,6 +98,32 @@ program
   });
 
 program
+  .command("pull")
+  .description("Fetch schema from Nubase server and generate TypeScript types")
+  .action(async () => {
+    try {
+      const { pull } = await import("./commands/pull.js");
+      await pull();
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("push")
+  .description("Bundle and deploy app code to Nubase server")
+  .action(async () => {
+    try {
+      const { push } = await import("./commands/push.js");
+      await push();
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+program
   .command("migration")
   .description("Migration commands")
   .command("new")
