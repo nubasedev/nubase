@@ -174,7 +174,7 @@ describe("generateTypes", () => {
     expect(mapFile).toBeDefined();
     const content = mapFile?.content;
 
-    expect(content).toContain("export interface NubaseEntities {");
+    expect(content).toContain("export type NubaseEntities = {");
     expect(content).toContain("ticket: {");
     expect(content).toContain("row: Ticket;");
     expect(content).toContain("insert: TicketInsert;");

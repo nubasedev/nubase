@@ -9,10 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nubase/sdk": "*"
+    "@nubase/sdk": "file:../packages/sdk"
   },
   "devDependencies": {
-    "@nubase/cli": "*",
+    "@nubase/cli": "file:../packages/cli",
     "typescript": "^5.9.3"
   }
 }

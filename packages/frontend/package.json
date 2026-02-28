@@ -43,7 +43,7 @@
     "watch:ts": "tsup --watch",
     "watch:css": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "storybook": "storybook dev -p 6006",
-    "dev": "concurrently \"npm:watch:ts\" \"npm:watch:css\" \"npm:storybook\""
+    "dev": "concurrently \"npm:watch:ts\" \"npm:watch:css\""
   },
   "peerDependencies": {
     "react": "^19.2.3"

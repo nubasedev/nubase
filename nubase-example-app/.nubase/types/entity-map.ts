@@ -2,7 +2,7 @@
 
 import type { Ticket, TicketInsert, TicketUpdate } from "./ticket.js";
 
-export interface NubaseEntities {
+export type NubaseEntities = {
   ticket: {
     row: Ticket;
     insert: TicketInsert;

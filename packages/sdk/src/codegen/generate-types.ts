@@ -217,8 +217,8 @@ function generateEntityMapFile(entityNames: string[]): string {
   }
   lines.push("");
 
-  // Generate the NubaseEntities interface
-  lines.push("export interface NubaseEntities {");
+  // Generate the NubaseEntities type (must be `type`, not `interface`, to satisfy EntityMap index signature)
+  lines.push("export type NubaseEntities = {");
   for (const entityName of entityNames) {
     const pascalName = toPascalCase(entityName);
     lines.push(`  ${entityName}: {`);
