@@ -57,6 +57,7 @@
   "workspaces": [
     "apps/docs",
     "apps/nubase/*",
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ]
 }

@@ -6,13 +6,14 @@
   "scripts": {
     "pull": "nubase pull",
     "push": "nubase push",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check ."
   },
   "dependencies": {
-    "@nubase/sdk": "file:../packages/sdk"
+    "@nubase/sdk": "*"
   },
   "devDependencies": {
-    "@nubase/cli": "file:../packages/cli",
+    "@nubase/cli": "*",
     "typescript": "^5.9.3"
   }
 }

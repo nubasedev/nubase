@@ -144,27 +144,27 @@ describe("generateTypes", () => {
     expect(paths).toContain("index.ts");
   });
 
-  it("generates correct entity file with Row, Insert, Update interfaces", () => {
+  it("generates correct entity file with Row, Insert, Update types", () => {
     const files = generateTypes(schema);
     const entityFile = files.find((f) => f.path === "ticket.ts");
     expect(entityFile).toBeDefined();
     const content = entityFile?.content;
 
-    // Row interface
-    expect(content).toContain("export interface Ticket {");
+    // Row type (uses `type` to satisfy Record<string, unknown> constraint)
+    expect(content).toContain("export type Ticket = {");
     expect(content).toContain("id: number;");
     expect(content).toContain("title: string;");
     expect(content).toContain("description: string | null;");
 
-    // Insert interface — omits identity columns, nullable fields are optional
-    expect(content).toContain("export interface TicketInsert {");
-    expect(content).not.toMatch(/TicketInsert\s*\{[^}]*\bid\b/);
+    // Insert type — omits identity columns, nullable fields are optional
+    expect(content).toContain("export type TicketInsert = {");
+    expect(content).not.toMatch(/TicketInsert\s*=\s*\{[^}]*\bid\b/);
     expect(content).toContain("title: string;");
     expect(content).toContain("description?: string | null;");
 
-    // Update interface — all fields optional, omits identity
-    expect(content).toContain("export interface TicketUpdate {");
-    expect(content).not.toMatch(/TicketUpdate\s*\{[^}]*\bid\b/);
+    // Update type — all fields optional, omits identity
+    expect(content).toContain("export type TicketUpdate = {");
+    expect(content).not.toMatch(/TicketUpdate\s*=\s*\{[^}]*\bid\b/);
     expect(content).toContain("title?: string;");
   });
 

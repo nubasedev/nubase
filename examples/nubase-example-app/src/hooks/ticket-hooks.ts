@@ -1,6 +1,5 @@
-import type { BeforeCreateContext, AfterCreateContext } from "@nubase/sdk";
-import type { NubaseEntities } from "../../.nubase/types";
-import type { Ticket } from "../../.nubase/types";
+import type { AfterCreateContext, BeforeCreateContext } from "@nubase/sdk";
+import type { NubaseEntities, Ticket } from "../../.nubase/types";
 
 export async function onBeforeCreateTicket(
   ctx: BeforeCreateContext<NubaseEntities, Ticket>,

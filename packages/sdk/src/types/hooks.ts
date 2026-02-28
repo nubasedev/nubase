@@ -88,11 +88,10 @@ export interface AfterReadContext<TEntities extends EntityMap, TRow>
 
 export type BeforeHookResult<TRow> =
   | undefined
-  | undefined
   | { abort: { statusCode: number; message: string } }
   | { data: TRow };
 
-export type AfterHookResult = undefined | undefined;
+export type AfterHookResult = undefined;
 
 // ---------------------------------------------------------------------------
 // Hook handler resolution — maps a hook key to its handler signature
@@ -126,7 +125,7 @@ export type HookHandler<TEntities extends EntityMap, K extends string> =
             TEntities,
             RowFor<TEntities, EntityNameFromKey<K>>
           >,
-        ) => Promise<AfterHookResult> | AfterHookResult
+        ) => void | Promise<void>
       : HookTypeFromKey<K> extends "before-update"
         ? (
             ctx: BeforeUpdateContext<
@@ -146,7 +145,7 @@ export type HookHandler<TEntities extends EntityMap, K extends string> =
                 TEntities,
                 RowFor<TEntities, EntityNameFromKey<K>>
               >,
-            ) => Promise<AfterHookResult> | AfterHookResult
+            ) => void | Promise<void>
           : HookTypeFromKey<K> extends "before-delete"
             ? (
                 ctx: BeforeDeleteContext<
@@ -160,7 +159,7 @@ export type HookHandler<TEntities extends EntityMap, K extends string> =
                     TEntities,
                     RowFor<TEntities, EntityNameFromKey<K>>
                   >,
-                ) => Promise<AfterHookResult> | AfterHookResult
+                ) => void | Promise<void>
               : HookTypeFromKey<K> extends "before-read"
                 ? (
                     ctx: BeforeReadContext<TEntities>,
@@ -173,7 +172,7 @@ export type HookHandler<TEntities extends EntityMap, K extends string> =
                         TEntities,
                         RowFor<TEntities, EntityNameFromKey<K>>
                       >,
-                    ) => Promise<AfterHookResult> | AfterHookResult
+                    ) => void | Promise<void>
                   : never;
 
 /**

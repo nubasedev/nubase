@@ -8,4 +8,4 @@ export type NubaseEntities = {
     insert: TicketInsert;
     update: TicketUpdate;
   };
-}
+};
