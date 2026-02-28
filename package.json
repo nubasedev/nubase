@@ -42,7 +42,8 @@
     "cli:db:pull": "npm run cli -- db pull",
     "cli:db:push": "npm run cli -- db push",
     "cli:db:reset": "npm run cli -- db reset",
-    "cli:init": "npm run cli -- init"
+    "cli:init": "npm run cli -- init",
+    "e2e:create": "bash packages/create/e2e/create-app.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
