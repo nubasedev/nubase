@@ -123,6 +123,68 @@ program
     }
   });
 
+const remote = program
+  .command("remote")
+  .description("Manage remote Nubase servers");
+
+remote
+  .command("add")
+  .description("Add a new remote")
+  .argument("<name>", "Remote name (e.g. origin, staging)")
+  .requiredOption("--url <url>", "Server URL")
+  .requiredOption("--workspace <slug>", "Workspace slug")
+  .option("--token <token>", "API token")
+  .action(async (name, options) => {
+    try {
+      const { remoteAdd } = await import("./commands/remote-add.js");
+      await remoteAdd(name, options);
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+remote
+  .command("remove")
+  .description("Remove a remote")
+  .argument("<name>", "Remote name to remove")
+  .action(async (name) => {
+    try {
+      const { remoteRemove } = await import("./commands/remote-remove.js");
+      await remoteRemove(name);
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+remote
+  .command("use")
+  .description("Set the active remote")
+  .argument("<name>", "Remote name to activate")
+  .action(async (name) => {
+    try {
+      const { remoteUse } = await import("./commands/remote-use.js");
+      await remoteUse(name);
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
+remote
+  .command("list")
+  .description("List all remotes")
+  .action(async () => {
+    try {
+      const { remoteList } = await import("./commands/remote-list.js");
+      await remoteList();
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
 program
   .command("migration")
   .description("Migration commands")

@@ -67,7 +67,7 @@ export async function loadAppConfig(): Promise<ResolvedAppConfig> {
   };
 }
 
-function findAppProjectRoot(startDir: string = process.cwd()): string {
+export function findAppProjectRoot(startDir: string = process.cwd()): string {
   let current = path.resolve(startDir);
 
   while (true) {
