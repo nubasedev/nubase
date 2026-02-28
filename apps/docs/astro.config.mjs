@@ -48,7 +48,8 @@ export default defineConfig({
 					label: 'Advanced',
 					items: [
 						{ label: 'Computed Metadata', link: '/docs/computed-metadata/' },
-						{ label: 'E2E Testing', link: '/docs/e2e-testing/' },
+						{ label: 'Code Extensions', link: '/docs/code-extensions/' },
+					{ label: 'E2E Testing', link: '/docs/e2e-testing/' },
 					],
 				},
 				{
