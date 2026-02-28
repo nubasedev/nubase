@@ -12,10 +12,10 @@ interface Manifest {
 /**
  * `nubase push` — bundle app code and deploy to server.
  */
-export async function push(): Promise<void> {
-  log.step("Loading nubase.config.ts...");
-  const resolved = await loadAppConfig();
-  const { config, projectRoot, entry } = resolved;
+export async function push(options?: { remote?: string }): Promise<void> {
+  log.step("Loading configuration...");
+  const resolved = await loadAppConfig(options);
+  const { remote, projectRoot, entry } = resolved;
 
   const entryPath = path.join(projectRoot, entry);
 
@@ -93,14 +93,14 @@ export async function push(): Promise<void> {
     );
   }
 
-  log.step(`Deploying to ${config.server.url}...`);
+  log.step(`Deploying to ${remote.name} (${remote.url})...`);
 
-  const deployUrl = `${config.server.url}/api/nubase/apps/deploy`;
+  const deployUrl = `${remote.url}/api/nubase/apps/deploy`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  if (config.server.token) {
-    headers.Authorization = `Bearer ${config.server.token}`;
+  if (remote.token) {
+    headers.Authorization = `Bearer ${remote.token}`;
   }
 
   const response = await fetch(deployUrl, {

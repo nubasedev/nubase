@@ -8,20 +8,20 @@ import { log } from "../output/logger.js";
 /**
  * `nubase pull` — fetch schema from server and generate TypeScript types.
  */
-export async function pull(): Promise<void> {
-  log.step("Loading nubase.config.ts...");
-  const resolved = await loadAppConfig();
+export async function pull(options?: { remote?: string }): Promise<void> {
+  log.step("Loading configuration...");
+  const resolved = await loadAppConfig(options);
 
-  const { config, typesDir } = resolved;
-  const schemaUrl = `${config.server.url}/api/nubase/schema`;
+  const { remote, typesDir } = resolved;
+  const schemaUrl = `${remote.url}/api/nubase/schema`;
 
-  log.step(`Fetching schema from ${schemaUrl}...`);
+  log.step(`Fetching schema from ${remote.name} (${schemaUrl})...`);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  if (config.server.token) {
-    headers.Authorization = `Bearer ${config.server.token}`;
+  if (remote.token) {
+    headers.Authorization = `Bearer ${remote.token}`;
   }
 
   const response = await fetch(schemaUrl, { headers });
@@ -36,10 +36,8 @@ export async function pull(): Promise<void> {
 
   log.step("Generating types...");
 
-  // Ensure output directory exists
   mkdirSync(typesDir, { recursive: true });
 
-  // Generate type files
   const files = generateTypes(schema);
 
   for (const file of files) {
@@ -48,7 +46,6 @@ export async function pull(): Promise<void> {
     log.dim(`  ${file.path}`);
   }
 
-  // Cache schema metadata
   const metadataPath = path.join(
     path.dirname(typesDir),
     "schema-metadata.json",

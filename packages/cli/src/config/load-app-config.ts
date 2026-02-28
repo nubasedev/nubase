@@ -2,69 +2,71 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import dotenv from "dotenv";
 import { createJiti } from "jiti";
+import { getActiveRemote, loadRemotes } from "../remotes/remotes-file.js";
+import type { RemoteConfig } from "../remotes/types.js";
 
 const jiti = createJiti(import.meta.url);
 
-export interface AppConfig {
-  server: {
-    url: string;
-    token?: string;
-  };
-  workspace: string;
-  output?: {
-    typesDir?: string;
-  };
-  app?: {
-    entry?: string;
-  };
-}
-
 export interface ResolvedAppConfig {
-  config: AppConfig;
+  remote: RemoteConfig & { name: string };
   projectRoot: string;
   typesDir: string;
   entry: string;
 }
 
 /**
- * Find and load nubase.config.ts from the current directory or parent directories.
- * This is for SDK-style app configs (not the CLI db management configs).
+ * Find and load app configuration from nubase.config.ts and .nubase/remotes.json.
+ * Remote (server URL, workspace, token) comes from remotes.json.
+ * Output and app settings come from nubase.config.ts.
  */
-export async function loadAppConfig(): Promise<ResolvedAppConfig> {
+export async function loadAppConfig(options?: {
+  remote?: string;
+}): Promise<ResolvedAppConfig> {
   const projectRoot = findAppProjectRoot();
 
   // Load .env from the project root
   dotenv.config({ path: path.join(projectRoot, ".env") });
 
+  // Load nubase.config.ts for output/app settings
   const configPath = path.join(projectRoot, "nubase.config.ts");
-  const module = await jiti.import(configPath);
-  const config = (
-    module && typeof module === "object" && "default" in module
-      ? module.default
-      : module
-  ) as AppConfig;
+  let output: { typesDir?: string } | undefined;
+  let app: { entry?: string } | undefined;
 
-  if (!config.server?.url) {
-    throw new Error("server.url is required in nubase.config.ts");
+  if (existsSync(configPath)) {
+    const module = await jiti.import(configPath);
+    const config = (
+      module && typeof module === "object" && "default" in module
+        ? module.default
+        : module
+    ) as { output?: { typesDir?: string }; app?: { entry?: string } };
+    output = config.output;
+    app = config.app;
   }
 
-  if (!config.workspace) {
-    throw new Error("workspace is required in nubase.config.ts");
+  // Resolve remote
+  const remotesConfig = loadRemotes(projectRoot);
+  let remote: RemoteConfig & { name: string };
+
+  if (options?.remote) {
+    const namedRemote = remotesConfig.remotes[options.remote];
+    if (!namedRemote) {
+      throw new Error(
+        `Remote "${options.remote}" not found. Run \`nubase remote list\` to see available remotes.`,
+      );
+    }
+    remote = { name: options.remote, ...namedRemote };
+  } else {
+    remote = getActiveRemote(remotesConfig);
   }
 
   const typesDir = path.join(
     projectRoot,
-    config.output?.typesDir ?? ".nubase/types",
+    output?.typesDir ?? ".nubase/types",
   );
 
-  const entry = config.app?.entry ?? "src/index.ts";
+  const entry = app?.entry ?? "src/index.ts";
 
-  return {
-    config,
-    projectRoot,
-    typesDir,
-    entry,
-  };
+  return { remote, projectRoot, typesDir, entry };
 }
 
 export function findAppProjectRoot(startDir: string = process.cwd()): string {

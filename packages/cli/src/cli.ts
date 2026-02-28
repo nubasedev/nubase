@@ -100,10 +100,11 @@ program
 program
   .command("pull")
   .description("Fetch schema from Nubase server and generate TypeScript types")
-  .action(async () => {
+  .option("--remote <name>", "Use a specific remote instead of the active one")
+  .action(async (options) => {
     try {
       const { pull } = await import("./commands/pull.js");
-      await pull();
+      await pull(options);
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;
@@ -113,10 +114,11 @@ program
 program
   .command("push")
   .description("Bundle and deploy app code to Nubase server")
-  .action(async () => {
+  .option("--remote <name>", "Use a specific remote instead of the active one")
+  .action(async (options) => {
     try {
       const { push } = await import("./commands/push.js");
-      await push();
+      await push(options);
     } catch (error) {
       log.error(error instanceof Error ? error.message : String(error));
       process.exitCode = 1;
