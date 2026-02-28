@@ -1,0 +1,20 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pull": "nubase pull",
+    "push": "nubase push",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check ."
+  },
+  "dependencies": {
+    "@nubase/sdk": "^0.1.29"
+  },
+  "devDependencies": {
+    "@nubase/cli": "^0.1.29",
+    "@biomejs/biome": "^2.4.4",
+    "typescript": "^5.9.3"
+  }
+}

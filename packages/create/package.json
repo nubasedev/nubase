@@ -1,0 +1,33 @@
+{
+  "name": "@nubase/create",
+  "version": "0.1.29",
+  "description": "Create a new Nubase app",
+  "type": "module",
+  "bin": {
+    "nubase-create": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --clean",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/prompts": "^2.4.9",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,3 @@
+import { defineApp } from "@nubase/sdk";
+
+export default defineApp({});
