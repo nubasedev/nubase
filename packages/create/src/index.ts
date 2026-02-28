@@ -38,7 +38,7 @@ program
           process.exit(0);
         }
         console.error(
-          chalk.red("x"),
+          chalk.red("✗"),
           error instanceof Error ? error.message : String(error),
         );
         process.exit(1);
@@ -100,6 +100,12 @@ async function create(
 
   if (!workspace) throw new Error("cancelled");
 
+  if (!/^[a-z][a-z0-9-]*$/.test(workspace)) {
+    throw new Error(
+      "Workspace slug must be kebab-case (lowercase letters, numbers, and hyphens)",
+    );
+  }
+
   // 4. API token (optional)
   const token =
     options.token ??
@@ -115,7 +121,7 @@ async function create(
   mkdirSync(projectDir, { recursive: true });
 
   console.log();
-  console.log(chalk.cyan("->"), "Scaffolding project...");
+  console.log(chalk.cyan("→"), "Scaffolding project...");
 
   // Copy and interpolate templates
   copyTemplate("package.json.template", projectDir, "package.json", {
@@ -147,13 +153,13 @@ async function create(
     "utf-8",
   );
 
-  console.log(chalk.green("v"), "Project scaffolded");
+  console.log(chalk.green("✓"), "Project scaffolded");
 
   // Install dependencies
   if (!options.skipInstall) {
-    console.log(chalk.cyan("->"), "Installing dependencies...");
+    console.log(chalk.cyan("→"), "Installing dependencies...");
     execSync("npm install", { cwd: projectDir, stdio: "inherit" });
-    console.log(chalk.green("v"), "Dependencies installed");
+    console.log(chalk.green("✓"), "Dependencies installed");
   }
 
   // Print next steps
