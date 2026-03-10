@@ -1,9 +1,0 @@
-{
-  "active": "origin",
-  "remotes": {
-    "origin": {
-      "url": "http://localhost:3001",
-      "workspace": "tavern"
-    }
-  }
-}

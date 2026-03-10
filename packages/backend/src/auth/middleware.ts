@@ -51,7 +51,7 @@ export interface AuthMiddlewareOptions<
  *
  * @example
  * ```typescript
- * const authController = new NubaseBackendAuthController();
+ * const authController = new QuestlogBackendAuthController();
  * const app = new Hono();
  *
  * // Apply to all routes

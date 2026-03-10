@@ -12,9 +12,9 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: nubase
-          POSTGRES_PASSWORD: nubase
-          POSTGRES_DB: nubase
+          POSTGRES_USER: questlog
+          POSTGRES_PASSWORD: questlog
+          POSTGRES_DB: questlog
         ports:
           - 5435:5432
         options: >-
@@ -30,17 +30,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Initialize test database
         run: |
-          PGPASSWORD=nubase psql -h localhost -p 5435 -U nubase -d nubase -f apps/nubase/backend/docker/test/postgresql-init/dump.sql
+          PGPASSWORD=questlog psql -h localhost -p 5435 -U questlog -d questlog -f apps/questlog/backend/docker/test/postgresql-init/dump.sql
         env:
-          PGPASSWORD: nubase
+          PGPASSWORD: questlog
 
       - name: Run lint
         run: npm run lint
@@ -58,12 +58,12 @@ jobs:
         run: npm run e2e
         env:
           NODE_ENV: test
-          DATABASE_URL: postgresql://nubase:nubase@localhost:5435/nubase
+          DATABASE_URL: postgresql://questlog:questlog@localhost:5435/questlog
           DB_HOST: localhost
           DB_PORT: 5435
-          DB_USER: nubase
-          DB_PASSWORD: nubase
-          DB_NAME: nubase
+          DB_USER: questlog
+          DB_PASSWORD: questlog
+          DB_NAME: questlog
 
   publish:
     needs: ci
@@ -76,12 +76,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
           cache: "npm"
           registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build packages
         run: npm run build
@@ -151,6 +151,20 @@ jobs:
             echo "@nubase/cli@$LOCAL_VERSION already exists, skipping"
           else
             echo "Publishing @nubase/cli@$LOCAL_VERSION"
+            npm publish
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @nubase/create (if version not published)
+        run: |
+          cd packages/create
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          # Check if this exact version exists on npm (any tag)
+          if npm view @nubase/create@$LOCAL_VERSION version 2>/dev/null; then
+            echo "@nubase/create@$LOCAL_VERSION already exists, skipping"
+          else
+            echo "Publishing @nubase/create@$LOCAL_VERSION"
             npm publish
           fi
         env:

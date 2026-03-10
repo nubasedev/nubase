@@ -78,27 +78,26 @@ export type SelectFilterProps<T = string> = {
 
   /** Additional className for the trigger button */
   className?: string;
-
-  /** Forwarded ref for the trigger button */
-  ref?: React.Ref<HTMLButtonElement>;
 };
 
-function SelectFilter<T = string>({
-  label,
-  options,
-  value,
-  onChange,
-  searchable = false,
-  searchPlaceholder = "Search...",
-  filterOptions,
-  emptyMessage = "No options found",
-  showSelectAllClear = false,
-  maxHeight = 300,
-  dropdownWidth = 280,
-  disabled = false,
-  className,
-  ref,
-}: SelectFilterProps<T>) {
+function SelectFilterInner<T = string>(
+  {
+    label,
+    options,
+    value,
+    onChange,
+    searchable = false,
+    searchPlaceholder = "Search...",
+    filterOptions,
+    emptyMessage = "No options found",
+    showSelectAllClear = false,
+    maxHeight = 300,
+    dropdownWidth = 280,
+    disabled = false,
+    className,
+  }: SelectFilterProps<T>,
+  ref: React.ForwardedRef<HTMLButtonElement>,
+) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isOpen, setIsOpen] = React.useState(false);
   const [highlightedIndex, setHighlightedIndex] = React.useState(-1);
@@ -337,5 +336,11 @@ function SelectFilter<T = string>({
     </SearchFilterDropdown>
   );
 }
+
+const SelectFilter = React.forwardRef(SelectFilterInner) as <T = string>(
+  props: SelectFilterProps<T> & { ref?: React.ForwardedRef<HTMLButtonElement> },
+) => React.ReactElement;
+
+(SelectFilter as React.FC).displayName = "SelectFilter";
 
 export { SelectFilter, optionVariants };

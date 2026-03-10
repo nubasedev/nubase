@@ -22,7 +22,8 @@ export default defineConfig({
 					items: [
 						{ label: 'Introduction', link: '/docs/intro/' },
 						{ label: 'Getting Started', link: '/docs/getting-started/' },
-		{ label: 'Development Environment', link: '/docs/development-environment/' },
+						{ label: 'Create a Nubase App', link: '/docs/create-nubase-app/' },
+						{ label: 'Development Environment', link: '/docs/development-environment/' },
 					],
 				},
 				{
@@ -48,8 +49,7 @@ export default defineConfig({
 					label: 'Advanced',
 					items: [
 						{ label: 'Computed Metadata', link: '/docs/computed-metadata/' },
-						{ label: 'Code Extensions', link: '/docs/code-extensions/' },
-					{ label: 'E2E Testing', link: '/docs/e2e-testing/' },
+						{ label: 'E2E Testing', link: '/docs/e2e-testing/' },
 					],
 				},
 				{
