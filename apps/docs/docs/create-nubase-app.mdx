@@ -3,8 +3,6 @@ title: Create a Nubase App
 description: Learn how to create a new Nubase application using the CLI.
 ---
 
-import { FileTree } from '@astrojs/starlight/components';
-
 The `@nubase/create` CLI provides the fastest way to create a new Nubase application with a complete project structure.
 
 ## Usage
@@ -21,49 +19,47 @@ The generated project includes:
 
 ### Project Structure
 
-<FileTree>
-
-- my-app/
-  - nubase/ Database configuration and migrations
-    - nubase.config.ts Configuration file
-    - migrations/ SQL migration files
-  - frontend/ React frontend (Vite)
-    - src/
-      - config/ Application configuration
-      - resources/ Resource definitions
-      - main.tsx Entry point
-    - package.json
-  - backend/ Node.js backend (Hono)
-    - src/
-      - api/ API routes
-      - db/ Database schemas
-      - index.ts Server entry point
-    - docker/ Docker configuration
-    - package.json
-  - schema/ Shared TypeScript schemas
-    - src/
-      - schema/ One folder per resource
-        - auth/ Authentication schemas
-          - user.ts
-          - workspace.ts
-          - login-start.ts
-          - login-complete.ts
-          - ...
-          - index.ts
-        - ticket/ Ticket resource schemas
-          - ticket-base.ts
-          - get-ticket.ts
-          - post-ticket.ts
-          - ...
-          - index.ts
-      - api-endpoints.ts Aggregated API endpoints
-      - index.ts
-    - package.json
-  - package.json Root workspace configuration
-  - turbo.json Turborepo configuration
-  - .gitignore
-
-</FileTree>
+```text
+my-app/
+├── nubase/                        # Database configuration and migrations
+│   ├── nubase.config.ts           # Configuration file
+│   └── migrations/                # SQL migration files
+├── frontend/                      # React frontend (Vite)
+│   ├── src/
+│   │   ├── config/                # Application configuration
+│   │   ├── resources/             # Resource definitions
+│   │   └── main.tsx               # Entry point
+│   └── package.json
+├── backend/                       # Node.js backend (Hono)
+│   ├── src/
+│   │   ├── api/                   # API routes
+│   │   ├── db/                    # Database schemas
+│   │   └── index.ts               # Server entry point
+│   ├── docker/                    # Docker configuration
+│   └── package.json
+├── schema/                        # Shared TypeScript schemas
+│   ├── src/
+│   │   ├── schema/                # One folder per resource
+│   │   │   ├── auth/              # Authentication schemas
+│   │   │   │   ├── user.ts
+│   │   │   │   ├── workspace.ts
+│   │   │   │   ├── login-start.ts
+│   │   │   │   ├── login-complete.ts
+│   │   │   │   ├── ...
+│   │   │   │   └── index.ts
+│   │   │   └── ticket/            # Ticket resource schemas
+│   │   │       ├── ticket-base.ts
+│   │   │       ├── get-ticket.ts
+│   │   │       ├── post-ticket.ts
+│   │   │       ├── ...
+│   │   │       └── index.ts
+│   │   ├── api-endpoints.ts       # Aggregated API endpoints
+│   │   └── index.ts
+│   └── package.json
+├── package.json                   # Root workspace configuration
+├── turbo.json                     # Turborepo configuration
+└── .gitignore
+```
 
 ### Pre-configured Features
 

@@ -3,8 +3,6 @@ title: End-to-End Testing
 description: Learn how to run and write end-to-end tests for Nubase applications using Playwright.
 ---
 
-import { FileTree } from '@astrojs/starlight/components';
-
 This guide covers how to run and work with end-to-end (e2e) tests in Nubase projects using Playwright with isolated test environments.
 
 ## Overview
@@ -94,17 +92,15 @@ npm run e2e:debug    # Step-by-step execution with browsers visible
 
 Tests are located in `apps/questlog/frontend/e2e/`:
 
-<FileTree>
-
-- apps/questlog/frontend/
-  - e2e/
-    - fixtures/
-      - base.ts
-    - ticket.spec.ts
-    - navigation.spec.ts
-  - playwright.config.ts
-
-</FileTree>
+```text
+apps/questlog/frontend/
+├── e2e/
+│   ├── fixtures/
+│   │   └── base.ts
+│   ├── ticket.spec.ts
+│   └── navigation.spec.ts
+└── playwright.config.ts
+```
 
 ### Basic Test Example
 
