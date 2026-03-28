@@ -10,12 +10,12 @@ export const userResource = createResource("user")
   })
   .withActions({
     delete: {
-      label: "Remove",
+      label: "Delete",
       icon: TrashIcon,
       variant: "destructive" as const,
       onExecute: async ({ selectedIds, context }) => {
         if (!selectedIds || selectedIds.length === 0) {
-          showToast("No users selected for removal", "error");
+          showToast("No users selected for deletion", "error");
           return;
         }
 
@@ -25,9 +25,9 @@ export const userResource = createResource("user")
         // Show confirmation dialog
         const confirmed = await new Promise<boolean>((resolve) => {
           context.dialog.openDialog({
-            title: "Remove Users",
-            content: `Are you sure you want to remove ${userCount} ${userLabel} from this workspace? They will no longer have access.`,
-            confirmText: "Remove",
+            title: "Delete Users",
+            content: `Are you sure you want to delete ${userCount} ${userLabel} from this workspace? They will no longer have access.`,
+            confirmText: "Delete",
             confirmVariant: "destructive",
             onConfirm: () => resolve(true),
             onCancel: () => resolve(false),
@@ -39,7 +39,7 @@ export const userResource = createResource("user")
         }
 
         try {
-          // Remove all selected users in parallel
+          // Delete all selected users in parallel
           await Promise.all(
             selectedIds.map((id) =>
               context.http.deleteUser({
@@ -49,14 +49,14 @@ export const userResource = createResource("user")
           );
 
           showToast(
-            `${userCount} ${userLabel} removed successfully`,
+            `${userCount} ${userLabel} deleted successfully`,
             "default",
           );
 
           // Query invalidation is now handled automatically by ResourceSearchViewRenderer
         } catch (error) {
-          console.error("Error removing users:", error);
-          showToast(`Failed to remove ${userLabel}`, "error");
+          console.error("Error deleting users:", error);
+          showToast(`Failed to delete ${userLabel}`, "error");
         }
       },
     },
