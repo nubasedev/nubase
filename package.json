@@ -54,7 +54,7 @@
     "vitest": "^4.0.18"
   },
   "engines": {
-    "node": ">=18",
+    "node": ">=18 <24",
     "npm": ">=10.9.2"
   },
   "packageManager": "npm@10.9.2",
