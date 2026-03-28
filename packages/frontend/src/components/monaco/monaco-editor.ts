@@ -16,14 +16,14 @@ export async function initializeJsonSchema(): Promise<void> {
     const jsonSchema = zodToJsonSchema(exampleSchema, "exampleSchema");
 
     // Configure JSON language settings
-    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    monaco.json.jsonDefaults.setDiagnosticsOptions({
       validate: true,
       allowComments: true,
       schemas: [
         {
-          uri: "project-schema.json", // A unique URI for the schema itself
+          uri: "project-schema.json",
           schema: jsonSchema,
-          fileMatch: ["*"], // Match all JSON files
+          fileMatch: ["*"],
         },
       ],
       enableSchemaRequest: true,
@@ -32,7 +32,7 @@ export async function initializeJsonSchema(): Promise<void> {
     });
 
     // Configure completion and formatting settings
-    monaco.languages.json.jsonDefaults.setModeConfiguration({
+    monaco.json.jsonDefaults.setModeConfiguration({
       documentFormattingEdits: true,
       documentRangeFormattingEdits: true,
       completionItems: true,
@@ -44,16 +44,15 @@ export async function initializeJsonSchema(): Promise<void> {
       diagnostics: true,
       selectionRanges: true,
     });
-
-    // JSON schema validation configured successfully
   } catch (error) {
     console.error("Error configuring JSON schema validation:", error);
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function initializeMonaco(): Promise<typeof monaco> {
-  loader.config({ monaco });
+  loader.config({ monaco: monaco as any });
   await initializeJsonSchema();
 
-  return loader.init();
+  return loader.init() as unknown as Promise<typeof monaco>;
 }
