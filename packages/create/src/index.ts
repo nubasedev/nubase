@@ -194,7 +194,7 @@ async function main() {
 	console.log(chalk.blue(`\nCreating project in ${chalk.bold(targetDir)}...\n`));
 
 	// Copy templates
-	const templates = ["root", "schema", "backend", "frontend", "nubase"];
+	const templates = ["root", "common", "backend", "frontend", "nubase"];
 	for (const template of templates) {
 		const templatePath = path.join(TEMPLATE_DIR, template);
 		if (!fs.existsSync(templatePath)) {

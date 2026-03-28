@@ -11,9 +11,9 @@ As an example: the "apps/questlog" folder contains 3 projects
 
 apps/questlog/backend
 apps/questlog/frontend
-apps/questlog/schema
+apps/questlog/common
 
-The schema is defined in apps/questlog/schema and both the frontend and backend use this common schema to configure itself.
+The common definitions are in apps/questlog/common and both the frontend and backend use them to configure themselves.
 
 ## Documentation
 
@@ -71,7 +71,7 @@ This is the primary example application used for framework development. It's par
 
 - `apps/questlog/frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in tavern.localhost:3002
 - `apps/questlog/backend` - Node.js backend example with API endpoints. It runs in tavern.localhost:3001
-- `apps/questlog/schema` - Shared schema definitions for the example app
+- `apps/questlog/common` - Shared definitions for the example app
 
 **Use this when**: Contributing to Nubase, testing local package changes, or understanding the framework internals.
 
@@ -99,7 +99,7 @@ When you run the development environment (`npm run dev`), you're running the que
 - Uses Drizzle ORM with PostgreSQL for data persistence
 - Includes database schema definitions and migration files
 
-**Schema (`apps/questlog/schema`)**
+**Common (`apps/questlog/common`)**
 
 - Shared TypeScript definitions used by both frontend and backend
 - Defines API endpoint types and data schemas for type safety across the stack

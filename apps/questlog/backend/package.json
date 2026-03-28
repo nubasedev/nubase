@@ -40,7 +40,7 @@
     "hono": "^4.12.6",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
-    "questlog-schema": "*",
+    "questlog-common": "*",
     "shelljs": "^0.10.0"
   },
   "devDependencies": {

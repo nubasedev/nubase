@@ -1,5 +1,5 @@
 import { createDashboard } from "@nubase/frontend";
-import { apiEndpoints } from "schema";
+import { apiEndpoints } from "common";
 
 /**
  * Analytics dashboard configuration.

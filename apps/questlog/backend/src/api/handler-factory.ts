@@ -1,5 +1,5 @@
 import { createHandlerFactory } from "@nubase/backend";
-import { type ApiEndpoints, apiEndpoints } from "questlog-schema";
+import { type ApiEndpoints, apiEndpoints } from "questlog-common";
 import type { QuestlogUser } from "../auth";
 
 /**

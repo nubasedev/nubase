@@ -1,7 +1,7 @@
 {
-  "name": "questlog-schema",
+  "name": "common",
   "version": "0.1.0",
-  "description": "Schema for the example app",
+  "description": "Common definitions for __PROJECT_NAME_PASCAL__",
   "type": "module",
   "files": [
     "src"
@@ -15,15 +15,14 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "echo \"No tests configured for schema package\"",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe"
   },
-  "devDependencies": {
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
     "@nubase/core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

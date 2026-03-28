@@ -1,6 +1,6 @@
 import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
-import { apiEndpoints } from "schema";
+import { apiEndpoints } from "common";
 
 export const userResource = createResource("user")
 	.withApiEndpoints(apiEndpoints)
