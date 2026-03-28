@@ -189,7 +189,7 @@ describe("toZod converter", () => {
             age: z.ZodNumber;
           },
           any,
-          z.ZodTypeAny,
+          z.ZodType,
           { name: string; age: number }
         >
       >();
@@ -237,7 +237,7 @@ describe("toZod converter", () => {
             active: z.ZodOptional<z.ZodNullable<z.ZodBoolean>>;
           },
           any,
-          z.ZodTypeAny,
+          z.ZodType,
           { name: string; age?: number | null; active?: boolean | null }
         >
       >();
@@ -345,7 +345,7 @@ describe("toZod converter", () => {
             active: z.ZodOptional<z.ZodBoolean>;
           },
           any,
-          z.ZodTypeAny,
+          z.ZodType,
           { name?: string; age?: number; active?: boolean }
         >
       >();
@@ -426,7 +426,7 @@ describe("toZod converter", () => {
             name: z.ZodString;
           },
           any,
-          z.ZodTypeAny,
+          z.ZodType,
           { id: number; name: string }
         >
       >();
@@ -471,7 +471,7 @@ describe("toZod converter", () => {
             active: z.ZodOptional<z.ZodBoolean>;
           },
           any,
-          z.ZodTypeAny,
+          z.ZodType,
           {
             name: string;
             age: number;
@@ -730,7 +730,7 @@ describe("toZod converter", () => {
                   tags: z.ZodArray<z.ZodString>;
                 },
                 any,
-                z.ZodTypeAny,
+                z.ZodType,
                 {
                   name: string;
                   bio?: string | null;
@@ -739,7 +739,7 @@ describe("toZod converter", () => {
               >;
             },
             any,
-            z.ZodTypeAny,
+            z.ZodType,
             {
               id: number;
               profile: {
@@ -760,7 +760,7 @@ describe("toZod converter", () => {
                       push: z.ZodBoolean;
                     },
                     any,
-                    z.ZodTypeAny,
+                    z.ZodType,
                     {
                       email: boolean;
                       push: boolean;
@@ -770,7 +770,7 @@ describe("toZod converter", () => {
               >;
             },
             any,
-            z.ZodTypeAny,
+            z.ZodType,
             {
               theme?: string | null;
               notifications?: {
@@ -786,7 +786,7 @@ describe("toZod converter", () => {
                 value: z.ZodString;
               },
               any,
-              z.ZodTypeAny,
+              z.ZodType,
               {
                 key: string;
                 value: string;
@@ -795,7 +795,7 @@ describe("toZod converter", () => {
           >;
         },
         any,
-        z.ZodTypeAny,
+        z.ZodType,
         {
           user: {
             id: number;

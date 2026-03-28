@@ -99,7 +99,7 @@ export const DataGridCellPatchWrapper: React.FC<
           const parseResult = zodSchema.safeParse(patchValue);
           if (!parseResult.success) {
             const errorMessage =
-              parseResult.error.errors[0]?.message || "Invalid value";
+              parseResult.error.issues[0]?.message || "Invalid value";
             setPatchError(errorMessage);
             setIsPatching(false);
             return;

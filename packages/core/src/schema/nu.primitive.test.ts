@@ -55,14 +55,14 @@ describe("nubase Schema Library (nu) - Primitive Types", () => {
     expect(() => numberSchema.toZod().parse(Number.NaN)).toThrow();
   });
 
-  it("should parse Infinity as a valid number (Zod behavior)", () => {
+  it("should reject Infinity as an invalid number (Zod 4 behavior)", () => {
     const numberSchema = nu.number();
-    expect(numberSchema.toZod().parse(Number.POSITIVE_INFINITY)).toBe(
-      Number.POSITIVE_INFINITY,
-    );
-    expect(numberSchema.toZod().parse(Number.NEGATIVE_INFINITY)).toBe(
-      Number.NEGATIVE_INFINITY,
-    );
+    expect(() =>
+      numberSchema.toZod().parse(Number.POSITIVE_INFINITY),
+    ).toThrow();
+    expect(() =>
+      numberSchema.toZod().parse(Number.NEGATIVE_INFINITY),
+    ).toThrow();
   });
 
   it("should parse valid array data", () => {

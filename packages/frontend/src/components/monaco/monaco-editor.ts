@@ -1,7 +1,6 @@
 import loader from "@monaco-editor/loader";
 import * as monaco from "monaco-editor";
 import { z } from "zod";
-import zodToJsonSchema from "zod-to-json-schema";
 
 // Simple example schema - replace with your actual schema
 const exampleSchema = z.object({
@@ -12,8 +11,8 @@ const exampleSchema = z.object({
 
 export async function initializeJsonSchema(): Promise<void> {
   try {
-    // Convert the Zod schema to JSON Schema using the library
-    const jsonSchema = zodToJsonSchema(exampleSchema, "exampleSchema");
+    // Convert the Zod schema to JSON Schema using Zod 4's built-in conversion
+    const jsonSchema = z.toJSONSchema(exampleSchema, { target: "draft-7" });
 
     // Configure JSON language settings
     monaco.json.jsonDefaults.setDiagnosticsOptions({

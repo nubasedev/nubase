@@ -814,7 +814,7 @@ export class ObjectSchema<
   }
 
   toZod(): z.ZodSchema<ObjectOutput<TShape>> {
-    const zodShape: Record<string, z.ZodTypeAny> = {};
+    const zodShape: Record<string, z.ZodType> = {};
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
         const fieldSchema = this._shape[key];
@@ -849,7 +849,7 @@ export class ObjectSchema<
    * @returns A Zod schema with coercion for URL parameter parsing
    */
   toZodWithCoercion(): z.ZodSchema<ObjectOutput<TShape>> {
-    const zodShape: Record<string, z.ZodTypeAny> = {};
+    const zodShape: Record<string, z.ZodType> = {};
 
     for (const key in this._shape) {
       if (Object.hasOwn(this._shape, key) && this._shape[key]) {
