@@ -53,8 +53,8 @@ fi
 
 if [ "$PROJECT" = "questlog" ]; then
   echo "Starting questlog databases..."
-  cd "$ROOT_DIR/apps/questlog/backend"
-  npm run db:dev:up
+  cd "$ROOT_DIR/apps/questlog"
+  npm run db:up
   npm run db:test:up
 elif [ "$PROJECT" = "starter" ]; then
   if [ ! -d "$ROOT_DIR/apps/starter" ]; then
@@ -65,8 +65,8 @@ elif [ "$PROJECT" = "starter" ]; then
     exit 1
   fi
   echo "Starting starter databases..."
-  cd "$ROOT_DIR/apps/starter/backend"
-  npm run db:dev:up
+  cd "$ROOT_DIR/apps/starter"
+  npm run db:up
   npm run db:test:up
 else
   echo "Unknown project: $PROJECT"

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "rootDir": "./src",
+    "declaration": true,
+    "outDir": "./dist/server"
+  },
+  "include": ["src/backend/**/*", "src/common/**/*"]
+}

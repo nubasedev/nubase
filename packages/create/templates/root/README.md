@@ -30,15 +30,13 @@ npm run db:up
 npm run db:seed
 ```
 
-4. Start the development servers:
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-The application will be available at:
-- Frontend: http://localhost:__FRONTEND_PORT__/default
-- Backend API: http://localhost:__BACKEND_PORT__
+The application will be available at http://localhost:__PORT__/tavern
 
 ### Default Credentials
 
@@ -49,16 +47,21 @@ The application will be available at:
 
 ```
 __PROJECT_NAME__/
-├── common/      # Shared API schemas and types
-├── backend/     # Node.js backend (Hono + PostgreSQL)
-├── frontend/    # React frontend (Vite + Nubase)
-└── package.json # Root workspace configuration
+├── src/
+│   ├── backend/     # Hono API server
+│   ├── frontend/    # React frontend (Vite + Nubase)
+│   └── common/      # Shared API schemas and types
+├── docker/          # Docker Compose configs
+├── e2e/             # Playwright E2E tests
+├── vite.config.ts   # Unified Vite config (dev + build)
+└── package.json     # Project configuration
 ```
 
 ## Available Scripts
 
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run build` - Build all packages
+- `npm run dev` - Start development server (frontend + backend on single port)
+- `npm run build` - Build for production (client + server)
+- `npm run start` - Start production server
 - `npm run db:up` - Start PostgreSQL database
 - `npm run db:down` - Stop PostgreSQL database
 - `npm run db:seed` - Seed database with sample data

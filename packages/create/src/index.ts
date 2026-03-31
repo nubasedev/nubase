@@ -19,10 +19,8 @@ interface ProjectOptions {
 	dbPassword: string;
 	devPort: number;
 	testPort: number;
-	backendPort: number;
-	frontendPort: number;
-	testBackendPort: number;
-	testFrontendPort: number;
+	port: number;
+	testPortApp: number;
 	nubaseTag: string;
 }
 
@@ -68,14 +66,11 @@ function replaceInContent(
 		.replace(/__DB_PASSWORD__/g, options.dbPassword)
 		.replace(/__DEV_PORT__/g, String(options.devPort))
 		.replace(/__TEST_PORT__/g, String(options.testPort))
-		.replace(/__BACKEND_PORT__/g, String(options.backendPort))
-		.replace(/__FRONTEND_PORT__/g, String(options.frontendPort))
-		.replace(/__TEST_BACKEND_PORT__/g, String(options.testBackendPort))
-		.replace(/__TEST_FRONTEND_PORT__/g, String(options.testFrontendPort))
+		.replace(/__PORT__/g, String(options.port))
+		.replace(/__TEST_PORT_APP__/g, String(options.testPortApp))
 		.replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
 		.replace(/"@nubase\/frontend": "\*"/g, `"@nubase/frontend": "${nubaseVersion}"`)
 		.replace(/"@nubase\/backend": "\*"/g, `"@nubase/backend": "${nubaseVersion}"`)
-		.replace(/"@nubase\/cli": "\*"/g, `"@nubase/cli": "${nubaseVersion}"`)
 		.replace(/"@nubase\/create": "\*"/g, `"@nubase/create": "${nubaseVersion}"`);
 }
 
@@ -120,10 +115,8 @@ async function main() {
 		.option("--db-password <password>", "Database password")
 		.option("--dev-port <port>", "Development database port", "5434")
 		.option("--test-port <port>", "Test database port", "5435")
-		.option("--backend-port <port>", "Backend server port", "3001")
-		.option("--frontend-port <port>", "Frontend dev server port", "3002")
-		.option("--test-backend-port <port>", "Test backend server port", "4001")
-		.option("--test-frontend-port <port>", "Test frontend dev server port", "4002")
+		.option("--port <port>", "Application server port", "3000")
+		.option("--test-port-app <port>", "Test application server port", "4000")
 		.option("--skip-install", "Skip npm install")
 		.option("--tag <tag>", "npm tag for @nubase/* packages (latest, dev)", "latest")
 		.parse();
@@ -166,10 +159,8 @@ async function main() {
 		dbPassword,
 		devPort: Number.parseInt(opts.devPort, 10),
 		testPort: Number.parseInt(opts.testPort, 10),
-		backendPort: Number.parseInt(opts.backendPort, 10),
-		frontendPort: Number.parseInt(opts.frontendPort, 10),
-		testBackendPort: Number.parseInt(opts.testBackendPort, 10),
-		testFrontendPort: Number.parseInt(opts.testFrontendPort, 10),
+		port: Number.parseInt(opts.port, 10),
+		testPortApp: Number.parseInt(opts.testPortApp, 10),
 		nubaseTag: opts.tag,
 	};
 
@@ -193,23 +184,29 @@ async function main() {
 
 	console.log(chalk.blue(`\nCreating project in ${chalk.bold(targetDir)}...\n`));
 
-	// Copy templates
-	const templates = ["root", "common", "backend", "frontend", "nubase"];
+	// Copy templates - each template maps to a destination directory
+	const templates = [
+		{ name: "root", dest: "" },
+		{ name: "src", dest: "src" },
+		{ name: "docker", dest: "docker" },
+		{ name: "db", dest: "db" },
+		{ name: "e2e", dest: "e2e" },
+		{ name: "nubase", dest: "nubase" },
+	];
+
 	for (const template of templates) {
-		const templatePath = path.join(TEMPLATE_DIR, template);
+		const templatePath = path.join(TEMPLATE_DIR, template.name);
 		if (!fs.existsSync(templatePath)) {
-			console.log(chalk.yellow(`Template ${template} not found, skipping...`));
+			console.log(chalk.yellow(`Template ${template.name} not found, skipping...`));
 			continue;
 		}
 
-		if (template === "root") {
-			copyTemplateDir(templatePath, targetDir, options);
-		} else {
-			const destPath = path.join(targetDir, template);
-			copyTemplateDir(templatePath, destPath, options);
-		}
+		const destPath = template.dest
+			? path.join(targetDir, template.dest)
+			: targetDir;
+		copyTemplateDir(templatePath, destPath, options);
 
-		console.log(chalk.green(`  ✓ Created ${template}`));
+		console.log(chalk.green(`  ✓ Created ${template.name}`));
 	}
 
 	// Install dependencies
