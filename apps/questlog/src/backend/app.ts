@@ -44,4 +44,16 @@ if (process.env.NODE_ENV === "test" || process.env.DB_PORT === "5435") {
 
 app.route("/api", api);
 
+// Production: serve built frontend assets and SPA fallback
+if (import.meta.env.PROD) {
+  const { serveStatic } = await import("@hono/node-server/serve-static");
+  const { readFile } = await import("node:fs/promises");
+
+  app.use("/assets/*", serveStatic({ root: "./dist/client" }));
+  app.use("/favicon.ico", serveStatic({ root: "./dist/client" }));
+
+  const indexHtml = await readFile("./dist/client/index.html", "utf-8");
+  app.get("*", (c) => c.html(indexHtml));
+}
+
 export default app;

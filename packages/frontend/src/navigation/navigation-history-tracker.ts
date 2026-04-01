@@ -63,11 +63,17 @@ export class NavigationHistoryTracker {
   }
 
   private addEntry(location: any) {
-    const searchParams = this.parseSearchParams(location.search);
+    // location.search may be a parsed object (TanStack Router) or a string
+    const searchString =
+      typeof location.search === "string"
+        ? location.search
+        : location.searchStr || "";
+    const searchParams = this.parseSearchParams(searchString);
     const title = this.formatTitle(location.pathname, searchParams);
 
     // Create a unique ID based on the full location
-    const entryId = `${location.pathname}${location.search}${location.hash}`;
+    const hash = location.hash || "";
+    const entryId = `${location.pathname}${searchString}${hash}`;
 
     // Don't add duplicate consecutive entries
     if (this.lastEntryId === entryId) {
@@ -76,11 +82,11 @@ export class NavigationHistoryTracker {
 
     const entry: NavigationHistoryEntry = {
       id: `history-${this.historyIdCounter++}`,
-      path: `${location.pathname}${location.search}${location.hash}`,
+      path: `${location.pathname}${searchString}${hash}`,
       pathname: location.pathname,
-      search: location.search || "",
+      search: searchString,
       searchParams,
-      hash: location.hash || "",
+      hash,
       timestamp: Date.now(),
       title,
     };

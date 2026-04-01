@@ -1,6 +1,6 @@
 {
   "name": "@nubase/backend",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "Backend utilities and typed handlers for nubase",
   "keywords": [
     "backend",

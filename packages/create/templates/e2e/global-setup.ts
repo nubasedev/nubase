@@ -12,7 +12,7 @@ async function globalSetup(_config: FullConfig) {
 
 	while (retries < maxRetries) {
 		try {
-			const response = await fetch(`${API_BASE_URL}/api/`);
+			const response = await fetch(`${API_BASE_URL}/api`);
 			if (response.ok) {
 				console.log("Server is ready");
 				break;

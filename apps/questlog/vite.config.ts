@@ -19,14 +19,10 @@ export default defineConfig(({ mode }) => {
     return {
       plugins: [
         build({
-          entry: "src/backend/server.ts",
-          output: "index.js",
+          entry: "src/backend/app.ts",
+          output: "dist/index.js",
         }),
       ],
-      build: {
-        outDir: "dist/server",
-        emptyOutDir: true,
-      },
     };
   }
 
@@ -38,8 +34,8 @@ export default defineConfig(({ mode }) => {
       devServer({
         entry: "src/backend/app.ts",
         exclude: [
-          // Only send /api/* requests to Hono; everything else goes to Vite
-          /^(?!\/api\/).+/,
+          // Only send /api requests to Hono; everything else goes to Vite
+          /^(?!\/api(\/|$)).+/,
           ...defaultOptions.exclude,
         ],
       }),

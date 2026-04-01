@@ -1,6 +1,6 @@
 {
   "name": "@nubase/cli",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "CLI tool for Nubase database schema management",
   "type": "module",
   "bin": {

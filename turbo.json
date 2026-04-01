@@ -7,7 +7,7 @@
       "outputs": ["dist/**", "build/**", "storybook-static/**"]
     },
     "questlog#build": {
-      "dependsOn": ["packages/*#build"],
+      "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
     "typecheck": {

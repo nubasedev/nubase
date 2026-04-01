@@ -154,17 +154,18 @@ export const userHandlers = {
 			const db = getDb();
 
 			// Build query with optional search filter
-			let query = db
+			const query = db
 				.select({
 					id: users.id,
 					displayName: users.displayName,
 					email: users.email,
 				})
-				.from(users);
+				.from(users)
+				.$dynamic();
 
 			// Filter by query if provided (case-insensitive partial match on displayName)
 			if (params.q) {
-				query = query.where(ilike(users.displayName, `%${params.q}%`));
+				query.where(ilike(users.displayName, `%${params.q}%`));
 			}
 
 			const results = await query.limit(20);

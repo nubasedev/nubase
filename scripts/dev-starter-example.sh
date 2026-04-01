@@ -103,12 +103,10 @@ npm run db:reset
 
 # Step 4: Start dev servers
 echo ""
-echo "[4/4] Starting dev servers..."
+echo "[4/4] Starting dev server..."
 echo ""
 echo "========================================"
-echo "Dev servers starting..."
-echo "Frontend: http://localhost:3002"
-echo "Backend:  http://localhost:3001"
+echo "Dev server starting at http://localhost:3000"
 echo "========================================"
 echo ""
 npm run dev

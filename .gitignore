@@ -81,3 +81,6 @@ claude-flow
 claude-flow.bat
 claude-flow.ps1
 hive-mind-prompt-*.txt
+
+# Docker PostgreSQL data
+**/postgresql-data/
