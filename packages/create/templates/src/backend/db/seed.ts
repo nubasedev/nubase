@@ -4,7 +4,7 @@ loadEnv();
 
 async function seed() {
 	const { faker } = await import("@faker-js/faker");
-	const bcrypt = await import("bcrypt");
+	const bcrypt = await import("bcryptjs");
 	const { getAdminDb } = await import("./helpers/drizzle");
 	const { tickets, userWorkspaces, users, workspaces } = await import(
 		"./schema"

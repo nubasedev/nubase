@@ -1,6 +1,6 @@
 import { createHttpHandler } from "@nubase/backend";
 import { emptySchema, nu } from "@nubase/core";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { getAdminDb } from "../../db/helpers/drizzle";

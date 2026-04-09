@@ -5,7 +5,7 @@ import type {
 	VerifyTokenResult,
 } from "@nubase/backend";
 import { getCookie } from "@nubase/backend";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";

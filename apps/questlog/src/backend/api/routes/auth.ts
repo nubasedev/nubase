@@ -1,5 +1,5 @@
 import { getAuthController, HttpError } from "@nubase/backend";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import type { InferSelectModel } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";

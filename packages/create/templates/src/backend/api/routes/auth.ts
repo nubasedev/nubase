@@ -1,5 +1,5 @@
 import { getAuthController, HttpError } from "@nubase/backend";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import type { __PROJECT_NAME_PASCAL__User } from "../../auth";

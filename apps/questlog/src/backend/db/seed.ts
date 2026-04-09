@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 import { faker } from "@faker-js/faker";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import type { InferInsertModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";

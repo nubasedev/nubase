@@ -20,7 +20,6 @@ export default defineConfig(({ mode }) => {
       plugins: [
         build({
           entry: "src/backend/app.ts",
-          output: "dist/index.js",
         }),
       ],
     };
@@ -47,7 +46,7 @@ export default defineConfig(({ mode }) => {
         "@nubase/frontend",
         "pg",
         "drizzle-orm",
-        "bcrypt",
+        "bcryptjs",
         "jsonwebtoken",
         "dotenv",
         "@hono/node-server",
