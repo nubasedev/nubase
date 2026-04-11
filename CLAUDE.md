@@ -7,13 +7,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This project, Nubase, is highly-opinionated full-stack framework for creating internal tools and business
 applications. It's extremely opinionated. Meaning, amongst other things, it expects things to be in very particular locations.
 The main proposition of Nubase is that it's configuration based.
-As an example: the "apps/questlog" folder contains 3 projects
 
-apps/questlog/backend
-apps/questlog/frontend
-apps/questlog/common
+As an example, the `apps/questlog` folder is a **single fullstack app** (not a mono-project-within-a-monorepo). Its internal layout is:
 
-The common definitions are in apps/questlog/common and both the frontend and backend use them to configure themselves.
+- `apps/questlog/src/backend` — Hono-based API server code
+- `apps/questlog/src/frontend` — React + Vite frontend code
+- `apps/questlog/src/common` — shared TypeScript definitions imported by both sides
+- `apps/questlog/nubase` — schema migrations and the `schema.json` snapshot, managed by `@nubase/cli`
+
+A single dev server (Vite + `@hono/vite-dev-server`) serves the frontend and mounts the backend under `/api/*` on the same port. In production, `vite build --mode client && vite build --mode server` produces a single `dist/` bundle that `node dist/index.js` runs.
 
 ## Documentation
 
@@ -44,9 +46,8 @@ If you're curious about how the architecture works internally you can read the d
 
 ### Publishing
 
-- `npm run publish:core` - Build and publish @nubase/core package
-- `npm run publish:frontend` - Build and publish @nubase/frontend package
-- `npm run publish:all` - Publish both core and frontend packages
+- `npm run publish` - Publish all `@nubase/*` packages (latest tag) via Turbo
+- `npm run publish:dev` - Publish all `@nubase/*` packages under the `dev` tag via Turbo
 
 ## Project Architecture
 
@@ -56,8 +57,12 @@ This is a Turborepo-based monorepo with the following structure:
 
 **Core Packages:**
 
-- `packages/core` - [@nubase/core] Core schema system with Zod-based validation, computed metadata, and layout definitions
-- `packages/frontend` - [@nubase/frontend] React components, form controls, and hooks for building nubase applications
+- `packages/core` — `@nubase/core` — Schema system (Zod-based validation, computed metadata, layout definitions)
+- `packages/frontend` — `@nubase/frontend` — React components, form controls, hooks, and the `NubaseApp` application shell
+- `packages/backend` — `@nubase/backend` — Backend runtime utilities: typed HTTP handlers, auth controllers, Hono middleware
+- `packages/cli` — `@nubase/cli` — Command-line tool for schema `diff` / `pull` / `push` / `reset` migration workflow (see `apps/docs/docs/cli.mdx`)
+- `packages/pg` — `@nubase/pg` — Postgres schema extraction and migration SQL generation, used internally by `@nubase/cli`
+- `packages/create` — `@nubase/create` — Project scaffolder invoked via `npx @nubase/create` (source of `apps/starter` when created)
 
 **Example Applications:**
 
@@ -65,13 +70,16 @@ This is a Turborepo-based monorepo with the following structure:
 
 There are two types of example applications in the repository:
 
-**1. apps/questlog (Monorepo Example)**
+**1. apps/questlog (In-Repo Example)**
 
-This is the primary example application used for framework development. It's part of the Turborepo workspace and uses local (unpublished) `@nubase/*` packages.
+This is the primary example application used for framework development. It's part of the Turborepo workspace and imports local (unpublished) `@nubase/*` packages directly.
 
-- `apps/questlog/frontend` - React frontend example using Vite that demonstrates Nubase in action. It runs in tavern.localhost:3002
-- `apps/questlog/backend` - Node.js backend example with API endpoints. It runs in tavern.localhost:3001
-- `apps/questlog/common` - Shared definitions for the example app
+It is a single fullstack app served by one Vite dev server on **http://localhost:3000**:
+
+- `apps/questlog/src/frontend` — React frontend (Vite)
+- `apps/questlog/src/backend` — Hono API, mounted at `/api/*` on the same port via `@hono/vite-dev-server`
+- `apps/questlog/src/common` — shared TypeScript types, API endpoint definitions, and resource descriptors imported by both sides
+- `apps/questlog/nubase` — `nubase.config.ts` + `migrations/` + `snapshots/schema.json`, managed by `@nubase/cli`
 
 **Use this when**: Contributing to Nubase, testing local package changes, or understanding the framework internals.
 
@@ -85,21 +93,21 @@ This is a standalone application created by `npx @nubase/create`. It uses publis
 
 ### Example Application Architecture
 
-When you run the development environment (`npm run dev`), you're running the questlog example application located in the `apps/questlog/` folder. This demonstrates a real-world Nubase application with three interconnected parts:
+When you run the development environment (`npm run dev`), you're running the questlog example application located in the `apps/questlog/` folder. This demonstrates a real-world Nubase application as a single fullstack app with three interconnected subtrees inside `src/`:
 
-**Frontend (`apps/questlog/frontend`)**
+**Frontend (`apps/questlog/src/frontend`)**
 
-- The main application configuration is defined in `apps/questlog/frontend/src/config/config.ts`
-- The application entry point (`apps/questlog/frontend/src/main.tsx`) simply renders the `NubaseApp` component with this configuration
+- The main application configuration is defined in `apps/questlog/src/frontend/config.tsx`
+- The application entry point (`apps/questlog/src/frontend/main.tsx`) simply renders the `NubaseApp` component with this configuration
 - Most of the application's functionality is automatically generated by the `NubaseApp` component from the `@nubase/frontend` package
 
-**Backend (`apps/questlog/backend`)**
+**Backend (`apps/questlog/src/backend`)**
 
-- Provides REST API endpoints for the frontend to consume
-- Uses Drizzle ORM with PostgreSQL for data persistence
-- Includes database schema definitions and migration files
+- Provides REST API endpoints under `/api/*`, served by Hono (`src/backend/app.ts` is the entry point)
+- Uses Drizzle ORM with PostgreSQL for data persistence; Drizzle schema definitions live in `src/backend/db/schema/`
+- Database migrations are **not** kept here — they live in `apps/questlog/nubase/migrations/` and are managed by `@nubase/cli` (`nubase db pull`, `nubase db diff`, `nubase db push`). The canonical schema snapshot is `apps/questlog/nubase/snapshots/schema.json`.
 
-**Common (`apps/questlog/common`)**
+**Common (`apps/questlog/src/common`)**
 
 - Shared TypeScript definitions used by both frontend and backend
 - Defines API endpoint types and data schemas for type safety across the stack
