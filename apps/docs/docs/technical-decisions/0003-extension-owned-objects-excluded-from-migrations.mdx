@@ -1,0 +1,61 @@
+---
+title: "ADR 0003: Extension-owned objects are excluded from schema extraction"
+description: Objects created by a Postgres extension (views, functions, types) are filtered out of generated migrations. The extension itself is still captured.
+sidebar_position: 3
+---
+
+**Status:** accepted
+
+## Context
+
+When a Postgres extension is installed via `CREATE EXTENSION foo`, the extension may create its own tables, views, functions, types, or operators inside the target schema. For example, `pg_stat_statements` creates two views (`pg_stat_statements`, `pg_stat_statements_info`) and a handful of supporting functions. These objects appear in `information_schema.views` and `pg_catalog.pg_proc` alongside user-defined objects — there is no flag on the object itself that says "owned by an extension". The relationship is tracked in `pg_catalog.pg_depend` via rows with `deptype = 'e'` (extension dependency).
+
+The first run of `nubase db pull --env local` against the questlog dev database surfaced the problem. The generated migration included:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" SCHEMA "public";
+
+-- ... followed by user tables ...
+
+CREATE VIEW "public"."pg_stat_statements" AS SELECT userid, dbid, ... ;
+CREATE VIEW "public"."pg_stat_statements_info" AS SELECT dealloc, ... ;
+```
+
+Applying this migration to a fresh database would fail: `CREATE EXTENSION` already creates those two views as part of the extension installation, so the subsequent `CREATE VIEW` statements would conflict with *"relation 'pg_stat_statements' already exists"*. The extractor was double-counting extension-managed objects — first implicitly (via `CREATE EXTENSION`) and then explicitly (via the object extractors).
+
+## Decision
+
+**Exclude objects owned by extensions from all extractors that could return them.** The filter is a subquery against `pg_catalog.pg_depend`:
+
+```sql
+AND <object_oid> NOT IN (
+  SELECT objid FROM pg_catalog.pg_depend WHERE deptype = 'e'
+)
+```
+
+This predicate has been added to:
+
+- `packages/pg/src/extract/queries/views.ts` — both `extractViews` and `extractMaterializedViews`
+- `packages/pg/src/extract/queries/functions.ts` — `extractFunctions`
+- `packages/pg/src/extract/queries/tables.ts` — `extractTables` (defensive; no current extension creates tables in questlog, but future extensions might)
+
+The `CREATE EXTENSION` statement itself is still captured by `extractExtensions()` and still appears in generated migrations — we want extensions installed on the target, we just don't want to re-create the objects the extension itself provides.
+
+Object categories that could in principle be extension-owned but are *not* currently filtered: triggers, sequences, enums, domains, collations. These were skipped on the grounds that (a) no extension in use by questlog creates them, (b) adding untested code to fix a hypothetical bug is worse than waiting for the bug to surface, and (c) extending the filter is mechanical when it does surface. This is documented so a future encounter isn't a mystery.
+
+## Consequences
+
+### What this enables
+
+- **Migrations generated from any cluster that has extensions installed are portable.** Before this change, installing `pg_stat_statements` on the dev DB would permanently break `db pull` for that project.
+- **`CREATE EXTENSION` remains in the migration.** The target cluster still needs to have the extension package available, but that's an environment concern (same as having any other software installed) and out of scope for schema migrations.
+- **The extraction filter is idempotent and cheap.** `pg_depend` is small and the subquery evaluates once per table.
+
+### What we gave up
+
+- **Fewer tests.** No integration test currently installs an extension and asserts the filter works. This decision is supported by a bug report and a manual fix, not by a regression test. Adding one would require the test harness to install `pg_stat_statements` (available in most distributions but not all), and the test would be slow. Accepted as a known gap.
+- **No visibility into which objects were filtered.** The CLI doesn't log "I skipped 17 extension-owned objects". If the filter misfires and skips something legitimate, it would be hard to notice. Low risk — extension dependencies are a specific relationship that doesn't get created accidentally — but worth remembering if something ever goes missing.
+
+### Note for future extractor authors
+
+Any new extractor that queries `pg_catalog.pg_class`, `pg_catalog.pg_proc`, `pg_catalog.pg_type`, or `pg_catalog.pg_trigger` should consider whether extension-owned objects would contaminate the result, and apply the same filter if so. The subquery pattern is uniform across all catalog tables — only the join column changes.

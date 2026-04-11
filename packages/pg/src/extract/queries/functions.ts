@@ -26,6 +26,8 @@ export async function extractFunctions(
     LEFT JOIN pg_catalog.pg_description d ON d.objoid = p.oid AND d.objsubid = 0
     WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
       AND p.proname NOT LIKE 'pg_%'
+      -- Exclude functions owned by extensions (e.g. pg_stat_statements helpers)
+      AND p.oid NOT IN (SELECT objid FROM pg_catalog.pg_depend WHERE deptype = 'e')
     ORDER BY n.nspname, p.proname
   `);
 

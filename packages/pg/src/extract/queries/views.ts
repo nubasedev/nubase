@@ -13,10 +13,12 @@ export async function extractViews(
       d.description AS comment
     FROM information_schema.views v
     JOIN information_schema.columns c ON c.table_schema = v.table_schema AND c.table_name = v.table_name
-    LEFT JOIN pg_catalog.pg_class cls ON cls.relname = v.table_name
-    LEFT JOIN pg_catalog.pg_namespace n ON n.oid = cls.relnamespace AND n.nspname = v.table_schema
+    JOIN pg_catalog.pg_class cls ON cls.relname = v.table_name
+    JOIN pg_catalog.pg_namespace n ON n.oid = cls.relnamespace AND n.nspname = v.table_schema
     LEFT JOIN pg_catalog.pg_description d ON d.objoid = cls.oid AND d.objsubid = 0
     WHERE v.table_schema NOT IN ('pg_catalog', 'information_schema')
+      -- Exclude objects owned by extensions (e.g. pg_stat_statements views)
+      AND cls.oid NOT IN (SELECT objid FROM pg_catalog.pg_depend WHERE deptype = 'e')
     GROUP BY v.table_schema, v.table_name, v.view_definition, d.description
     ORDER BY v.table_schema, v.table_name
   `);
@@ -51,6 +53,8 @@ export async function extractMaterializedViews(
     LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
     WHERE c.relkind = 'm'
       AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+      -- Exclude objects owned by extensions
+      AND c.oid NOT IN (SELECT objid FROM pg_catalog.pg_depend WHERE deptype = 'e')
     GROUP BY n.nspname, c.relname, c.oid, d.description
     ORDER BY n.nspname, c.relname
   `);

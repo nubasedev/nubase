@@ -27,7 +27,9 @@
       "!**/theme.css",
       "!**/playwright-report",
       "!**/test-results",
-      "!**/templates"
+      "!**/templates",
+      "!**/nubase/snapshots",
+      "!**/nubase/migrations"
     ]
   },
   "formatter": {

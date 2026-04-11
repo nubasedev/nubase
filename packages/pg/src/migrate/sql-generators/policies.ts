@@ -19,7 +19,12 @@ export function generatePolicyStatements(
     let sql = `CREATE POLICY ${quoteIdent(policy.name)} ON ${qTable}`;
     sql += policy.permissive ? " AS PERMISSIVE" : " AS RESTRICTIVE";
     sql += ` FOR ${policy.command}`;
-    sql += ` TO ${policy.roles.join(", ")}`;
+    // Always emit TO PUBLIC for portability. The source DB's actual role
+    // assignment is preserved in the snapshot, but emitted SQL uses PUBLIC
+    // so migrations are portable across environments that may not share
+    // role names. In single-role setups this is semantically identical.
+    // See: apps/docs/docs/technical-decisions/
+    sql += ` TO PUBLIC`;
     if (policy.usingExpression) sql += ` USING (${policy.usingExpression})`;
     if (policy.withCheckExpression)
       sql += ` WITH CHECK (${policy.withCheckExpression})`;
@@ -55,7 +60,8 @@ export function generatePolicyStatements(
     let sql = `CREATE POLICY ${quoteIdent(to.name)} ON ${qualifiedName(to.schema, to.tableName)}`;
     sql += to.permissive ? " AS PERMISSIVE" : " AS RESTRICTIVE";
     sql += ` FOR ${to.command}`;
-    sql += ` TO ${to.roles.join(", ")}`;
+    // See note in the "added" branch above — always emit TO PUBLIC.
+    sql += ` TO PUBLIC`;
     if (to.usingExpression) sql += ` USING (${to.usingExpression})`;
     if (to.withCheckExpression)
       sql += ` WITH CHECK (${to.withCheckExpression})`;

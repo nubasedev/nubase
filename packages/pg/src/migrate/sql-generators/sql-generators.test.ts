@@ -1345,7 +1345,11 @@ describe("generatePolicyStatements", () => {
     );
     expect(stmts[0].sql).toContain("AS PERMISSIVE");
     expect(stmts[0].sql).toContain("FOR SELECT");
-    expect(stmts[0].sql).toContain("TO authenticated");
+    // The policy's source role (`authenticated`) is recorded in the snapshot
+    // but the generator rewrites the emit target to PUBLIC for portability.
+    // See ADR 0004.
+    expect(stmts[0].sql).toContain("TO PUBLIC");
+    expect(stmts[0].sql).not.toContain("TO authenticated");
     expect(stmts[0].sql).toContain("USING (auth.uid() = id)");
     expect(stmts[0].priority).toBe(200);
   });
@@ -1391,7 +1395,11 @@ describe("generatePolicyStatements", () => {
     const stmts = generatePolicyStatements(diff);
     expect(stmts).toHaveLength(2);
     expect(stmts[0].sql).toContain("DROP POLICY");
-    expect(stmts[1].sql).toContain("TO admin, moderator");
+    // Role targets (`admin`, `moderator`) are rewritten to PUBLIC on emit for
+    // portability, even when the snapshot records a different source role.
+    // See ADR 0004.
+    expect(stmts[1].sql).toContain("TO PUBLIC");
+    expect(stmts[1].sql).not.toContain("TO admin");
   });
 });
 

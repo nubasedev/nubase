@@ -4,7 +4,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import type { QuestlogUser } from "../../auth";
-import { getAdminDb } from "../../db/helpers/drizzle";
+import { getDb } from "../../db/helpers/drizzle";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
 import { workspacesTable } from "../../db/schema/workspace";
@@ -35,10 +35,10 @@ export const authHandlers = {
    */
   loginStart: createHandler((e) => e.loginStart, {
     handler: async ({ body }) => {
-      const adminDb = getAdminDb();
+      const db = getDb();
 
       // Find user by email (users are root-level now)
-      const users: DbUser[] = await adminDb
+      const users: DbUser[] = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.email, body.email));
@@ -59,7 +59,7 @@ export const authHandlers = {
       }
 
       // Get all workspaces this user belongs to via user_workspaces table
-      const userWorkspaceRows = await adminDb
+      const userWorkspaceRows = await db
         .select()
         .from(userWorkspacesTable)
         .where(eq(userWorkspacesTable.userId, user.id));
@@ -70,7 +70,7 @@ export const authHandlers = {
 
       // Fetch workspace details
       const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-      const workspaces: DbWorkspace[] = await adminDb
+      const workspaces: DbWorkspace[] = await db
         .select()
         .from(workspacesTable)
         .where(inArray(workspacesTable.id, workspaceIds));
@@ -104,7 +104,7 @@ export const authHandlers = {
   loginComplete: createHandler((e) => e.loginComplete, {
     handler: async ({ body, ctx }) => {
       const authController = getAuthController<QuestlogUser>(ctx);
-      const adminDb = getAdminDb();
+      const db = getDb();
 
       // Verify the login token
       let decoded: LoginTokenPayload;
@@ -118,7 +118,7 @@ export const authHandlers = {
       }
 
       // Look up the selected workspace
-      const workspaces = await adminDb
+      const workspaces = await db
         .select()
         .from(workspacesTable)
         .where(eq(workspacesTable.slug, body.workspace));
@@ -130,7 +130,7 @@ export const authHandlers = {
       const workspace = workspaces[0];
 
       // Verify user has access to this workspace
-      const userWorkspaceAccess = await adminDb
+      const userWorkspaceAccess = await db
         .select()
         .from(userWorkspacesTable)
         .where(
@@ -145,7 +145,7 @@ export const authHandlers = {
       }
 
       // Fetch the user
-      const users: DbUser[] = await adminDb
+      const users: DbUser[] = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.id, decoded.userId));
@@ -192,8 +192,8 @@ export const authHandlers = {
       const authController = getAuthController<QuestlogUser>(ctx);
 
       // Look up workspace from the request body (path-based multi-workspace)
-      const adminDb = getAdminDb();
-      const workspaces = await adminDb
+      const db = getDb();
+      const workspaces = await db
         .select()
         .from(workspacesTable)
         .where(eq(workspacesTable.slug, body.workspace));
@@ -205,7 +205,7 @@ export const authHandlers = {
       const workspace = workspaces[0];
 
       // Find user by email (users are root-level)
-      const users: DbUser[] = await adminDb
+      const users: DbUser[] = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.email, body.email));
@@ -226,7 +226,7 @@ export const authHandlers = {
       }
 
       // Verify user has access to this workspace
-      const userWorkspaceAccess = await adminDb
+      const userWorkspaceAccess = await db
         .select()
         .from(userWorkspacesTable)
         .where(
@@ -295,7 +295,7 @@ export const authHandlers = {
   signup: createHandler((e) => e.signup, {
     handler: async ({ body, ctx }) => {
       const authController = getAuthController<QuestlogUser>(ctx);
-      const adminDb = getAdminDb();
+      const db = getDb();
 
       // Validate workspace slug format
       if (!/^[a-z0-9-]+$/.test(body.workspace)) {
@@ -306,7 +306,7 @@ export const authHandlers = {
       }
 
       // Check if workspace slug already exists
-      const existingWorkspaces = await adminDb
+      const existingWorkspaces = await db
         .select()
         .from(workspacesTable)
         .where(eq(workspacesTable.slug, body.workspace));
@@ -316,7 +316,7 @@ export const authHandlers = {
       }
 
       // Check if email already exists
-      const existingEmails = await adminDb
+      const existingEmails = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.email, body.email));
@@ -331,7 +331,7 @@ export const authHandlers = {
       }
 
       // Create the workspace
-      const [newWorkspace] = await adminDb
+      const [newWorkspace] = await db
         .insert(workspacesTable)
         .values({
           slug: body.workspace,
@@ -343,7 +343,7 @@ export const authHandlers = {
       const passwordHash = await bcrypt.hash(body.password, 10);
 
       // Create the admin user (root-level, no workspaceId)
-      const [newUser] = await adminDb
+      const [newUser] = await db
         .insert(usersTable)
         .values({
           email: body.email,
@@ -353,7 +353,7 @@ export const authHandlers = {
         .returning();
 
       // Link user to workspace via user_workspaces table
-      await adminDb.insert(userWorkspacesTable).values({
+      await db.insert(userWorkspacesTable).values({
         userId: newUser.id,
         workspaceId: newWorkspace.id,
       });

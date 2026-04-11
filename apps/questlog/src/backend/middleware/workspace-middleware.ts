@@ -7,6 +7,11 @@ import {
 } from "../db/helpers/drizzle";
 import { workspacesTable } from "../db/schema/workspace";
 
+// NOTE: the set/clear workspace context calls below are currently no-ops at the
+// DB layer — DATABASE_URL connects as a superuser, which bypasses RLS. Kept as
+// scaffolding for the planned RLS revival. See the TODO block at the top of
+// src/backend/db/helpers/drizzle.ts for the full picture.
+
 export interface Workspace {
   id: number;
   slug: string;

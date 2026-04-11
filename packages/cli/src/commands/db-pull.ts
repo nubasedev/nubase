@@ -37,9 +37,11 @@ export async function dbPull(options: { env?: string }): Promise<void> {
   );
 
   const schema = await extractSchema(resolved.environment.url);
-  await saveSnapshot(resolved.snapshotsDir, resolved.environmentName, schema);
+  await saveSnapshot(resolved.snapshotsDir, schema);
 
-  log.success(`Snapshot saved for "${resolved.environmentName}"`);
+  log.success(
+    `Snapshot rebaselined from "${resolved.environmentName}" → nubase/snapshots/schema.json`,
+  );
 
   // If no migrations exist, generate an initial migration
   const migrations = listMigrationFiles(resolved.migrationsDir);

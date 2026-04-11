@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import type { InferInsertModel } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { loadEnvironment } from "../helpers/env";
-import { getAdminDb } from "./helpers/drizzle";
+import { getDb } from "./helpers/drizzle";
 import { ticketsTable } from "./schema/ticket";
 import { usersTable } from "./schema/user";
 import { userWorkspacesTable } from "./schema/user-workspace";
@@ -77,9 +77,9 @@ function generateFakeTicket(workspaceId: number): NewTicket {
 async function seedWorkspaces() {
   console.log("🏠 Seeding workspaces...");
 
-  const db = getAdminDb();
+  const db = getDb();
 
-  // Clear existing data using TRUNCATE (bypasses RLS, respects FKs with CASCADE)
+  // Clear existing data using TRUNCATE (respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
   await db.execute(
     sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`,
@@ -107,7 +107,7 @@ async function seedWorkspaces() {
 async function seedUsers(workspaceId: number) {
   console.log("👤 Seeding users...");
 
-  const db = getAdminDb();
+  const db = getDb();
 
   // Create a test user with hashed password (root-level, no workspaceId)
   const passwordHash = await bcrypt.hash("password123", 12);
@@ -138,7 +138,7 @@ async function seedUsers(workspaceId: number) {
 async function seedTickets(count: number, workspaceId: number) {
   console.log(`📝 Generating ${count} fake tickets...`);
 
-  const db = getAdminDb();
+  const db = getDb();
 
   // Generate and insert fake tickets
   const fakeTickets = Array.from({ length: count }, () =>
@@ -180,7 +180,6 @@ async function main(ticketCount: number = DEFAULT_TICKET_COUNT) {
   console.log("");
 
   // Seed workspaces first (clears all data)
-  // Note: Using admin connection which bypasses RLS
   const workspace = await seedWorkspaces();
 
   // Seed users for the workspace

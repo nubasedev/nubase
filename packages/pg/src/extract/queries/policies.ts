@@ -11,8 +11,8 @@ export async function extractPolicies(
       c.relname AS table_name,
       pol.polpermissive AS is_permissive,
       CASE WHEN pol.polroles = '{0}'
-        THEN ARRAY['PUBLIC']
-        ELSE array_agg(r.rolname ORDER BY r.rolname)
+        THEN ARRAY['PUBLIC']::text[]
+        ELSE array_agg(r.rolname::text ORDER BY r.rolname)
       END AS roles,
       CASE pol.polcmd
         WHEN 'r' THEN 'SELECT'

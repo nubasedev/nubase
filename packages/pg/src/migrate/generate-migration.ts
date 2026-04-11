@@ -8,7 +8,10 @@ import { generateExtensionStatements } from "./sql-generators/extensions";
 import { generateFunctionStatements } from "./sql-generators/functions";
 import { generateIndexStatements } from "./sql-generators/indexes";
 import { generatePolicyStatements } from "./sql-generators/policies";
-import { generatePrivilegeStatements } from "./sql-generators/privileges";
+// Privilege statements (GRANT/REVOKE) are intentionally not emitted in
+// generated migrations. See the note in extract-schema.ts and the ADR in
+// apps/docs/docs/technical-decisions/. The generator file is preserved for
+// backward compat but not wired into generateMigration.
 import { generateSequenceStatements } from "./sql-generators/sequences";
 import { generateTableStatements } from "./sql-generators/tables";
 import { generateTriggerStatements } from "./sql-generators/triggers";
@@ -56,7 +59,6 @@ export function generateMigration(
     ...generatePolicyStatements(diff),
     ...generateDomainStatements(diff),
     ...generateCollationStatements(diff),
-    ...generatePrivilegeStatements(diff),
   ];
 
   const sorted = sortByPriority(allStatements);

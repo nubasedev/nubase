@@ -1,0 +1,28 @@
+---
+title: Technical Decisions
+description: Record of significant technical decisions, their context, and their consequences.
+sidebar_position: 0
+---
+
+This section records significant technical decisions made during the development of Nubase — what we chose, why, and what we gave up by choosing it. Each document is a small, self-contained Architecture Decision Record (ADR).
+
+## When to add an ADR
+
+Write a new ADR when a decision is:
+
+- **Load-bearing** — future work depends on it, or reversing it would be expensive
+- **Non-obvious** — the reasoning isn't recoverable by reading the code alone
+- **Cross-cutting** — it affects multiple packages, environments, or contributors
+
+Routine implementation choices (which library, how to name a variable) don't need ADRs. Architectural shifts, trade-offs between competing approaches, and decisions that change the mental model do.
+
+## Format
+
+Each ADR is numbered in order (`0001-`, `0002-`, …) so the history is readable chronologically. ADRs are never deleted, only superseded — if a decision is later reversed or revised, a new ADR is added that supersedes the old one, and the old one's status is updated. This lets future readers see not just the current answer but how it evolved.
+
+The structure of each ADR:
+
+- **Status** — `accepted`, `proposed`, `superseded by NNNN`, `deprecated`
+- **Context** — what situation prompted the decision
+- **Decision** — what we chose
+- **Consequences** — what this enables, what it forecloses, and what future work it implies

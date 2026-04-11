@@ -42,8 +42,7 @@ export async function dbDiff(options: {
 
   const liveSchema = await extractSchema(resolved.environment.url);
   const snapshot =
-    (await loadSnapshot(resolved.snapshotsDir, resolved.environmentName)) ??
-    emptySchema();
+    (await loadSnapshot(resolved.snapshotsDir)) ?? emptySchema();
 
   const diff = diffSchemas(snapshot, liveSchema);
   printDiff(diff);
@@ -59,12 +58,10 @@ export async function dbDiff(options: {
       );
       log.success(`Migration saved: ${filePath}`);
 
-      // Update snapshot after generating migration
-      await saveSnapshot(
-        resolved.snapshotsDir,
-        resolved.environmentName,
-        liveSchema,
-      );
+      // Update snapshot after generating migration. The user explicitly asked
+      // to capture the live state as a migration, so the live state is now the
+      // new intended state. See ADR 0005 for when the snapshot is updated.
+      await saveSnapshot(resolved.snapshotsDir, liveSchema);
       log.success("Snapshot updated");
     }
 

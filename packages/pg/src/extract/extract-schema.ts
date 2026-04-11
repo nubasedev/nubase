@@ -9,7 +9,14 @@ import { extractExtensions } from "./queries/extensions";
 import { extractFunctions } from "./queries/functions";
 import { extractIndexes } from "./queries/indexes";
 import { extractPolicies } from "./queries/policies";
-import { extractPrivileges } from "./queries/privileges";
+// Privileges (GRANT/REVOKE) are intentionally *not* extracted. Grants reference
+// roles, roles are cluster-wide and environment-specific, and mixing them into
+// portable schema migrations forces every environment to have identical role
+// lists. The migration story stays focused on the data-shape objects (tables,
+// views, functions, etc.). Role and grant management is expected to happen
+// out-of-band (provisioning scripts, infra-as-code, manual). The extractor file
+// is kept in place for backward compatibility with existing snapshots that
+// contain a privileges field, but it's no longer called.
 import { extractSequences } from "./queries/sequences";
 import { extractTables } from "./queries/tables";
 import { extractTriggers } from "./queries/triggers";
@@ -38,7 +45,6 @@ export async function extractSchemaFromClient(
     domains,
     collations,
     policies,
-    privileges,
   ] = await Promise.all([
     extractTables(client),
     extractConstraints(client),
@@ -53,8 +59,10 @@ export async function extractSchemaFromClient(
     extractDomains(client),
     extractCollations(client),
     extractPolicies(client),
-    extractPrivileges(client),
   ]);
+  // Privileges are not extracted — see note above. Field kept in PgSchema for
+  // backward compat with older snapshots.
+  const privileges = {};
 
   // Merge constraints and indexes into their parent tables
   for (const [tableKey, table] of Object.entries(tables)) {

@@ -21,8 +21,11 @@ export const ticketsTable = pgTable(
     assigneeId: integer("assignee_id").references(() => usersTable.id),
   },
   (table) => [
-    // RLS policy for multi-workspace isolation
-    // Only allow access to rows where workspace_id matches the current session's workspace
+    // RLS policy for multi-workspace isolation.
+    // Only allow access to rows where workspace_id matches the current session's workspace.
+    // NOTE: currently dormant — the runtime DATABASE_URL connects as a superuser, which
+    // bypasses RLS. Kept in place as scaffolding for the planned RLS revival. See the TODO
+    // block at the top of src/backend/db/helpers/drizzle.ts for the full picture.
     pgPolicy("tickets_workspace_isolation", {
       as: "permissive",
       for: "all",

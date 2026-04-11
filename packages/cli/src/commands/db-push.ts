@@ -1,4 +1,3 @@
-import { extractSchema } from "@nubase/pg";
 import prompts from "prompts";
 import { loadConfig } from "../config/load-config.js";
 import { withConnection } from "../db/connection.js";
@@ -8,7 +7,6 @@ import {
   recordMigration,
 } from "../db/migration-tracker.js";
 import { listMigrationFiles } from "../db/migration-files.js";
-import { saveSnapshot } from "../db/snapshot.js";
 import { log } from "../output/logger.js";
 
 export async function dbPush(options: {
@@ -71,13 +69,11 @@ export async function dbPush(options: {
       }
     }
 
-    // Update snapshot after applying all migrations
-    const schema = await extractSchema(resolved.environment.url);
-    await saveSnapshot(
-      resolved.snapshotsDir,
-      resolved.environmentName,
-      schema,
-    );
-    log.success("Snapshot updated");
+    // Intentionally does NOT re-extract and save the snapshot after applying
+    // migrations. The snapshot represents the intended schema state, which is
+    // defined by the migrations themselves — if the migrations apply cleanly,
+    // the target's state now matches the snapshot by construction. Re-extracting
+    // would let any drift on the target (manual ALTERs, etc.) silently overwrite
+    // the canonical snapshot with corrupted data. See ADR 0005.
   });
 }

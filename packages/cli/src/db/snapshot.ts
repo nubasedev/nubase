@@ -2,18 +2,21 @@ import path from "node:path";
 import { loadSchema, saveSchema } from "@nubase/pg";
 import type { PgSchema } from "@nubase/pg";
 
-export function getSnapshotPath(
-  snapshotsDir: string,
-  envName: string,
-): string {
-  return path.join(snapshotsDir, `${envName}.json`);
+// The snapshot is a single file per project, not per environment. It
+// represents the *intended* schema state — the result of applying all known
+// migrations to a clean database — and is environment-independent. See
+// apps/docs/docs/technical-decisions/0005-unified-schema-snapshot.mdx for
+// rationale.
+const SNAPSHOT_FILENAME = "schema.json";
+
+export function getSnapshotPath(snapshotsDir: string): string {
+  return path.join(snapshotsDir, SNAPSHOT_FILENAME);
 }
 
 export async function loadSnapshot(
   snapshotsDir: string,
-  envName: string,
 ): Promise<PgSchema | null> {
-  const filePath = getSnapshotPath(snapshotsDir, envName);
+  const filePath = getSnapshotPath(snapshotsDir);
   try {
     return await loadSchema(filePath);
   } catch {
@@ -23,9 +26,8 @@ export async function loadSnapshot(
 
 export async function saveSnapshot(
   snapshotsDir: string,
-  envName: string,
   schema: PgSchema,
 ): Promise<void> {
-  const filePath = getSnapshotPath(snapshotsDir, envName);
+  const filePath = getSnapshotPath(snapshotsDir);
   await saveSchema(schema, filePath);
 }

@@ -17,6 +17,8 @@ export async function extractTables(
     LEFT JOIN pg_catalog.pg_description d ON d.objoid = c.oid AND d.objsubid = 0
     WHERE t.table_type = 'BASE TABLE'
       AND t.table_schema NOT IN ('pg_catalog', 'information_schema')
+      -- Exclude tables owned by extensions
+      AND c.oid NOT IN (SELECT objid FROM pg_catalog.pg_depend WHERE deptype = 'e')
     ORDER BY t.table_schema, t.table_name
   `);
 

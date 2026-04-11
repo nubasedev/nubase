@@ -1,0 +1,65 @@
+---
+title: "ADR 0001: Database roles consolidated into a single role"
+description: Merge the restricted app role and admin superuser role into a single DATABASE_URL.
+sidebar_position: 1
+---
+
+**Status:** accepted
+
+## Context
+
+The questlog reference application originally used a two-role Postgres setup:
+
+- `DATABASE_URL` → `questlog_app` (non-superuser, subject to Row-Level Security on workspace-scoped tables)
+- `DATABASE_URL_ADMIN` → `questlog` (superuser, bypasses RLS)
+
+The *intent* of the split was defense-in-depth for multi-tenancy: routes that forgot to call `setWorkspaceContext()` would safe-fail at the database layer because the restricted role's queries would be gated by RLS policies keyed off `current_setting('app.current_workspace_id')`. Admin-only code paths (seeding, migrations, pre-workspace login lookups) would use the superuser connection to cross workspace boundaries.
+
+In practice, this split imposed real operational cost:
+
+1. **Every deployment target had to provision two roles.** The macmini Postgres cluster used for production only had one role (`andrepena`), and reproducing the `questlog_app` + `questlog` pair there required out-of-band role management that the Nubase CLI couldn't help with.
+2. **The code was split by privilege, not by concern.** Handlers had to pick `getDb()` vs `getAdminDb()` based on whether a query crossed workspaces, which duplicates intent already encoded by middleware. Mistakes were easy.
+3. **Template projects inherited the complexity.** `@nubase/create` shipped the two-role pattern to every new project, forcing users to understand a multi-tenancy model before writing their first query.
+
+The trigger for this decision was a concrete failure: the Nubase CLI was being wired up to manage migrations against the macmini production cluster, and the single-role reality of that cluster couldn't be reconciled with the two-role assumption baked into the dev environment.
+
+## Decision
+
+Consolidate to a **single Postgres role** per environment. The one `DATABASE_URL` environment variable points at whatever role the app should connect as, and the backend's `getAdminDb()` helper is removed. All call sites now use `getDb()`.
+
+Practically:
+
+- `apps/questlog/.env.development` and `.env.test` keep only `DATABASE_URL`, pointing at the previously-admin role (`questlog` superuser on dev).
+- `apps/questlog/src/backend/db/helpers/drizzle.ts` exports only `getDb()` — the `getAdminDb()` / `dbAdmin` pair is gone.
+- Call sites in `auth.ts`, `seed.ts`, `test-utils.ts`, and `QuestlogBackendAuthController.ts` now use `getDb()` uniformly.
+
+## Consequences
+
+### What this enables
+
+- **The Nubase CLI can target any Postgres cluster.** A single connection string, a single role, no out-of-band role provisioning.
+- **Code no longer has to choose a "privilege level" per query.** Handler logic is simpler; reviews are easier.
+- **New projects scaffolded by `@nubase/create` start with a simpler mental model.**
+
+### What we gave up
+
+The database-layer enforcement of workspace isolation. With `DATABASE_URL` now connecting as a superuser (on dev) or the single owning role (on prod), Postgres bypasses any RLS policy defined on workspace-scoped tables. The policies themselves still exist in the schema, and `setWorkspaceContext()` / `clearWorkspaceContext()` are still called by the middleware, but they are **currently no-ops at the DB layer**. Workspace isolation is now enforced entirely by application code — routes must filter by `workspaceId` explicitly, and a bug that forgets to filter will silently return cross-workspace data.
+
+This is a real reduction in defense-in-depth, and it was made deliberately, not as collateral damage. The alternative (keeping two roles) was more complexity than the current development velocity could justify.
+
+### Future work
+
+We intend to bring DB-layer RLS enforcement back, but **without reintroducing a second role**. The planned design:
+
+1. `ALTER ROLE <runtime_role> NOSUPERUSER NOBYPASSRLS`
+2. `ALTER TABLE <workspace-scoped> FORCE ROW LEVEL SECURITY` so the table owner doesn't bypass RLS either
+3. Root-level tables (`users`, `workspaces`, `user_workspaces`) remain RLS-exempt — the login flow needs to read them before any workspace is selected
+4. Policies use `NULLIF(current_setting(..., true), '')::integer` so an unset context evaluates to NULL and produces zero rows (safe-fail)
+5. Middleware uses `SET LOCAL` inside `db.transaction()` to scope the context per request — today's `set_config(..., false)` on a shared `pg.Client` has a latent concurrency bug under interleaved requests
+6. Replace the single `pg.Client` with a `pg.Pool` at the same time
+
+This is tracked as future work. The load-bearing details are documented in a block comment at the top of `apps/questlog/src/backend/db/helpers/drizzle.ts`, with pointer comments in `workspace-middleware.ts` and the policy-bearing schema files.
+
+### Scaffolding preserved
+
+The existing RLS infrastructure (`pgPolicy()` declarations in the Drizzle schema, `setWorkspaceContext` / `clearWorkspaceContext` helpers, middleware calls, `schema.sql` policy DDL) is intentionally left in place even though it's currently inert. Removing it would make reviving the design more expensive and would lose the implicit documentation of where policies should live.

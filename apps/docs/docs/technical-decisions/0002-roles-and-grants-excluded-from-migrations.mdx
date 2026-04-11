@@ -1,0 +1,59 @@
+---
+title: "ADR 0002: Roles and grants are not part of schema migrations"
+description: The Nubase CLI does not extract or emit GRANT/REVOKE or CREATE ROLE statements. Role management is an environment concern, handled out-of-band.
+sidebar_position: 2
+---
+
+**Status:** accepted
+
+## Context
+
+When generating a schema migration by pulling from a live database (`nubase db pull`), the question arises: what exactly counts as "schema"?
+
+An initial naive answer is "everything Postgres lets you `CREATE`" — tables, views, functions, types, *and* roles and grants. `pg_dump` by default includes all of these. The `@nubase/pg` extractor followed this default, producing snapshots that contained a `privileges` field (rows from `information_schema.table_privileges`) and a `policies` field that captured role targets verbatim.
+
+This surfaced the first time the CLI was pointed at two different environments. Local dev had roles `questlog`, `questlog_app`. The macmini production cluster had only `andrepena`. The generated initial migration contained:
+
+```sql
+CREATE POLICY "tickets_workspace_isolation" ... TO questlog_app ...
+GRANT DELETE, INSERT, SELECT, UPDATE ON TABLE public.tickets TO "questlog_app";
+```
+
+Applying this to the macmini failed at the first `GRANT` with *"role 'questlog_app' does not exist"*. The CLI had assumed environments would share role lists, which is not a property schema migrations can depend on.
+
+Three options were considered:
+
+1. **Require role parity across environments.** The user would be responsible for creating the same roles on every target before running `db push`. Rejected — pushes the complexity back onto operators for no benefit, and the whole point of the CLI is to automate this.
+2. **Per-environment role mapping in `nubase.config.ts`.** Something like `roleMappings: { questlog_app: "app_runtime" }`. Rejected as premature — it adds config surface area to solve a problem that disappears entirely if we just stop trying to carry roles in migrations.
+3. **Treat roles and grants as out-of-scope.** Schema migrations focus on the data-shape objects (tables, views, functions, enums, triggers, etc.); role and grant management happens separately. Accepted.
+
+## Decision
+
+**`@nubase/pg` does not extract or emit role or grant statements.** Specifically:
+
+- `extractPrivileges()` is no longer called by `extract-schema.ts`. The `privileges` field in the extracted schema is always `{}`.
+- `generatePrivilegeStatements()` is no longer called by `generateMigration()`. No `GRANT` or `REVOKE` statements appear in generated migration SQL.
+- No role extractor exists and none will be added. `CREATE ROLE` statements are never generated.
+
+Schema objects that *are* captured: tables, columns, constraints (primary/foreign/unique/check), indexes, views, materialized views, sequences, functions, procedures, triggers, enums, domains, custom types, extensions, namespaces, and RLS policies. Anything that defines the *shape and behavior* of the data is in scope; anything that defines *who can access* the data is out of scope.
+
+The existing `privileges.ts` extractor and `privileges.ts` generator files are preserved as dead code for backward compatibility with older snapshots that may still contain a `privileges` field. They are not wired into the active code paths.
+
+## Consequences
+
+### What this enables
+
+- **Schema migrations become portable across environments** with no role precondition. `nubase db push --env prod` works whether prod has one role, ten roles, or a totally different role naming scheme than dev.
+- **Security reviews separate cleanly from schema reviews.** A PR that adds a column goes through a different review than a PR that grants a new role access to the audit log. Mixing the two in one migration stream muddies both.
+- **The CLI matches the industry norm.** `pg_dump --no-owner --no-privileges` is the standard "portable schema" mode. Prisma Migrate and Drizzle-kit don't extract grants at all. Flyway and Sqitch leave it to the author. We're aligned with prevailing practice.
+
+### What we gave up
+
+- **Role and grant changes must be applied out-of-band.** Creating a new role, granting it access, or revoking a privilege is something the operator does manually (via `psql`, a provisioning script, or infra-as-code), not something the CLI will track.
+- **The CLI cannot tell you "your prod roles have drifted from your dev roles".** That drift detection is not part of the tool's job.
+- **Seeding scripts that relied on role-specific behavior no longer have a CLI-driven way to set it up.** Acceptable — seeding is an application concern, not a schema concern.
+
+### Related decisions
+
+- RLS policies *are* still in scope — they're table-attached schema objects, not security configuration. How they handle role references is covered by [ADR 0004](./0004-rls-policies-emit-to-public). Policies are emitted with `TO PUBLIC` rather than carrying source-database role names, which is what makes RLS-containing schemas portable under this ADR's constraints.
+- Extension-owned objects (views, functions created by `CREATE EXTENSION`) are handled by [ADR 0003](./0003-extension-owned-objects-excluded-from-migrations).

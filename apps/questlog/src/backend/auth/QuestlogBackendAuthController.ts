@@ -10,7 +10,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";
-import { getAdminDb } from "../db/helpers/drizzle";
+import { getDb } from "../db/helpers/drizzle";
 import { usersTable } from "../db/schema/user";
 import { userWorkspacesTable } from "../db/schema/user-workspace";
 
@@ -158,9 +158,8 @@ export class QuestlogBackendAuthController
       }
 
       // Fetch user from database to ensure they still exist
-      // Users are root-level, no RLS
-      const adminDb = getAdminDb();
-      const users: DbUser[] = await adminDb
+      const db = getDb();
+      const users: DbUser[] = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.id, decoded.userId));
@@ -170,7 +169,7 @@ export class QuestlogBackendAuthController
       }
 
       // Verify user still has access to the workspace in the token
-      const userWorkspaces = await adminDb
+      const userWorkspaces = await db
         .select()
         .from(userWorkspacesTable)
         .where(
@@ -220,10 +219,10 @@ export class QuestlogBackendAuthController
     userId: number,
     workspaceId: number,
   ): Promise<VerifyTokenResult<QuestlogUser>> {
-    const adminDb = getAdminDb();
+    const db = getDb();
 
-    // Fetch user (no RLS on users table)
-    const users: DbUser[] = await adminDb
+    // Fetch user
+    const users: DbUser[] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.id, userId));
@@ -233,7 +232,7 @@ export class QuestlogBackendAuthController
     }
 
     // Verify user has access to the workspace
-    const userWorkspaces = await adminDb
+    const userWorkspaces = await db
       .select()
       .from(userWorkspacesTable)
       .where(
@@ -323,10 +322,10 @@ export class QuestlogBackendAuthController
         "workspaceId is required for multi-workspace authentication",
       );
     }
-    const adminDb = getAdminDb();
+    const db = getDb();
 
     // Find user by email (users are root-level, no workspace filter)
-    const users: DbUser[] = await adminDb
+    const users: DbUser[] = await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.email, email));
@@ -344,7 +343,7 @@ export class QuestlogBackendAuthController
     }
 
     // Check if user has access to the workspace
-    const userWorkspaces = await adminDb
+    const userWorkspaces = await db
       .select()
       .from(userWorkspacesTable)
       .where(

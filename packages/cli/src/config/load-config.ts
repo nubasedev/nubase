@@ -10,9 +10,16 @@ const jiti = createJiti(import.meta.url);
 export async function loadConfig(envFlag?: string): Promise<ResolvedConfig> {
   const projectRoot = findProjectRoot();
 
-  // Load .env from the project root (parent of nubase/ folder)
+  // Load env files from the project root (parent of nubase/ folder).
+  // Mirror the two-step convention used by the app runtime: base .env
+  // first for defaults, then .env.<NODE_ENV> for overrides. Default
+  // NODE_ENV to "development" since CLI usage is overwhelmingly a
+  // dev-machine activity; non-default environments (e.g. --env prod)
+  // are expected to read credentials from ambient/shell-exported vars.
   const appRoot = path.dirname(projectRoot);
   dotenv.config({ path: path.join(appRoot, ".env") });
+  const nodeEnv = process.env.NODE_ENV || "development";
+  dotenv.config({ path: path.join(appRoot, `.env.${nodeEnv}`) });
 
   const configPath = path.join(projectRoot, "nubase.config.ts");
 

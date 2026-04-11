@@ -3,7 +3,7 @@ import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcryptjs";
 import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getAdminDb } from "../../db/helpers/drizzle";
+import { getDb } from "../../db/helpers/drizzle";
 import { ticketsTable } from "../../db/schema/ticket";
 import { usersTable } from "../../db/schema/user";
 import { userWorkspacesTable } from "../../db/schema/user-workspace";
@@ -16,11 +16,11 @@ const DEFAULT_TEST_WORKSPACE = "tavern";
 const testUtils = new Hono();
 
 /**
- * Helper to get workspace by slug using admin DB (bypasses RLS).
+ * Helper to get workspace by slug.
  * Used by test utilities that don't have auth context.
  */
 async function getWorkspaceBySlug(slug: string) {
-  const db = getAdminDb();
+  const db = getDb();
   const workspaces = await db
     .select()
     .from(workspacesTable)
@@ -54,7 +54,7 @@ export const handleClearDatabase = createHttpHandler({
 
     const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
+    const db = getDb();
 
     // Clear all tickets for this workspace
     await db
@@ -134,7 +134,7 @@ export const handleSeedTestData = createHttpHandler({
 
     const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
+    const db = getDb();
     const insertedTicketIds: number[] = [];
 
     if (body?.tickets) {
@@ -187,7 +187,7 @@ export const handleGetDatabaseStats = createHttpHandler({
 
     const workspaceSlug = params?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
-    const db = getAdminDb();
+    const db = getDb();
     const tickets = await db
       .select()
       .from(ticketsTable)
@@ -228,7 +228,7 @@ export const handleEnsureWorkspace = createHttpHandler({
     }
 
     const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
-    const db = getAdminDb();
+    const db = getDb();
 
     // Check if workspace exists
     const existingWorkspaces = await db
@@ -310,7 +310,7 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
       );
     }
 
-    const db = getAdminDb();
+    const db = getDb();
     const createdWorkspaces: { id: number; slug: string; name: string }[] = [];
     const passwordHash = await bcrypt.hash(body.password, 12);
 

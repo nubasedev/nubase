@@ -1,0 +1,87 @@
+---
+title: "ADR 0005: Unified schema snapshot (one file, not per-environment)"
+description: The CLI keeps a single schema.json representing the intended schema state, independent of any specific environment.
+sidebar_position: 5
+---
+
+**Status:** accepted
+
+## Context
+
+The Nubase CLI maintains a *snapshot* of the schema — a JSON serialization of tables, columns, constraints, views, policies, etc. — which it uses to compute migration diffs and to answer "what state should the database be in?" The original implementation stored one snapshot per environment at `nubase/snapshots/<envName>.json`, keyed off the `--env` flag.
+
+The per-environment design implied a specific mental model: **a snapshot is a record of the last observed state of a particular environment.** Under this model, `nubase db pull --env local` captures whatever was in the local DB at pull time; `nubase db diff --env prod` asks "has prod changed since we last looked at it?"
+
+This surfaced a tension the first time the CLI was wired up against divergent environments:
+
+- Local dev had roles `questlog`, `questlog_app` and policies targeting `questlog_app`.
+- Prod (a macmini Postgres cluster accessed via Cloudflare tunnel) had only `andrepena`.
+
+[ADR 0002](./0002-roles-and-grants-excluded-from-migrations) and [ADR 0004](./0004-rls-policies-emit-to-public) decided that migrations should be *portable across environments* — the migration output should be identical regardless of which DB it was generated from. Per-environment snapshots subtly contradict that goal. If the snapshot is "last observed state of env X", then envs have their own identities worth tracking. If migrations are portable and schema is environment-independent, then snapshots should be environment-independent too.
+
+The question underneath is: **what is the source of truth for the schema?**
+
+- If the **live database** is the source of truth, per-environment snapshots make sense. Each environment has its own reality; snapshots are observation logs.
+- If the **migrations** are the source of truth, a unified snapshot makes sense. The snapshot is a cache of "what the migrations produce when applied to a clean DB." Live state is either in sync with that cache (good) or drifted from it (a bug).
+
+Every major schema migration tool in use today picks the second model: Drizzle-kit, Prisma, Atlas, Flyway, Sqitch. The first model is the territory of *backup tools* (pg_dump, Barman), which is a different concern. Nubase's CLI is a migration tool, not a backup tool.
+
+## Decision
+
+**Store a single `schema.json` at `nubase/snapshots/schema.json`.** The file represents the *intended* schema state — the result of applying all known migrations to a clean database — and is environment-independent.
+
+Command semantics are clarified to match:
+
+| Command | Writes snapshot? | Meaning |
+|---|---|---|
+| `db pull --env X` | **yes** (rebaseline) | "The current state of env X is the new canonical schema." Explicit user-driven rebaseline. Typically run at bootstrap, or when schema changes are made out-of-band. |
+| `db diff --env X` | no | Compares live env X against `schema.json`. Drift shows up as a diff. Read-only. |
+| `db diff --env X -f <name>` | **yes** (incremental) | Generates a migration file capturing the delta and updates the snapshot. "These live changes are the new intended state." |
+| `db push --env X` | **no** | Applies pending migrations to env X. The snapshot is unchanged, because the migrations are what *produced* the snapshot state — if the push succeeds, env X now matches the snapshot by construction. |
+| `db reset --env X` | **no** | Drops and replays migrations on env X. Same reasoning as push: the resulting state is defined by the migrations, which the snapshot already represents. |
+
+The code-level changes:
+
+- `packages/cli/src/db/snapshot.ts` — `loadSnapshot` / `saveSnapshot` no longer take an `envName` parameter. The filename is hardcoded to `schema.json`.
+- `packages/cli/src/commands/db-pull.ts` — writes the unified file. Log message changed to "rebaselined from X" to emphasize the explicit nature.
+- `packages/cli/src/commands/db-diff.ts` — reads/writes the unified file.
+- `packages/cli/src/commands/db-push.ts` — the post-apply re-extract is **removed**. `extractSchema` import deleted.
+- `packages/cli/src/commands/db-reset.ts` — the post-reset re-extract is **removed**. Same reason.
+
+## Consequences
+
+### What this enables
+
+- **One source of truth for the intended schema.** Easier to reason about, easier to diff in code review, easier to explain to a new contributor.
+- **Alignment with industry practice.** A user coming from Drizzle-kit, Prisma, Atlas, or Flyway will find the mental model immediately familiar.
+- **Cleaner command semantics.** Each command has a clear role: `pull` rebaselines, `diff` detects drift, `push` applies known migrations. No ambiguity about which command updates what.
+- **Prevents silent corruption of the canonical snapshot.** Under the old model, `db push` re-extracted and saved the snapshot after applying migrations — which meant any drift on the push target (a manual `ALTER TABLE`, a replication lag artifact, anything) would silently overwrite the canonical snapshot with corrupted data. The new model removes that footgun entirely.
+- **Matches the portability ADRs.** [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) and [ADR 0004](./0004-rls-policies-emit-to-public) both push toward "schema is environment-independent". A unified snapshot is the natural corollary.
+
+### What we gave up
+
+- **First-class support for divergent environments.** If you have a long-lived feature-branch environment with schema changes that don't exist in prod, the unified snapshot either reflects the feature branch (and prod appears drifted) or reflects prod (and the feature branch appears drifted). You can't have both at once. For Nubase's intended use case — small-to-medium internal tools and business apps, where you typically have one or two environments in lockstep — this is not a real cost. If your workflow evolves to require it, a later ADR can introduce a "working snapshot" mechanism, but this is out of scope for now.
+
+- **Drift-since-last-pull is no longer a first-class question.** Under the old model, `db diff --env prod` could answer "has prod changed since I last pulled it?" Under the new model, that question has been reframed as "does prod match the intended schema?" — which is usually what you actually care about. The only case where the old question matters is forensic investigation of an incident ("what changed on prod between Monday and Tuesday?"), which is better served by database audit logging than by a stale snapshot file.
+
+- **The `snapshots/` directory will almost always contain exactly one file.** The directory structure is now mild overkill. We're keeping it anyway for forward compatibility — future versions may add per-migration snapshots or baseline variants, and it's easier to already have the directory than to retrofit it.
+
+### Operational note
+
+When upgrading an existing project from per-environment snapshots to the unified snapshot:
+
+1. Delete all existing `snapshots/<envName>.json` files.
+2. Run `nubase db pull --env <whichever env holds the intended state>` to produce `snapshots/schema.json`.
+3. Commit the new file.
+
+Step 2 is a judgment call: pick the environment that most accurately reflects what you want the schema to be. In most projects this is the primary dev environment. In projects where schema changes originate from prod (rare, but possible), pick prod.
+
+### Future work
+
+- **Integrity check command.** A useful follow-up would be `nubase db verify --env X`: run it after a reset or push to confirm that the live state matches the snapshot. It would be a read-only "does reality match intent?" check, which is *exactly* the concern that used to be addressed (poorly) by the post-apply re-extract. This isn't built yet but is a natural next step once anyone hits a case where they want to verify migration fidelity.
+
+### Related decisions
+
+- [ADR 0001](./0001-database-roles-consolidated) — single-role default that removes a common source of env divergence
+- [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) — schema migrations as environment-independent
+- [ADR 0004](./0004-rls-policies-emit-to-public) — RLS policy portability across environments

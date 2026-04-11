@@ -1,4 +1,3 @@
-import { extractSchema } from "@nubase/pg";
 import prompts from "prompts";
 import { loadConfig } from "../config/load-config.js";
 import { withConnection } from "../db/connection.js";
@@ -7,7 +6,6 @@ import {
   recordMigration,
 } from "../db/migration-tracker.js";
 import { listMigrationFiles } from "../db/migration-files.js";
-import { saveSnapshot } from "../db/snapshot.js";
 import { log } from "../output/logger.js";
 
 export async function dbReset(options: {
@@ -67,12 +65,11 @@ export async function dbReset(options: {
       }
     }
 
-    const schema = await extractSchema(resolved.environment.url);
-    await saveSnapshot(
-      resolved.snapshotsDir,
-      resolved.environmentName,
-      schema,
-    );
-    log.success("Database reset complete. Snapshot updated.");
+    // Intentionally does NOT re-extract and save the snapshot after reset.
+    // Reset drops and replays migrations — the resulting state is defined by
+    // the migrations, which is precisely what the snapshot already represents.
+    // Re-extracting would let any generator round-trip artifacts or drift
+    // silently overwrite the canonical snapshot. See ADR 0005.
+    log.success("Database reset complete.");
   });
 }

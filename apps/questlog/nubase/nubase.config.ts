@@ -6,7 +6,7 @@ export default defineConfig({
       url: process.env.DATABASE_URL!,
     },
     prod: {
-      url: process.env.DATABASE_URL!,
+      url: process.env.QUESTLOG_PROD_DATABASE_URL!,
     },
   },
   defaultEnvironment: "local",

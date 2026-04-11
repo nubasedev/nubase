@@ -9,7 +9,7 @@ export async function extractPrivileges(
       table_schema AS schema_name,
       table_name,
       grantee,
-      array_agg(privilege_type ORDER BY privilege_type) AS privileges,
+      array_agg(privilege_type::text ORDER BY privilege_type) AS privileges,
       bool_or(is_grantable = 'YES') AS with_grant_option
     FROM information_schema.table_privileges
     WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
