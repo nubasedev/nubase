@@ -1,0 +1,185 @@
+---
+title: Writing Queries
+description: The .sql file format, folder layout, named parameters, and JSON column annotations.
+---
+
+Every Typed SQL query is a single `.sql` file. One query per file. The file name becomes the generated function name. The folder name above it is the "context" — a domain grouping that exists only for organization.
+
+## Folder layout
+
+```
+apps/questlog/src/backend/
+  data-layer/
+    tickets/                        ← context (domain bucket)
+      getTicketById.sql             ← you write this
+      getTicketById.ts              ← CLI generates this (committed to git)
+      listTicketsByStatus.sql
+      listTicketsByStatus.ts
+      createTicket.sql
+      createTicket.ts
+    users/                          ← another context
+      getUserByEmail.sql
+      getUserByEmail.ts
+```
+
+Rules:
+
+- **One query per `.sql` file.** The basename (`getTicketById`) becomes the exported function name.
+- **The basename must be a valid JavaScript identifier** matching `[A-Za-z][A-Za-z0-9]*`. Files with names like `get-ticket.sql` or `1first.sql` are skipped with a warning.
+- **Context folders have no special meaning.** They're for grouping. The generator doesn't read them except to warn when a file has the same basename in two contexts (which is fine — they generate two separate functions that are imported independently).
+- **The default `data-layer/` root** is `src/backend/data-layer` relative to your app root. Change it via `dataLayer.dir` in `nubase.config.ts`:
+
+```ts title="nubase/nubase.config.ts"
+import { defineConfig } from "@nubase/cli";
+
+export default defineConfig({
+  environments: {
+    local: { url: process.env.DATABASE_URL! },
+  },
+  dataLayer: {
+    dir: "src/backend/data-layer", // default; set to override
+  },
+});
+```
+
+## A simple query
+
+```sql title="src/backend/data-layer/tickets/listTicketsByStatus.sql"
+SELECT
+  t.id,
+  t.title,
+  t.status,
+  t.created_at,
+  t.author_id
+FROM tickets t
+WHERE t.status = :status
+ORDER BY t.created_at DESC
+LIMIT :limit;
+```
+
+That's it. No magic comments, no `/* @name */` annotation, no type hints. Run `nubase data-layer generate` and you get a typed `listTicketsByStatus` function next to it. See [Generated Code](./generated-code) for the output.
+
+## Named parameters
+
+Typed SQL uses `:name` syntax for parameters. The preprocessor rewrites them to native Postgres positional parameters (`$1`, `$2`, ...) before sending to Postgres:
+
+```sql
+WHERE t.author_id = :authorId AND t.status = :status
+```
+
+becomes
+
+```sql
+WHERE t.author_id = $1 AND t.status = $2
+```
+
+The generated function takes a params *object* — so you call it with `{ authorId: 37, status: "open" }`, not positional arguments. This is the main reason Typed SQL uses named params: call-site ergonomics.
+
+### Parameter-order rules
+
+- **First appearance wins.** The first unique `:name` gets `$1`, the second unique gets `$2`, and so on.
+- **Duplicates collapse.** `WHERE a = :x OR b = :x` uses `$1` for both references.
+- **`::` casts are not parameters.** `'1'::int` does not trigger `:int` substitution.
+
+### What's scanned and what's skipped
+
+The preprocessor walks the source and tracks state for a few SQL constructs. Named parameter matching is skipped inside:
+
+- **Single-quoted strings** — `':not_a_param'`, including escaped quotes (`''`).
+- **Double-quoted identifiers** — `"col:with:colons"`.
+- **Line comments** — `-- :this_is_just_text`.
+- **Block comments** — `/* :neither is this */`.
+- **Dollar-quoted strings** — both `$$...$$` and tagged `$body$...$body$`.
+
+If you see `:name` inside any of those, it passes through untouched to Postgres.
+
+## Mutation queries
+
+Mutations work the same way — whether they produce rows depends on whether they have a `RETURNING` clause.
+
+**With `RETURNING`** — the generator treats it like a SELECT and returns `Row[]`:
+
+```sql title="createTicket.sql"
+INSERT INTO tickets (title, status, author_id)
+VALUES (:title, :status, :authorId)
+RETURNING id, created_at;
+```
+
+Produces `createTicket(db, params): Promise<CreateTicketRow[]>` returning `[{ id, created_at }]`.
+
+**Without `RETURNING`** — the function returns `{ rowCount }`:
+
+```sql title="deleteTicket.sql"
+DELETE FROM tickets WHERE id = :id;
+```
+
+Produces `deleteTicket(db, { id }): Promise<{ rowCount: number }>`.
+
+No row type is emitted in this case. If you later want the affected row, add `RETURNING *` (or specific columns) and the signature flips to `Row[]`.
+
+## JSON column typing
+
+Postgres cannot tell you the shape of a `jsonb` or `json` column — it's opaque to the database. By default Typed SQL emits `unknown` for JSON columns, forcing you to narrow at the call site. That's safe but rarely what you want.
+
+To declare a shape, add a `@json` annotation as a line comment at the top of the `.sql` file:
+
+```sql title="getTicketWithMeta.sql"
+-- @json metadata: import("@questlog/common/schemas").TicketMetadata
+-- @json tags: string[]
+SELECT id, title, metadata, tags
+FROM tickets
+WHERE id = :id;
+```
+
+The syntax is `-- @json <name>: <typescript-type-expression>`. The `<name>` matches a column alias or a parameter name. The `<typescript-type-expression>` is **pasted verbatim into the generated `.ts`**, so it must be a valid TypeScript type.
+
+### What you can write on the right-hand side
+
+Anything that's legal TypeScript type syntax:
+
+- Bare identifier: `TicketMetadata`
+- TypeScript `import()` type: `import("@questlog/common/schemas").TicketMetadata`
+- Union: `import("@/schemas").TicketMetadata | null`
+- Array: `string[]` or `Array<{ tag: string; weight: number }>`
+- Inline object type: `{ priority: "low" | "med" | "high"; tags: string[] }`
+
+The `import("pkg").Name` form is recommended because it lets the generator hoist references to clean top-level `import type` statements in the output, and your IDE can navigate to the type definition.
+
+### Import hoisting
+
+Multiple `@json` annotations referencing the same module get merged into a single `import type { A, B, C } from "pkg"` statement at the top of the generated file. Cross-module name collisions (the same `Name` exported from two different modules) are handled automatically via aliasing — the second module becomes `Name as Name_2`, and the pasted expressions are rewritten to reference the alias. You don't have to think about it.
+
+### Where annotations are valid
+
+- Annotations must appear **before any SQL content.**
+- Scanning stops at the first non-comment, non-blank line.
+- Regular `--` comments interleaved with `@json` comments are fine — they're ignored.
+- An `@json`-looking comment *inside* the query body is ignored silently — once SQL starts, the header is over.
+
+### If the type is malformed
+
+The generator doesn't validate the right-hand side beyond "non-empty" — TypeScript itself catches malformed types when the generated file is compiled. You'll see the error at typecheck time in the *generated* `.ts` file, with full IDE support.
+
+### If you omit the annotation
+
+A JSON column without a matching `@json` annotation becomes `unknown`, not `any` and not a warning. The dev can still use it (forced to narrow with `typeof` / `in` / a schema validator) or add an annotation later. This keeps throwaway queries cheap without hiding bugs.
+
+## What about parameter types for JSON?
+
+The `@json` annotation applies to parameters too. If you have `INSERT INTO tickets (metadata) VALUES (:metadata)` and `metadata` is `jsonb`, add `-- @json metadata: TicketMetadata` and the param becomes typed.
+
+## Full example
+
+```sql title="apps/questlog/src/backend/data-layer/tickets/upsertTicketWithMeta.sql"
+-- @json metadata: import("@questlog/common/schemas").TicketMetadata
+-- @json tags: string[]
+INSERT INTO tickets (title, status, author_id, metadata, tags)
+VALUES (:title, :status, :authorId, :metadata, :tags)
+ON CONFLICT (title) DO UPDATE
+  SET status = EXCLUDED.status,
+      metadata = EXCLUDED.metadata,
+      tags = EXCLUDED.tags
+RETURNING id, title, status, metadata, tags;
+```
+
+Named params, JSON annotations, a complex `ON CONFLICT` mutation, `RETURNING`. Typed SQL handles all of it — because Postgres handles all of it. The generator just asks Postgres what comes back.

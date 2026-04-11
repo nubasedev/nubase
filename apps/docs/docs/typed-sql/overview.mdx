@@ -1,0 +1,86 @@
+---
+title: Typed SQL Overview
+description: Write queries as .sql files, let Postgres infer the types, get typed TypeScript wrappers generated automatically.
+---
+
+Typed SQL is an experimental alternative to query builders. You write queries as plain `.sql` files; the Nubase CLI asks Postgres what their parameters and return columns look like, and generates a sibling `.ts` file with a typed function you can call from your backend handlers.
+
+The generated function is tiny — it takes a `pg.Client` / `pg.Pool` / `pg.PoolClient`, runs the query, returns typed rows. No query builder, no ORM, no runtime on top of `pg`.
+
+## Why
+
+Drizzle and friends give you type-safe queries in exchange for learning their DSL. Typed SQL gives you type-safe queries in exchange for writing SQL. Both are legitimate; Typed SQL is the right fit when:
+
+- Your team already reads and writes SQL fluently.
+- You want the generated code to be grep-able, debuggable plain functions, not a query builder chain.
+- You need features the query builder can't express cleanly (window functions, CTEs, complex joins, raw `jsonb_build_object` synthesis).
+- You want design-time guarantees that your queries actually run against the live schema.
+
+It's **not** a good fit when you want dynamic query composition (filters that grow and shrink at runtime based on user input) — for that, a query builder is a better tool. Typed SQL is for statically-known queries.
+
+## How it works
+
+At generation time:
+
+1. The CLI walks `src/backend/data-layer/` for `.sql` files.
+2. For each file it opens one long-lived Postgres wire connection.
+3. For each query it sends `Parse` + `Describe` (Extended Query Protocol) — **without executing** — and Postgres responds with the parameter OIDs and row description.
+4. The OIDs are cross-referenced against `pg_type`, `pg_attribute`, and `pg_description` to resolve type names, nullability, and comments.
+5. The resolved information is rendered into a sibling `.ts` file with typed param and row shapes plus a function body that runs `db.query(SQL, params)`.
+
+At runtime the generated file has zero dependencies beyond `pg`. None of Nubase's codegen code runs in production.
+
+Because Postgres itself resolves the types, the generator understands every construct Postgres understands: joins, CTEs, expressions, casts, `jsonb_build_object`, aggregates, window functions. There is no SQL parser in Nubase — Postgres is the parser.
+
+## Design-time validation as a free side-effect
+
+The same `Parse` step that produces type information is also what Postgres uses to *validate* a query. A query that can't be parsed — missing column, wrong type, undefined function, `GROUP BY` mismatch, typo in a table name — returns an `ErrorResponse` from Postgres with a SQLSTATE code, message, hint, and byte position. The Nubase CLI catches that response and formats it as a file/line/column diagnostic:
+
+```
+✖ src/backend/data-layer/tickets/listOpenTickets.sql
+  42703: column "titel" does not exist
+
+     4 │   t.id,
+     5 │   t.titel,
+       │     ^
+     6 │   t.status
+       │
+       │ Hint: Perhaps you meant to reference the column "tickets.title".
+       │
+       │ ↪ Postgres error code 42703 (undefined_column)
+```
+
+Running `nubase data-layer generate` is therefore both a codegen step and a lint step. If it succeeds, every query in your project parses cleanly against the live database schema — Postgres said so.
+
+## Design-time only, not runtime
+
+Typed SQL does **not** validate rows at runtime. Once the types are inferred and the `.ts` file is generated, `db.query(SQL, params)` just runs — the result is cast to the typed row shape, no `.parse()` call, no schema check. Postgres already guarantees the shape; paying for runtime validation would be checking Postgres against itself.
+
+If you want runtime schema validation (e.g., for API boundary checks), use a separate layer like `@nubase/core` schemas on the handler's response, not inside the generated query function.
+
+## Scope
+
+Typed SQL is experimental and intentionally minimal. It doesn't replace Drizzle — the two coexist on the same `pg.Pool`, and you can migrate incrementally. See [Coexisting with Drizzle](./generated-code#coexisting-with-drizzle) for the call-site pattern.
+
+What Typed SQL does:
+- Generates typed TypeScript wrappers from `.sql` files.
+- Infers parameter types, return column types, and nullability from Postgres.
+- Supports named parameters (`:userId`) with automatic rewriting to `$1`/`$2`.
+- Supports user-declared TypeScript types for `jsonb` columns via `@json` comments.
+- Handles both `SELECT`/`RETURNING` queries (return rows) and `UPDATE`/`DELETE` without `RETURNING` (return `{ rowCount }`).
+- Emits structured error diagnostics with source maps for broken queries.
+- Provides a `--check` mode for CI to catch stale generated files.
+
+What it doesn't do:
+- No query builder. No filter composition. No `.where(...)` chains.
+- No runtime row validation.
+- No migration generation. Schema migrations remain `nubase db pull` / `nubase db push`.
+- No support for pgtyped's TypeScript-file-with-tagged-template-literal mode. SQL files only.
+- No watch mode. Run `nubase data-layer generate` manually after schema or query edits.
+
+## Next
+
+- [Writing Queries](./writing-queries) — the `.sql` file format, named params, JSON annotations, folder layout.
+- [Generated Code](./generated-code) — what the `.ts` output looks like, how to call it, how transactions work.
+- [CLI Usage](./cli-usage) — `nubase data-layer generate`, the `--check` mode, CI integration.
+- [Caveats](./caveats) — known limitations and non-obvious type mappings.

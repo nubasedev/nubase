@@ -1,0 +1,176 @@
+---
+title: Caveats and Limitations
+description: Known limitations and non-obvious type mappings of the Typed SQL subsystem.
+---
+
+Typed SQL is experimental and intentionally minimal. Most of what follows is "correct given the constraint that we trust Postgres' own type information" — i.e., design choices rather than bugs — but it helps to know what to expect.
+
+## LEFT JOIN nullability is not widened
+
+This is the biggest caveat and worth understanding clearly.
+
+Consider:
+
+```sql
+SELECT t.id, u.email AS author_email
+FROM tickets t
+LEFT JOIN users u ON u.id = t.author_id;
+```
+
+Intuitively, because `users` is on the right side of a `LEFT JOIN`, `author_email` should be `string | null` — the join can produce `NULL` even when `users.email` is declared `NOT NULL`.
+
+Typed SQL's generated output will instead give you:
+
+```ts
+export type Row = {
+  id: number;
+  author_email: string;   // ← not nullable, despite the LEFT JOIN
+};
+```
+
+### Why
+
+The generator reads nullability from `pg_attribute.attnotnull` for each column Postgres reports in `RowDescription`. Postgres' `Describe` message gives us the *source table OID* and *column attribute number* for each field in the result, and we look up the nullability of that source column — not the query's *output* nullability after join widening.
+
+Inferring "LEFT JOIN makes this column nullable" would require either:
+- Query-plan analysis (parsing the SQL ourselves — we explicitly don't do that), or
+- A Postgres extension that exposes output-nullability (doesn't exist in standard Postgres).
+
+Pgtyped has the same behavior — it's not a Nubase-specific limitation, it's a limitation of the Extended Query Protocol's type-inference surface.
+
+### Workarounds
+
+Pick whichever fits the query:
+
+**1. Cast to explicitly declare nullability**
+
+```sql
+SELECT
+  t.id,
+  NULLIF(u.email, '')::text AS author_email  -- force a computed expression
+FROM tickets t
+LEFT JOIN users u ON u.id = t.author_id;
+```
+
+A computed expression (any function, cast, or operator applied to a column) loses the source-column provenance — Postgres reports `tableOID = 0` and `columnAttrNumber = 0` for the result, and the generator falls back to "nullable unknown" for the inferred type. You may need to narrow at the call site.
+
+**2. Use `COALESCE` to guarantee a value**
+
+```sql
+SELECT
+  t.id,
+  COALESCE(u.email, '') AS author_email  -- now always non-null
+FROM tickets t
+LEFT JOIN users u ON u.id = t.author_id;
+```
+
+This gives you a genuinely non-null column. Use when the empty string (or another default) is a meaningful placeholder.
+
+**3. Cast on the TypeScript side at the call site**
+
+```ts
+const rows = await listTicketsWithAuthor(db, { ... });
+for (const row of rows) {
+  const authorEmail: string | null = row.author_email ?? null;
+  // ...
+}
+```
+
+The least invasive option — the generator lies to TypeScript, you correct it at the boundary. Use sparingly; it means your editor's type info no longer matches reality.
+
+**4. Use the `@json` annotation override for the full row type**
+
+If you already have a hand-written TypeScript type that captures the true shape, you can annotate any column that's miscategorized. (This works best when you're already using `@json` for another field in the same query.)
+
+### When it matters, when it doesn't
+
+In practice, the non-widened nullability mostly bites you on **outer joins where the right side is semantically optional**. For inner joins, for `LEFT JOIN` where you're just enriching one column that has a default, and for queries with no joins at all, the generator's inference is correct. Audit the specific queries where you care; don't preemptively wrap every row in a `Partial<...>`.
+
+## Non-obvious type mappings
+
+A few Postgres types map to TypeScript types in ways that might surprise you on first contact.
+
+### `int8` / `bigint` → `string`
+
+```sql
+SELECT id FROM huge_events;   -- id is bigint
+```
+
+```ts
+export type Row = { id: string };   // ← not number
+```
+
+This is because the `pg` driver returns `bigint` columns as strings by default, to preserve precision. JavaScript's `number` tops out at 2^53 - 1 and would silently lose precision for larger values. If you know your IDs fit in a `number`, you can either:
+
+- Reconfigure the driver: `pg.types.setTypeParser(20, (v) => parseInt(v, 10))` (OID 20 is `int8`).
+- Parse at the call site: `const id = Number(row.id)`.
+- Use BigInt: `pg.types.setTypeParser(20, BigInt)`.
+
+Changing the type mapping in the generator itself would silently break projects that depend on the string default, so we match `pg`'s out-of-the-box behavior.
+
+### `numeric` → `string`
+
+Same rationale — `pg` returns `numeric` (arbitrary-precision decimal) as a string. If you know your values fit in a double, cast at the call site.
+
+### `date` / `time` / `timetz` → `string`
+
+These are `string` because `pg` returns them as ISO strings by default. Only `timestamp` and `timestamptz` come back as JavaScript `Date` objects, and that's what Typed SQL emits.
+
+### `json` / `jsonb` → `unknown` (without `@json` annotation)
+
+Default is `unknown`, not `any` — you can't accidentally misuse a JSON column without TypeScript forcing you to narrow. Add a `-- @json <name>: <type>` comment at the top of the `.sql` file to declare the shape. See [Writing Queries](./writing-queries#json-column-typing).
+
+### `bytea` → `Buffer`
+
+Postgres `bytea` comes back as a Node `Buffer`. If you're running under a Buffer-less environment (unusual in a Node backend), you'll need to handle it at the call site.
+
+## Query features not supported
+
+### No watch mode
+
+There is no `nubase data-layer generate --watch`. Re-run the command manually after editing a `.sql` file. Integration with file watchers (e.g., via `chokidar`) was explicitly scoped out of the first version — if it's painful for you, open an issue.
+
+### No multi-query files
+
+One query per `.sql` file. The file name determines the function name. The pgtyped-style `/* @name foo */` multi-query syntax is not supported.
+
+### No TypeScript-file query mode
+
+Pgtyped has two modes: `.sql` files (what Typed SQL supports) and `.ts` files with tagged-template-literal queries inline. Typed SQL only supports the `.sql` mode.
+
+### No query builder
+
+Typed SQL is for **statically-known queries**. If you need filters that grow and shrink based on user input — `WHERE` clauses whose shape depends on which checkboxes the user ticked — you want a query builder, not Typed SQL. Drizzle (which Nubase still bundles) is the recommended option. The two can coexist in the same file.
+
+### No parameter nullability hints
+
+Pgtyped lets you express "this param is required" via `:userId!` and "nullable" via `:userId` (without the `!`). Typed SQL takes the simpler route: parameters are always non-null unless Postgres' inferred type says otherwise. If you need to pass `null`, cast on the call site or use a wrapper.
+
+## Runtime behavior
+
+### No runtime row validation
+
+The generated function casts `result.rows` to the typed row shape without validating. The rationale is in [Overview → Design-time only, not runtime](./overview#design-time-only-not-runtime) — we trust Postgres not to lie about its own result shape. If a column's underlying definition changes behind Typed SQL's back (e.g., a manual `ALTER TABLE` on production that skipped migrations), the generated file would be stale and CI's `--check` would catch it on the next run.
+
+### No automatic logging
+
+No per-query telemetry, no slow-query detection, no `console.log` anywhere in the generated output. Add a `db.query` wrapper in your own handler middleware if you want that.
+
+### No prepared statement caching
+
+The generator doesn't use `pg`'s prepared-statement feature (`name` option on `query()`). That feature complicates error recovery when a statement hits a schema change mid-session, and the perf gain is modest for typical internal-tool workloads. If you have a hot loop where prepared statements matter, do it manually with a `pg.Client` you manage yourself.
+
+## Vendored code adaptations
+
+Typed SQL vendors pieces of [pgtyped](https://github.com/adelsz/pgtyped) (MIT) for the Postgres wire protocol and type extraction. Four adaptations were made to the vendored code — not bugs in pgtyped exactly, but choices that didn't fit Nubase's constraints:
+
+1. **`ssl: false` handling.** The vendored `AsyncQueue.connect` treats any non-null `ssl` value as "SSL enabled," including `false`. Nubase's call sites omit the `ssl` key entirely when disabled, as a workaround.
+2. **`process.exit(1)` on connection failure.** The original startup code exits the process when it can't connect. Library code must not terminate the host, so we wrap and re-throw an `Error` instead.
+3. **Wrong error code field.** The original error-reporting code reads `fields.R` (the Postgres *routine* name, e.g. `"errorMissingColumn"`) instead of `fields.C` (the SQLSTATE code, e.g. `"42703"`). We read `fields.C ?? fields.R` so diagnostics get the actual error code.
+4. **`debug` package stripped.** The vendored code uses the `debug` npm package for per-message tracing. Nubase replaces the `debug()` calls with a no-op so `@nubase/pg` has no runtime dependency on `debug`.
+
+See [`packages/pg/LICENSE-pgtyped.md`](https://github.com/anglio-dev/nubase/blob/main/packages/pg/LICENSE-pgtyped.md) for the full MIT license and attribution.
+
+## Stability
+
+Typed SQL is experimental. The file format, CLI surface, and generated output shape may change before it's promoted to a stable feature of Nubase. Coexisting with Drizzle keeps the blast radius small — if you decide Typed SQL isn't for you, delete the `data-layer/` directory and the Drizzle code underneath is untouched. If a future Nubase release renames the command or changes the generated header, we'll ship a codemod and call out the change in the release notes.
