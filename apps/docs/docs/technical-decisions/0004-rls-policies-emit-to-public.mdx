@@ -8,11 +8,11 @@ sidebar_position: 4
 
 ## Context
 
-Postgres RLS policies always name a role (or set of roles) as their target via `CREATE POLICY ... TO <role>`. When [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) decided to exclude roles and grants from schema migrations, RLS policies became a borderline case. On one hand, they're attached to a specific table, they reference columns, they embed SQL expressions — they're very schema-shaped, and a migration tool that couldn't manage them would be annoying. On the other hand, the `TO <role>` clause is intrinsically a reference to a role, which [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) just said is an environment concern.
+Postgres RLS policies always name a role (or set of roles) as their target via `CREATE POLICY ... TO <role>`. When [ADR 0002](./roles-and-grants-excluded-from-migrations) decided to exclude roles and grants from schema migrations, RLS policies became a borderline case. On one hand, they're attached to a specific table, they reference columns, they embed SQL expressions — they're very schema-shaped, and a migration tool that couldn't manage them would be annoying. On the other hand, the `TO <role>` clause is intrinsically a reference to a role, which [ADR 0002](./roles-and-grants-excluded-from-migrations) just said is an environment concern.
 
 Three options were considered:
 
-1. **Include policies as-is, preserving the source role name.** Portability breaks if the target is missing the role. Honest failure mode, but it undermines [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) — the migration still carries role knowledge.
+1. **Include policies as-is, preserving the source role name.** Portability breaks if the target is missing the role. Honest failure mode, but it undermines [ADR 0002](./roles-and-grants-excluded-from-migrations) — the migration still carries role knowledge.
 2. **Exclude policies entirely, mirroring the treatment of grants.** Defensible (this is what Prisma does), but it means the CLI can't evolve RLS alongside tables. RLS becomes a wholly manual, out-of-band concern, which loses real value for multi-tenant Nubase applications.
 3. **Include policies but rewrite the role target to `PUBLIC` at emit time.** Portable everywhere, semantically identical to the source in single-role setups, and lossy only if the source database had genuinely role-differentiated policies (which Nubase's reference architecture does not).
 
@@ -27,7 +27,7 @@ The rejected options had distinct costs: option 1 undermines the portability goa
 
 The snapshot retains whatever role target was observed in the source database — extraction is faithful, only emission is rewritten. This means diffs remain accurate: a later `nubase db diff` will still compare the extracted source to the stored snapshot using the actual role data, not the rewritten target. Only the emitted SQL is portable.
 
-In Postgres, `TO PUBLIC` means "applies to every role", which is the most permissive target for *which roles the policy checks are evaluated against*. In a single-role setup (which [ADR 0001](./0001-database-roles-consolidated) makes the Nubase default), `TO PUBLIC` and `TO <specific_role>` are semantically identical because there is only one role to match.
+In Postgres, `TO PUBLIC` means "applies to every role", which is the most permissive target for *which roles the policy checks are evaluated against*. In a single-role setup (which [ADR 0001](./database-roles-consolidated) makes the Nubase default), `TO PUBLIC` and `TO <specific_role>` are semantically identical because there is only one role to match.
 
 ## Consequences
 
@@ -41,7 +41,7 @@ In Postgres, `TO PUBLIC` means "applies to every role", which is the most permis
 
 - **Role-differentiated RLS is not supported in generated migrations.** If a Nubase application legitimately has multiple application roles with different policy targets (e.g., `reader` can see all rows but `writer` can only see their own), the CLI will collapse all targets to `PUBLIC`. That's a real semantic loss for multi-role use cases. It's not a loss for any current Nubase deployment.
 - **The generated SQL no longer matches the source DB 1:1.** A migration file won't be byte-identical to what `pg_dump` would produce. If you want a faithful mirror, use `pg_dump`. If you want portability, use the Nubase CLI.
-- **Future reversal has a specific cost.** If we ever need to support role-differentiated policies, we'd need to reintroduce role extraction (contradicting [ADR 0002](./0002-roles-and-grants-excluded-from-migrations)) or add a per-environment role-mapping layer to `nubase.config.ts`. Either is possible, neither is free.
+- **Future reversal has a specific cost.** If we ever need to support role-differentiated policies, we'd need to reintroduce role extraction (contradicting [ADR 0002](./roles-and-grants-excluded-from-migrations)) or add a per-environment role-mapping layer to `nubase.config.ts`. Either is possible, neither is free.
 
 ### When to revisit
 
@@ -49,5 +49,5 @@ This decision is not load-bearing in a way that's hard to reverse. If multi-role
 
 ### Related decisions
 
-- [ADR 0001](./0001-database-roles-consolidated) — the single-role default that makes `TO PUBLIC` semantically equivalent to the source in current deployments
-- [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) — the broader "roles aren't migration content" principle that this ADR is a carve-out from
+- [ADR 0001](./database-roles-consolidated) — the single-role default that makes `TO PUBLIC` semantically equivalent to the source in current deployments
+- [ADR 0002](./roles-and-grants-excluded-from-migrations) — the broader "roles aren't migration content" principle that this ADR is a carve-out from

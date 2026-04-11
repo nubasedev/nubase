@@ -55,5 +55,5 @@ The existing `privileges.ts` extractor and `privileges.ts` generator files are p
 
 ### Related decisions
 
-- RLS policies *are* still in scope — they're table-attached schema objects, not security configuration. How they handle role references is covered by [ADR 0004](./0004-rls-policies-emit-to-public). Policies are emitted with `TO PUBLIC` rather than carrying source-database role names, which is what makes RLS-containing schemas portable under this ADR's constraints.
-- Extension-owned objects (views, functions created by `CREATE EXTENSION`) are handled by [ADR 0003](./0003-extension-owned-objects-excluded-from-migrations).
+- RLS policies *are* still in scope — they're table-attached schema objects, not security configuration. How they handle role references is covered by [ADR 0004](./rls-policies-emit-to-public). Policies are emitted with `TO PUBLIC` rather than carrying source-database role names, which is what makes RLS-containing schemas portable under this ADR's constraints.
+- Extension-owned objects (views, functions created by `CREATE EXTENSION`) are handled by [ADR 0003](./extension-owned-objects-excluded-from-migrations).

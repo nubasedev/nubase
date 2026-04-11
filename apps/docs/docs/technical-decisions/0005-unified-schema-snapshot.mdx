@@ -17,7 +17,7 @@ This surfaced a tension the first time the CLI was wired up against divergent en
 - Local dev had roles `questlog`, `questlog_app` and policies targeting `questlog_app`.
 - Prod (a macmini Postgres cluster accessed via Cloudflare tunnel) had only `andrepena`.
 
-[ADR 0002](./0002-roles-and-grants-excluded-from-migrations) and [ADR 0004](./0004-rls-policies-emit-to-public) decided that migrations should be *portable across environments* — the migration output should be identical regardless of which DB it was generated from. Per-environment snapshots subtly contradict that goal. If the snapshot is "last observed state of env X", then envs have their own identities worth tracking. If migrations are portable and schema is environment-independent, then snapshots should be environment-independent too.
+[ADR 0002](./roles-and-grants-excluded-from-migrations) and [ADR 0004](./rls-policies-emit-to-public) decided that migrations should be *portable across environments* — the migration output should be identical regardless of which DB it was generated from. Per-environment snapshots subtly contradict that goal. If the snapshot is "last observed state of env X", then envs have their own identities worth tracking. If migrations are portable and schema is environment-independent, then snapshots should be environment-independent too.
 
 The question underneath is: **what is the source of truth for the schema?**
 
@@ -56,7 +56,7 @@ The code-level changes:
 - **Alignment with industry practice.** A user coming from Drizzle-kit, Prisma, Atlas, or Flyway will find the mental model immediately familiar.
 - **Cleaner command semantics.** Each command has a clear role: `pull` rebaselines, `diff` detects drift, `push` applies known migrations. No ambiguity about which command updates what.
 - **Prevents silent corruption of the canonical snapshot.** Under the old model, `db push` re-extracted and saved the snapshot after applying migrations — which meant any drift on the push target (a manual `ALTER TABLE`, a replication lag artifact, anything) would silently overwrite the canonical snapshot with corrupted data. The new model removes that footgun entirely.
-- **Matches the portability ADRs.** [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) and [ADR 0004](./0004-rls-policies-emit-to-public) both push toward "schema is environment-independent". A unified snapshot is the natural corollary.
+- **Matches the portability ADRs.** [ADR 0002](./roles-and-grants-excluded-from-migrations) and [ADR 0004](./rls-policies-emit-to-public) both push toward "schema is environment-independent". A unified snapshot is the natural corollary.
 
 ### What we gave up
 
@@ -82,6 +82,6 @@ Step 2 is a judgment call: pick the environment that most accurately reflects wh
 
 ### Related decisions
 
-- [ADR 0001](./0001-database-roles-consolidated) — single-role default that removes a common source of env divergence
-- [ADR 0002](./0002-roles-and-grants-excluded-from-migrations) — schema migrations as environment-independent
-- [ADR 0004](./0004-rls-policies-emit-to-public) — RLS policy portability across environments
+- [ADR 0001](./database-roles-consolidated) — single-role default that removes a common source of env divergence
+- [ADR 0002](./roles-and-grants-excluded-from-migrations) — schema migrations as environment-independent
+- [ADR 0004](./rls-policies-emit-to-public) — RLS policy portability across environments
