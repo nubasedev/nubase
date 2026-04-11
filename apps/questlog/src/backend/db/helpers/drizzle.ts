@@ -58,28 +58,48 @@ declare global {
   // allow global `var` declarations
   // eslint-disable-next-line no-var
   var db: NodePgDatabase | undefined;
+  // eslint-disable-next-line no-var
+  var pgClient: Client | undefined;
 }
 
-/**
- * Get the database connection.
- */
-export function getDb() {
-  if (!global.db) {
+function ensureConnection(): Client {
+  if (!global.pgClient) {
     if (!process.env.DATABASE_URL) {
       throw new Error(
         "DATABASE_URL is not defined in the environment variables.",
       );
     }
-    const databaseUrl = process.env.DATABASE_URL;
-    const client = new Client({ connectionString: databaseUrl });
+    const client = new Client({ connectionString: process.env.DATABASE_URL });
     client.connect().catch((err) => {
       console.error("Failed to connect to database:", err);
       throw err;
     });
+    global.pgClient = client;
     global.db = drizzle(client);
   }
+  return global.pgClient;
+}
 
-  return global.db;
+/**
+ * Get the Drizzle database wrapper.
+ */
+export function getDb() {
+  if (!global.db) {
+    ensureConnection();
+  }
+  // biome-ignore lint/style/noNonNullAssertion: ensureConnection initializes it
+  return global.db!;
+}
+
+/**
+ * Get the raw `pg.Client` that Drizzle wraps. Used by Typed SQL generated
+ * functions in `src/backend/data-layer/` — they expect a `pg.Client | Pool |
+ * PoolClient` as their first argument, and we share the same connection
+ * with Drizzle so both systems see the same session state (and, when
+ * workspace RLS is revived, the same transaction).
+ */
+export function getPgClient(): Client {
+  return ensureConnection();
 }
 
 /**
