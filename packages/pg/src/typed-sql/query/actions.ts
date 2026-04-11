@@ -249,10 +249,14 @@ export async function getTypeData(
   await queue.send(messages.sync, {});
 
   if ('fields' in parseResult) {
-    // Error case
+    // Error case.
+    // Adaptation: pgtyped uses `errorFields.R` which is the Postgres *routine*
+    // name (e.g. "errorMissingColumn") rather than the SQLSTATE code. The
+    // runtime ErrorResponse dict has both, so we read `C` (SQLSTATE, e.g.
+    // "42703") which is what we actually want for diagnostics.
     const { fields: errorFields } = parseResult;
     return {
-      errorCode: errorFields.R,
+      errorCode: errorFields.C ?? errorFields.R,
       hint: errorFields.H,
       message: errorFields.M,
       position: errorFields.P,
