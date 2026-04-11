@@ -63,6 +63,15 @@
   },
   "overrides": [
     {
+      "includes": [
+        "**/packages/pg/src/typed-sql/wire/**",
+        "**/packages/pg/src/typed-sql/query/**"
+      ],
+      "linter": { "enabled": false },
+      "formatter": { "enabled": false },
+      "assist": { "enabled": false }
+    },
+    {
       "includes": ["**/data-grid/**"],
       "linter": {
         "rules": {
