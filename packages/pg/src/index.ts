@@ -14,6 +14,15 @@ export type {
   MigrationStatement,
 } from "./migrate/generate-migration";
 export { generateMigration } from "./migrate/generate-migration";
+// typed-sql (query codegen) public API
+export type {
+  GeneratedQuery,
+  GeneratedQueryError,
+  GenerateOptions,
+  GenerateQueryResult,
+  GenerateResult,
+} from "./typed-sql";
+export { generateAll } from "./typed-sql";
 export type {
   ColumnModification,
   ObjectSetDiff,

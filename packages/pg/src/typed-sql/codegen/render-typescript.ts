@@ -114,20 +114,39 @@ function renderRowType(name: string, rowFields: QueryRowFieldModel[]): string {
   return lines.join("\n");
 }
 
+function renderSignatureLines(
+  name: string,
+  baseName: string,
+  params: QueryParamModel[],
+): string[] {
+  // Emit each arg on its own line so the output matches Biome's preferred
+  // multi-line function-signature formatting. This keeps generated files
+  // stable under `biome check --write`.
+  const lines = [`export async function ${name}(`];
+  if (params.length > 0) {
+    lines.push(`  db: Client | Pool | PoolClient,`);
+    lines.push(`  params: ${baseName}Params,`);
+  } else {
+    lines.push(`  db: Client | Pool | PoolClient,`);
+  }
+  return lines;
+}
+
+function renderParamArray(params: QueryParamModel[]): string {
+  if (params.length === 0) return "[]";
+  return `[${params.map((p) => `params.${p.name}`).join(", ")}]`;
+}
+
 function renderFunctionReturningRows(
   name: string,
   baseName: string,
   params: QueryParamModel[],
   rowTypeName: string,
 ): string {
-  const paramsArg = params.length > 0 ? `, params: ${baseName}Params` : "";
-  const paramArray =
-    params.length > 0
-      ? `[${params.map((p) => `params.${p.name}`).join(", ")}]`
-      : "[]";
+  const signature = renderSignatureLines(name, baseName, params);
+  const paramArray = renderParamArray(params);
   return [
-    `export async function ${name}(`,
-    `  db: Client | Pool | PoolClient${paramsArg},`,
+    ...signature,
     `): Promise<${rowTypeName}[]> {`,
     `  const result = await db.query<${rowTypeName}>(SQL, ${paramArray});`,
     `  return result.rows;`,
@@ -140,14 +159,10 @@ function renderFunctionCommand(
   baseName: string,
   params: QueryParamModel[],
 ): string {
-  const paramsArg = params.length > 0 ? `, params: ${baseName}Params` : "";
-  const paramArray =
-    params.length > 0
-      ? `[${params.map((p) => `params.${p.name}`).join(", ")}]`
-      : "[]";
+  const signature = renderSignatureLines(name, baseName, params);
+  const paramArray = renderParamArray(params);
   return [
-    `export async function ${name}(`,
-    `  db: Client | Pool | PoolClient${paramsArg},`,
+    ...signature,
     `): Promise<{ rowCount: number }> {`,
     `  const result = await db.query(SQL, ${paramArray});`,
     `  return { rowCount: result.rowCount ?? 0 };`,

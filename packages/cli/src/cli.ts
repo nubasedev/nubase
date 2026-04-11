@@ -113,4 +113,30 @@ program
     }
   });
 
+const dataLayer = program
+  .command("data-layer")
+  .description("Typed-SQL codegen commands");
+
+dataLayer
+  .command("generate")
+  .description(
+    "Generate typed .ts wrappers for every .sql file under data-layer/",
+  )
+  .option("--env <name>", "Target environment")
+  .option(
+    "--check",
+    "Don't write anything; exit 1 if any file is stale or fails to parse",
+  )
+  .action(async (options) => {
+    try {
+      const { dataLayerGenerate } = await import(
+        "./commands/data-layer-generate.js"
+      );
+      await dataLayerGenerate(options);
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
 program.parse();

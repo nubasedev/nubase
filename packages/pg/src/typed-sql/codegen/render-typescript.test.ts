@@ -32,9 +32,8 @@ describe("renderTypescript", () => {
       'const SQL = "SELECT id, title FROM tickets WHERE id = $1";',
     );
     expect(out).toContain("export async function getTicketById(");
-    expect(out).toContain(
-      "db: Client | Pool | PoolClient, params: GetTicketByIdParams,",
-    );
+    expect(out).toContain("  db: Client | Pool | PoolClient,");
+    expect(out).toContain("  params: GetTicketByIdParams,");
     expect(out).toContain("): Promise<GetTicketByIdRow[]> {");
     expect(out).toContain(
       "await db.query<GetTicketByIdRow>(SQL, [params.id]);",
