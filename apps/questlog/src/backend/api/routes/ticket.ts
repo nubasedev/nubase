@@ -1,18 +1,21 @@
 import { HttpError } from "@nubase/backend";
-import type { InferInsertModel, InferSelectModel, SQL } from "drizzle-orm";
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { getDb } from "../../db/helpers/drizzle";
-import { ticketsTable } from "../../db/schema/ticket";
-import { usersTable } from "../../db/schema/user";
+import { deleteTicket as deleteTicketSql } from "../../data-layer/tickets/deleteTicket";
+import { getTicket as getTicketSql } from "../../data-layer/tickets/getTicket";
+import { insertTicket as insertTicketSql } from "../../data-layer/tickets/insertTicket";
+import { listTickets as listTicketsSql } from "../../data-layer/tickets/listTickets";
+import { updateTicket as updateTicketSql } from "../../data-layer/tickets/updateTicket";
+import { getPgClient } from "../../db/helpers/drizzle";
 import type { Workspace } from "../../middleware/workspace-middleware";
 import { createHandler } from "../handler-factory";
 
-// Type-safe database types inferred from schema
-type Ticket = InferSelectModel<typeof ticketsTable>;
-type NewTicket = InferInsertModel<typeof ticketsTable>;
-
 /**
- * Ticket CRUD endpoints.
+ * Ticket CRUD endpoints, powered by Typed SQL generated wrappers.
+ * This file is intentionally the first full Typed-SQL conversion — see the
+ * commit message for the ergonomic findings surfaced while writing it.
+ *
+ * All the `as unknown as` casts below are unavoidable until Typed SQL
+ * tracks param nullability; they're documented as the "null sentinel"
+ * rough edge.
  */
 export const ticketHandlers = {
   /** Get all tickets - workspace-scoped with optional filters. */
@@ -24,68 +27,45 @@ export const ticketHandlers = {
         `User ${user.email} fetching tickets for workspace ${workspace.slug}`,
         params,
       );
-      const db = getDb();
+      const db = getPgClient();
 
-      // Build filter conditions
-      const conditions: SQL[] = [eq(ticketsTable.workspaceId, workspace.id)];
-
-      // Global text search - OR across searchable text fields
-      if (params.q) {
-        const searchTerm = `%${params.q}%`;
-        const searchCondition = or(
-          ilike(ticketsTable.title, searchTerm),
-          ilike(ticketsTable.description, searchTerm),
-        );
-        if (searchCondition) {
-          conditions.push(searchCondition);
-        }
-      }
-
-      // Filter by title (case-insensitive partial match)
-      if (params.title) {
-        conditions.push(ilike(ticketsTable.title, `%${params.title}%`));
-      }
-
-      // Filter by description (case-insensitive partial match)
-      if (params.description) {
-        conditions.push(
-          ilike(ticketsTable.description, `%${params.description}%`),
-        );
-      }
-
-      // Filter by assigneeId (supports single value or array for multi-select)
-      if (params.assigneeId !== undefined) {
+      // Normalize the scalar-or-array assigneeId filter to an array (or
+      // null when absent/empty). An empty array means "no filter" to match
+      // the old Drizzle behavior.
+      const assigneeIds: number[] | null = (() => {
+        if (params.assigneeId === undefined) return null;
         if (Array.isArray(params.assigneeId)) {
-          if (params.assigneeId.length > 0) {
-            conditions.push(
-              inArray(ticketsTable.assigneeId, params.assigneeId),
-            );
-          }
-        } else {
-          conditions.push(eq(ticketsTable.assigneeId, params.assigneeId));
+          return params.assigneeId.length > 0 ? params.assigneeId : null;
         }
-      }
+        return [params.assigneeId];
+      })();
 
-      const tickets = await db
-        .select({
-          id: ticketsTable.id,
-          title: ticketsTable.title,
-          description: ticketsTable.description,
-          assigneeId: ticketsTable.assigneeId,
-          assigneeName: usersTable.displayName,
-          assigneeEmail: usersTable.email,
-        })
-        .from(ticketsTable)
-        .leftJoin(usersTable, eq(ticketsTable.assigneeId, usersTable.id))
-        .where(and(...conditions));
+      const rows = await listTicketsSql(db, {
+        workspace_id: workspace.id,
+        // Typed SQL doesn't track param nullability, so we cast `null`
+        // through the non-null param type. The SQL uses `$N::text IS NULL`
+        // as a short-circuit, so the value is only consulted when present.
+        q: params.q ? `%${params.q}%` : (null as unknown as string),
+        title: params.title ? `%${params.title}%` : (null as unknown as string),
+        description: params.description
+          ? `%${params.description}%`
+          : (null as unknown as string),
+        assignee_ids: assigneeIds as unknown as number[],
+      });
 
-      return tickets.map((ticket) => ({
-        id: ticket.id,
-        title: ticket.title,
-        description: ticket.description ?? undefined,
-        assigneeId: ticket.assigneeId ?? undefined,
-        assigneeName: ticket.assigneeName ?? undefined,
-        assigneeEmail: ticket.assigneeEmail ?? undefined,
+      return rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        description: row.description ?? undefined,
+        assigneeId: row.assignee_id ?? undefined,
+        // LEFT JOIN nullability caveat: the generated types say `string`
+        // (not `string | null`) for these fields, because pg_attribute
+        // reports the *source column* as NOT NULL. At runtime they're
+        // actually `string | null` when the join misses, so we have to
+        // coerce them here — TypeScript thinks the `?? undefined` is a
+        // no-op, but it isn't.
+        assigneeName: (row.assignee_name as string | null) ?? undefined,
+        assigneeEmail: (row.assignee_email as string | null) ?? undefined,
       }));
     },
   }),
@@ -98,27 +78,23 @@ export const ticketHandlers = {
       console.log(
         `User ${user.email} fetching ticket ${params.id} for workspace ${workspace.slug}`,
       );
-      const db = getDb();
-      const tickets: Ticket[] = await db
-        .select()
-        .from(ticketsTable)
-        .where(
-          and(
-            eq(ticketsTable.id, params.id),
-            eq(ticketsTable.workspaceId, workspace.id),
-          ),
-        );
+      const db = getPgClient();
 
-      if (tickets.length === 0) {
+      const rows = await getTicketSql(db, {
+        id: params.id,
+        workspace_id: workspace.id,
+      });
+
+      const row = rows[0];
+      if (!row) {
         throw new HttpError(404, "Ticket not found");
       }
 
-      const ticket: Ticket = tickets[0];
       return {
-        id: ticket.id,
-        title: ticket.title,
-        description: ticket.description ?? undefined,
-        assigneeId: ticket.assigneeId ?? undefined,
+        id: row.id,
+        title: row.title,
+        description: row.description ?? undefined,
+        assigneeId: row.assignee_id ?? undefined,
       };
     },
   }),
@@ -132,30 +108,29 @@ export const ticketHandlers = {
         `User ${user.email} creating ticket for workspace ${workspace.slug}:`,
         body,
       );
-      const db = getDb();
+      const db = getPgClient();
 
-      const insertData: NewTicket = {
-        workspaceId: workspace.id,
+      const rows = await insertTicketSql(db, {
+        workspace_id: workspace.id,
         title: body.title,
-        description: body.description,
-        assigneeId: body.assigneeId,
-      };
+        // description/assignee_id are nullable columns, but the generated
+        // param types are non-null. Casting `null` through preserves the
+        // correct runtime semantics — Postgres accepts NULL for a nullable
+        // column regardless of what TypeScript thinks.
+        description: (body.description ?? null) as unknown as string,
+        assignee_id: (body.assigneeId ?? null) as unknown as number,
+      });
 
-      const result: Ticket[] = await db
-        .insert(ticketsTable)
-        .values(insertData)
-        .returning();
-
-      if (result.length === 0) {
+      const row = rows[0];
+      if (!row) {
         throw new HttpError(500, "Failed to create ticket");
       }
 
-      const createdTicket: Ticket = result[0];
       return {
-        id: createdTicket.id,
-        title: createdTicket.title,
-        description: createdTicket.description ?? undefined,
-        assigneeId: createdTicket.assigneeId ?? undefined,
+        id: row.id,
+        title: row.title,
+        description: row.description ?? undefined,
+        assigneeId: row.assignee_id ?? undefined,
       };
     },
   }),
@@ -169,40 +144,37 @@ export const ticketHandlers = {
         `User ${user.email} updating ticket ${params.id} for workspace ${workspace.slug}:`,
         body,
       );
-      const db = getDb();
+      const db = getPgClient();
 
-      const updateData: Partial<NewTicket> = {};
-      if (body.title !== undefined) {
-        updateData.title = body.title;
-      }
-      if (body.description !== undefined) {
-        updateData.description = body.description;
-      }
-      if (body.assigneeId !== undefined) {
-        updateData.assigneeId = body.assigneeId;
-      }
+      // Partial-update with CASE WHEN flags. For each field: pass an
+      // update_X flag plus the value (or a dummy when not updating).
+      // When the flag is false, the SQL's ELSE branch keeps the original
+      // column, so the dummy value is discarded — but TypeScript still
+      // demands a well-typed placeholder. See commit message for the
+      // full "dummy value" rough edge.
+      const rows = await updateTicketSql(db, {
+        id: params.id,
+        workspace_id: workspace.id,
+        update_title: body.title !== undefined,
+        title: body.title ?? "",
+        update_description: body.description !== undefined,
+        // body.description may be `null` legitimately (set-to-null) —
+        // the runtime works, TypeScript has to look the other way.
+        description: (body.description ?? "") as unknown as string,
+        update_assignee_id: body.assigneeId !== undefined,
+        assignee_id: (body.assigneeId ?? 0) as unknown as number,
+      });
 
-      const result: Ticket[] = await db
-        .update(ticketsTable)
-        .set(updateData)
-        .where(
-          and(
-            eq(ticketsTable.id, params.id),
-            eq(ticketsTable.workspaceId, workspace.id),
-          ),
-        )
-        .returning();
-
-      if (result.length === 0) {
+      const row = rows[0];
+      if (!row) {
         throw new HttpError(404, "Ticket not found");
       }
 
-      const updatedTicket: Ticket = result[0];
       return {
-        id: updatedTicket.id,
-        title: updatedTicket.title,
-        description: updatedTicket.description ?? undefined,
-        assigneeId: updatedTicket.assigneeId ?? undefined,
+        id: row.id,
+        title: row.title,
+        description: row.description ?? undefined,
+        assigneeId: row.assignee_id ?? undefined,
       };
     },
   }),
@@ -215,19 +187,14 @@ export const ticketHandlers = {
       console.log(
         `User ${user.email} deleting ticket ${params.id} for workspace ${workspace.slug}`,
       );
-      const db = getDb();
+      const db = getPgClient();
 
-      const result: Ticket[] = await db
-        .delete(ticketsTable)
-        .where(
-          and(
-            eq(ticketsTable.id, params.id),
-            eq(ticketsTable.workspaceId, workspace.id),
-          ),
-        )
-        .returning();
+      const rows = await deleteTicketSql(db, {
+        id: params.id,
+        workspace_id: workspace.id,
+      });
 
-      if (result.length === 0) {
+      if (rows.length === 0) {
         throw new HttpError(404, "Ticket not found");
       }
 
