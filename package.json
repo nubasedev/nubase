@@ -47,6 +47,9 @@
     "cli:init": "npm run cli -- init",
     "cli:db:codegen": "npm run cli -- db codegen"
   },
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "^2.5.1"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
     "turbo": "^2.8.15",
