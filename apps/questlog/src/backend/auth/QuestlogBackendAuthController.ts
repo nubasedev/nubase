@@ -6,15 +6,9 @@ import type {
 } from "@nubase/backend";
 import { getCookie } from "@nubase/backend";
 import bcrypt from "bcryptjs";
-import type { InferSelectModel } from "drizzle-orm";
-import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";
-import { getDb } from "../db/helpers/drizzle";
-import { usersTable } from "../db/schema/user";
-import { userWorkspacesTable } from "../db/schema/user-workspace";
-
-type DbUser = InferSelectModel<typeof usersTable>;
+import { getDb } from "../db/helpers/kysely";
 
 /**
  * User type for Questlog application.
@@ -159,34 +153,31 @@ export class QuestlogBackendAuthController
 
       // Fetch user from database to ensure they still exist
       const db = getDb();
-      const users: DbUser[] = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, decoded.userId));
+      const dbUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("id", "=", decoded.userId)
+        .executeTakeFirst();
 
-      if (users.length === 0) {
+      if (!dbUser) {
         return { valid: false, error: "User not found" };
       }
 
       // Verify user still has access to the workspace in the token
-      const userWorkspaces = await db
-        .select()
-        .from(userWorkspacesTable)
-        .where(
-          and(
-            eq(userWorkspacesTable.userId, decoded.userId),
-            eq(userWorkspacesTable.workspaceId, decoded.workspaceId),
-          ),
-        );
+      const userWorkspace = await db
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", decoded.userId)
+        .where("workspaceId", "=", decoded.workspaceId)
+        .executeTakeFirst();
 
-      if (userWorkspaces.length === 0) {
+      if (!userWorkspace) {
         return {
           valid: false,
           error: "User no longer has access to this workspace",
         };
       }
 
-      const dbUser = users[0];
       return {
         valid: true,
         user: {
@@ -222,34 +213,31 @@ export class QuestlogBackendAuthController
     const db = getDb();
 
     // Fetch user
-    const users: DbUser[] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.id, userId));
+    const dbUser = await db
+      .selectFrom("users")
+      .selectAll()
+      .where("id", "=", userId)
+      .executeTakeFirst();
 
-    if (users.length === 0) {
+    if (!dbUser) {
       return { valid: false, error: "User not found" };
     }
 
     // Verify user has access to the workspace
-    const userWorkspaces = await db
-      .select()
-      .from(userWorkspacesTable)
-      .where(
-        and(
-          eq(userWorkspacesTable.userId, userId),
-          eq(userWorkspacesTable.workspaceId, workspaceId),
-        ),
-      );
+    const userWorkspace = await db
+      .selectFrom("userWorkspaces")
+      .selectAll()
+      .where("userId", "=", userId)
+      .where("workspaceId", "=", workspaceId)
+      .executeTakeFirst();
 
-    if (userWorkspaces.length === 0) {
+    if (!userWorkspace) {
       return {
         valid: false,
         error: "User does not have access to this workspace",
       };
     }
 
-    const dbUser = users[0];
     return {
       valid: true,
       user: {
@@ -325,16 +313,15 @@ export class QuestlogBackendAuthController
     const db = getDb();
 
     // Find user by email (users are root-level, no workspace filter)
-    const users: DbUser[] = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email));
+    const dbUser = await db
+      .selectFrom("users")
+      .selectAll()
+      .where("email", "=", email)
+      .executeTakeFirst();
 
-    if (users.length === 0) {
+    if (!dbUser) {
       return null;
     }
-
-    const dbUser = users[0];
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, dbUser.passwordHash);
@@ -343,17 +330,14 @@ export class QuestlogBackendAuthController
     }
 
     // Check if user has access to the workspace
-    const userWorkspaces = await db
-      .select()
-      .from(userWorkspacesTable)
-      .where(
-        and(
-          eq(userWorkspacesTable.userId, dbUser.id),
-          eq(userWorkspacesTable.workspaceId, workspaceId),
-        ),
-      );
+    const userWorkspace = await db
+      .selectFrom("userWorkspaces")
+      .selectAll()
+      .where("userId", "=", dbUser.id)
+      .where("workspaceId", "=", workspaceId)
+      .executeTakeFirst();
 
-    if (userWorkspaces.length === 0) {
+    if (!userWorkspace) {
       return null; // User doesn't have access to this workspace
     }
 

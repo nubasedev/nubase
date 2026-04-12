@@ -1,10 +1,8 @@
 import { getAuthController, HttpError } from "@nubase/backend";
 import bcrypt from "bcryptjs";
-import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import type { __PROJECT_NAME_PASCAL__User } from "../../auth";
-import { getAdminDb } from "../../db/helpers/drizzle";
-import { users, userWorkspaces, workspaces } from "../../db/schema";
+import { getDb } from "../../db/helpers/kysely";
 import { createHandler } from "../handler-factory";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
@@ -24,11 +22,14 @@ export const authHandlers = {
 	 */
 	loginStart: createHandler((e) => e.loginStart, {
 		handler: async ({ body }) => {
+			const db = getDb();
+
 			// Find user by email
-			const [user] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.email, body.email));
+			const user = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("email", "=", body.email)
+				.executeTakeFirst();
 
 			if (!user) {
 				throw new HttpError(401, "Invalid email or password");
@@ -41,10 +42,11 @@ export const authHandlers = {
 			}
 
 			// Get all workspaces this user belongs to
-			const userWorkspaceRows = await getAdminDb()
-				.select()
-				.from(userWorkspaces)
-				.where(eq(userWorkspaces.userId, user.id));
+			const userWorkspaceRows = await db
+				.selectFrom("userWorkspaces")
+				.selectAll()
+				.where("userId", "=", user.id)
+				.execute();
 
 			if (userWorkspaceRows.length === 0) {
 				throw new HttpError(401, "User has no workspace access");
@@ -52,10 +54,11 @@ export const authHandlers = {
 
 			// Fetch workspace details
 			const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-			const workspaceList = await getAdminDb()
-				.select()
-				.from(workspaces)
-				.where(inArray(workspaces.id, workspaceIds));
+			const workspaceList = await db
+				.selectFrom("workspaces")
+				.selectAll()
+				.where("id", "in", workspaceIds)
+				.execute();
 
 			// Create a short-lived login token
 			const loginToken = jwt.sign(
@@ -86,6 +89,7 @@ export const authHandlers = {
 	loginComplete: createHandler((e) => e.loginComplete, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+			const db = getDb();
 
 			// Verify the login token
 			let decoded: LoginTokenPayload;
@@ -96,35 +100,34 @@ export const authHandlers = {
 			}
 
 			// Look up the selected workspace
-			const [workspace] = await getAdminDb()
-				.select()
-				.from(workspaces)
-				.where(eq(workspaces.slug, body.workspace));
+			const workspace = await db
+				.selectFrom("workspaces")
+				.selectAll()
+				.where("slug", "=", body.workspace)
+				.executeTakeFirst();
 
 			if (!workspace) {
 				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
 			}
 
 			// Verify user has access to this workspace
-			const [access] = await getAdminDb()
-				.select()
-				.from(userWorkspaces)
-				.where(
-					and(
-						eq(userWorkspaces.userId, decoded.userId),
-						eq(userWorkspaces.workspaceId, workspace.id),
-					),
-				);
+			const access = await db
+				.selectFrom("userWorkspaces")
+				.selectAll()
+				.where("userId", "=", decoded.userId)
+				.where("workspaceId", "=", workspace.id)
+				.executeTakeFirst();
 
 			if (!access) {
 				throw new HttpError(403, "You do not have access to this workspace");
 			}
 
 			// Fetch the user
-			const [dbUser] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.id, decoded.userId));
+			const dbUser = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("id", "=", decoded.userId)
+				.executeTakeFirst();
 
 			if (!dbUser) {
 				throw new HttpError(401, "User not found");
@@ -164,22 +167,25 @@ export const authHandlers = {
 	login: createHandler((e) => e.login, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+			const db = getDb();
 
 			// Look up workspace
-			const [workspace] = await getAdminDb()
-				.select()
-				.from(workspaces)
-				.where(eq(workspaces.slug, body.workspace));
+			const workspace = await db
+				.selectFrom("workspaces")
+				.selectAll()
+				.where("slug", "=", body.workspace)
+				.executeTakeFirst();
 
 			if (!workspace) {
 				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
 			}
 
 			// Find user by email
-			const [dbUser] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.email, body.email));
+			const dbUser = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("email", "=", body.email)
+				.executeTakeFirst();
 
 			if (!dbUser) {
 				throw new HttpError(401, "Invalid email or password");
@@ -192,15 +198,12 @@ export const authHandlers = {
 			}
 
 			// Verify user has access to this workspace
-			const [access] = await getAdminDb()
-				.select()
-				.from(userWorkspaces)
-				.where(
-					and(
-						eq(userWorkspaces.userId, dbUser.id),
-						eq(userWorkspaces.workspaceId, workspace.id),
-					),
-				);
+			const access = await db
+				.selectFrom("userWorkspaces")
+				.selectAll()
+				.where("userId", "=", dbUser.id)
+				.where("workspaceId", "=", workspace.id)
+				.executeTakeFirst();
 
 			if (!access) {
 				throw new HttpError(403, "You do not have access to this workspace");
@@ -259,6 +262,7 @@ export const authHandlers = {
 	signup: createHandler((e) => e.signup, {
 		handler: async ({ body, ctx }) => {
 			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+			const db = getDb();
 
 			// Validate workspace slug format
 			if (!/^[a-z0-9-]+$/.test(body.workspace)) {
@@ -269,20 +273,22 @@ export const authHandlers = {
 			}
 
 			// Check if workspace slug already exists
-			const [existingWorkspace] = await getAdminDb()
-				.select()
-				.from(workspaces)
-				.where(eq(workspaces.slug, body.workspace));
+			const existingWorkspace = await db
+				.selectFrom("workspaces")
+				.selectAll()
+				.where("slug", "=", body.workspace)
+				.executeTakeFirst();
 
 			if (existingWorkspace) {
 				throw new HttpError(409, "Organization slug is already taken");
 			}
 
 			// Check if email already exists
-			const [existingEmail] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.email, body.email));
+			const existingEmail = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("email", "=", body.email)
+				.executeTakeFirst();
 
 			if (existingEmail) {
 				throw new HttpError(409, "Email is already registered");
@@ -294,32 +300,37 @@ export const authHandlers = {
 			}
 
 			// Create the workspace
-			const [newWorkspace] = await getAdminDb()
-				.insert(workspaces)
+			const newWorkspace = await db
+				.insertInto("workspaces")
 				.values({
 					slug: body.workspace,
 					name: body.workspaceName,
 				})
-				.returning();
+				.returningAll()
+				.executeTakeFirstOrThrow();
 
 			// Hash the password
 			const passwordHash = await bcrypt.hash(body.password, 10);
 
 			// Create the admin user
-			const [newUser] = await getAdminDb()
-				.insert(users)
+			const newUser = await db
+				.insertInto("users")
 				.values({
 					email: body.email,
 					displayName: body.displayName,
 					passwordHash,
 				})
-				.returning();
+				.returningAll()
+				.executeTakeFirstOrThrow();
 
 			// Link user to workspace
-			await getAdminDb().insert(userWorkspaces).values({
-				userId: newUser.id,
-				workspaceId: newWorkspace.id,
-			});
+			await db
+				.insertInto("userWorkspaces")
+				.values({
+					userId: newUser.id,
+					workspaceId: newWorkspace.id,
+				})
+				.execute();
 
 			// Create user object for token
 			const user: __PROJECT_NAME_PASCAL__User = {

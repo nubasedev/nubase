@@ -1,6 +1,6 @@
-import { sql } from "drizzle-orm";
-import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Client } from "pg";
+import { CamelCasePlugin, Kysely, PostgresDialect, sql } from "kysely";
+import pg from "pg";
+import type { DB } from "../db-types";
 
 // =============================================================================
 // WORKSPACE ISOLATION / RLS — CURRENT STATE (TODO: revisit)
@@ -35,48 +35,41 @@ import { Client } from "pg";
 // a subtler way:
 //
 //   (a) CONCURRENCY BUG: setWorkspaceContext below calls set_config(..., false)
-//       — session-level, not transaction-local — on a shared single pg.Client.
+//       — session-level, not transaction-local — on a shared connection.
 //       Two concurrent requests interleaving queries on that connection can see
 //       each other's workspace_id. The fix is to wrap each request in
-//       db.transaction() and use set_config(..., true) (SET LOCAL semantics), or
-//       equivalently SET LOCAL app.current_workspace_id = .... This requires
-//       plumbing the tx through the handler factory instead of using the module-
-//       level global db.
+//       db.transaction() and use set_config(..., true) (SET LOCAL semantics).
 //
-//   (b) POOLING: this file uses a single long-lived pg.Client rather than a
-//       pg.Pool. That masks (a) partially in dev but is not viable for real
-//       workloads. A pool + SET LOCAL + transactions is the clean combination.
+//   (b) POOLING: Using pg.Pool now (better than the previous single pg.Client),
+//       but SET LOCAL + transactions is still the clean combination for proper
+//       RLS enforcement.
 //
 // Until the above is done, RLS-related code (this file's setWorkspaceContext/
-// clearWorkspaceContext, the RLS policies in schema/ticket.ts and
-// schema/user-workspace.ts, the middleware calls in workspace-middleware.ts) is
-// kept in place as scaffolding — harmless, and it documents the intended shape
-// for the future refactor.
+// clearWorkspaceContext, the RLS policies in the migrations, the middleware
+// calls in workspace-middleware.ts) is kept in place as scaffolding — harmless,
+// and it documents the intended shape for the future refactor.
 // =============================================================================
 
 declare global {
-  // allow global `var` declarations
-  // eslint-disable-next-line no-var
-  var db: NodePgDatabase | undefined;
+  var db: Kysely<DB> | undefined;
 }
 
 /**
  * Get the database connection.
  */
-export function getDb() {
+export function getDb(): Kysely<DB> {
   if (!global.db) {
     if (!process.env.DATABASE_URL) {
       throw new Error(
         "DATABASE_URL is not defined in the environment variables.",
       );
     }
-    const databaseUrl = process.env.DATABASE_URL;
-    const client = new Client({ connectionString: databaseUrl });
-    client.connect().catch((err) => {
-      console.error("Failed to connect to database:", err);
-      throw err;
+    global.db = new Kysely({
+      dialect: new PostgresDialect({
+        pool: new pg.Pool({ connectionString: process.env.DATABASE_URL }),
+      }),
+      plugins: [new CamelCasePlugin()],
     });
-    global.db = drizzle(client);
   }
 
   return global.db;
@@ -92,9 +85,8 @@ export function getDb() {
  */
 export async function setWorkspaceContext(workspaceId: number) {
   const db = getDb();
-  // Use sql.raw for the value since SET doesn't support parameterized queries
-  await db.execute(
-    sql`SELECT set_config('app.current_workspace_id', ${workspaceId.toString()}, false)`,
+  await sql`SELECT set_config('app.current_workspace_id', ${workspaceId.toString()}, false)`.execute(
+    db,
   );
 }
 
@@ -104,5 +96,5 @@ export async function setWorkspaceContext(workspaceId: number) {
  */
 export async function clearWorkspaceContext() {
   const db = getDb();
-  await db.execute(sql`RESET app.current_workspace_id`);
+  await sql`RESET app.current_workspace_id`.execute(db);
 }

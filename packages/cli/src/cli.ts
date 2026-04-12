@@ -56,6 +56,20 @@ db.command("pull")
     }
   });
 
+db.command("codegen")
+  .description("Generate Kysely types from database schema")
+  .option("--env <name>", "Target environment")
+  .option("--out <path>", "Output file path")
+  .action(async (options) => {
+    try {
+      const { dbCodegen } = await import("./commands/db-codegen.js");
+      await dbCodegen(options);
+    } catch (error) {
+      log.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+    }
+  });
+
 db.command("reset")
   .description("Drop and recreate schema, then replay all migrations")
   .option("--env <name>", "Target environment")

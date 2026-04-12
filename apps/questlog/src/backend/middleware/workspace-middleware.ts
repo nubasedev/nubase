@@ -1,16 +1,14 @@
-import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import {
   clearWorkspaceContext,
   getDb,
   setWorkspaceContext,
-} from "../db/helpers/drizzle";
-import { workspacesTable } from "../db/schema/workspace";
+} from "../db/helpers/kysely";
 
 // NOTE: the set/clear workspace context calls below are currently no-ops at the
 // DB layer — DATABASE_URL connects as a superuser, which bypasses RLS. Kept as
 // scaffolding for the planned RLS revival. See the TODO block at the top of
-// src/backend/db/helpers/drizzle.ts for the full picture.
+// src/backend/db/helpers/kysely.ts for the full picture.
 
 export interface Workspace {
   id: number;
@@ -92,22 +90,21 @@ export function createPostAuthWorkspaceMiddleware() {
 
     // Look up workspace from user's workspaceId
     const db = getDb();
-    const workspaces = await db
-      .select()
-      .from(workspacesTable)
-      .where(eq(workspacesTable.id, user.workspaceId));
+    const workspace = await db
+      .selectFrom("workspaces")
+      .selectAll()
+      .where("id", "=", user.workspaceId)
+      .executeTakeFirst();
 
-    if (workspaces.length === 0) {
+    if (!workspace) {
       return c.json({ error: "User's workspace not found" }, 500);
     }
 
-    const workspace = {
-      id: workspaces[0].id,
-      slug: workspaces[0].slug,
-      name: workspaces[0].name,
-    };
-
-    c.set("workspace", workspace);
+    c.set("workspace", {
+      id: workspace.id,
+      slug: workspace.slug,
+      name: workspace.name,
+    });
     await setWorkspaceContext(workspace.id);
 
     try {

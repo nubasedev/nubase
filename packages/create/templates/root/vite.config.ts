@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
         "@nubase/backend",
         "@nubase/frontend",
         "pg",
-        "drizzle-orm",
+        "kysely",
         "bcryptjs",
         "jsonwebtoken",
         "dotenv",

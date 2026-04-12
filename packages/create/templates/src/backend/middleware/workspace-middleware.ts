@@ -1,7 +1,5 @@
-import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
-import { getDb } from "../db/helpers/drizzle";
-import { workspaces } from "../db/schema";
+import { getDb } from "../db/helpers/kysely";
 
 export interface Workspace {
 	id: number;
@@ -75,22 +73,22 @@ export function createPostAuthWorkspaceMiddleware() {
 		}
 
 		// Look up workspace from user's workspaceId
-		const workspaceRows = await getDb()
-			.select()
-			.from(workspaces)
-			.where(eq(workspaces.id, user.workspaceId));
+		const db = getDb();
+		const workspace = await db
+			.selectFrom("workspaces")
+			.selectAll()
+			.where("id", "=", user.workspaceId)
+			.executeTakeFirst();
 
-		if (workspaceRows.length === 0) {
+		if (!workspace) {
 			return c.json({ error: "User's workspace not found" }, 500);
 		}
 
-		const workspace = {
-			id: workspaceRows[0].id,
-			slug: workspaceRows[0].slug,
-			name: workspaceRows[0].name,
-		};
-
-		c.set("workspace", workspace);
+		c.set("workspace", {
+			id: workspace.id,
+			slug: workspace.slug,
+			name: workspace.name,
+		});
 
 		return next();
 	});

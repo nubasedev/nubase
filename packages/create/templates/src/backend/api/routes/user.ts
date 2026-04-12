@@ -1,8 +1,5 @@
 import { HttpError } from "@nubase/backend";
-import type { SQL } from "drizzle-orm";
-import { and, eq, ilike, or } from "drizzle-orm";
-import { getDb } from "../../db/helpers/drizzle";
-import { users } from "../../db/schema";
+import { getDb } from "../../db/helpers/kysely";
 import { createHandler } from "../handler-factory";
 
 export const userHandlers = {
@@ -11,37 +8,36 @@ export const userHandlers = {
 		handler: async ({ params }) => {
 			const db = getDb();
 
-			// Build filter conditions
-			const conditions: SQL[] = [];
+			let query = db
+				.selectFrom("users")
+				.select(["users.id", "users.email", "users.displayName"]);
 
 			// Global text search - OR across searchable text fields
 			if (params.q) {
 				const searchTerm = `%${params.q}%`;
-				const searchCondition = or(
-					ilike(users.displayName, searchTerm),
-					ilike(users.email, searchTerm),
+				query = query.where((eb) =>
+					eb.or([
+						eb("users.displayName", "ilike", searchTerm),
+						eb("users.email", "ilike", searchTerm),
+					]),
 				);
-				if (searchCondition) {
-					conditions.push(searchCondition);
-				}
 			}
 
 			// Filter by displayName (case-insensitive partial match)
 			if (params.displayName) {
-				conditions.push(ilike(users.displayName, `%${params.displayName}%`));
+				query = query.where(
+					"users.displayName",
+					"ilike",
+					`%${params.displayName}%`,
+				);
 			}
 
 			// Filter by email (case-insensitive partial match)
 			if (params.email) {
-				conditions.push(ilike(users.email, `%${params.email}%`));
+				query = query.where("users.email", "ilike", `%${params.email}%`);
 			}
 
-			const query =
-				conditions.length > 0
-					? db.select().from(users).where(and(...conditions))
-					: db.select().from(users);
-
-			const results = await query;
+			const results = await query.execute();
 
 			return results.map((u) => ({
 				id: u.id,
@@ -55,7 +51,11 @@ export const userHandlers = {
 	getUser: createHandler((e) => e.getUser, {
 		handler: async ({ params }) => {
 			const db = getDb();
-			const [user] = await db.select().from(users).where(eq(users.id, params.id));
+			const user = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("id", "=", params.id)
+				.executeTakeFirst();
 
 			if (!user) {
 				throw new HttpError(404, "User not found");
@@ -75,24 +75,25 @@ export const userHandlers = {
 			const db = getDb();
 
 			// Check if user with this email already exists
-			const [existing] = await db.select().from(users).where(eq(users.email, body.email));
+			const existing = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("email", "=", body.email)
+				.executeTakeFirst();
 
 			if (existing) {
 				throw new HttpError(409, "User with this email already exists");
 			}
 
-			const [user] = await db
-				.insert(users)
+			const user = await db
+				.insertInto("users")
 				.values({
 					email: body.email,
 					displayName: body.displayName,
 					passwordHash: "placeholder-requires-password-reset",
 				})
-				.returning();
-
-			if (!user) {
-				throw new HttpError(500, "Failed to create user");
-			}
+				.returningAll()
+				.executeTakeFirstOrThrow();
 
 			return {
 				id: user.id,
@@ -107,7 +108,7 @@ export const userHandlers = {
 		handler: async ({ params, body }) => {
 			const db = getDb();
 
-			const updateData: { email?: string; displayName?: string } = {};
+			const updateData: Record<string, unknown> = {};
 			if (body.email !== undefined) {
 				updateData.email = body.email;
 			}
@@ -115,11 +116,12 @@ export const userHandlers = {
 				updateData.displayName = body.displayName;
 			}
 
-			const [user] = await db
-				.update(users)
+			const user = await db
+				.updateTable("users")
 				.set(updateData)
-				.where(eq(users.id, params.id))
-				.returning();
+				.where("id", "=", params.id)
+				.returningAll()
+				.executeTakeFirst();
 
 			if (!user) {
 				throw new HttpError(404, "User not found");
@@ -138,7 +140,11 @@ export const userHandlers = {
 		handler: async ({ params }) => {
 			const db = getDb();
 
-			const [deleted] = await db.delete(users).where(eq(users.id, params.id)).returning();
+			const deleted = await db
+				.deleteFrom("users")
+				.where("id", "=", params.id)
+				.returningAll()
+				.executeTakeFirst();
 
 			if (!deleted) {
 				throw new HttpError(404, "User not found");
@@ -153,22 +159,16 @@ export const userHandlers = {
 		handler: async ({ params }) => {
 			const db = getDb();
 
-			// Build query with optional search filter
-			const query = db
-				.select({
-					id: users.id,
-					displayName: users.displayName,
-					email: users.email,
-				})
-				.from(users)
-				.$dynamic();
+			let query = db
+				.selectFrom("users")
+				.select(["users.id", "users.displayName", "users.email"]);
 
 			// Filter by query if provided (case-insensitive partial match on displayName)
 			if (params.q) {
-				query.where(ilike(users.displayName, `%${params.q}%`));
+				query = query.where("users.displayName", "ilike", `%${params.q}%`);
 			}
 
-			const results = await query.limit(20);
+			const results = await query.limit(20).execute();
 
 			// Transform to Lookup format
 			return results.map((u) => ({

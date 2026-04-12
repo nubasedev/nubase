@@ -1,11 +1,8 @@
+import { Migrator, sql } from "kysely";
 import prompts from "prompts";
 import { loadConfig } from "../config/load-config.js";
-import { withConnection } from "../db/connection.js";
-import {
-  ensureMigrationsTable,
-  recordMigration,
-} from "../db/migration-tracker.js";
-import { listMigrationFiles } from "../db/migration-files.js";
+import { createKysely } from "../db/kysely.js";
+import { NubaseMigrationProvider } from "../db/migration-provider.js";
 import { log } from "../output/logger.js";
 
 export async function dbReset(options: {
@@ -40,28 +37,38 @@ export async function dbReset(options: {
     }
   }
 
-  await withConnection(resolved.environment.url, async (client) => {
+  const db = createKysely(resolved.environment.url);
+
+  try {
     log.step("Dropping and recreating public schema...");
-    await client.query("DROP SCHEMA public CASCADE");
-    await client.query("CREATE SCHEMA public");
+    await sql`DROP SCHEMA public CASCADE`.execute(db);
+    await sql`CREATE SCHEMA public`.execute(db);
 
-    await ensureMigrationsTable(client);
+    const migrator = new Migrator({
+      db,
+      provider: new NubaseMigrationProvider(resolved.migrationsDir),
+    });
 
-    const migrations = listMigrationFiles(resolved.migrationsDir);
-    if (migrations.length > 0) {
-      log.step(`Replaying ${migrations.length} migration(s)...`);
-      for (const migration of migrations) {
-        log.step(`Applying ${migration.filename}...`);
-        await client.query("BEGIN");
-        try {
-          await client.query(migration.sql);
-          await recordMigration(client, migration.name);
-          await client.query("COMMIT");
-          log.success(`Applied ${migration.filename}`);
-        } catch (error) {
-          await client.query("ROLLBACK");
-          throw error;
+    const allMigrations = await migrator.getMigrations();
+    const totalCount = allMigrations.length;
+
+    if (totalCount > 0) {
+      log.step(`Replaying ${totalCount} migration(s)...`);
+
+      const { error, results } = await migrator.migrateToLatest();
+
+      if (results) {
+        for (const result of results) {
+          if (result.status === "Success") {
+            log.success(`Applied ${result.migrationName}`);
+          } else if (result.status === "Error") {
+            log.error(`Failed ${result.migrationName}`);
+          }
         }
+      }
+
+      if (error) {
+        throw error;
       }
     }
 
@@ -71,5 +78,7 @@ export async function dbReset(options: {
     // Re-extracting would let any generator round-trip artifacts or drift
     // silently overwrite the canonical snapshot. See ADR 0005.
     log.success("Database reset complete.");
-  });
+  } finally {
+    await db.destroy();
+  }
 }

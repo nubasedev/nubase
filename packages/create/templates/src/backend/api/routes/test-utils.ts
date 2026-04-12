@@ -1,31 +1,28 @@
 import { createHttpHandler } from "@nubase/backend";
 import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcryptjs";
-import { eq, sql } from "drizzle-orm";
-import { getAdminDb } from "../../db/helpers/drizzle";
-import { tickets } from "../../db/schema/ticket";
-import { users } from "../../db/schema/user";
-import { userWorkspaces } from "../../db/schema/user-workspace";
-import { workspaces } from "../../db/schema/workspace";
+import { sql } from "kysely";
+import { getDb } from "../../db/helpers/kysely";
 
 // Default test workspace slug
 const DEFAULT_TEST_WORKSPACE = "tavern";
 
 /**
- * Helper to get workspace by slug using admin DB (bypasses RLS).
+ * Helper to get workspace by slug.
  * Used by test utilities that don't have auth context.
  */
 async function getWorkspaceBySlug(slug: string) {
-	const db = getAdminDb();
-	const workspaceRows = await db
-		.select()
-		.from(workspaces)
-		.where(eq(workspaces.slug, slug));
+	const db = getDb();
+	const workspace = await db
+		.selectFrom("workspaces")
+		.selectAll()
+		.where("slug", "=", slug)
+		.executeTakeFirst();
 
-	if (workspaceRows.length === 0) {
+	if (!workspace) {
 		throw new Error(`Workspace not found: ${slug}`);
 	}
-	return workspaceRows[0];
+	return workspace;
 }
 
 // Clear all data from the database - used between tests
@@ -50,41 +47,45 @@ export const handleClearDatabase = createHttpHandler({
 
 		const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
 		const workspace = await getWorkspaceBySlug(workspaceSlug);
-		const db = getAdminDb();
+		const db = getDb();
 
 		// Clear ALL tickets (not just for this workspace) to avoid sequence conflicts
-		await db.delete(tickets);
+		await db.deleteFrom("tickets").execute();
 
 		// Reset the ID sequence to start from 1
-		await db.execute(sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`);
+		await sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`.execute(db);
 
 		// Clear all user_workspaces associations (for all workspaces in test env)
-		await db.delete(userWorkspaces);
+		await db.deleteFrom("userWorkspaces").execute();
 
 		// Clear all users (in test env we start fresh each time)
-		await db.delete(users);
+		await db.deleteFrom("users").execute();
 
 		// Reset the users ID sequence
-		await db.execute(sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`);
+		await sql`ALTER SEQUENCE users_id_seq RESTART WITH 1`.execute(db);
 
 		// Seed a default test user for this workspace
 		const passwordHash = await bcrypt.hash("password123", 12);
 
 		// Create the test user
-		const [newUser] = await db
-			.insert(users)
+		const newUser = await db
+			.insertInto("users")
 			.values({
 				email: "admin@example.com",
 				displayName: "Admin User",
 				passwordHash,
 			})
-			.returning();
+			.returningAll()
+			.executeTakeFirstOrThrow();
 
 		// Link user to workspace
-		await db.insert(userWorkspaces).values({
-			userId: newUser.id,
-			workspaceId: workspace.id,
-		});
+		await db
+			.insertInto("userWorkspaces")
+			.values({
+				userId: newUser.id,
+				workspaceId: workspace.id,
+			})
+			.execute();
 
 		return {
 			success: true,
@@ -128,23 +129,22 @@ export const handleSeedTestData = createHttpHandler({
 
 		const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
 		const workspace = await getWorkspaceBySlug(workspaceSlug);
-		const db = getAdminDb();
+		const db = getDb();
 		const insertedTicketIds: number[] = [];
 
 		if (body?.tickets) {
 			for (const ticket of body.tickets) {
 				const result = await db
-					.insert(tickets)
+					.insertInto("tickets")
 					.values({
 						workspaceId: workspace.id,
 						title: ticket.title,
 						description: ticket.description,
 					})
-					.returning();
+					.returningAll()
+					.executeTakeFirstOrThrow();
 
-				if (result[0]) {
-					insertedTicketIds.push(result[0].id);
-				}
+				insertedTicketIds.push(result.id);
 			}
 		}
 
@@ -181,11 +181,12 @@ export const handleGetDatabaseStats = createHttpHandler({
 
 		const workspaceSlug = params?.workspace || DEFAULT_TEST_WORKSPACE;
 		const workspace = await getWorkspaceBySlug(workspaceSlug);
-		const db = getAdminDb();
+		const db = getDb();
 		const ticketRows = await db
-			.select()
-			.from(tickets)
-			.where(eq(tickets.workspaceId, workspace.id));
+			.selectFrom("tickets")
+			.selectAll()
+			.where("workspaceId", "=", workspace.id)
+			.execute();
 
 		return {
 			tickets: {
@@ -222,44 +223,42 @@ export const handleEnsureWorkspace = createHttpHandler({
 		}
 
 		const workspaceSlug = body?.workspace || DEFAULT_TEST_WORKSPACE;
-		const db = getAdminDb();
+		const db = getDb();
 
 		// Check if workspace exists
-		const existingWorkspaces = await db
-			.select()
-			.from(workspaces)
-			.where(eq(workspaces.slug, workspaceSlug));
+		const existing = await db
+			.selectFrom("workspaces")
+			.selectAll()
+			.where("slug", "=", workspaceSlug)
+			.executeTakeFirst();
 
-		if (existingWorkspaces.length > 0) {
+		if (existing) {
 			return {
 				success: true,
 				workspace: {
-					id: existingWorkspaces[0].id,
-					slug: existingWorkspaces[0].slug,
-					name: existingWorkspaces[0].name,
+					id: existing.id,
+					slug: existing.slug,
+					name: existing.name,
 				},
 			};
 		}
 
 		// Create the workspace
-		const result = await db
-			.insert(workspaces)
+		const created = await db
+			.insertInto("workspaces")
 			.values({
 				slug: workspaceSlug,
 				name: workspaceSlug.charAt(0).toUpperCase() + workspaceSlug.slice(1),
 			})
-			.returning();
-
-		if (result.length === 0) {
-			throw new Error("Failed to create workspace");
-		}
+			.returningAll()
+			.executeTakeFirstOrThrow();
 
 		return {
 			success: true,
 			workspace: {
-				id: result[0].id,
-				slug: result[0].slug,
-				name: result[0].name,
+				id: created.id,
+				slug: created.slug,
+				name: created.name,
 			},
 		};
 	},
@@ -304,65 +303,71 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
 			);
 		}
 
-		const db = getAdminDb();
+		const db = getDb();
 		const createdWorkspaces: { id: number; slug: string; name: string }[] = [];
 		const passwordHash = await bcrypt.hash(body.password, 12);
 
 		// Check if user already exists
 		let userId: number;
-		const existingUsers = await db
-			.select()
-			.from(users)
-			.where(eq(users.email, body.email));
+		const existingUser = await db
+			.selectFrom("users")
+			.selectAll()
+			.where("email", "=", body.email)
+			.executeTakeFirst();
 
-		if (existingUsers.length > 0) {
-			userId = existingUsers[0].id;
+		if (existingUser) {
+			userId = existingUser.id;
 		} else {
 			// Create user (root-level, no workspace)
-			const [newUser] = await db
-				.insert(users)
+			const newUser = await db
+				.insertInto("users")
 				.values({
 					email: body.email,
 					displayName: body.displayName,
 					passwordHash,
 				})
-				.returning();
+				.returningAll()
+				.executeTakeFirstOrThrow();
 			userId = newUser.id;
 		}
 
 		for (const workspaceData of body.workspaces) {
 			// Check if workspace exists
 			let workspace = await db
-				.select()
-				.from(workspaces)
-				.where(eq(workspaces.slug, workspaceData.slug))
-				.then((rows) => rows[0]);
+				.selectFrom("workspaces")
+				.selectAll()
+				.where("slug", "=", workspaceData.slug)
+				.executeTakeFirst();
 
 			// Create workspace if it doesn't exist
 			if (!workspace) {
-				const result = await db
-					.insert(workspaces)
+				workspace = await db
+					.insertInto("workspaces")
 					.values({
 						slug: workspaceData.slug,
 						name: workspaceData.name,
 					})
-					.returning();
-				workspace = result[0];
+					.returningAll()
+					.executeTakeFirstOrThrow();
 			}
 
 			// Check if user already has access to this workspace
 			const existingAccess = await db
-				.select()
-				.from(userWorkspaces)
-				.where(eq(userWorkspaces.userId, userId))
-				.then((rows) => rows.find((uw) => uw.workspaceId === workspace.id));
+				.selectFrom("userWorkspaces")
+				.selectAll()
+				.where("userId", "=", userId)
+				.where("workspaceId", "=", workspace.id)
+				.executeTakeFirst();
 
 			// Link user to workspace if not already linked
 			if (!existingAccess) {
-				await db.insert(userWorkspaces).values({
-					userId,
-					workspaceId: workspace.id,
-				});
+				await db
+					.insertInto("userWorkspaces")
+					.values({
+						userId,
+						workspaceId: workspace.id,
+					})
+					.execute();
 			}
 
 			createdWorkspaces.push({

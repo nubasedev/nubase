@@ -54,7 +54,7 @@ export async function dbPull(options: { env?: string }): Promise<void> {
         const filePath = writeMigrationFile(
           resolved.migrationsDir,
           "initial",
-          `-- Initial migration from db pull\n\n${sql}\n`,
+          sql,
         );
         log.success(`Generated initial migration: ${filePath}`);
       }

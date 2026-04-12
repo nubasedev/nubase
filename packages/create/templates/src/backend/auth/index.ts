@@ -6,11 +6,9 @@ import type {
 } from "@nubase/backend";
 import { getCookie } from "@nubase/backend";
 import bcrypt from "bcryptjs";
-import { and, eq } from "drizzle-orm";
 import type { Context } from "hono";
 import jwt from "jsonwebtoken";
-import { getAdminDb } from "../db/helpers/drizzle";
-import { users, userWorkspaces } from "../db/schema";
+import { getDb } from "../db/helpers/kysely";
 
 /**
  * User type for __PROJECT_NAME_PASCAL__ application.
@@ -76,26 +74,26 @@ export class __PROJECT_NAME_PASCAL__AuthController
 				JWT_SECRET,
 			) as __PROJECT_NAME_PASCAL__TokenPayload;
 
+			const db = getDb();
+
 			// Fetch user from database to ensure they still exist
-			const [dbUser] = await getAdminDb()
-				.select()
-				.from(users)
-				.where(eq(users.id, decoded.userId));
+			const dbUser = await db
+				.selectFrom("users")
+				.selectAll()
+				.where("id", "=", decoded.userId)
+				.executeTakeFirst();
 
 			if (!dbUser) {
 				return { valid: false, error: "User not found" };
 			}
 
 			// Verify user still has access to the workspace in the token
-			const [access] = await getAdminDb()
-				.select()
-				.from(userWorkspaces)
-				.where(
-					and(
-						eq(userWorkspaces.userId, decoded.userId),
-						eq(userWorkspaces.workspaceId, decoded.workspaceId),
-					),
-				);
+			const access = await db
+				.selectFrom("userWorkspaces")
+				.selectAll()
+				.where("userId", "=", decoded.userId)
+				.where("workspaceId", "=", decoded.workspaceId)
+				.executeTakeFirst();
 
 			if (!access) {
 				return {
@@ -179,11 +177,14 @@ export class __PROJECT_NAME_PASCAL__AuthController
 			);
 		}
 
+		const db = getDb();
+
 		// Find user by email
-		const [dbUser] = await getAdminDb()
-			.select()
-			.from(users)
-			.where(eq(users.email, email));
+		const dbUser = await db
+			.selectFrom("users")
+			.selectAll()
+			.where("email", "=", email)
+			.executeTakeFirst();
 
 		if (!dbUser) {
 			return null;
@@ -196,15 +197,12 @@ export class __PROJECT_NAME_PASCAL__AuthController
 		}
 
 		// Check if user has access to the workspace
-		const [access] = await getAdminDb()
-			.select()
-			.from(userWorkspaces)
-			.where(
-				and(
-					eq(userWorkspaces.userId, dbUser.id),
-					eq(userWorkspaces.workspaceId, workspaceId),
-				),
-			);
+		const access = await db
+			.selectFrom("userWorkspaces")
+			.selectAll()
+			.where("userId", "=", dbUser.id)
+			.where("workspaceId", "=", workspaceId)
+			.executeTakeFirst();
 
 		if (!access) {
 			return null;

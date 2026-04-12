@@ -2,19 +2,12 @@
 
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
-import type { InferInsertModel } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { sql } from "kysely";
 import { loadEnvironment } from "../helpers/env";
-import { getDb } from "./helpers/drizzle";
-import { ticketsTable } from "./schema/ticket";
-import { usersTable } from "./schema/user";
-import { userWorkspacesTable } from "./schema/user-workspace";
-import { workspacesTable } from "./schema/workspace";
+import { getDb } from "./helpers/kysely";
 
 // Load environment variables
 loadEnvironment();
-
-type NewTicket = InferInsertModel<typeof ticketsTable>;
 
 // Default number of tickets to generate
 const DEFAULT_TICKET_COUNT = 10;
@@ -24,6 +17,12 @@ const DEFAULT_WORKSPACE = {
   slug: "tavern",
   name: "The Tavern",
 };
+
+interface NewTicket {
+  workspaceId: number;
+  title: string;
+  description: string | null;
+}
 
 /**
  * Generate fake ticket data using faker.js
@@ -81,24 +80,25 @@ async function seedWorkspaces() {
 
   // Clear existing data using TRUNCATE (respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
-  await db.execute(
-    sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`,
+  await sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
+    db,
   );
 
   // Create default workspace
-  const insertedWorkspaces = await db
-    .insert(workspacesTable)
+  const insertedWorkspace = await db
+    .insertInto("workspaces")
     .values({
       slug: DEFAULT_WORKSPACE.slug,
       name: DEFAULT_WORKSPACE.name,
     })
-    .returning();
+    .returningAll()
+    .executeTakeFirstOrThrow();
 
   console.log(
-    `✅ Created workspace: ${insertedWorkspaces[0].name} (${insertedWorkspaces[0].slug})`,
+    `✅ Created workspace: ${insertedWorkspace.name} (${insertedWorkspace.slug})`,
   );
 
-  return insertedWorkspaces[0];
+  return insertedWorkspace;
 }
 
 /**
@@ -112,24 +112,26 @@ async function seedUsers(workspaceId: number) {
   // Create a test user with hashed password (root-level, no workspaceId)
   const passwordHash = await bcrypt.hash("password123", 12);
 
-  const insertedUsers = await db
-    .insert(usersTable)
+  const insertedUser = await db
+    .insertInto("users")
     .values({
       email: "admin@example.com",
       displayName: "Admin User",
       passwordHash,
     })
-    .returning();
+    .returningAll()
+    .executeTakeFirstOrThrow();
 
   // Link user to workspace via user_workspaces table
-  await db.insert(userWorkspacesTable).values({
-    userId: insertedUsers[0].id,
-    workspaceId,
-  });
+  await db
+    .insertInto("userWorkspaces")
+    .values({
+      userId: insertedUser.id,
+      workspaceId,
+    })
+    .execute();
 
-  console.log(
-    `✅ Created user: ${insertedUsers[0].email} (password: password123)`,
-  );
+  console.log(`✅ Created user: ${insertedUser.email} (password: password123)`);
 }
 
 /**
@@ -147,9 +149,10 @@ async function seedTickets(count: number, workspaceId: number) {
 
   console.log("💾 Inserting tickets into database...");
   const insertedTickets = await db
-    .insert(ticketsTable)
+    .insertInto("tickets")
     .values(fakeTickets)
-    .returning();
+    .returningAll()
+    .execute();
 
   console.log(`✅ Successfully seeded ${insertedTickets.length} tickets!`);
 

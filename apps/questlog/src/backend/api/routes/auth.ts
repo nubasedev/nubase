@@ -1,17 +1,9 @@
 import { getAuthController, HttpError } from "@nubase/backend";
 import bcrypt from "bcryptjs";
-import type { InferSelectModel } from "drizzle-orm";
-import { and, eq, inArray } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import type { QuestlogUser } from "../../auth";
-import { getDb } from "../../db/helpers/drizzle";
-import { usersTable } from "../../db/schema/user";
-import { userWorkspacesTable } from "../../db/schema/user-workspace";
-import { workspacesTable } from "../../db/schema/workspace";
+import { getDb } from "../../db/helpers/kysely";
 import { createHandler } from "../handler-factory";
-
-type DbUser = InferSelectModel<typeof usersTable>;
-type DbWorkspace = InferSelectModel<typeof workspacesTable>;
 
 // Short-lived secret for login tokens (in production, use a proper secret)
 const LOGIN_TOKEN_SECRET =
@@ -38,16 +30,15 @@ export const authHandlers = {
       const db = getDb();
 
       // Find user by email (users are root-level now)
-      const users: DbUser[] = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, body.email));
+      const user = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-      if (users.length === 0) {
+      if (!user) {
         throw new HttpError(401, "Invalid email or password");
       }
-
-      const user = users[0];
 
       // Verify password
       const isValidPassword = await bcrypt.compare(
@@ -60,9 +51,10 @@ export const authHandlers = {
 
       // Get all workspaces this user belongs to via user_workspaces table
       const userWorkspaceRows = await db
-        .select()
-        .from(userWorkspacesTable)
-        .where(eq(userWorkspacesTable.userId, user.id));
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", user.id)
+        .execute();
 
       if (userWorkspaceRows.length === 0) {
         throw new HttpError(401, "User has no workspace access");
@@ -70,10 +62,11 @@ export const authHandlers = {
 
       // Fetch workspace details
       const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-      const workspaces: DbWorkspace[] = await db
-        .select()
-        .from(workspacesTable)
-        .where(inArray(workspacesTable.id, workspaceIds));
+      const workspaces = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("id", "in", workspaceIds)
+        .execute();
 
       // Create a short-lived login token containing the user ID
       const loginToken = jwt.sign(
@@ -118,43 +111,38 @@ export const authHandlers = {
       }
 
       // Look up the selected workspace
-      const workspaces = await db
-        .select()
-        .from(workspacesTable)
-        .where(eq(workspacesTable.slug, body.workspace));
+      const workspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-      if (workspaces.length === 0) {
+      if (!workspace) {
         throw new HttpError(404, `Workspace not found: ${body.workspace}`);
       }
 
-      const workspace = workspaces[0];
-
       // Verify user has access to this workspace
       const userWorkspaceAccess = await db
-        .select()
-        .from(userWorkspacesTable)
-        .where(
-          and(
-            eq(userWorkspacesTable.userId, decoded.userId),
-            eq(userWorkspacesTable.workspaceId, workspace.id),
-          ),
-        );
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", decoded.userId)
+        .where("workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-      if (userWorkspaceAccess.length === 0) {
+      if (!userWorkspaceAccess) {
         throw new HttpError(403, "You do not have access to this workspace");
       }
 
       // Fetch the user
-      const users: DbUser[] = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.id, decoded.userId));
+      const dbUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("id", "=", decoded.userId)
+        .executeTakeFirst();
 
-      if (users.length === 0) {
+      if (!dbUser) {
         throw new HttpError(401, "User not found");
       }
-
-      const dbUser = users[0];
 
       // Create user object for token (includes selected workspaceId)
       const user: QuestlogUser = {
@@ -193,28 +181,26 @@ export const authHandlers = {
 
       // Look up workspace from the request body (path-based multi-workspace)
       const db = getDb();
-      const workspaces = await db
-        .select()
-        .from(workspacesTable)
-        .where(eq(workspacesTable.slug, body.workspace));
+      const workspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-      if (workspaces.length === 0) {
+      if (!workspace) {
         throw new HttpError(404, `Workspace not found: ${body.workspace}`);
       }
 
-      const workspace = workspaces[0];
-
       // Find user by email (users are root-level)
-      const users: DbUser[] = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, body.email));
+      const dbUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-      if (users.length === 0) {
+      if (!dbUser) {
         throw new HttpError(401, "Invalid email or password");
       }
-
-      const dbUser = users[0];
 
       // Verify password
       const isValidPassword = await bcrypt.compare(
@@ -227,16 +213,13 @@ export const authHandlers = {
 
       // Verify user has access to this workspace
       const userWorkspaceAccess = await db
-        .select()
-        .from(userWorkspacesTable)
-        .where(
-          and(
-            eq(userWorkspacesTable.userId, dbUser.id),
-            eq(userWorkspacesTable.workspaceId, workspace.id),
-          ),
-        );
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", dbUser.id)
+        .where("workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-      if (userWorkspaceAccess.length === 0) {
+      if (!userWorkspaceAccess) {
         throw new HttpError(403, "You do not have access to this workspace");
       }
 
@@ -306,22 +289,24 @@ export const authHandlers = {
       }
 
       // Check if workspace slug already exists
-      const existingWorkspaces = await db
-        .select()
-        .from(workspacesTable)
-        .where(eq(workspacesTable.slug, body.workspace));
+      const existingWorkspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-      if (existingWorkspaces.length > 0) {
+      if (existingWorkspace) {
         throw new HttpError(409, "Organization slug is already taken");
       }
 
       // Check if email already exists
-      const existingEmails = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, body.email));
+      const existingEmail = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-      if (existingEmails.length > 0) {
+      if (existingEmail) {
         throw new HttpError(409, "Email is already registered");
       }
 
@@ -331,32 +316,37 @@ export const authHandlers = {
       }
 
       // Create the workspace
-      const [newWorkspace] = await db
-        .insert(workspacesTable)
+      const newWorkspace = await db
+        .insertInto("workspaces")
         .values({
           slug: body.workspace,
           name: body.workspaceName,
         })
-        .returning();
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
       // Hash the password
       const passwordHash = await bcrypt.hash(body.password, 10);
 
       // Create the admin user (root-level, no workspaceId)
-      const [newUser] = await db
-        .insert(usersTable)
+      const newUser = await db
+        .insertInto("users")
         .values({
           email: body.email,
           displayName: body.displayName,
           passwordHash,
         })
-        .returning();
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
       // Link user to workspace via user_workspaces table
-      await db.insert(userWorkspacesTable).values({
-        userId: newUser.id,
-        workspaceId: newWorkspace.id,
-      });
+      await db
+        .insertInto("userWorkspaces")
+        .values({
+          userId: newUser.id,
+          workspaceId: newWorkspace.id,
+        })
+        .execute();
 
       // Create user object for token (includes selected workspaceId)
       const user: QuestlogUser = {

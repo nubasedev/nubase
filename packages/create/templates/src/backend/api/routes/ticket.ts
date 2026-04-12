@@ -1,8 +1,5 @@
 import { HttpError } from "@nubase/backend";
-import type { SQL } from "drizzle-orm";
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { getDb } from "../../db/helpers/drizzle";
-import { tickets, users } from "../../db/schema";
+import { getDb } from "../../db/helpers/kysely";
 import { createHandler } from "../handler-factory";
 
 export const ticketHandlers = {
@@ -10,58 +7,55 @@ export const ticketHandlers = {
 		handler: async ({ params }) => {
 			const db = getDb();
 
-			// Build filter conditions
-			const conditions: SQL[] = [];
+			let query = db
+				.selectFrom("tickets")
+				.leftJoin("users", "tickets.assigneeId", "users.id")
+				.select([
+					"tickets.id",
+					"tickets.title",
+					"tickets.description",
+					"tickets.assigneeId",
+					"users.displayName as assigneeName",
+					"users.email as assigneeEmail",
+				]);
 
 			// Global text search - OR across searchable text fields
 			if (params.q) {
 				const searchTerm = `%${params.q}%`;
-				const searchCondition = or(
-					ilike(tickets.title, searchTerm),
-					ilike(tickets.description, searchTerm),
+				query = query.where((eb) =>
+					eb.or([
+						eb("tickets.title", "ilike", searchTerm),
+						eb("tickets.description", "ilike", searchTerm),
+					]),
 				);
-				if (searchCondition) {
-					conditions.push(searchCondition);
-				}
 			}
 
 			// Filter by title (case-insensitive partial match)
 			if (params.title) {
-				conditions.push(ilike(tickets.title, `%${params.title}%`));
+				query = query.where("tickets.title", "ilike", `%${params.title}%`);
 			}
 
 			// Filter by description (case-insensitive partial match)
 			if (params.description) {
-				conditions.push(ilike(tickets.description, `%${params.description}%`));
+				query = query.where(
+					"tickets.description",
+					"ilike",
+					`%${params.description}%`,
+				);
 			}
 
 			// Filter by assigneeId (supports single value or array for multi-select)
 			if (params.assigneeId !== undefined) {
 				if (Array.isArray(params.assigneeId)) {
 					if (params.assigneeId.length > 0) {
-						conditions.push(inArray(tickets.assigneeId, params.assigneeId));
+						query = query.where("tickets.assigneeId", "in", params.assigneeId);
 					}
 				} else {
-					conditions.push(eq(tickets.assigneeId, params.assigneeId));
+					query = query.where("tickets.assigneeId", "=", params.assigneeId);
 				}
 			}
 
-			const query = db
-				.select({
-					id: tickets.id,
-					title: tickets.title,
-					description: tickets.description,
-					assigneeId: tickets.assigneeId,
-					assigneeName: users.displayName,
-					assigneeEmail: users.email,
-				})
-				.from(tickets)
-				.leftJoin(users, eq(tickets.assigneeId, users.id));
-
-			const allTickets =
-				conditions.length > 0
-					? await query.where(and(...conditions))
-					: await query;
+			const allTickets = await query.execute();
 
 			return allTickets.map((ticket) => ({
 				id: ticket.id,
@@ -76,10 +70,11 @@ export const ticketHandlers = {
 
 	getTicket: createHandler((e) => e.getTicket, {
 		handler: async ({ params }) => {
-			const [ticket] = await getDb()
-				.select()
-				.from(tickets)
-				.where(eq(tickets.id, params.id));
+			const ticket = await getDb()
+				.selectFrom("tickets")
+				.selectAll()
+				.where("id", "=", params.id)
+				.executeTakeFirst();
 
 			if (!ticket) {
 				throw new HttpError(404, "Ticket not found");
@@ -96,19 +91,16 @@ export const ticketHandlers = {
 
 	postTicket: createHandler((e) => e.postTicket, {
 		handler: async ({ body }) => {
-			const [ticket] = await getDb()
-				.insert(tickets)
+			const ticket = await getDb()
+				.insertInto("tickets")
 				.values({
 					workspaceId: 1, // TODO: Get from context
 					title: body.title,
 					description: body.description,
 					assigneeId: body.assigneeId,
 				})
-				.returning();
-
-			if (!ticket) {
-				throw new HttpError(500, "Failed to create ticket");
-			}
+				.returningAll()
+				.executeTakeFirstOrThrow();
 
 			return {
 				id: ticket.id,
@@ -121,12 +113,7 @@ export const ticketHandlers = {
 
 	patchTicket: createHandler((e) => e.patchTicket, {
 		handler: async ({ params, body }) => {
-			const updateData: {
-				title?: string;
-				description?: string;
-				assigneeId?: number | null;
-				updatedAt: Date;
-			} = {
+			const updateData: Record<string, unknown> = {
 				updatedAt: new Date(),
 			};
 
@@ -140,11 +127,12 @@ export const ticketHandlers = {
 				updateData.assigneeId = body.assigneeId;
 			}
 
-			const [ticket] = await getDb()
-				.update(tickets)
+			const ticket = await getDb()
+				.updateTable("tickets")
 				.set(updateData)
-				.where(eq(tickets.id, params.id))
-				.returning();
+				.where("id", "=", params.id)
+				.returningAll()
+				.executeTakeFirst();
 
 			if (!ticket) {
 				throw new HttpError(404, "Ticket not found");
@@ -161,10 +149,11 @@ export const ticketHandlers = {
 
 	deleteTicket: createHandler((e) => e.deleteTicket, {
 		handler: async ({ params }) => {
-			const [deleted] = await getDb()
-				.delete(tickets)
-				.where(eq(tickets.id, params.id))
-				.returning();
+			const deleted = await getDb()
+				.deleteFrom("tickets")
+				.where("id", "=", params.id)
+				.returningAll()
+				.executeTakeFirst();
 
 			if (!deleted) {
 				throw new HttpError(404, "Ticket not found");

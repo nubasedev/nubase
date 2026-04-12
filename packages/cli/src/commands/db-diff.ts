@@ -54,7 +54,7 @@ export async function dbDiff(options: {
       const filePath = writeMigrationFile(
         resolved.migrationsDir,
         options.file,
-        `-- Migration: ${options.file}\n\n${sql}\n`,
+        sql,
       );
       log.success(`Migration saved: ${filePath}`);
 

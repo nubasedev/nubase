@@ -1,15 +1,7 @@
 import { HttpError } from "@nubase/backend";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { and, eq, ilike, or } from "drizzle-orm";
-import { getDb } from "../../db/helpers/drizzle";
-import { usersTable } from "../../db/schema/user";
-import { userWorkspacesTable } from "../../db/schema/user-workspace";
+import { getDb } from "../../db/helpers/kysely";
 import type { Workspace } from "../../middleware/workspace-middleware";
 import { createHandler } from "../handler-factory";
-
-// Type-safe database types inferred from schema
-type User = InferSelectModel<typeof usersTable>;
-type NewUser = InferInsertModel<typeof usersTable>;
 
 /**
  * User CRUD endpoints.
@@ -26,47 +18,38 @@ export const userHandlers = {
       );
       const db = getDb();
 
-      // Build where conditions
-      const conditions = [eq(userWorkspacesTable.workspaceId, workspace.id)];
+      let query = db
+        .selectFrom("users")
+        .innerJoin("userWorkspaces", "users.id", "userWorkspaces.userId")
+        .select(["users.id", "users.email", "users.displayName"])
+        .where("userWorkspaces.workspaceId", "=", workspace.id);
 
       // Global text search - OR across searchable text fields
       if (params.q) {
         const searchTerm = `%${params.q}%`;
-        const searchCondition = or(
-          ilike(usersTable.displayName, searchTerm),
-          ilike(usersTable.email, searchTerm),
+        query = query.where((eb) =>
+          eb.or([
+            eb("users.displayName", "ilike", searchTerm),
+            eb("users.email", "ilike", searchTerm),
+          ]),
         );
-        if (searchCondition) {
-          conditions.push(searchCondition);
-        }
       }
 
       // Filter by displayName if provided (case-insensitive partial match)
       if (params.displayName) {
-        conditions.push(
-          ilike(usersTable.displayName, `%${params.displayName}%`),
+        query = query.where(
+          "users.displayName",
+          "ilike",
+          `%${params.displayName}%`,
         );
       }
 
       // Filter by email if provided (case-insensitive partial match)
       if (params.email) {
-        conditions.push(ilike(usersTable.email, `%${params.email}%`));
+        query = query.where("users.email", "ilike", `%${params.email}%`);
       }
 
-      // Get users that belong to this workspace via junction table
-      const users = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          displayName: usersTable.displayName,
-        })
-        .from(usersTable)
-        .innerJoin(
-          userWorkspacesTable,
-          eq(usersTable.id, userWorkspacesTable.userId),
-        )
-        .where(and(...conditions));
-
+      const users = await query.execute();
       return users;
     },
   }),
@@ -81,30 +64,19 @@ export const userHandlers = {
       );
       const db = getDb();
 
-      // Get user if they belong to this workspace
-      const users = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          displayName: usersTable.displayName,
-        })
-        .from(usersTable)
-        .innerJoin(
-          userWorkspacesTable,
-          eq(usersTable.id, userWorkspacesTable.userId),
-        )
-        .where(
-          and(
-            eq(usersTable.id, params.id),
-            eq(userWorkspacesTable.workspaceId, workspace.id),
-          ),
-        );
+      const found = await db
+        .selectFrom("users")
+        .innerJoin("userWorkspaces", "users.id", "userWorkspaces.userId")
+        .select(["users.id", "users.email", "users.displayName"])
+        .where("users.id", "=", params.id)
+        .where("userWorkspaces.workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-      if (users.length === 0) {
+      if (!found) {
         throw new HttpError(404, "User not found");
       }
 
-      return users[0];
+      return found;
     },
   }),
 
@@ -120,28 +92,26 @@ export const userHandlers = {
       const db = getDb();
 
       // Check if user with this email already exists
-      const existingUsers = await db
-        .select()
-        .from(usersTable)
-        .where(eq(usersTable.email, body.email));
+      const existingUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-      let createdUser: User;
+      let createdUser: Record<string, any>;
 
-      if (existingUsers.length > 0) {
+      if (existingUser) {
         // User exists - add them to this workspace if not already a member
-        createdUser = existingUsers[0];
+        createdUser = existingUser;
 
         const existingMembership = await db
-          .select()
-          .from(userWorkspacesTable)
-          .where(
-            and(
-              eq(userWorkspacesTable.userId, createdUser.id),
-              eq(userWorkspacesTable.workspaceId, workspace.id),
-            ),
-          );
+          .selectFrom("userWorkspaces")
+          .selectAll()
+          .where("userId", "=", createdUser.id)
+          .where("workspaceId", "=", workspace.id)
+          .executeTakeFirst();
 
-        if (existingMembership.length > 0) {
+        if (existingMembership) {
           throw new HttpError(
             409,
             "User is already a member of this workspace",
@@ -149,29 +119,25 @@ export const userHandlers = {
         }
       } else {
         // Create new user (with a placeholder password hash - in real app, send invite email)
-        const insertData: NewUser = {
-          email: body.email,
-          displayName: body.displayName,
-          passwordHash: "placeholder-requires-password-reset",
-        };
-
-        const result = await db
-          .insert(usersTable)
-          .values(insertData)
-          .returning();
-
-        if (result.length === 0) {
-          throw new HttpError(500, "Failed to create user");
-        }
-
-        createdUser = result[0];
+        createdUser = await db
+          .insertInto("users")
+          .values({
+            email: body.email,
+            displayName: body.displayName,
+            passwordHash: "placeholder-requires-password-reset",
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow();
       }
 
       // Add user to workspace
-      await db.insert(userWorkspacesTable).values({
-        userId: createdUser.id,
-        workspaceId: workspace.id,
-      });
+      await db
+        .insertInto("userWorkspaces")
+        .values({
+          userId: createdUser.id,
+          workspaceId: workspace.id,
+        })
+        .execute();
 
       return {
         id: createdUser.id,
@@ -194,20 +160,17 @@ export const userHandlers = {
 
       // Verify user belongs to this workspace
       const membership = await db
-        .select()
-        .from(userWorkspacesTable)
-        .where(
-          and(
-            eq(userWorkspacesTable.userId, params.id),
-            eq(userWorkspacesTable.workspaceId, workspace.id),
-          ),
-        );
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", params.id)
+        .where("workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-      if (membership.length === 0) {
+      if (!membership) {
         throw new HttpError(404, "User not found in this workspace");
       }
 
-      const updateData: Partial<NewUser> = {};
+      const updateData: Record<string, unknown> = {};
       if (body.email !== undefined) {
         updateData.email = body.email;
       }
@@ -215,17 +178,17 @@ export const userHandlers = {
         updateData.displayName = body.displayName;
       }
 
-      const result = await db
-        .update(usersTable)
+      const updatedUser = await db
+        .updateTable("users")
         .set(updateData)
-        .where(eq(usersTable.id, params.id))
-        .returning();
+        .where("id", "=", params.id)
+        .returningAll()
+        .executeTakeFirst();
 
-      if (result.length === 0) {
+      if (!updatedUser) {
         throw new HttpError(404, "User not found");
       }
 
-      const updatedUser = result[0];
       return {
         id: updatedUser.id,
         email: updatedUser.email,
@@ -245,17 +208,14 @@ export const userHandlers = {
       const db = getDb();
 
       // Remove user from workspace (don't delete the user account itself)
-      const result = await db
-        .delete(userWorkspacesTable)
-        .where(
-          and(
-            eq(userWorkspacesTable.userId, params.id),
-            eq(userWorkspacesTable.workspaceId, workspace.id),
-          ),
-        )
-        .returning();
+      const deleted = await db
+        .deleteFrom("userWorkspaces")
+        .where("userId", "=", params.id)
+        .where("workspaceId", "=", workspace.id)
+        .returningAll()
+        .executeTakeFirst();
 
-      if (result.length === 0) {
+      if (!deleted) {
         throw new HttpError(404, "User not found in this workspace");
       }
 
@@ -270,35 +230,24 @@ export const userHandlers = {
       const workspace = ctx.get("workspace") as Workspace;
       const db = getDb();
 
-      // Build where conditions
-      const conditions = [eq(userWorkspacesTable.workspaceId, workspace.id)];
+      let query = db
+        .selectFrom("users")
+        .innerJoin("userWorkspaces", "users.id", "userWorkspaces.userId")
+        .select(["users.id", "users.email", "users.displayName"])
+        .where("userWorkspaces.workspaceId", "=", workspace.id);
 
       // Filter by query if provided (case-insensitive partial match on displayName or email)
       if (params.q) {
-        conditions.push(ilike(usersTable.displayName, `%${params.q}%`));
+        query = query.where("users.displayName", "ilike", `%${params.q}%`);
       }
 
-      // Get users that belong to this workspace via junction table
-      const users = await db
-        .select({
-          id: usersTable.id,
-          email: usersTable.email,
-          displayName: usersTable.displayName,
-        })
-        .from(usersTable)
-        .innerJoin(
-          userWorkspacesTable,
-          eq(usersTable.id, userWorkspacesTable.userId),
-        )
-        .where(and(...conditions))
-        .limit(20);
+      const users = await query.limit(20).execute();
 
       // Transform to Lookup format
       return users.map((u) => ({
         id: u.id,
         title: u.displayName,
         subtitle: u.email,
-        // image: u.avatarUrl, // Add if you have avatar URLs
       }));
     },
   }),
