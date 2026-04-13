@@ -195,15 +195,36 @@ async function main(ticketCount: number = DEFAULT_TICKET_COUNT) {
   process.exit(0);
 }
 
-// Handle command line arguments
-const count = process.argv[2]
-  ? parseInt(process.argv[2], 10)
-  : DEFAULT_TICKET_COUNT;
+// Parse command line arguments
+const args = process.argv.slice(2);
+let count = DEFAULT_TICKET_COUNT;
+let env = "local";
 
-if (Number.isNaN(count) || count <= 0) {
-  console.error("❌ Please provide a valid number of tickets to generate");
-  console.error("Usage: tsx src/db/seed.ts [count]");
-  process.exit(1);
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === "--env" && args[i + 1]) {
+    env = args[i + 1];
+    i++;
+  } else {
+    const parsed = Number.parseInt(args[i], 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      count = parsed;
+    }
+  }
+}
+
+// Override DATABASE_URL for non-local environments
+if (env === "prod" || env === "production") {
+  const prodUrl = process.env.QUESTLOG_PROD_DATABASE_URL;
+  if (!prodUrl) {
+    console.error(
+      "❌ QUESTLOG_PROD_DATABASE_URL is not set. Cannot seed production.",
+    );
+    process.exit(1);
+  }
+  process.env.DATABASE_URL = prodUrl;
+  console.log(`🌍 Seeding PRODUCTION database`);
+} else {
+  console.log(`🏠 Seeding local database`);
 }
 
 // Run the seeding
