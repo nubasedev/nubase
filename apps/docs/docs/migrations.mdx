@@ -1,0 +1,205 @@
+---
+title: Database Migrations
+description: How Nubase manages database schema changes with forward-only SQL migrations.
+---
+
+Nubase uses **forward-only, version-controlled SQL migration files** to manage database schema changes. This is the same approach used by production systems at GitHub, Stripe, Supabase, and most modern engineering organizations.
+
+## Core concepts
+
+### Migration files are the source of truth
+
+Every schema change — adding a table, creating an index, modifying an RLS policy — is expressed as a `.sql` file in `nubase/migrations/`. These files are committed to git, reviewed in pull requests, and applied to databases in order.
+
+```
+nubase/
+  migrations/
+    20260411142026_initial.sql
+    20260415093012_add_status_column.sql
+    20260418171500_create_audit_log.sql
+  snapshots/
+    schema.json
+  nubase.config.ts
+```
+
+### Forward-only
+
+There are no `down` migrations. If a migration causes a problem, the fix is a new migration that corrects it. This is a deliberate design choice — databases are stateful, and reversing schema changes risks data loss. See [ADR 0006](/docs/technical-decisions/0006-forward-only-sql-migrations) for the full rationale.
+
+### Auto-generation is optional
+
+You can generate migrations automatically from schema diffs, or write SQL by hand. The migration runner doesn't know or care how the file was created — it just executes SQL in order.
+
+## Workflow
+
+### Making schema changes
+
+The typical development cycle:
+
+```bash
+# 1. Make changes to your local database
+#    (via psql, a GUI, or any tool)
+
+# 2. Preview what changed
+npx nubase db diff
+
+# 3. Generate a migration file from the diff
+npx nubase db diff -f add_status_column
+
+# 4. Review the generated SQL
+cat nubase/migrations/20260415093012_add_status_column.sql
+
+# 5. Commit and push
+git add nubase/migrations/
+git commit -m "Add status column to tickets"
+
+# 6. Apply to other environments
+npx nubase db push --env staging
+npx nubase db push --env production
+```
+
+### Writing migrations by hand
+
+For changes that the diff tool can't capture (functions, complex RLS policies, data backfills), write SQL directly:
+
+```bash
+# Create an empty migration file
+npx nubase migration new add_audit_function
+
+# Edit the file
+# nubase/migrations/20260418171500_add_audit_function.sql
+```
+
+```sql
+-- nubase/migrations/20260418171500_add_audit_function.sql
+
+CREATE OR REPLACE FUNCTION audit_log_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO audit_log (table_name, operation, row_id, changed_at)
+  VALUES (TG_TABLE_NAME, TG_OP, NEW.id, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tickets_audit
+  AFTER INSERT OR UPDATE OR DELETE ON tickets
+  FOR EACH ROW EXECUTE FUNCTION audit_log_trigger();
+```
+
+### Starting from an existing database
+
+If you have an existing database and want to start using Nubase migrations:
+
+```bash
+# Pull the current schema and generate an initial migration
+npx nubase db pull
+
+# This creates:
+#   nubase/snapshots/schema.json    (current schema state)
+#   nubase/migrations/..._initial.sql  (SQL to recreate the schema)
+```
+
+From this point forward, all changes go through migration files.
+
+## How tracking works
+
+Nubase records which migrations have been applied in a `_nubase_migrations` table:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `SERIAL` | Auto-incrementing ID |
+| `name` | `TEXT UNIQUE` | Migration filename without `.sql` |
+| `applied_at` | `TIMESTAMPTZ` | When the migration was applied |
+
+When you run `npx nubase db push`:
+
+1. The CLI reads all `.sql` files from `nubase/migrations/`, sorted alphabetically (the timestamp prefix ensures chronological order)
+2. It queries `_nubase_migrations` for already-applied migrations
+3. Each pending migration runs in a transaction: `BEGIN` → execute SQL → record in tracking table → `COMMIT`
+4. If a migration fails, the transaction rolls back and execution stops
+
+This table is created automatically the first time you run `db push` or `db reset`.
+
+## Resetting the database
+
+During development, you can replay all migrations from scratch:
+
+```bash
+npx nubase db reset
+```
+
+This drops the `public` schema, recreates it, and replays every migration in order. It's restricted to local environments by default — use `--force` for non-local environments.
+
+## Generating Kysely types
+
+After applying migrations, regenerate your TypeScript types so the query builder stays in sync with the schema:
+
+```bash
+npx nubase db codegen
+```
+
+This introspects the live database and generates a `db-types.ts` file with typed interfaces for all tables. Your `getDb()` function uses these types to provide compile-time validation of queries — a typo like `description2` instead of `description` becomes a TypeScript error.
+
+```bash
+# Typical flow after a schema change:
+npx nubase db push        # Apply migration
+npx nubase db codegen     # Regenerate types
+npm run typecheck          # Verify everything compiles
+```
+
+## Best practices
+
+### Review generated migrations before committing
+
+The `db diff` command generates SQL by comparing your snapshot against the live database. Always review the output — the diff tool may miss edge cases with complex PostgreSQL features like `ALTER POLICY` or `COMMENT ON`.
+
+### One migration per logical change
+
+Don't bundle unrelated changes into a single migration file. "Add status column" and "create audit log table" should be separate migrations. This makes the git history readable and makes it easier to identify which migration caused an issue.
+
+### Use `IF NOT EXISTS` and `IF EXISTS` defensively
+
+For tables and indexes that might already exist (especially in initial migrations or when bootstrapping):
+
+```sql
+CREATE TABLE IF NOT EXISTS workspaces (...);
+CREATE INDEX IF NOT EXISTS idx_tickets_workspace ON tickets(workspace_id);
+```
+
+### Test migrations with `db reset`
+
+Before pushing to staging or production, verify that all migrations replay cleanly from scratch:
+
+```bash
+npx nubase db reset --yes
+```
+
+If this fails, there's a bug in your migration sequence. Fix it before deploying.
+
+### Never edit an already-applied migration
+
+Once a migration has been applied to any environment (including your local database), treat it as immutable. If you need to change something, create a new migration. Editing an applied migration creates drift between what the tracking table says happened and what actually happened.
+
+### Handle destructive changes carefully
+
+Dropping columns, tables, or constraints is irreversible. Before a destructive migration:
+
+1. Verify no application code references the dropped object
+2. Deploy the code change first (remove references), then deploy the migration
+3. Consider the [expand-and-contract pattern](https://openpracticelibrary.com/practice/expand-and-contract-pattern/) for zero-downtime changes
+
+## CLI command reference
+
+| Command | Description |
+|---------|-------------|
+| `nubase db pull` | Extract live schema → snapshot (+ initial migration if none exist) |
+| `nubase db diff` | Show differences between snapshot and live database |
+| `nubase db diff -f name` | Generate a migration file from the diff |
+| `nubase db push` | Apply pending migrations to the database |
+| `nubase db reset` | Drop schema and replay all migrations from scratch |
+| `nubase db codegen` | Generate Kysely TypeScript types from live database |
+| `nubase migration new name` | Create an empty migration file |
+| `nubase envs` | List configured environments |
+
+See the [CLI Reference](/docs/cli) for full flag documentation.
