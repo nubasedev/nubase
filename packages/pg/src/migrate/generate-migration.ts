@@ -10,7 +10,7 @@ import { generateIndexStatements } from "./sql-generators/indexes";
 import { generatePolicyStatements } from "./sql-generators/policies";
 // Privilege statements (GRANT/REVOKE) are intentionally not emitted in
 // generated migrations. See the note in extract-schema.ts and the ADR in
-// apps/docs/docs/technical-decisions/. The generator file is preserved for
+// apps/docs/docs/adrs/. The generator file is preserved for
 // backward compat but not wired into generateMigration.
 import { generateSequenceStatements } from "./sql-generators/sequences";
 import { generateTableStatements } from "./sql-generators/tables";

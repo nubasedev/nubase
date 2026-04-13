@@ -5,7 +5,7 @@ import type { PgSchema } from "@nubase/pg";
 // The snapshot is a single file per project, not per environment. It
 // represents the *intended* schema state — the result of applying all known
 // migrations to a clean database — and is environment-independent. See
-// apps/docs/docs/technical-decisions/0005-unified-schema-snapshot.mdx for
+// apps/docs/docs/adrs/0005-unified-schema-snapshot.mdx for
 // rationale.
 const SNAPSHOT_FILENAME = "schema.json";
 

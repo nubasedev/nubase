@@ -23,7 +23,7 @@ export function generatePolicyStatements(
     // assignment is preserved in the snapshot, but emitted SQL uses PUBLIC
     // so migrations are portable across environments that may not share
     // role names. In single-role setups this is semantically identical.
-    // See: apps/docs/docs/technical-decisions/
+    // See: apps/docs/docs/adrs/
     sql += ` TO PUBLIC`;
     if (policy.usingExpression) sql += ` USING (${policy.usingExpression})`;
     if (policy.withCheckExpression)
