@@ -1,8 +1,4 @@
-import type { Kysely } from "kysely";
-import { sql } from "kysely";
-
-export async function up(db: Kysely<any>): Promise<void> {
-  await sql`CREATE TABLE IF NOT EXISTS workspaces (
+CREATE TABLE IF NOT EXISTS workspaces (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(100) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
@@ -44,12 +40,4 @@ CREATE TABLE IF NOT EXISTS tickets (
 ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY tickets_workspace_isolation ON tickets
-  USING (workspace_id = current_setting('app.current_workspace_id', true)::INTEGER)`.execute(db);
-}
-
-export async function down(db: Kysely<any>): Promise<void> {
-  await sql`DROP TABLE IF EXISTS tickets CASCADE;
-DROP TABLE IF EXISTS user_workspaces CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS workspaces CASCADE`.execute(db);
-}
+  USING (workspace_id = current_setting('app.current_workspace_id', true)::INTEGER);

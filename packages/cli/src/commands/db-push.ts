@@ -1,8 +1,12 @@
-import { Migrator } from "kysely";
 import prompts from "prompts";
 import { loadConfig } from "../config/load-config.js";
-import { createKysely } from "../db/kysely.js";
-import { NubaseMigrationProvider } from "../db/migration-provider.js";
+import { withConnection } from "../db/connection.js";
+import {
+  ensureMigrationsTable,
+  getAppliedMigrations,
+  recordMigration,
+} from "../db/migration-tracker.js";
+import { listMigrationFiles } from "../db/migration-files.js";
 import { log } from "../output/logger.js";
 
 export async function dbPush(options: {
@@ -16,16 +20,12 @@ export async function dbPush(options: {
     `Pushing migrations to "${resolved.environmentName}"`,
   );
 
-  const db = createKysely(resolved.environment.url);
+  await withConnection(resolved.environment.url, async (client) => {
+    await ensureMigrationsTable(client);
 
-  try {
-    const migrator = new Migrator({
-      db,
-      provider: new NubaseMigrationProvider(resolved.migrationsDir),
-    });
-
-    const allMigrations = await migrator.getMigrations();
-    const pending = allMigrations.filter((m) => !m.executedAt);
+    const applied = await getAppliedMigrations(client);
+    const allMigrations = listMigrationFiles(resolved.migrationsDir);
+    const pending = allMigrations.filter((m) => !applied.has(m.name));
 
     if (pending.length === 0) {
       log.success("No pending migrations.");
@@ -34,7 +34,7 @@ export async function dbPush(options: {
 
     log.info(`${pending.length} pending migration(s):`);
     for (const m of pending) {
-      log.dim(`  ${m.name}`);
+      log.dim(`  ${m.filename}`);
     }
 
     if (options.dryRun) {
@@ -55,20 +55,18 @@ export async function dbPush(options: {
       }
     }
 
-    const { error, results } = await migrator.migrateToLatest();
-
-    if (results) {
-      for (const result of results) {
-        if (result.status === "Success") {
-          log.success(`Applied ${result.migrationName}`);
-        } else if (result.status === "Error") {
-          log.error(`Failed ${result.migrationName}`);
-        }
+    for (const migration of pending) {
+      log.step(`Applying ${migration.filename}...`);
+      await client.query("BEGIN");
+      try {
+        await client.query(migration.sql);
+        await recordMigration(client, migration.name);
+        await client.query("COMMIT");
+        log.success(`Applied ${migration.filename}`);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
       }
-    }
-
-    if (error) {
-      throw error;
     }
 
     // Intentionally does NOT re-extract and save the snapshot after applying
@@ -77,7 +75,5 @@ export async function dbPush(options: {
     // the target's state now matches the snapshot by construction. Re-extracting
     // would let any drift on the target (manual ALTERs, etc.) silently overwrite
     // the canonical snapshot with corrupted data. See ADR 0005.
-  } finally {
-    await db.destroy();
-  }
+  });
 }

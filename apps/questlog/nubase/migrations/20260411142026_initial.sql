@@ -1,8 +1,4 @@
-import type { Kysely } from "kysely";
-import { sql } from "kysely";
-
-export async function up(db: Kysely<any>): Promise<void> {
-  await sql`CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" SCHEMA "public";
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" SCHEMA "public";
 
 CREATE TABLE "public"."tickets" (
   "id" integer GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -61,13 +57,4 @@ ALTER TABLE "public"."user_workspaces" ADD CONSTRAINT "user_workspaces_workspace
 
 CREATE POLICY "tickets_workspace_isolation" ON "public"."tickets" AS PERMISSIVE FOR ALL TO PUBLIC USING ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer)) WITH CHECK ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer));
 
-CREATE POLICY "user_workspaces_workspace_isolation" ON "public"."user_workspaces" AS PERMISSIVE FOR ALL TO PUBLIC USING ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer)) WITH CHECK ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer))`.execute(db);
-}
-
-export async function down(db: Kysely<any>): Promise<void> {
-  await sql`DROP TABLE IF EXISTS "public"."tickets" CASCADE;
-DROP TABLE IF EXISTS "public"."user_workspaces" CASCADE;
-DROP TABLE IF EXISTS "public"."users" CASCADE;
-DROP TABLE IF EXISTS "public"."workspaces" CASCADE;
-DROP EXTENSION IF EXISTS "pg_stat_statements"`.execute(db);
-}
+CREATE POLICY "user_workspaces_workspace_isolation" ON "public"."user_workspaces" AS PERMISSIVE FOR ALL TO PUBLIC USING ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer)) WITH CHECK ((workspace_id = (NULLIF(current_setting('app.current_workspace_id'::text, true), ''::text))::integer));
