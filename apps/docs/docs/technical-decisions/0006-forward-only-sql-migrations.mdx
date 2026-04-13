@@ -1,0 +1,105 @@
+---
+title: "ADR 0006: Forward-only raw SQL migrations"
+description: Nubase uses forward-only, version-controlled raw SQL migration files with a simple tracking table — the industry-standard pattern used by production systems at every scale.
+sidebar_position: 6
+---
+
+**Status:** accepted
+
+## Context
+
+When building the Nubase migration system, we evaluated the full landscape of database migration strategies in 2025: declarative tools (Atlas, Prisma Migrate), imperative frameworks (Flyway, Liquibase, Django, Alembic), ORM-integrated migrations (Drizzle-Kit, Kysely-ctl, TypeORM), and the practices of large-scale engineering organizations (GitHub, Stripe, Shopify, Meta).
+
+We briefly implemented a Kysely-based migration system using TypeScript migration files with `up`/`down` functions and Kysely's built-in `Migrator` class. After further research, we reverted to raw SQL — the approach that the industry has converged on for production systems.
+
+## Decision
+
+Nubase uses **forward-only, version-controlled raw SQL migration files** with the following properties:
+
+1. **Raw SQL files.** Migrations are `.sql` files in `nubase/migrations/`, named with a timestamp prefix: `YYYYMMDDHHMMSS_name.sql`. No TypeScript wrappers, no ORM abstractions, no runtime compilation.
+
+2. **Forward-only.** There are no `down` migrations. If a migration causes a problem, the fix is a new forward migration that corrects the issue. This is not a limitation — it is a deliberate design choice backed by strong industry consensus.
+
+3. **Auto-generation is optional.** The `nubase db diff` command uses `@nubase/pg` to compare a schema snapshot against the live database and generate SQL. Developers can also write migration SQL entirely by hand. The migration runner does not know or care how the file was authored.
+
+4. **Standard tracking table.** A `_nubase_migrations` table records which migrations have been applied (`name`, `applied_at`). Each migration runs in a transaction: `BEGIN` → execute SQL → record in tracking table → `COMMIT`, with rollback on error.
+
+5. **Git is the audit trail.** Migration files are committed to version control, reviewed in pull requests, and then applied to databases. The `db push` command is an explicit CLI action, never triggered on application startup.
+
+## Why not down migrations?
+
+Down migrations are widely considered an anti-pattern in production:
+
+- **Databases are stateful.** Reversing a schema change risks losing data created after the migration was applied. A `down` migration for `DROP COLUMN` cannot restore the data that column contained.
+- **They only work for simple cases.** Adding a column can be reversed; splitting a table, changing a data type with a backfill, or restructuring foreign keys cannot be meaningfully reversed by generated code.
+- **False safety.** The presence of `down` migrations gives the impression of reversibility without the substance. Teams that rely on them are unprepared for the migrations that cannot be reversed — which are precisely the ones that go wrong.
+- **Forward-only is simpler.** One direction means one code path, one review, one thing to get right. "Fix forward" is the standard practice at GitHub, Stripe, Shopify, and every major engineering organization.
+
+As one widely-cited Hacker News comment puts it: "Rollbacks are bullshit — they work fine for easy changes, but you can't rollback the hard ones, and you're better off getting comfortable with forward-only migrations."
+
+## Why raw SQL instead of TypeScript migrations?
+
+- **No abstraction layer to leak.** Raw SQL can express any PostgreSQL feature: RLS policies, triggers, functions, extensions, domains, partial indexes, generated columns. ORM schema builders inevitably have gaps.
+- **No runtime dependency.** SQL files are loaded and executed by the `pg` client. There is no need for `jiti`, Kysely, or any runtime TypeScript compilation in the migration path.
+- **Reviewability.** SQL is the actual language the database executes. Reviewing a `.sql` file means reviewing exactly what will happen — no translation step, no plugin behavior, no framework surprises.
+- **Portability.** SQL migration files work with any PostgreSQL tooling. They can be applied by the Nubase CLI, by `psql`, by a CI script, or by any other migration runner.
+
+## Why auto-generation as an optional convenience?
+
+The `nubase db diff` command exists because manually writing `CREATE TABLE` with 15 columns and 4 constraints is tedious and error-prone. But the diff tool is a **draft generator**, not the source of truth:
+
+- For routine changes (add column, add index, add table), `db diff` saves time.
+- For complex changes (rewrite RLS policies, create functions, data backfills), developers write SQL directly.
+- The generated file is always reviewed and committed before being applied.
+- Known limitations in schema diffing (e.g., `ALTER POLICY` detection, `COMMENT ON`, materialized view edge cases) are acceptable because the output is a starting point, not a final product.
+
+This matches the pattern Atlas calls "versioned migration authoring" and what Supabase's declarative schema feature aspires to: declare the desired state, auto-generate a versioned migration file, review it, commit it, apply it.
+
+## Migration workflow
+
+```
+Developer changes database schema (via psql, GUI, or any tool)
+        │
+        ▼
+  nubase db diff --file add_status_column
+        │  (compares snapshot vs live DB, generates SQL)
+        ▼
+  Developer reviews nubase/migrations/20260413_add_status_column.sql
+        │  (edits if needed, commits to git)
+        ▼
+  PR review → merge
+        │
+        ▼
+  nubase db push --env production
+        │  (applies pending migrations, records in _nubase_migrations)
+        ▼
+  Done. Migration is tracked, auditable, and irreversible.
+```
+
+Or, for hand-written migrations:
+
+```
+  nubase migration new add_rls_policy
+        │  (creates empty .sql file)
+        ▼
+  Developer writes SQL by hand
+        │  (commits to git)
+        ▼
+  PR review → merge → nubase db push
+```
+
+## Consequences
+
+- Migration files are simple, portable, and auditable.
+- No runtime TypeScript compilation or ORM dependency in the migration path.
+- Developers must think carefully about destructive changes since there is no automated rollback — this is a feature, not a bug.
+- The `@nubase/pg` diff engine is a convenience, not a requirement. If it fails to capture a change, the developer writes SQL directly.
+- Future enhancements (lock timeout on DDL, advisory locks for concurrent safety, drift detection) can be layered on without changing the core architecture.
+
+## References
+
+- [Atlas: Versioned Migration Authoring](https://atlasgo.io/versioned/intro)
+- [Flyway: Why forward-only](https://documentation.red-gate.com/fd/why-forward-only-migrations-278405013.html)
+- [Prisma: No down migrations by design](https://www.prisma.io/docs/orm/prisma-migrate/understanding-prisma-migrate)
+- [Supabase: Local development and migrations](https://supabase.com/docs/guides/cli/local-development)
+- ADR 0005 (this project): Unified schema snapshot
