@@ -86,86 +86,19 @@ jobs:
       - name: Build packages
         run: npm run build
 
-      - name: Publish @nubase/core (if version not published)
+      - name: Publish packages
         run: |
-          cd packages/core
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/core@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/core@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/core@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/pg (if version not published)
-        run: |
-          cd packages/pg
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/pg@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/pg@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/pg@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/backend (if version not published)
-        run: |
-          cd packages/backend
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/backend@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/backend@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/backend@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/frontend (if version not published)
-        run: |
-          cd packages/frontend
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/frontend@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/frontend@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/frontend@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/cli (if version not published)
-        run: |
-          cd packages/cli
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/cli@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/cli@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/cli@$LOCAL_VERSION"
-            npm publish
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @nubase/create (if version not published)
-        run: |
-          cd packages/create
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          # Check if this exact version exists on npm (any tag)
-          if npm view @nubase/create@$LOCAL_VERSION version 2>/dev/null; then
-            echo "@nubase/create@$LOCAL_VERSION already exists, skipping"
-          else
-            echo "Publishing @nubase/create@$LOCAL_VERSION"
-            npm publish
-          fi
+          PACKAGES="packages/core packages/pg packages/backend packages/frontend packages/cli packages/create"
+          for pkg in $PACKAGES; do
+            NAME=$(node -p "require('./$pkg/package.json').name")
+            VERSION=$(node -p "require('./$pkg/package.json').version")
+            if npm view "$NAME@$VERSION" version 2>/dev/null; then
+              echo "⏭  $NAME@$VERSION already published, skipping"
+            else
+              echo "📦 Publishing $NAME@$VERSION..."
+              (cd "$pkg" && npm publish --access public)
+              echo "✅ $NAME@$VERSION published"
+            fi
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
