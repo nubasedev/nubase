@@ -1,0 +1,55 @@
+---
+title: "ADR 0007: Path-based multi-tenancy over subdomains"
+description: Nubase uses path-based workspace isolation instead of subdomain-based tenancy, simplifying deployment while maintaining security.
+sidebar_position: 7
+---
+
+**Status:** accepted
+
+## Context
+
+Nubase supports multi-workspace applications where each workspace (tenant) has isolated data. The original implementation used **subdomain-based tenancy** — each workspace had its own subdomain (e.g., `tavern.example.com`, `acme.example.com`). The backend identified the workspace from the `Host` header.
+
+This created deployment friction:
+
+- **Wildcard DNS** was required for every deployment environment (local, staging, production). Services like Coolify and many PaaS providers make wildcard subdomain configuration complex or unsupported.
+- **Local development** required `/etc/hosts` entries or tools like `lvh.me` to route `*.localhost` correctly.
+- **Cookie scoping** across subdomains required careful `Domain` attribute configuration, with different behavior across browsers.
+- **SSL certificates** needed wildcard coverage or per-workspace certificates.
+
+## Decision
+
+Nubase uses **path-based workspace isolation**. Workspaces are identified by a slug in the URL path or embedded in the JWT token — not by subdomains.
+
+### How workspace identification works
+
+1. **Login flow**: The client sends the workspace slug in the request body. The backend verifies credentials and workspace access, then issues a JWT containing the `workspaceId`.
+
+2. **Authenticated requests**: The workspace is extracted from the JWT token, not from the URL. A post-authentication middleware looks up the workspace and sets the RLS context.
+
+3. **Frontend routing**: The frontend uses workspace-aware routes, but the workspace slug is not a URL path prefix — it's resolved from the authenticated session.
+
+### Cookie configuration
+
+Because the frontend dev server and backend may run on different ports during development, cookies use:
+
+- `SameSite=None` — required for cross-origin requests (different ports count as different origins)
+- `Secure` — required when `SameSite=None` (browsers treat `localhost` as secure)
+- `HttpOnly` — prevents JavaScript access (XSS protection)
+- `Path=/` — cookie sent for all paths (no per-workspace cookie scoping needed)
+
+### RLS context timing
+
+With subdomain tenancy, RLS context could be set before authentication (the `Host` header was always available). With path-based tenancy, the workspace is only known after JWT verification. The middleware chain handles this:
+
+1. **Pre-auth workspace middleware** — handles bypass paths (health checks, login)
+2. **Auth middleware** — verifies JWT, extracts user with `workspaceId`
+3. **Post-auth workspace middleware** — looks up workspace from the authenticated user's `workspaceId`, sets RLS context
+
+## Consequences
+
+- **Simpler deployment**: No wildcard DNS, no subdomain configuration. Any standard web hosting works.
+- **Simpler local development**: Just `localhost:3000`, no hosts file manipulation.
+- **Standard cookie behavior**: Single-domain cookies with no cross-subdomain concerns.
+- **Workspace switching**: Users can switch workspaces without navigating to a different subdomain — the two-step login flow (credentials → workspace selection) handles this naturally.
+- **RLS context depends on authentication**: The database RLS context cannot be set for unauthenticated requests. Routes that need workspace isolation must require authentication.
