@@ -50,6 +50,45 @@ export type ResourceCreateView<
   }) => Promise<HttpResponse<any>>;
 };
 
+/**
+ * Configuration for a related collection shown beside the main form on a
+ * resource view screen — e.g. "Tickets assigned to this user" beneath a User
+ * view. The mode discriminator allows future expansion (e.g. "preloaded"
+ * collections embedded in the parent's onLoad payload). Currently only
+ * "searchable" is implemented.
+ */
+export type RelatedCollection<
+  TParent = any,
+  TApiEndpoints = any,
+  TRowSchema extends ObjectSchema<any> = ObjectSchema<any>,
+> = {
+  /** "searchable" — load on demand via onSearch with a debounced text query. */
+  mode: "searchable";
+  /** Section heading shown above the table. */
+  label: string;
+  /**
+   * Object schema describing each row's shape. Used to derive table columns
+   * from its `default` (or `table`) layout.
+   */
+  schema: TRowSchema;
+  /**
+   * The id of the resource each row points to. Used to navigate to
+   * `/r/{targetResourceId}/view?id={rowId}` when a row is clicked.
+   */
+  targetResourceId: string;
+  /**
+   * Loads the related rows. Called whenever the (debounced) query changes.
+   * `parent` is the loaded record from the parent view's `onLoad`.
+   */
+  onSearch: (args: {
+    parent: TParent;
+    query: string;
+    context: NubaseContextData<TApiEndpoints>;
+  }) => Promise<HttpResponse<Infer<TRowSchema>[]>>;
+  /** Placeholder for the search input. Defaults to "Search...". */
+  searchPlaceholder?: string;
+};
+
 export type ResourceViewView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
@@ -87,6 +126,14 @@ export type ResourceViewView<
     data: Partial<Infer<TSchema>>;
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
+  /**
+   * Optional 1×N relationships shown as labeled sections below the main form.
+   * Each entry is keyed by an arbitrary id used for React keying / routing.
+   */
+  relatedCollections?: Record<
+    string,
+    RelatedCollection<Infer<TSchema>, TApiEndpoints>
+  >;
 };
 
 export type ResourceSearchView<

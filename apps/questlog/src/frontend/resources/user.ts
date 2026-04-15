@@ -1,6 +1,7 @@
 import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
+import { userTicketSchema } from "../../common/resources/user-ticket";
 
 export const userResource = createResource("user")
   .withApiEndpoints(apiEndpoints)
@@ -95,6 +96,22 @@ export const userResource = createResource("user")
           params: { id: context.params.id },
           data: data,
         });
+      },
+      relatedCollections: {
+        tickets: {
+          mode: "searchable",
+          label: "Tickets",
+          schema: userTicketSchema,
+          targetResourceId: "ticket",
+          searchPlaceholder: "Search tickets...",
+          onSearch: ({ parent, query, context }) =>
+            context.http.getTickets({
+              params: {
+                assigneeId: parent.id,
+                title: query || undefined,
+              },
+            }),
+        },
       },
     },
     search: {

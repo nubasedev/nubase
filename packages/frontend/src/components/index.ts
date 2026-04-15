@@ -19,6 +19,7 @@ export * from "./navigation/searchable-tree-navigator";
 export * from "./nubase-app";
 export * from "./schema-filter-bar";
 export * from "./search-controls";
+export * from "./searchable-table";
 export * from "./table";
 export * from "./tabs";
 export * from "./top-bar";

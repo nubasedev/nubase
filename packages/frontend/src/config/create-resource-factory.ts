@@ -7,6 +7,7 @@ import type { ActionLayout } from "./action-layout";
 import type { BreadcrumbDefinition } from "./breadcrumb";
 import type { ResourceDescriptor, ResourceLookupConfig } from "./resource";
 import type {
+  RelatedCollection,
   ResourceCreateView,
   ResourceSearchView,
   ResourceViewView,
@@ -75,6 +76,13 @@ export type InlineViewViewConfig<
     data: Partial<Infer<TSchema>>;
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
+  /**
+   * Optional 1×N relationships rendered as labeled sections beneath the form.
+   */
+  relatedCollections?: Record<
+    string,
+    RelatedCollection<Infer<TSchema>, TApiEndpoints>
+  >;
 };
 
 /**
