@@ -107,17 +107,14 @@ describe("nubase Schema Library (nu) - ObjectSchema.passthrough()", () => {
     });
 
     it("should preserve layouts after passthrough", () => {
-      const baseSchema = nu.object({ name: nu.string() }).withFormLayouts({
-        default: {
-          type: "form",
-          groups: [{ fields: [{ name: "name" }] }],
-        },
+      const baseSchema = nu.object({ name: nu.string() }).withFormLayout({
+        groups: [{ fields: [{ name: "name" }] }],
       });
 
       const schemaWithPassthrough = baseSchema.passthrough();
 
-      expect(schemaWithPassthrough.hasLayout("default")).toBe(true);
-      expect(schemaWithPassthrough.getLayout("default")?.type).toBe("form");
+      expect(schemaWithPassthrough.getFormLayout()).toBeDefined();
+      expect(schemaWithPassthrough.getFormLayout()?.type).toBe("form");
     });
 
     it("should preserve idField after passthrough", () => {

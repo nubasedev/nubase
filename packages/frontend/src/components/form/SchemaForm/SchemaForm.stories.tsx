@@ -105,20 +105,17 @@ const ContactWithLayoutSchema = nu
       defaultValue: false,
     }),
   })
-  .withLayouts({
-    default: {
-      type: "form",
-      groups: [
-        {
-          label: "Contact Information",
-          fields: [{ name: "name" }, { name: "email" }],
-        },
-        {
-          label: "Your Message",
-          fields: [{ name: "message" }, { name: "subscribe" }],
-        },
-      ],
-    },
+  .withFormLayout({
+    groups: [
+      {
+        label: "Contact Information",
+        fields: [{ name: "name" }, { name: "email" }],
+      },
+      {
+        label: "Your Message",
+        fields: [{ name: "message" }, { name: "subscribe" }],
+      },
+    ],
   });
 
 // Schema for error handling demo
@@ -232,7 +229,7 @@ export const WithLayout: Story = {
 
     return (
       <SchemaForm form={form} className="space-y-4">
-        <SchemaFormBody form={form} layoutName="default" />
+        <SchemaFormBody form={form} />
         <SchemaFormValidationErrors form={form} />
         <SchemaFormButtonBar form={form} submitText="Send Message" />
       </SchemaForm>

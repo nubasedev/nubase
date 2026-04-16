@@ -14,7 +14,6 @@ import { SchemaFormVerticalLayout } from "./SchemaFormVerticalLayout";
 export interface SchemaFormBodyProps {
   form: SchemaFormConfiguration<any>;
   className?: string;
-  layoutName?: string;
   computedMetadata?: {
     debounceMs?: number;
   };
@@ -24,7 +23,6 @@ export interface SchemaFormBodyProps {
 export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
   form,
   className = "",
-  layoutName,
   computedMetadata,
 }) => {
   const { schema, mode, onPatch } = form;
@@ -33,8 +31,8 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
   const { metadata: mergedMetadata, error: metadataError } =
     useComputedMetadata(schema, form.formState, computedMetadata);
 
-  // Use layout hook to get the layout (either specified or default)
-  const layout = useLayout(schema, layoutName);
+  // Use layout hook to get the form layout (attached or auto-generated)
+  const layout = useLayout(schema);
 
   return (
     <div className={`flex flex-col ${className}`}>

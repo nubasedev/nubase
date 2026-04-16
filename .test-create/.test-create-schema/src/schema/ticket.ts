@@ -20,10 +20,13 @@ export const ticketBaseSchema = nu
 		}),
 	})
 	.withId("id")
-	.withTableLayouts({
-		default: {
-			fields: ["id", "title", "description", "createdAt"],
-		},
+	.withTableLayout({
+		fields: [
+			{ name: "id" },
+			{ name: "title" },
+			{ name: "description" },
+			{ name: "createdAt" },
+		],
 	});
 
 export type Ticket = (typeof ticketBaseSchema)["_output"];

@@ -26,22 +26,19 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
         description: async (obj) => `Contact ${obj.name} at ${obj.email}`,
       },
     })
-    .withLayouts({
-      default: {
-        type: "form",
-        groups: [
-          {
-            label: "Personal Info",
-            fields: [
-              { name: "id", size: 3 },
-              { name: "name", size: 9 },
-              { name: "email", size: 6 },
-              { name: "age", size: 6 },
-              { name: "isActive", size: 12 },
-            ],
-          },
-        ],
-      },
+    .withFormLayout({
+      groups: [
+        {
+          label: "Personal Info",
+          fields: [
+            { name: "id", fieldWidth: 3 },
+            { name: "name", fieldWidth: 9 },
+            { name: "email", fieldWidth: 6 },
+            { name: "age", fieldWidth: 6 },
+            { name: "isActive", fieldWidth: 12 },
+          ],
+        },
+      ],
     });
 
   it("should create a partial schema where all properties are optional", () => {
@@ -95,14 +92,13 @@ describe("nubase Schema Library (nu) - ObjectSchema partial() function", () => {
   it("should preserve layouts when creating partial", () => {
     const partialSchema = baseObjectSchema.partial();
 
-    const defaultLayout = partialSchema.getLayout("default");
-    expect(defaultLayout).toBeDefined();
-    expect(partialSchema.getLayoutNames()).toEqual(["default"]);
+    const layout = partialSchema.getFormLayout();
+    expect(layout).toBeDefined();
 
-    if (defaultLayout) {
-      expect(defaultLayout.groups).toHaveLength(1);
-      expect(defaultLayout.groups[0]?.label).toBe("Personal Info");
-      expect(defaultLayout.groups[0]?.fields).toHaveLength(5);
+    if (layout) {
+      expect(layout.groups).toHaveLength(1);
+      expect(layout.groups[0]?.label).toBe("Personal Info");
+      expect(layout.groups[0]?.fields).toHaveLength(5);
     }
   });
 

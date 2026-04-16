@@ -10,14 +10,12 @@ const ticketSchema = nu
     description: nu.string().optional(),
   })
   .withId("id")
-  .withTableLayouts({
-    default: {
-      fields: [
-        { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
-        { name: "title", label: "Title", columnWidthPx: 300 },
-        { name: "description", label: "Description", columnWidthPx: 400 },
-      ],
-    },
+  .withTableLayout({
+    fields: [
+      { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
+      { name: "title", label: "Title", columnWidthPx: 300 },
+      { name: "description", label: "Description", columnWidthPx: 400 },
+    ],
   });
 
 const sampleRows = [

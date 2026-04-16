@@ -34,36 +34,22 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         description: async (obj) => `Contact ${obj.name} at ${obj.email}`,
       },
     })
-    .withLayouts({
-      default: {
-        type: "form",
-        groups: [
-          {
-            label: "Personal Info",
-            fields: [
-              { name: "id", size: 3 },
-              { name: "name", size: 9 },
-              { name: "email", size: 6 },
-              { name: "age", size: 6 },
-            ],
-          },
-          {
-            label: "Address",
-            fields: [{ name: "address", size: 12 }],
-          },
-        ],
-      },
-      compact: {
-        type: "grid",
-        groups: [
-          {
-            fields: [
-              { name: "name", size: 6 },
-              { name: "email", size: 6 },
-            ],
-          },
-        ],
-      },
+    .withFormLayout({
+      groups: [
+        {
+          label: "Personal Info",
+          fields: [
+            { name: "id", fieldWidth: 3 },
+            { name: "name", fieldWidth: 9 },
+            { name: "email", fieldWidth: 6 },
+            { name: "age", fieldWidth: 6 },
+          ],
+        },
+        {
+          label: "Address",
+          fields: [{ name: "address", fieldWidth: 12 }],
+        },
+      ],
     });
 
   describe("omit function", () => {
@@ -105,25 +91,16 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
     it("should update layouts to exclude omitted fields", () => {
       const omittedSchema = baseObjectSchema.omit("email", "age");
 
-      const defaultLayout = omittedSchema.getLayout("default");
-      expect(defaultLayout).toBeDefined();
+      const layout = omittedSchema.getFormLayout();
+      expect(layout).toBeDefined();
 
-      if (defaultLayout) {
-        const personalInfoGroup = defaultLayout.groups[0];
+      if (layout) {
+        const personalInfoGroup = layout.groups[0];
         expect(personalInfoGroup?.fields).toHaveLength(2); // id, name (email and age removed)
         expect(personalInfoGroup?.fields.map((f) => f.name)).toEqual([
           "id",
           "name",
         ]);
-      }
-
-      const compactLayout = omittedSchema.getLayout("compact");
-      expect(compactLayout).toBeDefined();
-
-      if (compactLayout) {
-        const compactGroup = compactLayout.groups[0];
-        expect(compactGroup?.fields).toHaveLength(1); // name (email removed)
-        expect(compactGroup?.fields.map((f) => f.name)).toEqual(["name"]);
       }
     });
 
@@ -221,14 +198,13 @@ describe("nubase Schema Library (nu) - ObjectSchema omit and extend", () => {
         phone: nu.string().withComputedMeta({ label: "Phone Number" }),
       });
 
-      const defaultLayout = extendedSchema.getLayout("default");
-      expect(defaultLayout).toBeDefined();
-      expect(extendedSchema.getLayoutNames()).toEqual(["default", "compact"]);
+      const layout = extendedSchema.getFormLayout();
+      expect(layout).toBeDefined();
 
       // Original layout structure should be preserved
-      if (defaultLayout) {
-        expect(defaultLayout.groups).toHaveLength(2);
-        expect(defaultLayout.groups[0]?.label).toBe("Personal Info");
+      if (layout) {
+        expect(layout.groups).toHaveLength(2);
+        expect(layout.groups[0]?.label).toBe("Personal Info");
       }
     });
 

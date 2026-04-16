@@ -8,12 +8,10 @@ import { ticketListSchema } from "./ticket";
  *
  * No own endpoint and no own resource — just a column shape.
  */
-export const userTicketSchema = ticketListSchema.withTableLayouts({
-  default: {
-    fields: [
-      { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
-      { name: "title", label: "Title", columnWidthPx: 300, pinned: true },
-      { name: "description", label: "Description", columnWidthPx: 400 },
-    ],
-  },
+export const userTicketSchema = ticketListSchema.withTableLayout({
+  fields: [
+    { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
+    { name: "title", label: "Title", columnWidthPx: 300, pinned: true },
+    { name: "description", label: "Description", columnWidthPx: 400 },
+  ],
 });

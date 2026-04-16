@@ -98,17 +98,14 @@ describe("nubase Schema Library (nu) - ObjectSchema.catchall()", () => {
     });
 
     it("should preserve layouts after catchall", () => {
-      const baseSchema = nu.object({ name: nu.string() }).withFormLayouts({
-        default: {
-          type: "form",
-          groups: [{ fields: [{ name: "name" }] }],
-        },
+      const baseSchema = nu.object({ name: nu.string() }).withFormLayout({
+        groups: [{ fields: [{ name: "name" }] }],
       });
 
       const schemaWithCatchall = baseSchema.catchall(nu.number());
 
-      expect(schemaWithCatchall.hasLayout("default")).toBe(true);
-      expect(schemaWithCatchall.getLayout("default")?.type).toBe("form");
+      expect(schemaWithCatchall.getFormLayout()).toBeDefined();
+      expect(schemaWithCatchall.getFormLayout()?.type).toBe("form");
     });
 
     it("should preserve idField after catchall", () => {

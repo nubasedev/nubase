@@ -1,180 +1,123 @@
 ---
 title: Layout System
-description: Learn how to use the Nubase layout system to organize form fields and data displays.
+description: How to organize schema fields into forms and tables in Nubase.
 ---
 
-The Nubase layout system provides a declarative way to organize form fields into groups, tabs, and grids. Layouts are defined on schemas and automatically applied to generated forms.
+Nubase schemas have two optional layout attachments:
 
-## Overview
+- **Form layout** — how fields are grouped, ordered, and sized when rendered as a form. Attach via `withFormLayout`.
+- **Table layout** — which fields appear as columns (with widths, pinning, and inline-edit flags) when rendered as a table or grid. Attach via `withTableLayout`.
 
-Layouts determine how fields are visually organized:
+Both are optional. Without them, the form/table renderers fall back to a default: every field in a single full-width group (form) or no columns at all (table).
 
-- **Form Layout** - Fields arranged in labeled groups
-- **Grid Layout** - Fields in a responsive grid
-- **Tabs Layout** - Fields organized across tabs
-- **Accordion Layout** - Collapsible sections
-
-## Basic Usage
-
-Define layouts using the `withLayout()` method on object schemas:
+## Form layouts
 
 ```typescript
-import { nu } from '@nubase/core';
+import { nu } from "@nubase/core";
 
-const ticketSchema = nu.object({
-  title: nu.string().withComputedMeta({ label: 'Title' }),
-  description: nu.string().withComputedMeta({ label: 'Description' }),
-  priority: nu.number().withComputedMeta({ label: 'Priority' }),
-  status: nu.string().withComputedMeta({ label: 'Status' }),
-  assignee: nu.string().withComputedMeta({ label: 'Assignee' }),
-  dueDate: nu.string().withComputedMeta({ label: 'Due Date' }),
-}).withLayout({
-  type: 'form',
-  groups: [
-    {
-      title: 'Basic Information',
-      fields: ['title', 'description'],
-    },
-    {
-      title: 'Assignment',
-      fields: ['priority', 'status', 'assignee', 'dueDate'],
-    },
+const ticketSchema = nu
+  .object({
+    title: nu.string().withComputedMeta({ label: "Title" }),
+    description: nu.string().withComputedMeta({ label: "Description" }),
+    priority: nu.number().withComputedMeta({ label: "Priority" }),
+    status: nu.string().withComputedMeta({ label: "Status" }),
+    assignee: nu.string().withComputedMeta({ label: "Assignee" }),
+    dueDate: nu.string().withComputedMeta({ label: "Due Date" }),
+  })
+  .withFormLayout({
+    groups: [
+      {
+        label: "Basic Information",
+        fields: [
+          { name: "title", fieldWidth: 12 },
+          { name: "description", fieldWidth: 12 },
+        ],
+      },
+      {
+        label: "Assignment",
+        fields: [
+          { name: "priority", fieldWidth: 6 },
+          { name: "status", fieldWidth: 6 },
+          { name: "assignee", fieldWidth: 6 },
+          { name: "dueDate", fieldWidth: 6 },
+        ],
+      },
+    ],
+  });
+```
+
+### Groups
+
+Each group has:
+
+```typescript
+{
+  label?: string;          // optional heading shown above the group
+  description?: string;    // optional subtitle
+  fields: FormLayoutField[]; // the fields in this group
+  className?: string;      // optional className for the group container
+  collapsible?: boolean;   // whether the group can collapse
+  defaultCollapsed?: boolean;
+}
+```
+
+### Fields
+
+Each field entry is:
+
+```typescript
+{
+  name: keyof TShape;    // type-checked against the schema shape
+  fieldWidth?: number;   // 1–12 grid units (12 = full width)
+  className?: string;
+  hidden?: boolean;
+}
+```
+
+`fieldWidth` is a 12-column grid — `6` is half-width, `4` is a third, `12` is full width. Fields default to full width when omitted.
+
+Field order follows the order in the layout. Fields not listed in any group are not rendered.
+
+## Table layouts
+
+```typescript
+const ticketListSchema = ticketSchema.withTableLayout({
+  fields: [
+    { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
+    { name: "title", label: "Title", columnWidthPx: 300, editable: true },
+    { name: "status", label: "Status", columnWidthPx: 150 },
   ],
+  metadata: {
+    patchable: true, // enable inline editing via onPatch on the search view
+  },
 });
 ```
 
-## Layout Types
-
-### Form Layout
-
-The default layout type. Organizes fields into labeled groups:
+### Field options
 
 ```typescript
 {
-  type: 'form',
-  groups: [
-    {
-      title: 'Group Title',
-      description: 'Optional description for the group',
-      fields: ['field1', 'field2', 'field3'],
-    },
-  ],
+  name: keyof TShape;          // type-checked against the schema shape
+  label?: string;              // column header (defaults to field name)
+  columnWidthPx?: number;      // explicit pixel width
+  pinned?: boolean;            // freeze to the left of the grid
+  editable?: boolean | "auto-commit"; // inline editing mode
+  hidden?: boolean;
+  className?: string;
 }
 ```
 
-### Grid Layout
-
-Arranges fields in a responsive grid:
+### Metadata
 
 ```typescript
 {
-  type: 'grid',
-  columns: 2, // Number of columns
-  fields: ['field1', 'field2', 'field3', 'field4'],
+  patchable?: boolean;         // enable inline patching across the table
+  linkFields?: (keyof TShape)[]; // fields whose values are navigation links
 }
 ```
 
-### Tabs Layout
+## Best practices
 
-Organizes fields across tabs:
-
-```typescript
-{
-  type: 'tabs',
-  tabs: [
-    {
-      id: 'basic',
-      label: 'Basic Info',
-      fields: ['title', 'description'],
-    },
-    {
-      id: 'details',
-      label: 'Details',
-      fields: ['priority', 'status', 'assignee'],
-    },
-  ],
-}
-```
-
-### Accordion Layout
-
-Creates collapsible sections:
-
-```typescript
-{
-  type: 'accordion',
-  sections: [
-    {
-      id: 'basic',
-      title: 'Basic Information',
-      fields: ['title', 'description'],
-      defaultOpen: true,
-    },
-    {
-      id: 'advanced',
-      title: 'Advanced Options',
-      fields: ['priority', 'status'],
-    },
-  ],
-}
-```
-
-## Groups
-
-Groups are used in form layouts to organize related fields:
-
-```typescript
-{
-  title: 'Group Title',        // Required: Display title
-  description: 'Help text',    // Optional: Description below title
-  fields: ['field1', 'field2'], // Required: Array of field names
-  collapsible: false,          // Optional: Make group collapsible
-  defaultCollapsed: false,     // Optional: Start collapsed
-}
-```
-
-## Field Order
-
-Fields are rendered in the order specified in the layout. Fields not included in any group are rendered at the end.
-
-```typescript
-// Only 'title' and 'description' will have specific positioning
-// 'priority', 'status', etc. will render after the defined groups
-{
-  type: 'form',
-  groups: [
-    { fields: ['title', 'description'] },
-  ],
-}
-```
-
-## Conditional Layouts
-
-You can conditionally apply different layouts based on context:
-
-```typescript
-function getLayout(mode: 'create' | 'edit' | 'view') {
-  if (mode === 'create') {
-    return {
-      type: 'form',
-      groups: [{ fields: ['title', 'description'] }],
-    };
-  }
-
-  return {
-    type: 'tabs',
-    tabs: [
-      { id: 'basic', label: 'Basic', fields: ['title', 'description'] },
-      { id: 'details', label: 'Details', fields: ['priority', 'status'] },
-    ],
-  };
-}
-```
-
-## Best Practices
-
-1. **Group related fields** - Put fields that belong together in the same group
-2. **Use meaningful titles** - Group titles should clearly describe the content
-3. **Limit group size** - Avoid having too many fields in a single group
-4. **Consider the user flow** - Order groups logically for the user's workflow
-5. **Use tabs sparingly** - Only use tabs when there are distinct categories of information
+- Keep one `withFormLayout` per schema — it describes the canonical structure.
+- Use `fieldWidth` to collapse natural pairs (e.g. two half-width fields on one row) instead of creating a group per row.
+- Put virtual fields from `nu.relation(...)` in their own group — they render as a section (table with its own heading) and are usually full width.

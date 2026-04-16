@@ -64,13 +64,13 @@ export const SearchableTable = <TRow extends Record<string, any>>({
   searchDebounceMs = 200,
   className,
 }: SearchableTableProps<TRow>) => {
-  const tableLayout = schema.getLayout("default") || schema.getLayout("table");
+  const tableLayout = schema.getTableLayout();
   const idField = String(schema.getIdField() || "id");
 
   const columns: Column<TRow>[] = useMemo(() => {
     const cols: Column<TRow>[] = [];
 
-    if (tableLayout && tableLayout.type === "table") {
+    if (tableLayout) {
       tableLayout.fields
         .filter((field) => !field.hidden)
         .forEach((field) => {

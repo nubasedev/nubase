@@ -293,8 +293,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const elementSchema = (view.schemaGet as any)?._element as
     | ObjectSchema<any>
     | undefined;
-  const tableLayout =
-    elementSchema?.getLayout("default") || elementSchema?.getLayout("table");
+  const tableLayout = elementSchema?.getTableLayout();
 
   // Get the ID field from the schema (defaults to "id")
   const idField = String(elementSchema?.getIdField() || "id");
@@ -358,7 +357,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
       );
     }
 
-    if (tableLayout && tableLayout.type === "table") {
+    if (tableLayout) {
       // Use table layout to define columns
       tableLayout.fields
         .filter((field) => !field.hidden)

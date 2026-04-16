@@ -42,15 +42,13 @@ export const ticketSchema = nu
     }),
   })
   .withId("id")
-  .withTableLayouts({
-    default: {
-      fields: [
-        { name: "id", columnWidthPx: 80, pinned: true },
-        { name: "title", columnWidthPx: 300, pinned: true },
-        { name: "description", columnWidthPx: 400 },
-        { name: "assigneeId", columnWidthPx: 150 },
-      ],
-    },
+  .withTableLayout({
+    fields: [
+      { name: "id", columnWidthPx: 80, pinned: true },
+      { name: "title", columnWidthPx: 300, pinned: true },
+      { name: "description", columnWidthPx: 400 },
+      { name: "assigneeId", columnWidthPx: 150 },
+    ],
   });
 ```
 

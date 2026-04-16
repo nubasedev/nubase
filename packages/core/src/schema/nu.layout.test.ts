@@ -2,17 +2,16 @@ import { describe, expect, it } from "vitest";
 import { nu } from "./nu";
 
 describe("nubase Schema Library (nu) - Layout System", () => {
-  it("should create an object schema with form layouts", () => {
-    const productSchema = nu
-      .object({
-        name: nu.string().withComputedMeta({ label: "Product Name" }),
-        price: nu.number().withComputedMeta({ label: "Price" }),
-        inStock: nu.boolean().withComputedMeta({ label: "In Stock" }),
-        description: nu.string().withComputedMeta({ label: "Description" }),
-      })
-      .withFormLayouts({
-        default: {
-          type: "form",
+  describe("withFormLayout", () => {
+    it("attaches a form layout to the schema", () => {
+      const productSchema = nu
+        .object({
+          name: nu.string().withComputedMeta({ label: "Product Name" }),
+          price: nu.number().withComputedMeta({ label: "Price" }),
+          inStock: nu.boolean().withComputedMeta({ label: "In Stock" }),
+          description: nu.string().withComputedMeta({ label: "Description" }),
+        })
+        .withFormLayout({
           groups: [
             {
               label: "Product Details",
@@ -24,455 +23,128 @@ describe("nubase Schema Library (nu) - Layout System", () => {
               ],
             },
           ],
-        },
-        compact: {
-          type: "form",
-          groups: [
-            {
-              label: "Basic Info",
-              fields: [
-                { name: "name", fieldWidth: 8 },
-                { name: "price", fieldWidth: 4 },
-              ],
-            },
-            {
-              label: "Details",
-              fields: [
-                { name: "inStock", fieldWidth: 3 },
-                { name: "description", fieldWidth: 9 },
-              ],
-            },
-          ],
-        },
-      });
+        });
 
-    expect(productSchema).toBeDefined();
-    expect(productSchema._layouts).toBeDefined();
-    expect(Object.keys(productSchema._layouts)).toEqual(["default", "compact"]);
-  });
-
-  it("should retrieve form layouts by name", () => {
-    const schema = nu
-      .object({
-        field1: nu.string(),
-        field2: nu.number(),
-      })
-      .withFormLayouts({
-        layout1: {
-          type: "form",
-          groups: [{ fields: [{ name: "field1" }, { name: "field2" }] }],
-        },
-        layout2: {
-          type: "grid",
-          groups: [{ fields: [{ name: "field1" }, { name: "field2" }] }],
-        },
-      });
-
-    const layout1 = schema.getLayout("layout1");
-    const layout2 = schema.getLayout("layout2");
-    const nonExistent = schema.getLayout("nonexistent");
-
-    expect(layout1).toBeDefined();
-    expect(layout1?.type).toBe("form");
-    expect(layout2).toBeDefined();
-    expect(layout2?.type).toBe("grid");
-    expect(nonExistent).toBeUndefined();
-  });
-
-  it("should check if form layouts exist", () => {
-    const schema = nu
-      .object({
-        field1: nu.string(),
-      })
-      .withFormLayouts({
-        myLayout: {
-          type: "form",
-          groups: [{ fields: [{ name: "field1" }] }],
-        },
-      });
-
-    expect(schema.hasLayout("myLayout")).toBe(true);
-    expect(schema.hasLayout("nonexistent")).toBe(false);
-  });
-
-  it("should get all form layout names", () => {
-    const schema = nu
-      .object({
-        field1: nu.string(),
-        field2: nu.number(),
-      })
-      .withFormLayouts({
-        default: {
-          type: "form",
-          groups: [{ fields: [{ name: "field1" }, { name: "field2" }] }],
-        },
-        compact: {
-          type: "grid",
-          groups: [{ fields: [{ name: "field1" }, { name: "field2" }] }],
-        },
-        detailed: {
-          type: "accordion",
-          groups: [{ fields: [{ name: "field1" }, { name: "field2" }] }],
-        },
-      });
-
-    const layoutNames = schema.getLayoutNames();
-    expect(layoutNames).toEqual(["default", "compact", "detailed"]);
-  });
-
-  it("should ensure type safety for field names in form layouts", () => {
-    const schema = nu.object({
-      validField1: nu.string(),
-      validField2: nu.number(),
+      const layout = productSchema.getFormLayout();
+      expect(layout).toBeDefined();
+      expect(layout?.type).toBe("form");
+      expect(layout?.groups).toHaveLength(1);
+      expect(layout?.groups[0]?.label).toBe("Product Details");
+      expect(layout?.groups[0]?.fields).toHaveLength(4);
     });
 
-    // This should compile successfully with valid field names
-    const validLayout = schema.withFormLayouts({
-      validLayout: {
-        type: "form",
-        groups: [
-          {
-            fields: [
-              { name: "validField1", fieldWidth: 6 },
-              { name: "validField2", fieldWidth: 6 },
-            ],
-          },
-        ],
-      },
+    it("fills in type: 'form' automatically — users don't write it", () => {
+      const schema = nu.object({ a: nu.string() }).withFormLayout({
+        groups: [{ fields: [{ name: "a" }] }],
+      });
+
+      expect(schema.getFormLayout()?.type).toBe("form");
     });
 
-    expect(validLayout).toBeDefined();
-    expect(validLayout.hasLayout("validLayout")).toBe(true);
+    it("returns undefined if no form layout is attached", () => {
+      const schema = nu.object({ a: nu.string() });
+      expect(schema.getFormLayout()).toBeUndefined();
+    });
 
-    const layout = validLayout.getLayout("validLayout");
-    expect(layout).toBeDefined();
-    if (layout) {
-      expect(layout.groups[0]?.fields).toHaveLength(2);
-      expect(layout.groups[0]?.fields[0]?.name).toBe("validField1");
-      expect(layout.groups[0]?.fields[1]?.name).toBe("validField2");
-    }
-  });
+    it("replaces a previously attached form layout", () => {
+      const schema = nu
+        .object({ a: nu.string(), b: nu.number() })
+        .withFormLayout({ groups: [{ fields: [{ name: "a" }] }] })
+        .withFormLayout({ groups: [{ fields: [{ name: "b" }] }] });
 
-  it("should support complex form layout configurations", () => {
-    const schema = nu
-      .object({
-        title: nu.string(),
-        subtitle: nu.string(),
-        content: nu.string(),
-        published: nu.boolean(),
-        tags: nu.string(), // In a real implementation, this might be an array schema
-      })
-      .withFormLayouts({
-        editor: {
-          type: "form",
-          className: "editor-layout",
-          config: {
-            columns: 12,
-            gap: "1rem",
-          },
-          groups: [
-            {
-              label: "Header",
-              description: "Main title and subtitle",
-              className: "header-group",
-              collapsible: false,
-              fields: [
-                { name: "title", fieldWidth: 12, className: "title-field" },
-                {
-                  name: "subtitle",
-                  fieldWidth: 12,
-                  className: "subtitle-field",
-                },
-              ],
-            },
-            {
-              label: "Content",
-              description: "Main article content",
-              className: "content-group",
-              collapsible: true,
-              defaultCollapsed: false,
-              fields: [{ name: "content", fieldWidth: 12 }],
-            },
-            {
-              label: "Meta",
-              className: "meta-group",
-              fields: [
-                { name: "published", fieldWidth: 4 },
-                { name: "tags", fieldWidth: 8 },
-              ],
-            },
-          ],
-        },
+      const layout = schema.getFormLayout();
+      expect(layout?.groups[0]?.fields).toHaveLength(1);
+      expect(layout?.groups[0]?.fields[0]?.name).toBe("b");
+    });
+
+    it("preserves className / config / metadata on the layout", () => {
+      const schema = nu.object({ a: nu.string() }).withFormLayout({
+        className: "my-form",
+        config: { gap: "1rem" },
+        metadata: { experimental: true },
+        groups: [{ fields: [{ name: "a" }] }],
       });
 
-    const layout = schema.getLayout("editor");
-    expect(layout).toBeDefined();
-    expect(layout?.type).toBe("form");
-    expect(layout?.className).toBe("editor-layout");
-    expect(layout?.config?.columns).toBe(12);
-    expect(layout?.config?.gap).toBe("1rem");
-    expect(layout?.groups).toHaveLength(3);
-
-    const headerGroup = layout?.groups[0];
-    expect(headerGroup?.label).toBe("Header");
-    expect(headerGroup?.description).toBe("Main title and subtitle");
-    expect(headerGroup?.className).toBe("header-group");
-    expect(headerGroup?.collapsible).toBe(false);
-    expect(headerGroup?.fields).toHaveLength(2);
-
-    const contentGroup = layout?.groups[1];
-    expect(contentGroup?.collapsible).toBe(true);
-    expect(contentGroup?.defaultCollapsed).toBe(false);
-
-    const titleField = headerGroup?.fields[0];
-    expect(titleField?.name).toBe("title");
-    expect(titleField?.fieldWidth).toBe(12);
-    expect(titleField?.className).toBe("title-field");
+      const layout = schema.getFormLayout();
+      expect(layout?.className).toBe("my-form");
+      expect(layout?.config?.gap).toBe("1rem");
+      expect(layout?.metadata?.experimental).toBe(true);
+    });
   });
 
-  it("should support field hiding in form layouts", () => {
-    const schema = nu
-      .object({
-        publicField: nu.string(),
-        internalField: nu.string(),
-        debugField: nu.number(),
-      })
-      .withFormLayouts({
-        public: {
-          type: "form",
-          groups: [
-            {
-              label: "Public Fields",
-              fields: [
-                { name: "publicField", fieldWidth: 12 },
-                { name: "internalField", fieldWidth: 12, hidden: true },
-                { name: "debugField", fieldWidth: 12, hidden: true },
-              ],
-            },
-          ],
-        },
-        debug: {
-          type: "form",
-          groups: [
-            {
-              label: "All Fields",
-              fields: [
-                { name: "publicField", fieldWidth: 4 },
-                { name: "internalField", fieldWidth: 4 },
-                { name: "debugField", fieldWidth: 4 },
-              ],
-            },
-          ],
-        },
-      });
-
-    const publicLayout = schema.getLayout("public");
-    const debugLayout = schema.getLayout("debug");
-
-    expect(publicLayout).toBeDefined();
-    expect(debugLayout).toBeDefined();
-
-    if (publicLayout) {
-      const fields = publicLayout.groups[0]?.fields;
-      expect(fields?.[0]?.hidden).toBeUndefined();
-      expect(fields?.[1]?.hidden).toBe(true);
-      expect(fields?.[2]?.hidden).toBe(true);
-    }
-
-    if (debugLayout) {
-      const fields = debugLayout.groups[0]?.fields;
-      expect(fields?.[0]?.hidden).toBeUndefined();
-      expect(fields?.[1]?.hidden).toBeUndefined();
-      expect(fields?.[2]?.hidden).toBeUndefined();
-    }
-  });
-
-  describe("Table Layouts", () => {
-    it("should create an object schema with table layouts", () => {
+  describe("withTableLayout", () => {
+    it("attaches a table layout with fields, widths, and pinning", () => {
       const ticketSchema = nu
         .object({
-          id: nu.number().withComputedMeta({ label: "ID" }),
-          title: nu.string().withComputedMeta({ label: "Title" }),
-          status: nu.string().withComputedMeta({ label: "Status" }),
-          priority: nu.string().withComputedMeta({ label: "Priority" }),
-          assignee: nu.string().withComputedMeta({ label: "Assignee" }),
-          createdAt: nu.string().withComputedMeta({ label: "Created" }),
+          id: nu.number(),
+          title: nu.string(),
+          status: nu.string(),
         })
-        .withTableLayouts({
-          default: {
-            fields: [
-              { name: "id", columnWidthPx: 80 },
-              { name: "title", columnWidthPx: 200 },
-              { name: "status", columnWidthPx: 120 },
-              { name: "priority", columnWidthPx: 120 },
-              { name: "assignee", columnWidthPx: 150 },
-              { name: "createdAt", columnWidthPx: 100 },
-            ],
-          },
-          compact: {
-            fields: [
-              { name: "id", columnWidthPx: 100 },
-              { name: "title", columnWidthPx: 300 },
-              { name: "status", columnWidthPx: 250 },
-            ],
-          },
+        .withTableLayout({
+          fields: [
+            { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
+            { name: "title", label: "Title", columnWidthPx: 300 },
+            { name: "status", label: "Status", columnWidthPx: 150 },
+          ],
         });
 
-      expect(ticketSchema).toBeDefined();
-      expect(ticketSchema._layouts).toBeDefined();
-      expect(Object.keys(ticketSchema._layouts)).toEqual([
-        "default",
-        "compact",
-      ]);
-
-      const defaultLayout = ticketSchema.getLayout("default");
-      expect(defaultLayout).toBeDefined();
-      expect(defaultLayout?.type).toBe("table");
-      if (defaultLayout?.type === "table") {
-        expect(defaultLayout.fields).toHaveLength(6);
-      }
-
-      const compactLayout = ticketSchema.getLayout("compact");
-      expect(compactLayout).toBeDefined();
-      expect(compactLayout?.type).toBe("table");
-      if (compactLayout?.type === "table") {
-        expect(compactLayout.fields).toHaveLength(3);
-      }
-    });
-
-    it("should support table layouts without metadata", () => {
-      const schema = nu
-        .object({
-          name: nu.string(),
-          value: nu.number(),
-          active: nu.boolean(),
-        })
-        .withTableLayouts({
-          simple: {
-            fields: [
-              { name: "name", columnWidthPx: 250 },
-              { name: "value", columnWidthPx: 200 },
-              { name: "active", columnWidthPx: 100 },
-            ],
-          },
-        });
-
-      const layout = schema.getLayout("simple");
+      const layout = ticketSchema.getTableLayout();
       expect(layout).toBeDefined();
       expect(layout?.type).toBe("table");
-      expect(layout?.metadata).toBeUndefined();
+      expect(layout?.fields).toHaveLength(3);
+      expect(layout?.fields[0]?.pinned).toBe(true);
     });
 
-    it("should support table layouts with custom metadata", () => {
+    it("fills in type: 'table' automatically", () => {
       const schema = nu
-        .object({
-          col1: nu.string(),
-          col2: nu.string(),
-        })
-        .withTableLayouts({
-          custom: {
-            fields: [
-              { name: "col1", columnWidthPx: 300 },
-              { name: "col2", columnWidthPx: 300 },
-            ],
-            metadata: {
-              sortable: true,
-              paginated: true,
-              pageSize: 25,
-            },
-          },
-        });
+        .object({ a: nu.string() })
+        .withTableLayout({ fields: [{ name: "a" }] });
 
-      const layout = schema.getLayout("custom");
-      expect(layout).toBeDefined();
-      expect(layout?.type).toBe("table");
-      expect(layout?.metadata?.sortable).toBe(true);
-      expect(layout?.metadata?.paginated).toBe(true);
-      expect(layout?.metadata?.pageSize).toBe(25);
+      expect(schema.getTableLayout()?.type).toBe("table");
     });
 
-    it("should support mixing form and table layouts", () => {
-      const schema = nu
-        .object({
-          id: nu.number(),
-          name: nu.string(),
-          description: nu.string(),
-        })
-        .withFormLayouts({
-          editForm: {
-            type: "form",
-            groups: [
-              {
-                label: "Details",
-                fields: [
-                  { name: "name", fieldWidth: 12 },
-                  { name: "description", fieldWidth: 12 },
-                ],
-              },
-            ],
-          },
-        })
-        .withTableLayouts({
-          listView: {
-            fields: [
-              { name: "id", columnWidthPx: 120 },
-              { name: "name", columnWidthPx: 300 },
-              { name: "description", columnWidthPx: 400 },
-            ],
-          },
-        });
-
-      expect(schema.getLayoutNames()).toContain("editForm");
-      expect(schema.getLayoutNames()).toContain("listView");
-
-      const formLayout = schema.getLayout("editForm");
-      expect(formLayout?.type).toBe("form");
-
-      const tableLayout = schema.getLayout("listView");
-      expect(tableLayout?.type).toBe("table");
+    it("returns undefined if no table layout is attached", () => {
+      const schema = nu.object({ a: nu.string() });
+      expect(schema.getTableLayout()).toBeUndefined();
     });
 
-    it("should support table field visibility control", () => {
+    it("preserves table metadata like patchable + linkFields", () => {
       const schema = nu
-        .object({
-          id: nu.number(),
-          internalCode: nu.string(),
-          publicName: nu.string(),
-        })
-        .withTableLayouts({
-          public: {
-            fields: [
-              { name: "id", columnWidthPx: 120 },
-              { name: "publicName", columnWidthPx: 300 },
-              { name: "internalCode", columnWidthPx: 200, hidden: true },
-            ],
-          },
-          admin: {
-            fields: [
-              { name: "id", columnWidthPx: 120 },
-              { name: "internalCode", columnWidthPx: 200 },
-              { name: "publicName", columnWidthPx: 250 },
-            ],
-          },
+        .object({ id: nu.number(), title: nu.string() })
+        .withTableLayout({
+          fields: [{ name: "id" }, { name: "title", editable: true }],
+          metadata: { patchable: true, linkFields: ["title"] },
         });
 
-      const publicLayout = schema.getLayout("public");
-      const adminLayout = schema.getLayout("admin");
+      const layout = schema.getTableLayout();
+      expect(layout?.metadata?.patchable).toBe(true);
+      expect(layout?.metadata?.linkFields).toEqual(["title"]);
+    });
+  });
 
-      // Table layouts have fields directly, not nested in groups
-      if (publicLayout?.type === "table") {
-        const publicFields = publicLayout.fields;
-        expect(
-          publicFields.find((f) => f.name === "internalCode")?.hidden,
-        ).toBe(true);
-      }
+  describe("form + table layouts coexist", () => {
+    it("a schema can have both a form layout and a table layout", () => {
+      const schema = nu
+        .object({ id: nu.number(), title: nu.string() })
+        .withFormLayout({ groups: [{ fields: [{ name: "title" }] }] })
+        .withTableLayout({ fields: [{ name: "id" }, { name: "title" }] });
 
-      if (adminLayout?.type === "table") {
-        const adminFields = adminLayout.fields;
-        expect(
-          adminFields.find((f) => f.name === "internalCode")?.hidden,
-        ).toBeUndefined();
-      }
+      expect(schema.getFormLayout()).toBeDefined();
+      expect(schema.getTableLayout()).toBeDefined();
+    });
+  });
+
+  describe("type-level safety on layout fields", () => {
+    it("type-checks field names against the shape (compile-time check)", () => {
+      // This test just exercises a valid usage — the real check is that
+      // misspelled field names would fail to compile.
+      const schema = nu
+        .object({ name: nu.string(), age: nu.number() })
+        .withFormLayout({
+          groups: [{ fields: [{ name: "name" }, { name: "age" }] }],
+        });
+
+      expect(schema.getFormLayout()?.groups[0]?.fields).toHaveLength(2);
     });
   });
 });

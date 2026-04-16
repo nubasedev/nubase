@@ -89,21 +89,18 @@ export const userResource = createResource("user")
               searchPlaceholder: "Search tickets...",
             }),
           })
-          .withFormLayouts({
-            default: {
-              type: "form",
-              groups: [
-                {
-                  fields: [
-                    { name: "email", fieldWidth: 12 },
-                    { name: "displayName", fieldWidth: 12 },
-                  ],
-                },
-                {
-                  fields: [{ name: "tickets", fieldWidth: 12 }],
-                },
-              ],
-            },
+          .withFormLayout({
+            groups: [
+              {
+                fields: [
+                  { name: "email", fieldWidth: 12 },
+                  { name: "displayName", fieldWidth: 12 },
+                ],
+              },
+              {
+                fields: [{ name: "tickets", fieldWidth: 12 }],
+              },
+            ],
           }),
       schemaParams: (api) => api.getUser.requestParams,
       breadcrumbs: ({ context, data }) => [

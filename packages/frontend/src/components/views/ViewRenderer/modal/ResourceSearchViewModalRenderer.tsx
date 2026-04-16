@@ -53,12 +53,11 @@ export const ResourceSearchViewModalRenderer: FC<
   const elementSchema = (view.schemaGet as any)?._element as
     | ObjectSchema<any>
     | undefined;
-  const tableLayout =
-    elementSchema?.getLayout("default") || elementSchema?.getLayout("table");
+  const tableLayout = elementSchema?.getTableLayout();
 
   // Create columns from table layout or dynamically from data
   const columns: Column<any>[] = (() => {
-    if (tableLayout && tableLayout.type === "table") {
+    if (tableLayout) {
       // Use table layout to define columns
       return tableLayout.fields
         .filter((field) => !field.hidden)

@@ -16,12 +16,10 @@ export const userSchema = nu
 		}),
 	})
 	.withId("id")
-	.withTableLayouts({
-		default: {
-			fields: [
-				{ name: "id", columnWidthPx: 80, pinned: true },
-				{ name: "displayName", columnWidthPx: 200, pinned: true },
-				{ name: "email", columnWidthPx: 300 },
-			],
-		},
+	.withTableLayout({
+		fields: [
+			{ name: "id", columnWidthPx: 80, pinned: true },
+			{ name: "displayName", columnWidthPx: 200, pinned: true },
+			{ name: "email", columnWidthPx: 300 },
+		],
 	});

@@ -274,10 +274,21 @@ interface LayoutBase {
 }
 
 /**
- * Form layout specific interface
+ * Form layout specific interface.
+ * The `type: "form"` tag is set by `withFormLayout` — users don't write it.
  */
 export interface FormLayout<TShape extends ObjectShape> extends LayoutBase {
-  type: "form" | "grid" | "tabs" | "accordion" | "custom";
+  type: "form";
+  /** Groups of form fields within the layout */
+  groups: FormLayoutGroup<TShape>[];
+}
+
+/**
+ * Input shape for `withFormLayout` — same as `FormLayout` but without the
+ * `type` tag, which is filled in by the method.
+ */
+export interface FormLayoutInput<TShape extends ObjectShape>
+  extends LayoutBase {
   /** Groups of form fields within the layout */
   groups: FormLayoutGroup<TShape>[];
 }
@@ -308,7 +319,8 @@ export interface TableLayoutField<TShape extends ObjectShape> {
 }
 
 /**
- * Table layout specific interface
+ * Table layout specific interface.
+ * The `type: "table"` tag is set by `withTableLayout` — users don't write it.
  */
 export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   type: "table";
@@ -316,6 +328,25 @@ export interface TableLayout<TShape extends ObjectShape> extends LayoutBase {
   fields: TableLayoutField<TShape>[];
   /** Table-specific metadata */
   metadata?: {
+    /** Whether inline patching/editing is enabled for this table */
+    patchable?: boolean;
+    /** Other metadata */
+    [key: string]: any;
+  };
+}
+
+/**
+ * Input shape for `withTableLayout` — same as `TableLayout` but without the
+ * `type` tag, which is filled in by the method.
+ */
+export interface TableLayoutInput<TShape extends ObjectShape>
+  extends LayoutBase {
+  /** Table columns */
+  fields: TableLayoutField<TShape>[];
+  /** Table-specific metadata */
+  metadata?: {
+    /** Fields whose values act as navigation links in the table */
+    linkFields?: (keyof TShape)[];
     /** Whether inline patching/editing is enabled for this table */
     patchable?: boolean;
     /** Other metadata */
@@ -332,27 +363,6 @@ export type Layout<TShape extends ObjectShape> =
   | TableLayout<TShape>;
 
 /**
- * Type representing multiple layouts for an object schema.
- */
-export type ObjectLayouts<TShape extends ObjectShape> = {
-  [layoutName: string]: Layout<TShape>;
-};
-
-/**
- * Type representing multiple form layouts
- */
-export type FormLayouts<TShape extends ObjectShape> = {
-  [layoutName: string]: FormLayout<TShape>;
-};
-
-/**
- * Type representing multiple table layouts
- */
-export type TableLayouts<TShape extends ObjectShape> = {
-  [layoutName: string]: TableLayout<TShape>;
-};
-
-/**
  * ObjectSchema with optional catchall.
  *
  * Note on typing: When using .catchall(), the output type remains ObjectOutput<TShape>.
@@ -367,7 +377,8 @@ export class ObjectSchema<
   readonly type = "object" as const;
   _shape: TShape;
   _computedMeta: ObjectComputedMetadata<TShape> = {};
-  _layouts: ObjectLayouts<TShape> = {};
+  _formLayout?: FormLayout<TShape>;
+  _tableLayout?: TableLayout<TShape>;
   _idField: keyof ObjectOutput<TShape> = "id" as keyof ObjectOutput<TShape>;
   _catchall: TCatchall = null as TCatchall;
   _passthrough = false;
@@ -402,7 +413,8 @@ export class ObjectSchema<
     // Copy metadata from parent schema
     newSchema._meta = { ...this._meta } as any;
     newSchema._computedMeta = { ...this._computedMeta };
-    newSchema._layouts = { ...this._layouts };
+    newSchema._formLayout = this._formLayout;
+    newSchema._tableLayout = this._tableLayout;
     newSchema._idField = this._idField;
     newSchema._passthrough = this._passthrough;
 
@@ -428,7 +440,8 @@ export class ObjectSchema<
     // Copy metadata from parent schema
     newSchema._meta = { ...this._meta } as any;
     newSchema._computedMeta = { ...this._computedMeta };
-    newSchema._layouts = { ...this._layouts };
+    newSchema._formLayout = this._formLayout;
+    newSchema._tableLayout = this._tableLayout;
     newSchema._idField = this._idField;
     newSchema._passthrough = true;
 
@@ -446,63 +459,34 @@ export class ObjectSchema<
   }
 
   /**
-   * Add layouts to the object schema.
-   * @param layouts Object mapping layout names to layout configurations.
+   * Attach a form layout to the object schema. The layout is used by
+   * form renderers (e.g. `SchemaForm`) to group, order, and size fields.
+   *
+   * Replaces any previously attached form layout.
+   *
+   * @param layout The form layout (groups of fields). The `type: "form"`
+   * tag is filled in automatically — users only provide the groups (and
+   * optional `className`/`config`/`metadata`).
    * @returns The schema instance for chaining.
-   * @deprecated Use withFormLayouts or withTableLayouts instead
    */
-  withLayouts(layouts: ObjectLayouts<TShape>): this {
-    this._layouts = layouts;
+  withFormLayout(layout: FormLayoutInput<TShape>): this {
+    this._formLayout = { ...layout, type: "form" };
     return this;
   }
 
   /**
-   * Add form layouts to the object schema.
-   * @param layouts Object mapping layout names to form layout configurations.
+   * Attach a table layout to the object schema. The layout is used by
+   * table/grid renderers (e.g. `DataGrid`, `SearchableTable`) to define
+   * columns, widths, pinning, and inline-edit behavior.
+   *
+   * Replaces any previously attached table layout.
+   *
+   * @param layout The table layout (fields). The `type: "table"` tag is
+   * filled in automatically.
    * @returns The schema instance for chaining.
    */
-  withFormLayouts(layouts: FormLayouts<TShape>): this {
-    // Form layouts are stored directly in _layouts
-    this._layouts = { ...this._layouts, ...layouts };
-    return this;
-  }
-
-  /**
-   * Add table layouts to the object schema.
-   * @param layouts Object mapping layout names to table layout configurations with fields and optional linkFields.
-   * @returns The schema instance for chaining.
-   */
-  withTableLayouts(layouts: {
-    [layoutName: string]: {
-      fields: TableLayoutField<TShape>[];
-      className?: string;
-      config?: LayoutBase["config"];
-      metadata?: {
-        linkFields?: (keyof TShape)[];
-        /** Whether inline patching/editing is enabled for this table */
-        patchable?: boolean;
-        [key: string]: any;
-      };
-    };
-  }): this {
-    const tableLayouts: TableLayouts<TShape> = {};
-
-    for (const [name, tableConfig] of Object.entries(layouts)) {
-      const layout: TableLayout<TShape> = {
-        type: "table",
-        fields: tableConfig.fields,
-        metadata: tableConfig.metadata,
-      };
-      if (tableConfig.className) {
-        layout.className = tableConfig.className;
-      }
-      if (tableConfig.config) {
-        layout.config = tableConfig.config;
-      }
-      tableLayouts[name] = layout;
-    }
-
-    this._layouts = { ...this._layouts, ...tableLayouts };
+  withTableLayout(layout: TableLayoutInput<TShape>): this {
+    this._tableLayout = { ...layout, type: "table" };
     return this;
   }
 
@@ -535,29 +519,19 @@ export class ObjectSchema<
   }
 
   /**
-   * Get a specific layout by name.
-   * @param layoutName The name of the layout to retrieve.
-   * @returns The layout configuration or undefined if not found.
+   * Get the attached form layout, if any.
+   * @returns The form layout, or `undefined` if none was attached.
    */
-  getLayout(layoutName: string): Layout<TShape> | undefined {
-    return this._layouts[layoutName];
+  getFormLayout(): FormLayout<TShape> | undefined {
+    return this._formLayout;
   }
 
   /**
-   * Get all available layout names.
-   * @returns Array of layout names.
+   * Get the attached table layout, if any.
+   * @returns The table layout, or `undefined` if none was attached.
    */
-  getLayoutNames(): string[] {
-    return Object.keys(this._layouts);
-  }
-
-  /**
-   * Check if a layout exists.
-   * @param layoutName The name of the layout to check.
-   * @returns True if the layout exists, false otherwise.
-   */
-  hasLayout(layoutName: string): boolean {
-    return layoutName in this._layouts;
+  getTableLayout(): TableLayout<TShape> | undefined {
+    return this._tableLayout;
   }
 
   /**
@@ -719,35 +693,26 @@ export class ObjectSchema<
     }
     newSchema._computedMeta = newComputedMeta;
 
-    // Copy layouts, updating field references to exclude omitted keys
-    const newLayouts: any = {};
-    for (const layoutName in this._layouts) {
-      const originalLayout = this._layouts[layoutName];
-      if (originalLayout) {
-        if (originalLayout.type === "table") {
-          // TableLayout has fields directly
-          newLayouts[layoutName] = {
-            ...originalLayout,
-            fields: originalLayout.fields.filter(
-              (field) => !keysToOmit.has(field.name as any),
-            ),
-          };
-        } else {
-          // FormLayout has groups with fields
-          const newGroups = originalLayout.groups.map((group) => ({
-            ...group,
-            fields: group.fields.filter(
-              (field) => !keysToOmit.has(field.name as any),
-            ),
-          }));
-          newLayouts[layoutName] = {
-            ...originalLayout,
-            groups: newGroups,
-          };
-        }
-      }
+    // Copy layouts, stripping references to omitted keys
+    if (this._formLayout) {
+      newSchema._formLayout = {
+        ...this._formLayout,
+        groups: this._formLayout.groups.map((group) => ({
+          ...group,
+          fields: group.fields.filter(
+            (field) => !keysToOmit.has(field.name as any),
+          ),
+        })),
+      } as FormLayout<any>;
     }
-    newSchema._layouts = newLayouts;
+    if (this._tableLayout) {
+      newSchema._tableLayout = {
+        ...this._tableLayout,
+        fields: this._tableLayout.fields.filter(
+          (field) => !keysToOmit.has(field.name as any),
+        ),
+      } as TableLayout<any>;
+    }
 
     return newSchema;
   }
@@ -769,8 +734,10 @@ export class ObjectSchema<
     // Copy computed metadata from parent schema (with proper typing)
     newSchema._computedMeta = { ...this._computedMeta } as any;
 
-    // Copy layouts from parent schema - new fields won't appear in layouts unless explicitly added
-    newSchema._layouts = { ...this._layouts } as any;
+    // Copy layouts from parent schema — new fields won't appear in layouts
+    // unless the caller explicitly adds them.
+    newSchema._formLayout = this._formLayout as any;
+    newSchema._tableLayout = this._tableLayout as any;
 
     return newSchema;
   }
@@ -808,7 +775,8 @@ export class ObjectSchema<
     partialSchema._computedMeta = { ...this._computedMeta };
 
     // Copy layouts from parent schema
-    partialSchema._layouts = { ...this._layouts };
+    partialSchema._formLayout = this._formLayout as any;
+    partialSchema._tableLayout = this._tableLayout as any;
 
     return partialSchema;
   }

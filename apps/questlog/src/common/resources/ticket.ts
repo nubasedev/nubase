@@ -38,22 +38,20 @@ export const ticketListSchema = ticketSchema
       label: "Assignee Email",
     }),
   })
-  .withTableLayouts({
-    default: {
-      fields: [
-        { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
-        {
-          name: "title",
-          label: "Title",
-          columnWidthPx: 300,
-          pinned: true,
-          editable: true,
-        },
-        { name: "assigneeName", label: "Assignee Name", columnWidthPx: 150 },
-        { name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
-      ],
-      metadata: {
-        patchable: true,
+  .withTableLayout({
+    fields: [
+      { name: "id", label: "ID", columnWidthPx: 80, pinned: true },
+      {
+        name: "title",
+        label: "Title",
+        columnWidthPx: 300,
+        pinned: true,
+        editable: true,
       },
+      { name: "assigneeName", label: "Assignee Name", columnWidthPx: 150 },
+      { name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
+    ],
+    metadata: {
+      patchable: true,
     },
   });
