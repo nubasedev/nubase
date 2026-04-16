@@ -1,3 +1,4 @@
+import { nu } from "@nubase/core";
 import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
@@ -77,7 +78,33 @@ export const userResource = createResource("user")
       type: "resource-view",
       id: "view-user",
       title: "View User",
-      schemaGet: (api) => api.getUser.responseBody.omit("id"),
+      schemaGet: (api) =>
+        api.getUser.responseBody
+          .omit("id")
+          .extend({
+            tickets: nu.relation({
+              targetResourceId: "ticket",
+              schema: userTicketSchema,
+              label: "Tickets",
+              searchPlaceholder: "Search tickets...",
+            }),
+          })
+          .withFormLayouts({
+            default: {
+              type: "form",
+              groups: [
+                {
+                  fields: [
+                    { name: "email", fieldWidth: 12 },
+                    { name: "displayName", fieldWidth: 12 },
+                  ],
+                },
+                {
+                  fields: [{ name: "tickets", fieldWidth: 12 }],
+                },
+              ],
+            },
+          }),
       schemaParams: (api) => api.getUser.requestParams,
       breadcrumbs: ({ context, data }) => [
         { label: "Users", to: "/r/user/search" },
@@ -97,13 +124,8 @@ export const userResource = createResource("user")
           data: data,
         });
       },
-      relatedCollections: {
+      fieldHandlers: {
         tickets: {
-          mode: "searchable",
-          label: "Tickets",
-          schema: userTicketSchema,
-          targetResourceId: "ticket",
-          searchPlaceholder: "Search tickets...",
           onSearch: ({ parent, query, context }) =>
             context.http.getTickets({
               params: {

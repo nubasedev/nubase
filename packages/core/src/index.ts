@@ -7,6 +7,7 @@ export * from "./schema/error-schema";
 export * from "./schema/errors";
 export * from "./schema/lookup";
 export * from "./schema/nu";
+export * from "./schema/relationship-schema";
 export * from "./schema/request-schema";
 export * from "./schema/schema";
 export * from "./schema/search";

@@ -51,43 +51,40 @@ export type ResourceCreateView<
 };
 
 /**
- * Configuration for a related collection shown beside the main form on a
- * resource view screen — e.g. "Tickets assigned to this user" beneath a User
- * view. The mode discriminator allows future expansion (e.g. "preloaded"
- * collections embedded in the parent's onLoad payload). Currently only
- * "searchable" is implemented.
+ * Per-field handler for a virtual relationship field (declared on the
+ * schema via `nu.relation(...)`). The schema declares *what* the
+ * relationship is (target resource, row shape, label); this handler
+ * declares *how* to fetch the related rows at runtime.
+ *
+ * Lives on the view rather than the schema because it needs `context.http`,
+ * which is frontend-only — schemas live in `common/`.
  */
-export type RelatedCollection<
+export type RelationshipFieldHandler<
   TParent = any,
   TApiEndpoints = any,
-  TRowSchema extends ObjectSchema<any> = ObjectSchema<any>,
+  TRow = any,
 > = {
-  /** "searchable" — load on demand via onSearch with a debounced text query. */
-  mode: "searchable";
-  /** Section heading shown above the table. */
-  label: string;
   /**
-   * Object schema describing each row's shape. Used to derive table columns
-   * from its `default` (or `table`) layout.
-   */
-  schema: TRowSchema;
-  /**
-   * The id of the resource each row points to. Used to navigate to
-   * `/r/{targetResourceId}/view?id={rowId}` when a row is clicked.
-   */
-  targetResourceId: string;
-  /**
-   * Loads the related rows. Called whenever the (debounced) query changes.
-   * `parent` is the loaded record from the parent view's `onLoad`.
+   * Loads the related rows for a "searchable" relationship. Called whenever
+   * the (debounced) query changes. `parent` is the loaded record from the
+   * parent view's `onLoad`.
    */
   onSearch: (args: {
     parent: TParent;
     query: string;
     context: NubaseContextData<TApiEndpoints>;
-  }) => Promise<HttpResponse<Infer<TRowSchema>[]>>;
-  /** Placeholder for the search input. Defaults to "Search...". */
-  searchPlaceholder?: string;
+  }) => Promise<HttpResponse<TRow[]>>;
 };
+
+/**
+ * Map of field-name → handler for virtual relationship fields on the view's
+ * schema. Each key must match a field declared via `nu.relation(...)` in
+ * the schema shape.
+ */
+export type FieldHandlers<TParent = any, TApiEndpoints = any> = Record<
+  string,
+  RelationshipFieldHandler<TParent, TApiEndpoints>
+>;
 
 export type ResourceViewView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
@@ -127,13 +124,11 @@ export type ResourceViewView<
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
   /**
-   * Optional 1×N relationships shown as labeled sections below the main form.
-   * Each entry is keyed by an arbitrary id used for React keying / routing.
+   * Optional handlers for virtual relationship fields declared on the
+   * schema via `nu.relation(...)`. Keyed by field name. Each handler
+   * provides the runtime fetch logic for its field.
    */
-  relatedCollections?: Record<
-    string,
-    RelatedCollection<Infer<TSchema>, TApiEndpoints>
-  >;
+  fieldHandlers?: FieldHandlers<Infer<TSchema>, TApiEndpoints>;
 };
 
 export type ResourceSearchView<

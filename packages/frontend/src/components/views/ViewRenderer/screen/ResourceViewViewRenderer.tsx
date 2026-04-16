@@ -1,19 +1,14 @@
 import type { ObjectOutput } from "@nubase/core";
-import { useNavigate } from "@tanstack/react-router";
-import { type FC, useEffect, useMemo, useState } from "react";
-import type {
-  RelatedCollection,
-  ResourceViewView,
-} from "../../../../config/view";
-import { useWorkspace } from "../../../../context/WorkspaceContext";
+import { type FC, useEffect, useState } from "react";
+import type { ResourceViewView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { DataState } from "../../../data-state";
+import { FieldHandlersProvider } from "../../../form/field-handlers-context";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
-import { SearchableTable } from "../../../searchable-table";
 
 export type ResourceViewViewRendererProps = {
   view: ResourceViewView;
@@ -143,115 +138,21 @@ const ResourceViewForm: FC<{
     },
   });
 
-  const relatedEntries = useMemo(
-    () => Object.entries(view.relatedCollections ?? {}),
-    [view.relatedCollections],
-  );
-
   return (
     <div className="h-full overflow-y-auto">
-      <SchemaForm
-        form={form}
-        className="space-y-4"
-        data-testid="resource-view-form"
+      <FieldHandlersProvider
+        parent={initialData}
+        fieldHandlers={view.fieldHandlers}
       >
-        <SchemaFormBody form={form} />
-        <SchemaFormValidationErrors form={form} />
-      </SchemaForm>
-
-      {relatedEntries.map(([key, collection]) => (
-        <RelatedCollectionSection
-          key={key}
-          collectionKey={key}
-          collection={collection}
-          parent={initialData}
-          context={context}
-          params={params}
-        />
-      ))}
-    </div>
-  );
-};
-
-const RelatedCollectionSection: FC<{
-  collectionKey: string;
-  collection: RelatedCollection;
-  parent: Record<string, any>;
-  context: any;
-  params?: Record<string, any>;
-}> = ({ collectionKey, collection, parent, context, params }) => {
-  const navigate = useNavigate();
-  const workspace = useWorkspace();
-  const [query, setQuery] = useState("");
-  const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const idField = String(collection.schema.getIdField() || "id");
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      try {
-        setLoading(true);
-        const contextWithParams = {
-          ...context,
-          params: params || undefined,
-        };
-        const response = await collection.onSearch({
-          parent,
-          query,
-          context: contextWithParams,
-        });
-        if (!cancelled) {
-          setRows(response.data ?? []);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          // Surface as empty rather than crashing the whole view
-          console.error(
-            `Failed to load related collection "${collectionKey}":`,
-            err,
-          );
-          setRows([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [collection, parent, query, context, params, collectionKey]);
-
-  return (
-    <div className="mt-8 space-y-2">
-      <h2 className="text-lg font-semibold">{collection.label}</h2>
-      <div className="h-[400px]">
-        <SearchableTable
-          schema={collection.schema}
-          rows={rows}
-          searchValue={query}
-          onSearchChange={setQuery}
-          loading={loading}
-          searchPlaceholder={collection.searchPlaceholder ?? "Search..."}
-          onRowClick={(row) => {
-            const rowId = row[idField];
-            if (rowId === undefined || rowId === null) return;
-            navigate({
-              to: "/$workspace/r/$resourceName/$operation",
-              params: {
-                workspace: workspace.slug,
-                resourceName: collection.targetResourceId,
-                operation: "view",
-              },
-              search: { [idField]: rowId },
-            });
-          }}
-        />
-      </div>
+        <SchemaForm
+          form={form}
+          className="space-y-4"
+          data-testid="resource-view-form"
+        >
+          <SchemaFormBody form={form} />
+          <SchemaFormValidationErrors form={form} />
+        </SchemaForm>
+      </FieldHandlersProvider>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import type { ActionLayout } from "./action-layout";
 import type { BreadcrumbDefinition } from "./breadcrumb";
 import type { ResourceDescriptor, ResourceLookupConfig } from "./resource";
 import type {
-  RelatedCollection,
+  FieldHandlers,
   ResourceCreateView,
   ResourceSearchView,
   ResourceViewView,
@@ -77,12 +77,10 @@ export type InlineViewViewConfig<
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
   /**
-   * Optional 1×N relationships rendered as labeled sections beneath the form.
+   * Optional handlers for virtual relationship fields declared on the
+   * schema via `nu.relation(...)`. Keyed by field name.
    */
-  relatedCollections?: Record<
-    string,
-    RelatedCollection<Infer<TSchema>, TApiEndpoints>
-  >;
+  fieldHandlers?: FieldHandlers<Infer<TSchema>, TApiEndpoints>;
 };
 
 /**

@@ -1,3 +1,4 @@
+import { createRelationship } from "./relationship-schema";
 import {
   ArraySchema,
   type BaseSchema,
@@ -52,4 +53,16 @@ export const nu = {
    */
   record: <TValueSchema extends BaseSchema<any>>(valueSchema: TValueSchema) =>
     new RecordSchema(valueSchema),
+
+  /**
+   * Declares a 1×N relationship field on an ObjectSchema. The field is
+   * virtual — it does not appear in API payloads — but it can be referenced
+   * by name in form layouts, at which point the frontend relationship
+   * renderer fetches and displays the related rows.
+   *
+   * The actual `onSearch` handler is wired at the view level via
+   * `view.fieldHandlers[fieldName].onSearch`, so that it has access to the
+   * typed HTTP client.
+   */
+  relation: createRelationship,
 };

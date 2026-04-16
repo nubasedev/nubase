@@ -8,6 +8,7 @@ import { MultilineEditFieldRenderer } from "../../field-renderers/multiline/Mult
 import { MultilineViewFieldRenderer } from "../../field-renderers/multiline/MultilineViewFieldRenderer";
 import { NumberEditFieldRenderer } from "../../field-renderers/number/NumberEditFieldRenderer";
 import { NumberViewFieldRenderer } from "../../field-renderers/number/NumberViewFieldRenderer";
+import { RelationshipViewFieldRenderer } from "../../field-renderers/relationship/RelationshipViewFieldRenderer";
 import { StringEditFieldRenderer } from "../../field-renderers/string/StringEditFieldRenderer";
 import { StringViewFieldRenderer } from "../../field-renderers/string/StringViewFieldRenderer";
 import type {
@@ -39,6 +40,7 @@ const viewFieldRenderers: ViewFieldRendererMap = {
   string: StringViewFieldRenderer,
   number: NumberViewFieldRenderer,
   boolean: BooleanViewFieldRenderer,
+  relationship: RelationshipViewFieldRenderer,
 };
 
 const editFieldRenderers: EditFieldRendererMap = {
@@ -230,6 +232,13 @@ export const createFieldRenderer = (
   context: FormFieldRendererContext,
   patchContext?: Partial<PatchContext>,
 ) => {
+  // Relationship fields are virtual (not real data) and always display as
+  // their own self-contained section — bypass the FormControl / patch
+  // wrapping regardless of mode.
+  if (context.schema.type === "relationship") {
+    return createRawViewRenderer(context);
+  }
+
   switch (mode) {
     case "edit":
       return createEditRenderer(context).element;
