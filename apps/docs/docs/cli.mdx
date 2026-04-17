@@ -102,7 +102,7 @@ npx nubase db push [--env <name>] [--dry-run] [--yes]
 4. Applies each pending migration in a transaction
 5. Records each migration in the `_nubase_migrations` table
 
-The snapshot is **not** updated after push — migrations define the intended state by construction. See [ADR 0005](./adrs/0005-unified-schema-snapshot).
+The snapshot is **not** updated after push — migrations define the intended state by construction. See [ADR 0005](./adrs/0005-unified-schema-snapshot.mdx).
 
 ### `nubase db reset`
 
@@ -126,7 +126,7 @@ npx nubase db reset [--env <name>] [--force] [--yes]
 3. Creates the `_nubase_migrations` tracking table
 4. Replays all migrations from `nubase/migrations/` in order
 
-The snapshot is **not** updated after reset — migrations define the intended state by construction. See [ADR 0005](./adrs/0005-unified-schema-snapshot).
+The snapshot is **not** updated after reset — migrations define the intended state by construction. See [ADR 0005](./adrs/0005-unified-schema-snapshot.mdx).
 
 ### `nubase migration new`
 
