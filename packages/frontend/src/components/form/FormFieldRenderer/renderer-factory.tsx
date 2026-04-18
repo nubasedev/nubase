@@ -232,11 +232,12 @@ export const createFieldRenderer = (
   context: FormFieldRendererContext,
   patchContext?: Partial<PatchContext>,
 ) => {
-  // Relationship fields are virtual (not real data) and always display as
-  // their own self-contained section — bypass the FormControl / patch
-  // wrapping regardless of mode.
+  // Relationship fields are virtual (not real data) and read-only — always
+  // render them in view mode, regardless of the form's mode. They still go
+  // through FormControl like every other field so the label sits in the
+  // shared label column.
   if (context.schema.type === "relationship") {
-    return createRawViewRenderer(context);
+    return createViewRenderer(context);
   }
 
   switch (mode) {

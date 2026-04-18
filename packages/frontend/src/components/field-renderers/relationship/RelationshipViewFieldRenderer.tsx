@@ -84,35 +84,28 @@ export const RelationshipViewFieldRenderer = ({
   }
 
   return (
-    <div className="space-y-2">
-      {relationship._relationshipLabel && (
-        <h2 className="text-lg font-semibold">
-          {relationship._relationshipLabel}
-        </h2>
-      )}
-      <div className="h-[400px]">
-        <SearchableTable
-          schema={targetSchema}
-          rows={rows}
-          searchValue={query}
-          onSearchChange={setQuery}
-          loading={loading}
-          searchPlaceholder={relationship._searchPlaceholder ?? "Search..."}
-          onRowClick={(row) => {
-            const rowId = row[idField];
-            if (rowId === undefined || rowId === null) return;
-            navigate({
-              to: "/$workspace/r/$resourceName/$operation",
-              params: {
-                workspace: workspace.slug,
-                resourceName: relationship._targetResourceId,
-                operation: "view",
-              },
-              search: { [idField]: rowId },
-            });
-          }}
-        />
-      </div>
+    <div className="h-[400px]">
+      <SearchableTable
+        schema={targetSchema}
+        rows={rows}
+        searchValue={query}
+        onSearchChange={setQuery}
+        loading={loading}
+        searchPlaceholder={relationship._searchPlaceholder ?? "Search..."}
+        onRowClick={(row) => {
+          const rowId = row[idField];
+          if (rowId === undefined || rowId === null) return;
+          navigate({
+            to: "/$workspace/r/$resourceName/$operation",
+            params: {
+              workspace: workspace.slug,
+              resourceName: relationship._targetResourceId,
+              operation: "view",
+            },
+            search: { [idField]: rowId },
+          });
+        }}
+      />
     </div>
   );
 };

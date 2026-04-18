@@ -95,10 +95,8 @@ export const userResource = createResource("user")
                 fields: [
                   { name: "email", fieldWidth: 12 },
                   { name: "displayName", fieldWidth: 12 },
+                  { name: "tickets", fieldWidth: 12 },
                 ],
-              },
-              {
-                fields: [{ name: "tickets", fieldWidth: 12 }],
               },
             ],
           }),

@@ -20,7 +20,7 @@ export interface RelationshipConfig<
   targetResourceId: string;
   /** Row-shape schema. Columns derive from its `default`/`table` layout. */
   schema: TTargetSchema;
-  /** Section heading shown above the table. */
+  /** Field label, rendered by FormControl in the shared label column. */
   label?: string;
   /** Placeholder for the search input. */
   searchPlaceholder?: string;
@@ -42,7 +42,6 @@ export class RelationshipSchema<
   readonly _targetResourceId: string;
   readonly _targetSchema: TTargetSchema;
   readonly _mode: "searchable";
-  readonly _relationshipLabel: string | undefined;
   readonly _searchPlaceholder: string | undefined;
 
   constructor(config: RelationshipConfig<TTargetSchema>) {
@@ -50,7 +49,6 @@ export class RelationshipSchema<
     this._targetResourceId = config.targetResourceId;
     this._targetSchema = config.schema;
     this._mode = config.mode ?? "searchable";
-    this._relationshipLabel = config.label;
     this._searchPlaceholder = config.searchPlaceholder;
     if (config.label !== undefined) {
       this._meta = { ...this._meta, label: config.label };
