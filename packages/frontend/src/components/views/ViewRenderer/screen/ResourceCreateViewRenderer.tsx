@@ -8,6 +8,7 @@ import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../../form/SchemaForm/SchemaFormButtonBar";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import { ResourceViewHeader } from "../../common/ResourceViewHeader";
 
 export type ResourceCreateViewRendererProps = {
   view: ResourceCreateView;
@@ -52,14 +53,21 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
   });
 
   return (
-    <SchemaForm
-      form={form}
-      className="space-y-4"
-      data-testid="resource-create-form"
-    >
-      <SchemaFormBody form={form} />
-      <SchemaFormValidationErrors form={form} />
-      <SchemaFormButtonBar form={form} />
-    </SchemaForm>
+    <div className="flex flex-col h-full gap-4">
+      <ResourceViewHeader
+        title={view.title}
+        breadcrumbs={view.breadcrumbs}
+        context={context}
+      />
+      <SchemaForm
+        form={form}
+        className="space-y-4"
+        data-testid="resource-create-form"
+      >
+        <SchemaFormBody form={form} />
+        <SchemaFormValidationErrors form={form} />
+        <SchemaFormButtonBar form={form} />
+      </SchemaForm>
+    </div>
   );
 };

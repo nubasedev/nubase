@@ -1,4 +1,8 @@
 export {
+  ResourceViewHeader,
+  type ResourceViewHeaderProps,
+} from "./common";
+export {
   ModalViewRenderer,
   type ModalViewRendererProps,
   ResourceCreateViewModalRenderer,

@@ -2,10 +2,11 @@ import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
 import type { ResourceCreateView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
-import { useSchemaForm } from "../../../../hooks";
-import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
-import { ModalFrameSchemaForm } from "../../../floating/modal/ModalFrameSchemaForm";
-import type { ModalFrameStructuredVariant } from "../../../floating/modal/ModalFrameStructured";
+import {
+  ModalFrameStructured,
+  type ModalFrameStructuredVariant,
+} from "../../../floating/modal/ModalFrameStructured";
+import { ResourceCreateViewRenderer } from "../screen/ResourceCreateViewRenderer";
 
 export type ResourceCreateViewModalRendererProps = {
   view: ResourceCreateView;
@@ -17,49 +18,29 @@ export type ResourceCreateViewModalRendererProps = {
   frameVariant?: ModalFrameStructuredVariant;
 };
 
+/**
+ * Thin wrapper that renders the shared ResourceCreateViewRenderer inside a
+ * ModalFrameStructured. The renderer provides its own header (title +
+ * breadcrumbs) so this wrapper only supplies chrome.
+ */
 export const ResourceCreateViewModalRenderer: FC<
   ResourceCreateViewModalRendererProps
-> = (props) => {
-  const {
-    view,
-    context,
-    resourceName,
-    onClose,
-    onCreate,
-    onError,
-    frameVariant,
-  } = props;
-  const { invalidateResourceSearch } = useResourceInvalidation();
-
-  const form = useSchemaForm({
-    schema: view.schemaPost,
-    onSubmit: async (data: ObjectOutput<any>) => {
-      try {
-        const result = await view.onSubmit({
-          data,
-          context,
-        });
-
-        // Invalidate resource search queries to refresh the list
-        if (resourceName) {
-          await invalidateResourceSearch(resourceName);
-        }
-
-        onCreate?.(result);
-        onClose?.(); // Close modal on successful creation
-      } catch (error) {
-        onError?.(error as Error);
-      }
-    },
-  });
-
+> = ({ view, resourceName, onClose, onCreate, onError, frameVariant }) => {
   return (
-    <ModalFrameSchemaForm
-      title={view.title}
-      form={form}
+    <ModalFrameStructured
       onClose={onClose}
-      submitText="Create"
       variant={frameVariant}
+      body={
+        <ResourceCreateViewRenderer
+          view={view}
+          resourceName={resourceName}
+          onCreate={(data) => {
+            onCreate?.(data);
+            onClose?.();
+          }}
+          onError={onError}
+        />
+      }
     />
   );
 };

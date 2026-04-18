@@ -1,11 +1,9 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { FullScreenFixedHeaderLayout } from "@/components/page-layouts/FullScreenFixedHeaderLayout";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
 import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceCreateViewRenderer";
 import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceSearchViewRenderer";
 import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceViewViewRenderer";
-import type { BreadcrumbItem } from "../../config/breadcrumb";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { emitEvent } from "../../events";
 
@@ -21,18 +19,6 @@ import { emitEvent } from "../../events";
  * - `"37"` → `37` (number)
  * - `"true"` → `true` (boolean)
  * - `"hello"` → `"hello"` (string, unchanged)
- *
- * **Example:**
- * ```typescript
- * // URL: /r/ticket/view?id=37&active=true
- * // Raw params: { id: "37", active: "true" }
- * // Schema expects: { id: number, active: boolean }
- * // toZodWithCoercion() automatically handles: { id: 37, active: true }
- * ```
- *
- * **How it works:**
- * The ObjectSchema's `toZodWithCoercion()` method returns a Zod schema that uses
- * `z.coerce.number()` and `z.coerce.boolean()` for type conversion during parsing.
  */
 
 export default function ResourceScreen() {
@@ -44,18 +30,15 @@ export default function ResourceScreen() {
   const navigate = useNavigate();
   const workspace = useWorkspace();
 
-  // Check if resources exist in config
   if (!context.config.resources) {
     return <div>Resources not configured</div>;
   }
 
-  // Check if the resource exists
   const resource = context.config.resources[resourceName];
   if (!resource) {
     return <div>Resource "{resourceName}" not found</div>;
   }
 
-  // Check if the view exists on the resource
   const resourceView = resource.views[operation];
   if (!resourceView) {
     return (
@@ -66,35 +49,7 @@ export default function ResourceScreen() {
   }
 
   let body: ReactNode | null = null;
-  const loadedData: any = null; // Will be set if data is loaded for dynamic breadcrumbs
-  let validatedParams: Record<string, any> | undefined; // Store validated params for breadcrumb evaluation
-
-  // Helper function to evaluate breadcrumbs
-  const evaluateBreadcrumbs = (
-    breadcrumbDefinition: any,
-    params?: Record<string, any>,
-    data?: any,
-  ): BreadcrumbItem[] | null => {
-    if (!breadcrumbDefinition) return null;
-
-    if (Array.isArray(breadcrumbDefinition)) {
-      // Static breadcrumbs
-      return breadcrumbDefinition;
-    }
-
-    if (typeof breadcrumbDefinition === "function") {
-      // Dynamic breadcrumbs
-      return breadcrumbDefinition({
-        context: {
-          ...context,
-          params: params || {},
-        } as any,
-        data,
-      });
-    }
-
-    return null;
-  };
+  let validatedParams: Record<string, any> | undefined;
 
   switch (resourceView.type) {
     case "resource-create":
@@ -105,15 +60,9 @@ export default function ResourceScreen() {
           onCreate={(data) => {
             emitEvent("resource.created", { resourceName, source: "form" });
 
-            // Check if resource has a "view" view and redirect to it
             if (resource.views.view && data) {
-              // The data comes from HTTP response, so the actual data is in result.data
               const recordId = data.data?.id || data.id;
-
               if (recordId) {
-                // Add another indicator for successful navigation attempt
-                document.title = `NAVIGATING - ${document.title}`;
-
                 navigate({
                   to: "/$workspace/r/$resourceName/$operation",
                   params: {
@@ -123,11 +72,7 @@ export default function ResourceScreen() {
                   },
                   search: { id: recordId },
                 });
-              } else {
-                document.title = `NO RECORD ID - ${document.title}`;
               }
-            } else {
-              document.title = `NO VIEW OP - ${document.title}`;
             }
           }}
           onError={(error) => {
@@ -141,9 +86,6 @@ export default function ResourceScreen() {
       );
       break;
     case "resource-view": {
-      // Parse and validate URL search params using schema's built-in coercion
-      // The toZodWithCoercion() method automatically converts strings to expected types
-      // Example: ?id=37&active=true becomes { id: 37, active: true }
       if (resourceView.schemaParams) {
         try {
           validatedParams = resourceView.schemaParams
@@ -178,7 +120,6 @@ export default function ResourceScreen() {
       break;
     }
     case "resource-search": {
-      // Parse and validate URL search params using schema's built-in coercion
       if (resourceView.schemaParams) {
         try {
           validatedParams = resourceView.schemaParams
@@ -210,20 +151,11 @@ export default function ResourceScreen() {
       return null;
   }
 
-  // Evaluate breadcrumbs based on view definition
-  const breadcrumbs = evaluateBreadcrumbs(
-    resourceView.breadcrumbs,
-    validatedParams,
-    loadedData,
-  );
-
-  // Render the view
+  // The individual renderers provide their own header (breadcrumbs + title).
+  // We just wrap with full-screen padding so they align with the rest of the shell.
   return (
-    <FullScreenFixedHeaderLayout
-      title={resourceView.title}
-      breadcrumbs={breadcrumbs || undefined}
-    >
+    <div data-component="ResourceScreen" className="flex flex-col h-full p-4">
       {body}
-    </FullScreenFixedHeaderLayout>
+    </div>
   );
 }

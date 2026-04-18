@@ -9,6 +9,7 @@ import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import { ResourceViewHeader } from "../../common/ResourceViewHeader";
 
 export type ResourceViewViewRendererProps = {
   view: ResourceViewView;
@@ -65,25 +66,36 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
   }, [params, context, onError, view.onLoad]); // Re-load if params change
 
   return (
-    <DataState
-      isLoading={isLoading}
-      error={error}
-      isEmpty={!initialData}
-      emptyMessage="Failed to load resource data"
-      loadingLabel="Loading resource data..."
-    >
-      {initialData && (
-        <ResourceViewForm
-          view={view}
-          initialData={initialData}
-          params={params}
-          resourceName={resourceName}
-          onPatch={onPatchCallback}
-          onError={onError}
-          context={context}
-        />
-      )}
-    </DataState>
+    <div className="flex flex-col h-full gap-4">
+      <ResourceViewHeader
+        title={view.title}
+        breadcrumbs={view.breadcrumbs}
+        context={context}
+        params={params}
+        data={initialData}
+      />
+      <div className="flex-1 min-h-0">
+        <DataState
+          isLoading={isLoading}
+          error={error}
+          isEmpty={!initialData}
+          emptyMessage="Failed to load resource data"
+          loadingLabel="Loading resource data..."
+        >
+          {initialData && (
+            <ResourceViewForm
+              view={view}
+              initialData={initialData}
+              params={params}
+              resourceName={resourceName}
+              onPatch={onPatchCallback}
+              onError={onError}
+              context={context}
+            />
+          )}
+        </DataState>
+      </div>
+    </div>
   );
 };
 

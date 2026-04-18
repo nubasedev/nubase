@@ -31,6 +31,7 @@ import {
 import type { Column } from "../../../data-grid/types";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
+import { ResourceViewHeader } from "../../common/ResourceViewHeader";
 
 // Memoize SchemaFilterBar to prevent re-renders when parent re-renders due to query state changes
 const SchemaFilterBar = memo(SchemaFilterBarBase);
@@ -419,12 +420,19 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   ]);
 
   return (
-    <div className="h-full w-full">
+    <div className="flex flex-col h-full w-full gap-4">
+      <ResourceViewHeader
+        title={view.title}
+        breadcrumbs={view.breadcrumbs}
+        context={context}
+        params={params}
+        data={data}
+      />
       <ResourceContextProvider
         resourceType={resourceName || "unknown"}
         selectedIds={selectedRows}
       >
-        <div className="flex flex-col h-full space-y-2">
+        <div className="flex flex-col flex-1 min-h-0 space-y-2">
           {/* Filter bar is outside DataState to prevent unmounting during loading */}
           {view.schemaFilter && filterDescriptors.length > 0 && (
             <SchemaFilterBar
