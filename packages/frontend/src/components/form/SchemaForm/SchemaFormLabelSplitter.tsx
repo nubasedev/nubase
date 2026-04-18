@@ -85,7 +85,7 @@ export const SchemaFormLabelSplitter = () => {
       onPointerCancel={endDrag}
       onKeyDown={handleKeyDown}
     >
-      <div className="mx-auto h-full w-px bg-border transition-colors group-hover:bg-ring" />
+      <div className="mx-auto h-full w-px bg-transparent transition-colors group-hover:bg-ring" />
     </div>
   );
 };
