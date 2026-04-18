@@ -1,7 +1,5 @@
 import type { ObjectSchema } from "@nubase/core";
-import type * as MonacoNs from "monaco-editor/esm/vs/editor/editor.api";
-
-type Monaco = typeof MonacoNs;
+import * as monaco from "monaco-editor";
 
 export const NQL_LANGUAGE_ID = "nql";
 
@@ -64,16 +62,15 @@ const KEYWORD_SNIPPETS: Array<{
   { label: "FALSE", insertText: "false", detail: "Boolean literal" },
 ];
 
-const registeredMonacoInstances = new WeakSet<object>();
+let languageRegistered = false;
 
 /**
- * Register the NQL language (tokens provider, bracket config) with the
- * given Monaco instance. Safe to call multiple times — only the first
- * call per instance has effect.
+ * Register the NQL language (tokens provider, bracket config) with Monaco.
+ * Safe to call multiple times — only the first call has effect.
  */
-export function ensureNqlLanguageRegistered(monaco: Monaco): void {
-  if (registeredMonacoInstances.has(monaco as unknown as object)) return;
-  registeredMonacoInstances.add(monaco as unknown as object);
+export function ensureNqlLanguageRegistered(): void {
+  if (languageRegistered) return;
+  languageRegistered = true;
 
   monaco.languages.register({ id: NQL_LANGUAGE_ID });
 
@@ -128,21 +125,16 @@ export function ensureNqlLanguageRegistered(monaco: Monaco): void {
 }
 
 /**
- * Register a completion provider for the current NQL editor that draws
- * field-name suggestions from the given schema. Returns a disposable so
- * the provider can be removed when the editor unmounts.
+ * Register a completion provider that offers schema-driven field
+ * suggestions plus NQL keyword snippets. Returns a disposable; call
+ * `.dispose()` when the consuming editor unmounts.
  */
 export function registerNqlCompletionProvider(
-  monaco: Monaco,
   schema: ObjectSchema<any>,
-): MonacoNs.IDisposable {
-  ensureNqlLanguageRegistered(monaco);
+): monaco.IDisposable {
+  ensureNqlLanguageRegistered();
 
   const fields = extractFieldSuggestions(schema);
-  console.info(
-    "[nql-editor] completion provider registered; fields:",
-    fields.map((f) => f.name),
-  );
 
   return monaco.languages.registerCompletionItemProvider(NQL_LANGUAGE_ID, {
     triggerCharacters: [
@@ -152,21 +144,15 @@ export function registerNqlCompletionProvider(
       ...Array.from("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"),
     ],
     provideCompletionItems: (model, position) => {
-      console.info("[nql-editor] provideCompletionItems called", {
-        lang: model.getLanguageId(),
-        line: position.lineNumber,
-        column: position.column,
-        lineText: model.getLineContent(position.lineNumber),
-      });
       const word = model.getWordUntilPosition(position);
-      const range: MonacoNs.IRange = {
+      const range: monaco.IRange = {
         startLineNumber: position.lineNumber,
         endLineNumber: position.lineNumber,
         startColumn: word.startColumn,
         endColumn: word.endColumn,
       };
 
-      const suggestions: MonacoNs.languages.CompletionItem[] = [];
+      const suggestions: monaco.languages.CompletionItem[] = [];
 
       for (const field of fields) {
         suggestions.push({
@@ -192,7 +178,6 @@ export function registerNqlCompletionProvider(
         });
       }
 
-      console.info("[nql-editor] returning suggestions:", suggestions.length);
       return { suggestions };
     },
   });
