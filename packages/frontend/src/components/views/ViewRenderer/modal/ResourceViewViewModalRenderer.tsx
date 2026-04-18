@@ -1,5 +1,5 @@
 import type { ObjectOutput } from "@nubase/core";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useRef, useState } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
 import { useSchemaForm } from "../../../../hooks";
@@ -41,11 +41,14 @@ export const ResourceViewViewModalRenderer: FC<
   const [initialData, setInitialData] = useState<Record<string, any> | null>(
     null,
   );
+  // Tracks whether we've completed at least one load. After that, subsequent
+  // fetches keep the previous data rendered instead of flashing a spinner.
+  const hasLoadedOnceRef = useRef(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        setIsLoading(true);
+        if (!hasLoadedOnceRef.current) setIsLoading(true);
         const contextWithParams = {
           ...context,
           params: params || undefined,
@@ -54,6 +57,7 @@ export const ResourceViewViewModalRenderer: FC<
           context: contextWithParams as any,
         });
         setInitialData(response.data);
+        hasLoadedOnceRef.current = true;
       } catch (error) {
         onError?.(error as Error);
       } finally {

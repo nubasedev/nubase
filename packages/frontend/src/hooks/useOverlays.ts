@@ -8,6 +8,19 @@ export type UseOverlaysResult = {
   closeOverlay: () => void;
 };
 
+function overlaysEqual(a: Overlay | null, b: Overlay | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.resource !== b.resource || a.operation !== b.operation) return false;
+  const aKeys = Object.keys(a.params);
+  const bKeys = Object.keys(b.params);
+  if (aKeys.length !== bKeys.length) return false;
+  for (const key of aKeys) {
+    if (a.params[key] !== b.params[key]) return false;
+  }
+  return true;
+}
+
 export function useOverlays(): UseOverlaysResult {
   const search = useSearch({ strict: false }) as Record<string, unknown>;
   const navigate = useNavigate();
@@ -25,9 +38,13 @@ export function useOverlays(): UseOverlaysResult {
 
   const openOverlay = useCallback(
     (next: Overlay) => {
+      // Skip the navigation entirely if the target overlay is already active.
+      // Without this, clicking the same row twice re-emits the search params,
+      // triggering downstream re-renders and a spinner flicker in the drawer.
+      if (overlaysEqual(overlay, next)) return;
       navigateTo(next);
     },
-    [navigateTo],
+    [navigateTo, overlay],
   );
 
   const closeOverlay = useCallback(() => {
