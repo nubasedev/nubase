@@ -105,6 +105,9 @@ export function useResourceViewQuery<TData = any>(
     params,
     options: {
       enabled: !!params, // Only fetch if we have the required params
+      // Keep previous data visible while refetching so no spinner flashes when
+      // invalidation triggers a background refresh (e.g. after a patch).
+      placeholderData: keepPreviousData,
       ...options,
     },
   });

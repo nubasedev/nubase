@@ -1,8 +1,9 @@
 import type { ObjectOutput } from "@nubase/core";
-import { type FC, useEffect, useRef, useState } from "react";
+import { type FC, useEffect } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
+import { useResourceViewQuery } from "../../../../hooks/useNubaseQuery";
 import { DataState } from "../../../data-state";
 import { FieldHandlersProvider } from "../../../form/field-handlers-context";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
@@ -30,40 +31,26 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     onError,
   } = props;
   const context = useNubaseContext();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [initialData, setInitialData] = useState<Record<string, any> | null>(
-    null,
-  );
-  // Tracks whether we've completed at least one load. After that, subsequent
-  // fetches keep the previous data rendered instead of flashing a spinner.
-  const hasLoadedOnceRef = useRef(false);
+
+  // TanStack Query is the single source of truth for the record. Mutations
+  // elsewhere (e.g. form patches, inline cell edits) call invalidateResource,
+  // which marks this query stale and refetches in the background. Because the
+  // query is configured with placeholderData: keepPreviousData, the UI keeps
+  // rendering the previous record — no spinner flash — and anything derived
+  // from the data (breadcrumbs, headers) updates automatically when the
+  // refetched record arrives.
+  const {
+    data: response,
+    isLoading,
+    error,
+  } = useResourceViewQuery(resourceName || "unknown", view, params);
+
+  const initialData =
+    (response?.data as Record<string, any> | undefined) ?? null;
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        if (!hasLoadedOnceRef.current) setIsLoading(true);
-        setError(null);
-        const contextWithParams = {
-          ...context,
-          params: params || undefined,
-        };
-        const response = await view.onLoad({
-          context: contextWithParams as any,
-        });
-        setInitialData(response.data);
-        hasLoadedOnceRef.current = true;
-      } catch (err) {
-        const loadError = err as Error;
-        setError(loadError);
-        onError?.(loadError);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [params, context, onError, view.onLoad]); // Re-load if params change
+    if (error) onError?.(error as Error);
+  }, [error, onError]);
 
   return (
     <div className="flex flex-col h-full gap-4">
@@ -76,14 +63,20 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
       />
       <div className="flex-1 min-h-0">
         <DataState
-          isLoading={isLoading}
-          error={error}
+          // Only show the loading state when there is truly nothing to display.
+          // keepPreviousData keeps initialData populated during background refetches.
+          isLoading={isLoading && !initialData}
+          error={error as Error | null}
           isEmpty={!initialData}
           emptyMessage="Failed to load resource data"
           loadingLabel="Loading resource data..."
         >
           {initialData && (
+            // Key on params so switching to a different record re-mounts the
+            // form (its state is sticky by design). Within the same record,
+            // the form persists across refetches — user input isn't clobbered.
             <ResourceViewForm
+              key={JSON.stringify(params ?? {})}
               view={view}
               initialData={initialData}
               params={params}
@@ -99,7 +92,6 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
   );
 };
 
-// Separate component to properly handle form initialization with loaded data
 const ResourceViewForm: FC<{
   view: ResourceViewView;
   initialData: Record<string, any>;
@@ -124,8 +116,6 @@ const ResourceViewForm: FC<{
     mode: "patch",
     initialValues: initialData,
     onPatch: async (fieldName: string, value) => {
-      // Validation now happens in SchemaFormBody
-      // This layer only handles network operations
       try {
         const patchData = { [fieldName]: value };
         const contextWithParams = {
@@ -137,17 +127,17 @@ const ResourceViewForm: FC<{
           context: contextWithParams as any,
         });
 
-        // Invalidate all cached queries for this resource (search + view subtrees)
-        // so any other open views reflect the update with no flicker.
+        // One mechanism for all consumers: invalidate the resource's queries.
+        // The view query refetches in the background, which updates
+        // `initialData` upstream and re-evaluates the breadcrumb/header.
         if (resourceName) {
           await invalidateResource(resourceName);
         }
 
         onPatchCallback?.(result);
       } catch (error) {
-        // Only call onError for actual network/server errors, not validation errors
         onError?.(error as Error);
-        throw error; // Re-throw to let the form handle it
+        throw error;
       }
     },
     onSubmit: async () => {
