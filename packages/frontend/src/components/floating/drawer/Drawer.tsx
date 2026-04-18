@@ -1,10 +1,6 @@
-import {
-  DialogBackdrop,
-  DialogPanel,
-  Dialog as HeadlessDialog,
-} from "@headlessui/react";
 import type { FC, ReactElement } from "react";
-import { cloneElement, useCallback, useState } from "react";
+import { cloneElement, useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useResize } from "../../dock/useResize";
 import { HorizontalResizeHandle } from "../../resize-handle/HorizontalResizeHandle";
 import type { BaseModalFrameProps } from "../modal/types";
@@ -54,26 +50,45 @@ export const Drawer: FC<DrawerProps> = ({
 
   const handleResize = useResize(setWidth, () => width, getConstraints, true);
 
-  return (
-    <HeadlessDialog
-      open={open}
-      onClose={onClose}
-      className="relative"
-      style={{ zIndex: zIndex + depth }}
+  useEffect(() => {
+    if (!open) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0"
+      style={{ zIndex: zIndex + depth, pointerEvents: "none" }}
     >
       {showBackdrop && (
-        <DialogBackdrop className="fixed inset-0 bg-black/50 transition-opacity duration-300 ease-out data-[closed]:opacity-0" />
+        <div
+          role="presentation"
+          aria-hidden="true"
+          className="absolute inset-0 bg-black/50"
+          style={{ pointerEvents: "auto" }}
+          onClick={onClose}
+        />
       )}
-
-      <div className="fixed inset-0 flex justify-end pointer-events-none">
-        <DialogPanel
-          style={{ width }}
-          className="pointer-events-auto relative h-full bg-background text-foreground shadow-2xl border-l border-border transition-transform duration-300 ease-out data-[closed]:translate-x-full"
-        >
-          <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
-          {cloneElement(content, { onClose })}
-        </DialogPanel>
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="absolute right-0 top-0 h-full bg-background text-foreground shadow-2xl border-l border-border"
+        style={{ width, pointerEvents: "auto" }}
+      >
+        <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
+        {cloneElement(content, { onClose })}
       </div>
-    </HeadlessDialog>
+    </div>,
+    document.body,
   );
 };
