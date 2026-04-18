@@ -14,7 +14,11 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: { type: "select" },
-      options: ["primary", "secondary", "danger"],
+      options: ["default", "secondary", "destructive", "outline", "ghost"],
+    },
+    size: {
+      control: { type: "select" },
+      options: ["default", "sm", "icon", "icon-sm"],
     },
     isLoading: {
       control: "boolean",
@@ -35,9 +39,26 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <div className="flex gap-4 flex-wrap">
-      <Button variant="default">Primary</Button>
+      <Button variant="default">Default</Button>
       <Button variant="secondary">Secondary</Button>
-      <Button variant="destructive">Danger</Button>
+      <Button variant="destructive">Destructive</Button>
+      <Button variant="outline">Outline</Button>
+      <Button variant="ghost">Ghost</Button>
+    </div>
+  ),
+};
+
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex items-center gap-4 flex-wrap">
+      <Button size="default">Default</Button>
+      <Button size="sm">Small</Button>
+      <Button size="icon" aria-label="Settings">
+        <Settings />
+      </Button>
+      <Button size="icon-sm" aria-label="Settings">
+        <Settings />
+      </Button>
     </div>
   ),
 };

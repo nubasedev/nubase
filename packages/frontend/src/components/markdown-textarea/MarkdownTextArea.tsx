@@ -10,7 +10,7 @@ const markdownTextAreaVariants = cva([
   "w-full min-h-[200px]",
 
   // Spacing & Borders
-  "px-3 py-2 rounded-md border border-border",
+  "px-3 py-2 rounded-md border border-input",
 
   // Background & Text
   "bg-background text-foreground",

@@ -204,7 +204,7 @@ const EnhancedPagination = React.forwardRef<
               <select
                 value={pageSize}
                 onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="bg-background border border-border rounded px-2 py-1 text-foreground text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none h-9"
+                className="bg-background border border-input rounded px-2 py-1 text-foreground text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none h-9"
               >
                 {pageSizeOptions.map((option) => (
                   <option key={option} value={option}>
