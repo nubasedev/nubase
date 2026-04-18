@@ -117,3 +117,33 @@
     background: transparent;
   }
 }
+
+/* ----- NQL editor / Monaco shadcn skin -----
+ *
+ * The suggest widget is rendered at the document root (Monaco's
+ * `fixedOverflowWidgets` option) so it lives outside our React tree —
+ * scoped Tailwind utilities can't reach it. These rules adjust shape,
+ * padding and typography to match shadcn popovers; colors come from the
+ * Monaco theme in `monaco-theme.ts`, which is driven by our CSS variables.
+ */
+
+.monaco-editor .suggest-widget,
+.monaco-editor-hover {
+  border-radius: var(--radius-md) !important;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  font-family: inherit;
+  padding: 2px 6px;
+}
+
+/* Make the editor's own text use the default shadcn font size so it
+ * lines up with surrounding filter-bar controls. */
+.nql-editor-shell .monaco-editor,
+.nql-editor-shell .monaco-editor .inputarea {
+  font-family: inherit;
+}

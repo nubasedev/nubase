@@ -9,6 +9,10 @@ import * as monaco from "monaco-editor";
 import { useEffect, useRef } from "react";
 import { cn } from "../../styling/cn";
 import {
+  installNubaseMonacoTheme,
+  NUBASE_MONACO_THEME_ID,
+} from "./monaco-theme";
+import {
   ensureNqlLanguageRegistered,
   NQL_LANGUAGE_ID,
   registerNqlCompletionProvider,
@@ -91,10 +95,12 @@ export function NqlEditor({
     if (!container) return;
 
     ensureNqlLanguageRegistered();
+    installNubaseMonacoTheme();
 
     const editor = monaco.editor.create(container, {
       value: latestValueRef.current,
       language: NQL_LANGUAGE_ID,
+      theme: NUBASE_MONACO_THEME_ID,
       automaticLayout: true,
       lineNumbers: "off",
       minimap: { enabled: false },
@@ -169,7 +175,7 @@ export function NqlEditor({
     <div className={cn("flex-1 min-w-0", className)}>
       <div
         className={cn(
-          "relative rounded-md border border-input bg-transparent dark:bg-input/30",
+          "nql-editor-shell relative rounded-md border border-input bg-background",
           "shadow-xs",
           errorMessage && "border-destructive",
         )}
