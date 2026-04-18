@@ -30,6 +30,11 @@ export const SEARCH_FIELD_NAME = "q";
 export const baseSearchParams = nu.object({
   /** Global text search query - searches across multiple text fields */
   q: nu.string().optional(),
+  /**
+   * NQL (Nubase Query Language) expression. When present, the backend
+   * parses it against the request's schema and applies it as a WHERE clause.
+   */
+  nql: nu.string().optional(),
 });
 
 /**
@@ -55,5 +60,10 @@ export function withSearchParams<TSchema extends ObjectSchema<any>>(
   return schema.extend({
     /** Global text search query - searches across multiple text fields */
     q: nu.string().optional(),
+    /**
+     * NQL (Nubase Query Language) expression. When present, the backend
+     * parses it against the request's schema and applies it as a WHERE clause.
+     */
+    nql: nu.string().optional(),
   });
 }

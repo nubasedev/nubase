@@ -1,5 +1,6 @@
 import type { ObjectSchema } from "@nubase/core";
 import { cn } from "../../styling/cn";
+import { NqlEditor } from "../nql-editor";
 import { LookupSelectFilter } from "../search-controls/LookupSelectFilter";
 import { SearchFilterBar } from "../search-controls/SearchFilterBar";
 import {
@@ -7,9 +8,13 @@ import {
   type SelectFilterOption,
 } from "../search-controls/SelectFilter";
 import { TextFilter } from "../search-controls/TextFilter";
+import { ToggleGroup, ToggleGroupItem } from "../toggle-group";
 import type { FilterFieldDescriptor, SchemaFilterState } from "./types";
 
 export type SchemaFilterBarProps<TSchema extends ObjectSchema<any>> = {
+  /** The schema the filter bar is driven by. Used for NQL field completion. */
+  schema?: TSchema;
+
   /** Filter field descriptors from introspection */
   filterDescriptors: FilterFieldDescriptor[];
 
@@ -42,6 +47,29 @@ export type SchemaFilterBarProps<TSchema extends ObjectSchema<any>> = {
 
   /** Additional className for the container */
   className?: string;
+
+  /**
+   * NQL mode toggle state. When `true`, the structured filter controls are
+   * hidden and an NQL text editor is shown in their place. When `false`
+   * (default), the structured controls behave as before and the NQL input
+   * is not rendered.
+   */
+  nqlMode?: boolean;
+
+  /** Called when the user flips the NQL/Filters toggle. */
+  onNqlModeChange?: (enabled: boolean) => void;
+
+  /** Current NQL expression text (only used when nqlMode is true). */
+  nqlValue?: string;
+
+  /** Called on every NQL text change. */
+  onNqlValueChange?: (value: string) => void;
+
+  /**
+   * Inline error message shown under the NQL input. Typically populated
+   * from a 400 response from the backend's NQL compiler.
+   */
+  nqlErrorMessage?: string;
 };
 
 // Boolean filter options
@@ -67,6 +95,7 @@ const BOOLEAN_OPTIONS: SelectFilterOption<string>[] = [
  * ```
  */
 export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
+  schema,
   filterDescriptors,
   filterState,
   onFilterChange,
@@ -78,7 +107,33 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
   searchDebounceMs = 300,
   disabled = false,
   className,
+  nqlMode = false,
+  onNqlModeChange,
+  nqlValue = "",
+  onNqlValueChange,
+  nqlErrorMessage,
 }: SchemaFilterBarProps<TSchema>) {
+  const canToggleNql = Boolean(onNqlModeChange && schema && onNqlValueChange);
+  const modeToggle = canToggleNql ? (
+    <ToggleGroup
+      type="single"
+      value={nqlMode ? "nql" : "filters"}
+      onValueChange={(value) => {
+        // ToggleGroup with type="single" can emit an empty string when the
+        // user clicks the active item; guard against that.
+        if (value === "nql" || value === "filters") {
+          onNqlModeChange?.(value === "nql");
+        }
+      }}
+      variant="outline"
+      size="sm"
+      disabled={disabled}
+      aria-label="Filter mode"
+    >
+      <ToggleGroupItem value="filters">Filters</ToggleGroupItem>
+      <ToggleGroupItem value="nql">NQL</ToggleGroupItem>
+    </ToggleGroup>
+  ) : null;
   // Render a filter control based on the descriptor
   const renderFilter = (descriptor: FilterFieldDescriptor) => {
     const currentValue =
@@ -183,9 +238,23 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
     }
   };
 
-  // If no descriptors, show nothing
-  if (filterDescriptors.length === 0) {
+  // If there's nothing to show (no filters AND no NQL toggle), hide the bar.
+  if (filterDescriptors.length === 0 && !canToggleNql) {
     return null;
+  }
+
+  if (nqlMode && canToggleNql && schema) {
+    return (
+      <div className={cn("flex items-start gap-2 flex-wrap", className)}>
+        {modeToggle}
+        <NqlEditor
+          schema={schema}
+          value={nqlValue}
+          onChange={onNqlValueChange ?? (() => {})}
+          errorMessage={nqlErrorMessage}
+        />
+      </div>
+    );
   }
 
   return (
@@ -199,6 +268,7 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
       disabled={disabled}
       className={cn(className)}
     >
+      {modeToggle}
       {filterDescriptors.map(renderFilter)}
     </SearchFilterBar>
   );

@@ -17,6 +17,7 @@ export * from "./markdown-textarea";
 export * from "./navigation/breadcrumb";
 export * from "./navigation/main-nav";
 export * from "./navigation/searchable-tree-navigator";
+export * from "./nql-editor";
 export * from "./nubase-app";
 export * from "./overlays";
 export * from "./schema-filter-bar";

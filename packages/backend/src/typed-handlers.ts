@@ -22,6 +22,12 @@ export class HttpError extends Error {
   constructor(
     public statusCode: ContentfulStatusCode,
     message: string,
+    /**
+     * Optional structured payload merged into the JSON response body under
+     * the `error` key. Use when the caller needs machine-readable details
+     * (error code, field, line/column, etc.) beyond the human message.
+     */
+    public payload?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "HttpError";
@@ -214,6 +220,7 @@ function createTypedHandlerInternal<
         return c.json(
           {
             error: error.message,
+            ...(error.payload ?? {}),
           },
           error.statusCode,
         );

@@ -16,6 +16,7 @@ import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useOverlays } from "../../../../hooks/useOverlays";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
+import { isServerNetworkError } from "../../../../utils/network-errors";
 import { ActivityIndicator } from "../../../activity-indicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import {
@@ -32,6 +33,32 @@ import type { Column } from "../../../data-grid/types";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
 import { ResourceViewHeader } from "../../common/ResourceViewHeader";
+
+/**
+ * Pulls an NQL error message out of a `ServerNetworkError` whose body was
+ * produced by the backend's NQL compiler. Returns `undefined` when the
+ * error isn't a 400 with a shaped NQL payload.
+ */
+function extractNqlErrorMessage(error: unknown): string | undefined {
+  if (!isServerNetworkError(error)) return undefined;
+  if (error.statusCode !== 400) return undefined;
+  const data = error.responseData as
+    | { error?: string; code?: string; line?: number; column?: number }
+    | undefined;
+  if (!data || typeof data.error !== "string") return undefined;
+  // Only surface messages that the NQL compiler emits.
+  if (
+    data.code !== "TOKENIZE" &&
+    data.code !== "PARSE" &&
+    data.code !== "VALIDATE"
+  ) {
+    return undefined;
+  }
+  if (typeof data.line === "number" && typeof data.column === "number") {
+    return `${data.error} (line ${data.line}, col ${data.column})`;
+  }
+  return data.error;
+}
 
 // Memoize SchemaFilterBar to prevent re-renders when parent re-renders due to query state changes
 const SchemaFilterBar = memo(SchemaFilterBarBase);
@@ -99,6 +126,10 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     searchValue,
     setSearchValue,
     hasTextSearch,
+    nqlMode,
+    setNqlMode,
+    nqlValue,
+    setNqlValue,
   } = useSchemaFilters(view.schemaFilter);
 
   // Merge URL params with filter state for the query
@@ -434,8 +465,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
       >
         <div className="flex flex-col flex-1 min-h-0 space-y-2">
           {/* Filter bar is outside DataState to prevent unmounting during loading */}
-          {view.schemaFilter && filterDescriptors.length > 0 && (
+          {view.schemaFilter && (
             <SchemaFilterBar
+              schema={view.schemaFilter}
               filterDescriptors={filterDescriptors}
               filterState={filterState}
               onFilterChange={setFilterValue}
@@ -443,6 +475,13 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               showClearFilters={hasActiveFilters}
               searchValue={hasTextSearch ? searchValue : ""}
               onSearchChange={hasTextSearch ? setSearchValue : undefined}
+              nqlMode={nqlMode}
+              onNqlModeChange={setNqlMode}
+              nqlValue={nqlValue}
+              onNqlValueChange={setNqlValue}
+              nqlErrorMessage={
+                nqlMode ? extractNqlErrorMessage(error) : undefined
+              }
             />
           )}
           {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}

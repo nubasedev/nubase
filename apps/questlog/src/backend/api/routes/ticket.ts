@@ -1,7 +1,21 @@
-import { HttpError } from "@nubase/backend";
+import { compileNql, createNqlBindings, HttpError } from "@nubase/backend";
+import { ticketListSchema } from "../../../common/resources/ticket";
+import type { DB } from "../../db/db-types";
 import { getDb } from "../../db/helpers/kysely";
 import type { Workspace } from "../../middleware/workspace-middleware";
 import { createHandler } from "../handler-factory";
+
+// Schema-to-column bindings for NQL on the /tickets list endpoint. Keys are
+// checked against `ticketListSchema`; values against the generated Kysely
+// `DB` type plus the tables joined below (`tickets`, `users`).
+const ticketListNqlBindings = createNqlBindings<DB>()(ticketListSchema, {
+  id: "tickets.id",
+  title: "tickets.title",
+  description: "tickets.description",
+  assigneeId: "tickets.assigneeId",
+  assigneeName: "users.displayName",
+  assigneeEmail: "users.email",
+});
 
 /**
  * Ticket CRUD endpoints.
@@ -30,6 +44,21 @@ export const ticketHandlers = {
           "users.email as assigneeEmail",
         ])
         .where("tickets.workspaceId", "=", workspace.id);
+
+      if (params.nql && params.nql.trim() !== "") {
+        const compiled = compileNql(params.nql, ticketListSchema, {
+          fields: ticketListNqlBindings,
+        });
+        if (!compiled.ok) {
+          throw new HttpError(400, compiled.error.message, {
+            code: compiled.error.code,
+            line: compiled.error.line,
+            column: compiled.error.column,
+            length: compiled.error.length,
+          });
+        }
+        query = query.where(compiled.value);
+      }
 
       // Global text search - OR across searchable text fields
       if (params.q) {

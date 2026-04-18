@@ -39,6 +39,18 @@ export type UseSchemaFiltersReturn<TSchema extends ObjectSchema<any>> = {
 
   /** Whether the schema supports global text search (has "q" field) */
   hasTextSearch: boolean;
+
+  /** Whether the filter bar is in NQL mode (text DSL) or structured mode. */
+  nqlMode: boolean;
+
+  /** Toggle NQL mode on/off. Switching off clears the NQL value. */
+  setNqlMode: (enabled: boolean) => void;
+
+  /** Current NQL expression text (only meaningful when nqlMode is true). */
+  nqlValue: string;
+
+  /** Update the NQL expression text. */
+  setNqlValue: (value: string) => void;
 };
 
 /**
@@ -92,6 +104,20 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
   // Global search state (separate from field filters)
   const [searchValue, setSearchValueState] = useState("");
 
+  // NQL mode + value. When enabled the structured filters and `q` are
+  // skipped in the request; only the `nql` parameter is sent.
+  const [nqlMode, setNqlModeState] = useState(false);
+  const [nqlValue, setNqlValueState] = useState("");
+
+  const setNqlMode = useCallback((enabled: boolean) => {
+    setNqlModeState(enabled);
+    if (!enabled) setNqlValueState("");
+  }, []);
+
+  const setNqlValue = useCallback((value: string) => {
+    setNqlValueState(value);
+  }, []);
+
   // Update global search value
   const setSearchValue = useCallback((value: string) => {
     setSearchValueState(value);
@@ -116,15 +142,17 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     [],
   );
 
-  // Clear all filters (including search)
+  // Clear all filters (including search and any NQL state)
   const clearFilters = useCallback(() => {
     setFilterState({} as SchemaFilterState<TSchema>);
     setSearchValueState("");
+    setNqlValueState("");
   }, []);
 
-  // Check if any filters are active (including search)
+  // Check if any filters are active (including search, NQL)
   const hasActiveFilters = useMemo(() => {
-    // Check if search value is active
+    if (nqlMode && nqlValue.trim() !== "") return true;
+
     if (searchValue.trim() !== "") {
       return true;
     }
@@ -139,10 +167,16 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
       }
       return true;
     });
-  }, [filterState, searchValue]);
+  }, [filterState, searchValue, nqlMode, nqlValue]);
 
-  // Get params for API call (removes empty/undefined values, includes search)
+  // Get params for API call. NQL mode sends only `nql`; structured mode
+  // sends `q` + field filters. The two modes are mutually exclusive.
   const getRequestParams = useCallback((): Record<string, unknown> => {
+    if (nqlMode) {
+      const trimmed = nqlValue.trim();
+      return trimmed === "" ? {} : { nql: trimmed };
+    }
+
     const params: Record<string, unknown> = {};
 
     // Include global search if present
@@ -163,7 +197,7 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     }
 
     return params;
-  }, [filterState, searchValue]);
+  }, [filterState, searchValue, nqlMode, nqlValue]);
 
   return {
     filterState,
@@ -176,5 +210,9 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     searchValue,
     setSearchValue,
     hasTextSearch,
+    nqlMode,
+    setNqlMode,
+    nqlValue,
+    setNqlValue,
   };
 }
