@@ -51,6 +51,7 @@ export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
           view={view}
           context={context}
           params={params}
+          resourceName={resourceName}
           onClose={onClose}
           onError={onError}
           frameVariant={frameVariant}

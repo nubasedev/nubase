@@ -12,6 +12,7 @@ import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { emitEvent } from "../../../../events";
+import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useOverlays } from "../../../../hooks/useOverlays";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
@@ -84,6 +85,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const { view, params, resourceName, resource, onError } = props;
   const context = useNubaseContext();
   const { openOverlay } = useOverlays();
+  const { invalidateResource } = useResourceInvalidation();
 
   // Schema-derived filter state management
   const {
@@ -117,25 +119,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           const wrappedAction: HandlerAction = {
             ...action,
             onExecute: async (executionContext) => {
-              // Execute the original action
               await action.onExecute(executionContext);
-
-              // After successful execution, invalidate the search query to refresh the list
-              if (resourceName && context.queryClient) {
-                // Use predicate to match queries that start with ["resource", resourceName, "search"]
-                // This will match both 3-element and 4-element (with params) keys
-                await context.queryClient.invalidateQueries({
-                  predicate: (query) => {
-                    const key = query.queryKey;
-                    return (
-                      Array.isArray(key) &&
-                      key.length >= 3 &&
-                      key[0] === "resource" &&
-                      key[1] === resourceName &&
-                      key[2] === "search"
-                    );
-                  },
-                });
+              if (resourceName) {
+                await invalidateResource(resourceName);
               }
             },
           };
@@ -147,25 +133,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           const wrappedAction: ResourceAction = {
             ...action,
             onExecute: async (executionContext) => {
-              // Execute the original action
               await action.onExecute(executionContext);
-
-              // After successful execution, invalidate the search query to refresh the list
-              if (resourceName && context.queryClient) {
-                // Use predicate to match queries that start with ["resource", resourceName, "search"]
-                // This will match both 3-element and 4-element (with params) keys
-                await context.queryClient.invalidateQueries({
-                  predicate: (query) => {
-                    const key = query.queryKey;
-                    return (
-                      Array.isArray(key) &&
-                      key.length >= 3 &&
-                      key[0] === "resource" &&
-                      key[1] === resourceName &&
-                      key[2] === "search"
-                    );
-                  },
-                });
+              if (resourceName) {
+                await invalidateResource(resourceName);
               }
             },
           };
@@ -176,7 +146,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
         return action;
       });
     },
-    [resourceName, context.queryClient],
+    [resourceName, invalidateResource],
   );
 
   // Create a function to handle cell patching
@@ -203,20 +173,10 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           context,
         });
 
-        // Invalidate the query to refresh the data
-        if (resourceName && context.queryClient) {
-          await context.queryClient.invalidateQueries({
-            predicate: (query) => {
-              const key = query.queryKey;
-              return (
-                Array.isArray(key) &&
-                key.length >= 3 &&
-                key[0] === "resource" &&
-                key[1] === resourceName &&
-                key[2] === "search"
-              );
-            },
-          });
+        // Invalidate all cached queries for this resource so the grid refreshes.
+        // placeholderData: keepPreviousData on the search query means no loading flicker.
+        if (resourceName) {
+          await invalidateResource(resourceName);
         }
 
         // Emit event for successful cell patch (silent by default per notification rules)
@@ -245,7 +205,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
         };
       }
     },
-    [view, context, resourceName],
+    [view, context, resourceName, invalidateResource],
   );
 
   // Selection state for DataGrid

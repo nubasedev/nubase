@@ -67,7 +67,7 @@ export const ticketHandlers = {
         }
       }
 
-      const tickets = await query.execute();
+      const tickets = await query.orderBy("tickets.id", "asc").execute();
 
       return tickets.map((ticket) => ({
         id: ticket.id,

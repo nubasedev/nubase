@@ -49,7 +49,7 @@ export const userHandlers = {
         query = query.where("users.email", "ilike", `%${params.email}%`);
       }
 
-      const users = await query.execute();
+      const users = await query.orderBy("users.id", "asc").execute();
       return users;
     },
   }),

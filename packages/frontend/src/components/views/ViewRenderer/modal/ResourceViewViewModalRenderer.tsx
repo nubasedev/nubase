@@ -120,7 +120,7 @@ const ResourceViewForm: FC<{
   onError,
   context,
 }) => {
-  const { invalidateResourceSearch } = useResourceInvalidation();
+  const { invalidateResource } = useResourceInvalidation();
 
   const form = useSchemaForm({
     schema: view.schemaGet,
@@ -138,9 +138,10 @@ const ResourceViewForm: FC<{
           context: contextWithParams as any,
         });
 
-        // Invalidate search queries so the list view reflects the update
+        // Invalidate all cached queries for this resource (search + view subtrees)
+        // so any other open views reflect the update with no flicker.
         if (resourceName) {
-          await invalidateResourceSearch(resourceName);
+          await invalidateResource(resourceName);
         }
 
         onPatchCallback?.(result);
