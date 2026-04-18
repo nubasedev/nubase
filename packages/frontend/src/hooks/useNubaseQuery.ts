@@ -5,6 +5,27 @@ import {
 } from "@tanstack/react-query";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
 import type { HttpResponse } from "../http/http-client";
+import { isServerNetworkError } from "../utils/network-errors";
+
+/**
+ * Retry policy used by the resource-aware query hooks below:
+ *
+ *   - 4xx responses are the user's fault (validation, not found, forbidden,
+ *     …). Retrying sends the same input and gets the same rejection, and
+ *     for search queries the noisy retries keep `isFetching` toggling which
+ *     in turn keeps the loading overlay flickering. Never retry 4xx.
+ *   - Other failures (5xx, network outage) get one retry — search queries
+ *     are idempotent and a single retry usually papers over a hiccup.
+ *
+ * Callers can still override via the `retry` option.
+ */
+function defaultResourceRetryPolicy(
+  failureCount: number,
+  error: unknown,
+): boolean {
+  if (isServerNetworkError(error) && error.isClientError()) return false;
+  return failureCount < 1;
+}
 
 export interface UseNubaseQueryOptions<TData = any> {
   /**
@@ -84,6 +105,7 @@ export function useResourceSearchQuery<TData = any>(
       // Keep previous data visible while fetching new data with different params
       // This prevents flickering when filters change - isLoading stays false, only isFetching is true
       placeholderData: keepPreviousData,
+      retry: defaultResourceRetryPolicy,
       ...options,
     },
   });
@@ -108,6 +130,7 @@ export function useResourceViewQuery<TData = any>(
       // Keep previous data visible while refetching so no spinner flashes when
       // invalidation triggers a background refresh (e.g. after a patch).
       placeholderData: keepPreviousData,
+      retry: defaultResourceRetryPolicy,
       ...options,
     },
   });

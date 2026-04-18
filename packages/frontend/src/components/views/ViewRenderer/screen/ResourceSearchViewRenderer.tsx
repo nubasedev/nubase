@@ -257,9 +257,15 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     error,
   } = useResourceSearchQuery(resourceName || "unknown", view, mergedParams);
 
-  // Debounce the fetching overlay - only show if fetch takes longer than 150ms
-  // This prevents flickering for fast fetches
+  // Debounce the fetching overlay - only show if fetch takes longer than 150ms.
+  // This prevents flickering for fast fetches. Failing queries don't arm the
+  // timer at all — we never want the spinner to paint over stale data while
+  // the user is staring at an error message.
   useEffect(() => {
+    if (error) {
+      setShowFetchingOverlay(false);
+      return;
+    }
     if (isFetching) {
       const timer = setTimeout(() => {
         setShowFetchingOverlay(true);
@@ -267,17 +273,29 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
       return () => clearTimeout(timer);
     }
     setShowFetchingOverlay(false);
-  }, [isFetching]);
+  }, [isFetching, error]);
 
-  // Handle errors using React Query's error state - use useEffect to avoid setState in render
+  // Handle errors using React Query's error state - use useEffect to avoid
+  // setState in render. NQL errors are surfaced inline under the filter-bar
+  // editor, so we skip the global toast for them — otherwise every keystroke
+  // while the user is mid-typing produces another "Error loading resource"
+  // toast.
   useEffect(() => {
-    if (error) {
-      onError?.(error as Error);
-    }
+    if (!error) return;
+    if (extractNqlErrorMessage(error)) return;
+    onError?.(error as Error);
   }, [error, onError]);
 
-  // Extract data from the response
-  const data = response?.data || [];
+  // Keep a local copy of the last successful rows so a failing refetch
+  // (e.g. an invalid NQL query) doesn't wipe the grid. TanStack's
+  // `placeholderData: keepPreviousData` only bridges the `isFetching`
+  // window — once the new query errors the placeholder is dropped.
+  const [lastGoodData, setLastGoodData] = useState<any[]>([]);
+  useEffect(() => {
+    if (response?.data) setLastGoodData(response.data);
+  }, [response?.data]);
+
+  const data = response?.data ?? lastGoodData;
 
   // Get the element schema from the array schema to access table layouts
   const elementSchema = (view.schemaGet as any)?._element as
@@ -496,12 +514,18 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               </div>
             )}
 
-            {/* Error state */}
-            {error && !isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center text-destructive z-10">
-                Error loading data
-              </div>
-            )}
+            {/* Error state — skipped entirely for NQL errors (the inline
+                message under the editor is the canonical signal) and, for
+                other errors, only covers the grid when we have no rows to
+                fall back on thanks to `keepPreviousData`. */}
+            {error &&
+              !isLoading &&
+              data.length === 0 &&
+              !extractNqlErrorMessage(error) && (
+                <div className="absolute inset-0 flex items-center justify-center text-destructive z-10">
+                  Error loading data
+                </div>
+              )}
 
             {/* Empty state - only shown when not loading and data is empty */}
             {!isLoading && !error && data.length === 0 && (
@@ -511,7 +535,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
             )}
 
             {/* Refetch indicator - subtle overlay while fetching new data (debounced to prevent flicker) */}
-            {showFetchingOverlay && (
+            {showFetchingOverlay && !error && (
               <div className="absolute inset-0 bg-background/50 flex items-center justify-center pointer-events-none z-20">
                 <ActivityIndicator size="md" aria-label="Updating results..." />
               </div>

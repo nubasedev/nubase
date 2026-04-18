@@ -1,11 +1,17 @@
 import { type ObjectSchema, SEARCH_FIELD_NAME } from "@nubase/core";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { introspectSchemaForFilters } from "../components/schema-filter-bar/introspect-schema";
 import type {
   FilterFieldDescriptor,
   SchemaFilterConfig,
   SchemaFilterState,
 } from "../components/schema-filter-bar/types";
+
+/**
+ * How long to wait after the last NQL keystroke before firing a request.
+ * Keeps the backend quiet while the user is still typing an expression.
+ */
+const NQL_DEBOUNCE_MS = 400;
 
 export type UseSchemaFiltersOptions = SchemaFilterConfig;
 
@@ -105,18 +111,54 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
   const [searchValue, setSearchValueState] = useState("");
 
   // NQL mode + value. When enabled the structured filters and `q` are
-  // skipped in the request; only the `nql` parameter is sent.
+  // skipped in the request; only the `nql` parameter is sent. The value
+  // fed into `getRequestParams` is a *debounced* copy of `nqlValue` so
+  // each keystroke doesn't fire its own request.
   const [nqlMode, setNqlModeState] = useState(false);
   const [nqlValue, setNqlValueState] = useState("");
+  const [nqlValueForRequest, setNqlValueForRequest] = useState("");
+  const nqlDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const setNqlMode = useCallback((enabled: boolean) => {
     setNqlModeState(enabled);
-    if (!enabled) setNqlValueState("");
+    if (!enabled) {
+      setNqlValueState("");
+      setNqlValueForRequest("");
+      if (nqlDebounceTimerRef.current) {
+        clearTimeout(nqlDebounceTimerRef.current);
+        nqlDebounceTimerRef.current = null;
+      }
+    }
   }, []);
 
   const setNqlValue = useCallback((value: string) => {
     setNqlValueState(value);
   }, []);
+
+  // Debounce `nqlValue` into `nqlValueForRequest`. Empty values propagate
+  // immediately so "clear the filter" feels snappy.
+  useEffect(() => {
+    if (nqlDebounceTimerRef.current) {
+      clearTimeout(nqlDebounceTimerRef.current);
+      nqlDebounceTimerRef.current = null;
+    }
+    if (nqlValue.trim() === "") {
+      setNqlValueForRequest("");
+      return;
+    }
+    nqlDebounceTimerRef.current = setTimeout(() => {
+      setNqlValueForRequest(nqlValue);
+      nqlDebounceTimerRef.current = null;
+    }, NQL_DEBOUNCE_MS);
+    return () => {
+      if (nqlDebounceTimerRef.current) {
+        clearTimeout(nqlDebounceTimerRef.current);
+        nqlDebounceTimerRef.current = null;
+      }
+    };
+  }, [nqlValue]);
 
   // Update global search value
   const setSearchValue = useCallback((value: string) => {
@@ -147,6 +189,11 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     setFilterState({} as SchemaFilterState<TSchema>);
     setSearchValueState("");
     setNqlValueState("");
+    setNqlValueForRequest("");
+    if (nqlDebounceTimerRef.current) {
+      clearTimeout(nqlDebounceTimerRef.current);
+      nqlDebounceTimerRef.current = null;
+    }
   }, []);
 
   // Check if any filters are active (including search, NQL)
@@ -169,11 +216,12 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     });
   }, [filterState, searchValue, nqlMode, nqlValue]);
 
-  // Get params for API call. NQL mode sends only `nql`; structured mode
-  // sends `q` + field filters. The two modes are mutually exclusive.
+  // Get params for API call. NQL mode sends only `nql` (the *debounced*
+  // value, so per-keystroke fetches don't pound the backend). Structured
+  // mode sends `q` + field filters. The two modes are mutually exclusive.
   const getRequestParams = useCallback((): Record<string, unknown> => {
     if (nqlMode) {
-      const trimmed = nqlValue.trim();
+      const trimmed = nqlValueForRequest.trim();
       return trimmed === "" ? {} : { nql: trimmed };
     }
 
@@ -197,7 +245,7 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     }
 
     return params;
-  }, [filterState, searchValue, nqlMode, nqlValue]);
+  }, [filterState, searchValue, nqlMode, nqlValueForRequest]);
 
   return {
     filterState,
