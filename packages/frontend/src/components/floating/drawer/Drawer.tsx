@@ -34,7 +34,6 @@ export const Drawer: FC<DrawerProps> = ({
   depth = 0,
   zIndex = 50,
 }) => {
-  const showBackdrop = depth === 0;
   const [width, setWidth] = useState(() => getInitialWidthPx(depth));
 
   const getConstraints = useCallback(
@@ -70,18 +69,9 @@ export const Drawer: FC<DrawerProps> = ({
       className="fixed inset-0"
       style={{ zIndex: zIndex + depth, pointerEvents: "none" }}
     >
-      {showBackdrop && (
-        <div
-          role="presentation"
-          aria-hidden="true"
-          className="absolute inset-0 bg-black/50"
-          style={{ pointerEvents: "auto" }}
-          onClick={onClose}
-        />
-      )}
       <div
         role="dialog"
-        aria-modal="true"
+        aria-modal="false"
         className="absolute right-0 top-0 h-full bg-background text-foreground shadow-2xl border-l border-border"
         style={{ width, pointerEvents: "auto" }}
       >
