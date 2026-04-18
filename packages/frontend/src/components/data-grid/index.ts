@@ -17,7 +17,6 @@ export {
   renderToggleGroup,
   renderValue,
   SelectCellFormatter,
-  ToggleGroup,
 } from "./cellRenderers";
 export {
   DataGrid,

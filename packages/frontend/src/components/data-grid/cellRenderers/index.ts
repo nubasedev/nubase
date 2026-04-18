@@ -4,6 +4,6 @@ export {
   ActionCellRendererGroup,
 } from "./ActionCellFormatter";
 export { renderCheckbox } from "./renderCheckbox";
-export { renderToggleGroup, ToggleGroup } from "./renderToggleGroup";
+export { renderToggleGroup } from "./renderToggleGroup";
 export { renderValue } from "./renderValue";
 export { SelectCellFormatter } from "./SelectCellFormatter";

@@ -24,6 +24,7 @@ export * from "./search-controls";
 export * from "./searchable-table";
 export * from "./table";
 export * from "./tabs";
+export * from "./toggle-group";
 export * from "./top-bar";
 export * from "./user-avatar";
 export * from "./views";
