@@ -1,5 +1,6 @@
 import type { FormLayout, FormLayoutField, ObjectShape } from "@nubase/core";
 import type React from "react";
+import { SchemaFormLabelSplitter } from "./SchemaFormLabelSplitter";
 
 export interface SchemaFormVerticalLayoutProps<
   TShape extends ObjectShape = any,
@@ -26,7 +27,8 @@ export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
               {group.description}
             </p>
           )}
-          <div>
+          <div className="relative">
+            <SchemaFormLabelSplitter />
             {group.fields
               .filter((field) => !field.hidden)
               .map((field, fieldIndex, visibleFields) => (

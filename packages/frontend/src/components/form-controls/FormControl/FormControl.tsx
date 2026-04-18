@@ -42,12 +42,15 @@ const FormControl = forwardRef<HTMLDivElement, FormControlProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex items-start gap-4", className)}
+        className={cn(
+          "flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4",
+          className,
+        )}
         data-component="FormControl"
         {...props}
       >
         {label && (
-          <div className="w-32 shrink-0 pt-2">
+          <div className="sm:w-[var(--schema-form-label-width,8rem)] sm:shrink-0 sm:pt-2">
             <Label htmlFor={childId} required={required}>
               {label}
             </Label>
