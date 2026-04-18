@@ -8,7 +8,10 @@ import {
 } from "../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../form/SchemaForm/SchemaFormButtonBar";
 import { SchemaFormValidationErrors } from "../../form/SchemaForm/SchemaFormValidationErrors";
-import { ModalFrameStructured } from "./ModalFrameStructured";
+import {
+  ModalFrameStructured,
+  type ModalFrameStructuredVariant,
+} from "./ModalFrameStructured";
 
 export type ModalFrameSchemaFormProps<TSchema extends ObjectSchema<any>> = {
   onClose?: () => void;
@@ -18,6 +21,7 @@ export type ModalFrameSchemaFormProps<TSchema extends ObjectSchema<any>> = {
   submitText?: string;
   renderCustomFooter?: (form: SchemaFormConfiguration<TSchema>) => ReactNode;
   className?: string;
+  variant?: ModalFrameStructuredVariant;
 };
 
 export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
@@ -28,11 +32,13 @@ export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
   submitText = "Submit",
   renderCustomFooter,
   className,
+  variant,
 }: ModalFrameSchemaFormProps<TSchema>): ReturnType<FC> => {
   return (
     <SchemaForm form={form}>
       <ModalFrameStructured
         onClose={onClose}
+        variant={variant}
         className={className}
         header={
           title ? (

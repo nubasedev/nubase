@@ -5,7 +5,10 @@ import type { NubaseContextData } from "../../../../context/types";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
-import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
+import {
+  ModalFrameStructured,
+  type ModalFrameStructuredVariant,
+} from "../../../floating/modal/ModalFrameStructured";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
@@ -18,6 +21,7 @@ export type ResourceViewViewModalRendererProps = {
   onClose?: () => void;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
+  frameVariant?: ModalFrameStructuredVariant;
 };
 
 export const ResourceViewViewModalRenderer: FC<
@@ -31,6 +35,7 @@ export const ResourceViewViewModalRenderer: FC<
     onClose,
     onPatch: onPatchCallback,
     onError,
+    frameVariant,
   } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [initialData, setInitialData] = useState<Record<string, any> | null>(
@@ -88,6 +93,7 @@ export const ResourceViewViewModalRenderer: FC<
   return (
     <ModalFrameStructured
       onClose={onClose}
+      variant={frameVariant}
       header={
         <h2 className="text-lg font-semibold text-foreground">{view.title}</h2>
       }

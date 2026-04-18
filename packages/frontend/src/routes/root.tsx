@@ -11,6 +11,7 @@ import { MainNav } from "@/components/navigation/main-nav/MainNav";
 import type { AuthenticationState } from "../authentication/types";
 import { ActivityIndicator, Dock, TopBar } from "../components";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
+import { OverlayStack } from "../components/overlays/OverlayStack";
 import {
   getWorkspaceFromRouter,
   useWorkspace,
@@ -159,11 +160,14 @@ function AppShellComponent() {
   const context = useNubaseContext();
 
   return (
-    <Dock
-      top={<TopBar context={context} />}
-      left={<MainNav items={context.config.mainMenu} />}
-      center={<Outlet />}
-    />
+    <>
+      <Dock
+        top={<TopBar context={context} />}
+        left={<MainNav items={context.config.mainMenu} />}
+        center={<Outlet />}
+      />
+      <OverlayStack />
+    </>
   );
 }
 

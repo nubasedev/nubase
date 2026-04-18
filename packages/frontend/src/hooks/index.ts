@@ -19,6 +19,7 @@ export {
   useResourceSearchQuery,
   useResourceViewQuery,
 } from "./useNubaseQuery";
+export { type UseOverlaysResult, useOverlays } from "./useOverlays";
 export {
   type UseSchemaFiltersOptions,
   type UseSchemaFiltersReturn,

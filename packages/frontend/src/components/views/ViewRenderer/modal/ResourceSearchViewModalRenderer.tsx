@@ -6,7 +6,10 @@ import type { NubaseContextData } from "../../../../context/types";
 import { ActivityIndicator } from "../../../activity-indicator/ActivityIndicator";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import type { Column } from "../../../data-grid/types";
-import { ModalFrameStructured } from "../../../floating/modal/ModalFrameStructured";
+import {
+  ModalFrameStructured,
+  type ModalFrameStructuredVariant,
+} from "../../../floating/modal/ModalFrameStructured";
 
 export type ResourceSearchViewModalRendererProps = {
   view: ResourceSearchView;
@@ -16,12 +19,13 @@ export type ResourceSearchViewModalRendererProps = {
   onClose?: () => void;
   onRowClick?: (row: any) => void; // Callback for when a row is clicked
   onError?: (error: Error) => void;
+  frameVariant?: ModalFrameStructuredVariant;
 };
 
 export const ResourceSearchViewModalRenderer: FC<
   ResourceSearchViewModalRendererProps
 > = (props) => {
-  const { view, context, params, onClose, onError } = props;
+  const { view, context, params, onClose, onError, frameVariant } = props;
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<any[]>([]);
 
@@ -117,6 +121,7 @@ export const ResourceSearchViewModalRenderer: FC<
   return (
     <ModalFrameStructured
       onClose={onClose}
+      variant={frameVariant}
       header={
         <h2 className="text-lg font-semibold text-foreground">{view.title}</h2>
       }

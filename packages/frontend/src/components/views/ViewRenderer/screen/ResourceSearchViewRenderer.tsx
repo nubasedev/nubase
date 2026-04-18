@@ -1,6 +1,5 @@
 import type { BaseSchema, ObjectSchema, TableLayoutField } from "@nubase/core";
 import { OptionalSchema } from "@nubase/core";
-import { useNavigate } from "@tanstack/react-router";
 import type { FC } from "react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import type {
@@ -12,9 +11,9 @@ import type { ActionLayout } from "../../../../config/action-layout";
 import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
-import { useWorkspace } from "../../../../context/WorkspaceContext";
 import { emitEvent } from "../../../../events";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
+import { useOverlays } from "../../../../hooks/useOverlays";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { ActivityIndicator } from "../../../activity-indicator";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
@@ -83,9 +82,8 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   props,
 ) => {
   const { view, params, resourceName, resource, onError } = props;
-  const navigate = useNavigate();
   const context = useNubaseContext();
-  const workspace = useWorkspace();
+  const { openOverlay } = useOverlays();
 
   // Schema-derived filter state management
   const {
@@ -344,14 +342,10 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     if (isNavigable && resourceName) {
       cols.push(
         createNavigateColumn((row: any) => {
-          navigate({
-            to: "/$workspace/r/$resourceName/$operation",
-            params: {
-              workspace: workspace.slug,
-              resourceName,
-              operation: "view",
-            },
-            search: { [idField]: row[idField] },
+          openOverlay({
+            resource: resourceName,
+            operation: "view",
+            params: { [idField]: String(row[idField]) },
           });
         }, idField),
       );
@@ -424,14 +418,13 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     tableLayout,
     dynamicColumnKeys,
     resourceName,
-    navigate,
+    openOverlay,
     elementSchema,
     view.rowActions,
     resource?.actions,
     context,
     wrapActionsWithInvalidation,
     idField,
-    workspace.slug,
     isPatchEnabled,
     patchSchema,
     handleCellPatch,

@@ -5,6 +5,7 @@ import type { NubaseContextData } from "../../../../context/types";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { ModalFrameSchemaForm } from "../../../floating/modal/ModalFrameSchemaForm";
+import type { ModalFrameStructuredVariant } from "../../../floating/modal/ModalFrameStructured";
 
 export type ResourceCreateViewModalRendererProps = {
   view: ResourceCreateView;
@@ -13,12 +14,21 @@ export type ResourceCreateViewModalRendererProps = {
   onClose?: () => void;
   onCreate?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
+  frameVariant?: ModalFrameStructuredVariant;
 };
 
 export const ResourceCreateViewModalRenderer: FC<
   ResourceCreateViewModalRendererProps
 > = (props) => {
-  const { view, context, resourceName, onClose, onCreate, onError } = props;
+  const {
+    view,
+    context,
+    resourceName,
+    onClose,
+    onCreate,
+    onError,
+    frameVariant,
+  } = props;
   const { invalidateResourceSearch } = useResourceInvalidation();
 
   const form = useSchemaForm({
@@ -49,6 +59,7 @@ export const ResourceCreateViewModalRenderer: FC<
       form={form}
       onClose={onClose}
       submitText="Create"
+      variant={frameVariant}
     />
   );
 };
