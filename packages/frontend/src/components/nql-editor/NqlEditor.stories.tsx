@@ -44,12 +44,7 @@ export const WithInitialQuery: Story = {
     );
     return (
       <div className="w-[720px] space-y-2">
-        <NqlEditor
-          schema={ticketSchema}
-          value={value}
-          onChange={setValue}
-          height={80}
-        />
+        <NqlEditor schema={ticketSchema} value={value} onChange={setValue} />
       </div>
     );
   },

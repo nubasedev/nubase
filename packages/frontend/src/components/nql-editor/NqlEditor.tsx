@@ -45,8 +45,6 @@ export interface NqlEditorProps {
   onChange: (value: string) => void;
   /** Optional error message shown below the editor (e.g. from backend 400). */
   errorMessage?: string;
-  /** Explicit height. Defaults to a single-line-ish 40px. */
-  height?: number | string;
   /** Placeholder-like hint text when value is empty. */
   placeholder?: string;
   /** Extra classes for the outer container. */
@@ -65,7 +63,6 @@ export function NqlEditor({
   value,
   onChange,
   errorMessage,
-  height = 40,
   placeholder = 'Type NQL — e.g. Title CONTAINS "override"',
   className,
 }: NqlEditorProps) {
@@ -121,8 +118,8 @@ export function NqlEditor({
       renderLineHighlight: "none",
       wordWrap: "on",
       wrappingIndent: "same",
-      fontSize: 13,
-      padding: { top: 10, bottom: 0 },
+      fontSize: 14,
+      padding: { top: 7, bottom: 0 },
       fixedOverflowWidgets: true,
       contextmenu: false,
       quickSuggestions: {
@@ -173,18 +170,34 @@ export function NqlEditor({
 
   return (
     <div className={cn("flex-1 min-w-0", className)}>
+      {/*
+        Shell mirrors the `textInputVariants` CVA in
+        `components/form-controls/controls/TextInput/TextInput.tsx` so the
+        NQL editor lines up with every other input in the filter bar:
+        h-9, rounded-md, border-input, bg-transparent (with the dark-mode
+        input wash), shadow-xs. Monaco's focus lives on an inner
+        `.monaco-editor.focused` element rather than the shell itself, so
+        we drive the focus ring via Tailwind `has-` selectors.
+      */}
       <div
         className={cn(
-          "nql-editor-shell relative rounded-md border border-input bg-background",
-          "shadow-xs",
-          errorMessage && "border-destructive",
+          "nql-editor-shell relative flex h-9 w-full min-w-0 overflow-hidden",
+          "rounded-md border border-input",
+          "bg-transparent dark:bg-input/30",
+          "shadow-xs transition-[color,box-shadow]",
+          "has-[.monaco-editor.focused]:border-ring",
+          "has-[.monaco-editor.focused]:ring-ring/50",
+          "has-[.monaco-editor.focused]:ring-[3px]",
+          errorMessage && [
+            "border-destructive",
+            "ring-destructive/20 dark:ring-destructive/40",
+          ],
         )}
-        style={{ height }}
       >
         <div ref={containerRef} className="w-full h-full" />
         {value === "" && (
           <div
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground"
             aria-hidden
           >
             {placeholder}
