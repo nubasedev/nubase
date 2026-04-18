@@ -4,6 +4,8 @@ export {
   useSchemaForm,
 } from "../components/form/SchemaForm/useSchemaForm";
 export { useComputedMetadata } from "./useComputedMetadata";
+export { useDebouncedValue } from "./useDebouncedValue";
+export { useLastDefined } from "./useLastDefined";
 export { getLayout, useLayout } from "./useLayout";
 export {
   type UseNubaseMutationOptions,

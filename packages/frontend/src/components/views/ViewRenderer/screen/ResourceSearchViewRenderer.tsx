@@ -12,6 +12,7 @@ import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { emitEvent } from "../../../../events";
+import { useLastDefined } from "../../../../hooks/useLastDefined";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useOverlays } from "../../../../hooks/useOverlays";
@@ -286,16 +287,12 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     onError?.(error as Error);
   }, [error, onError]);
 
-  // Keep a local copy of the last successful rows so a failing refetch
-  // (e.g. an invalid NQL query) doesn't wipe the grid. TanStack's
-  // `placeholderData: keepPreviousData` only bridges the `isFetching`
-  // window — once the new query errors the placeholder is dropped.
-  const [lastGoodData, setLastGoodData] = useState<any[]>([]);
-  useEffect(() => {
-    if (response?.data) setLastGoodData(response.data);
-  }, [response?.data]);
-
-  const data = response?.data ?? lastGoodData;
+  // Keep the last successful rows visible through a failing refetch
+  // (e.g. an invalid NQL query). TanStack's `placeholderData:
+  // keepPreviousData` only bridges the `isFetching` window — once the
+  // new query errors the placeholder is dropped — so we sticky-hold it
+  // ourselves.
+  const data = useLastDefined(response?.data) ?? [];
 
   // Get the element schema from the array schema to access table layouts
   const elementSchema = (view.schemaGet as any)?._element as

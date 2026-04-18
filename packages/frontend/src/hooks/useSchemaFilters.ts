@@ -1,11 +1,12 @@
 import { type ObjectSchema, SEARCH_FIELD_NAME } from "@nubase/core";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { introspectSchemaForFilters } from "../components/schema-filter-bar/introspect-schema";
 import type {
   FilterFieldDescriptor,
   SchemaFilterConfig,
   SchemaFilterState,
 } from "../components/schema-filter-bar/types";
+import { useDebouncedValue } from "./useDebouncedValue";
 
 /**
  * How long to wait after the last NQL keystroke before firing a request.
@@ -110,55 +111,25 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
   // Global search state (separate from field filters)
   const [searchValue, setSearchValueState] = useState("");
 
-  // NQL mode + value. When enabled the structured filters and `q` are
-  // skipped in the request; only the `nql` parameter is sent. The value
-  // fed into `getRequestParams` is a *debounced* copy of `nqlValue` so
-  // each keystroke doesn't fire its own request.
+  // NQL mode + value. When enabled, the structured filters and `q` are
+  // skipped in the request; only the `nql` parameter is sent.
   const [nqlMode, setNqlModeState] = useState(false);
   const [nqlValue, setNqlValueState] = useState("");
-  const [nqlValueForRequest, setNqlValueForRequest] = useState("");
-  const nqlDebounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+
+  // Debounced copy of `nqlValue` — what actually goes into the request.
+  // Empty values short-circuit the debounce so "clear the filter" stays
+  // snappy (no UI lag waiting for the timer to elapse).
+  const debouncedNqlValue = useDebouncedValue(nqlValue, NQL_DEBOUNCE_MS);
+  const nqlValueForRequest = nqlValue.trim() === "" ? "" : debouncedNqlValue;
 
   const setNqlMode = useCallback((enabled: boolean) => {
     setNqlModeState(enabled);
-    if (!enabled) {
-      setNqlValueState("");
-      setNqlValueForRequest("");
-      if (nqlDebounceTimerRef.current) {
-        clearTimeout(nqlDebounceTimerRef.current);
-        nqlDebounceTimerRef.current = null;
-      }
-    }
+    if (!enabled) setNqlValueState("");
   }, []);
 
   const setNqlValue = useCallback((value: string) => {
     setNqlValueState(value);
   }, []);
-
-  // Debounce `nqlValue` into `nqlValueForRequest`. Empty values propagate
-  // immediately so "clear the filter" feels snappy.
-  useEffect(() => {
-    if (nqlDebounceTimerRef.current) {
-      clearTimeout(nqlDebounceTimerRef.current);
-      nqlDebounceTimerRef.current = null;
-    }
-    if (nqlValue.trim() === "") {
-      setNqlValueForRequest("");
-      return;
-    }
-    nqlDebounceTimerRef.current = setTimeout(() => {
-      setNqlValueForRequest(nqlValue);
-      nqlDebounceTimerRef.current = null;
-    }, NQL_DEBOUNCE_MS);
-    return () => {
-      if (nqlDebounceTimerRef.current) {
-        clearTimeout(nqlDebounceTimerRef.current);
-        nqlDebounceTimerRef.current = null;
-      }
-    };
-  }, [nqlValue]);
 
   // Update global search value
   const setSearchValue = useCallback((value: string) => {
@@ -184,16 +155,13 @@ export function useSchemaFilters<TSchema extends ObjectSchema<any>>(
     [],
   );
 
-  // Clear all filters (including search and any NQL state)
+  // Clear all filters (including search and any NQL state). Clearing
+  // `nqlValue` to "" causes `nqlValueForRequest` to flip to "" on the
+  // same render via the short-circuit above — no manual timer plumbing.
   const clearFilters = useCallback(() => {
     setFilterState({} as SchemaFilterState<TSchema>);
     setSearchValueState("");
     setNqlValueState("");
-    setNqlValueForRequest("");
-    if (nqlDebounceTimerRef.current) {
-      clearTimeout(nqlDebounceTimerRef.current);
-      nqlDebounceTimerRef.current = null;
-    }
   }, []);
 
   // Check if any filters are active (including search, NQL)
