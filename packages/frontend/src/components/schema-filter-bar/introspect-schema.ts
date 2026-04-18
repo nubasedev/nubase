@@ -1,5 +1,9 @@
 import type { BaseSchema, ObjectSchema, SchemaMetadata } from "@nubase/core";
-import { OptionalSchema, SEARCH_FIELD_NAME } from "@nubase/core";
+import {
+  NQL_FIELD_NAME,
+  OptionalSchema,
+  SEARCH_FIELD_NAME,
+} from "@nubase/core";
 import type { FilterFieldDescriptor, SchemaFilterConfig } from "./types";
 
 /**
@@ -77,8 +81,10 @@ export function introspectSchemaForFilters<TSchema extends ObjectSchema<any>>(
   const shape = schema._shape;
 
   for (const [fieldName, fieldSchema] of Object.entries(shape)) {
-    // Always skip the search field - it's handled by SearchFilterBar
-    if (fieldName === SEARCH_FIELD_NAME) {
+    // Always skip the meta fields that live on every search-capable
+    // endpoint: `q` is handled by SearchFilterBar, `nql` by the NQL
+    // toggle + editor. Neither is a regular filterable field.
+    if (fieldName === SEARCH_FIELD_NAME || fieldName === NQL_FIELD_NAME) {
       continue;
     }
 

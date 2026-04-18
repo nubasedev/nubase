@@ -126,12 +126,15 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
         }
       }}
       variant="outline"
-      size="sm"
       disabled={disabled}
       aria-label="Filter mode"
     >
-      <ToggleGroupItem value="filters">Filters</ToggleGroupItem>
-      <ToggleGroupItem value="nql">NQL</ToggleGroupItem>
+      <ToggleGroupItem value="filters" className="px-3">
+        Filters
+      </ToggleGroupItem>
+      <ToggleGroupItem value="nql" className="px-3">
+        NQL
+      </ToggleGroupItem>
     </ToggleGroup>
   ) : null;
   // Render a filter control based on the descriptor
@@ -257,6 +260,10 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
     );
   }
 
+  // Toggle is passed as `leading` so every control (toggle, search,
+  // filter chips, clear button) lives in the *same* flex-wrap container
+  // and reflows as one row when the viewport narrows — no orphan mode
+  // toggle on its own line above the rest.
   return (
     <SearchFilterBar
       searchValue={searchValue}
@@ -267,8 +274,8 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
       showClearFilters={showClearFilters}
       disabled={disabled}
       className={cn(className)}
+      leading={modeToggle}
     >
-      {modeToggle}
       {filterDescriptors.map(renderFilter)}
     </SearchFilterBar>
   );

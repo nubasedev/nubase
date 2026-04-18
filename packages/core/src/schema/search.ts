@@ -9,6 +9,14 @@ import type { ObjectSchema } from "./schema";
 export const SEARCH_FIELD_NAME = "q";
 
 /**
+ * The standard field name used for NQL (Nubase Query Language) expressions.
+ * Lives on every search-capable endpoint via {@link baseSearchParams} /
+ * {@link withSearchParams}. Not a regular filterable field — the filter
+ * bar treats it as meta just like {@link SEARCH_FIELD_NAME}.
+ */
+export const NQL_FIELD_NAME = "nql";
+
+/**
  * Base search parameters schema.
  * Contains the standard "q" parameter for global text search.
  *

@@ -61,6 +61,13 @@ export type SearchFilterBarProps = {
   /** Debounce delay in ms for search input (default: 300, set to 0 to disable) */
   searchDebounceMs?: number;
 
+  /**
+   * Content rendered before the search input, inside the same flex-wrap
+   * container so everything reflows as one row when the viewport narrows.
+   * Useful for mode toggles that should sit at the leading edge.
+   */
+  leading?: React.ReactNode;
+
   /** Filter components to render between search and clear button */
   children?: React.ReactNode;
 
@@ -88,6 +95,7 @@ const SearchFilterBar = React.forwardRef<HTMLDivElement, SearchFilterBarProps>(
       searchPlaceholder = "Search...",
       searchWidth = 200,
       searchDebounceMs = 300,
+      leading,
       children,
       onClearFilters,
       showClearFilters = true,
@@ -146,6 +154,7 @@ const SearchFilterBar = React.forwardRef<HTMLDivElement, SearchFilterBarProps>(
         className={cn(searchFilterBarVariants(), className)}
         data-slot="search-filter-bar"
       >
+        {leading}
         {/* Search Input */}
         <div className="relative">
           <input
