@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   parseOverlayString,
-  readOverlays,
+  readOverlay,
   stringifyOverlay,
-  writeOverlays,
+  writeOverlay,
 } from "./overlay-url";
 
 describe("parseOverlayString", () => {
@@ -96,99 +96,53 @@ describe("stringifyOverlay", () => {
   });
 });
 
-describe("readOverlays", () => {
-  it("returns empty array when no overlay params present", () => {
-    expect(readOverlays({ foo: "bar" })).toEqual([]);
+describe("readOverlay", () => {
+  it("returns null when no overlay param", () => {
+    expect(readOverlay({ foo: "bar" })).toBeNull();
   });
 
-  it("reads a single overlay", () => {
-    expect(readOverlays({ overlay1: "user/view/id:1" })).toEqual([
-      { resource: "user", operation: "view", params: { id: "1" } },
-    ]);
+  it("returns null on null/undefined", () => {
+    expect(readOverlay(null)).toBeNull();
+    expect(readOverlay(undefined)).toBeNull();
   });
 
-  it("reads stacked overlays in index order", () => {
-    const result = readOverlays({
-      overlay2: "ticket/view/id:42",
-      overlay1: "user/view/id:1",
+  it("parses the overlay param", () => {
+    expect(readOverlay({ overlay: "user/view/id:1" })).toEqual({
+      resource: "user",
+      operation: "view",
+      params: { id: "1" },
     });
-    expect(result).toEqual([
-      { resource: "user", operation: "view", params: { id: "1" } },
-      { resource: "ticket", operation: "view", params: { id: "42" } },
-    ]);
   });
 
-  it("skips non-numeric overlay keys", () => {
-    expect(
-      readOverlays({ overlay1: "user/view/id:1", overlayX: "ignored" }),
-    ).toEqual([{ resource: "user", operation: "view", params: { id: "1" } }]);
+  it("returns null for an invalid overlay string", () => {
+    expect(readOverlay({ overlay: "malformed" })).toBeNull();
   });
 
-  it("skips invalid overlay strings", () => {
-    const result = readOverlays({
-      overlay1: "user/view/id:1",
-      overlay2: "malformed",
-    });
-    expect(result).toEqual([
-      { resource: "user", operation: "view", params: { id: "1" } },
-    ]);
-  });
-
-  it("handles gaps by stopping at first missing index", () => {
-    expect(
-      readOverlays({
-        overlay1: "user/view/id:1",
-        overlay3: "ticket/view/id:42",
-      }),
-    ).toEqual([{ resource: "user", operation: "view", params: { id: "1" } }]);
+  it("ignores non-string overlay values", () => {
+    expect(readOverlay({ overlay: 42 as unknown as string })).toBeNull();
   });
 });
 
-describe("writeOverlays", () => {
+describe("writeOverlay", () => {
   it("preserves non-overlay params", () => {
-    const result = writeOverlays({ foo: "bar", page: "2" }, []);
-    expect(result).toEqual({ foo: "bar", page: "2" });
-  });
-
-  it("removes existing overlay params when writing empty stack", () => {
-    const result = writeOverlays(
-      { foo: "bar", overlay1: "old", overlay2: "older" },
-      [],
-    );
-    expect(result).toEqual({ foo: "bar" });
-  });
-
-  it("writes a single overlay as overlay1", () => {
-    const result = writeOverlays({}, [
-      { resource: "user", operation: "view", params: { id: "1" } },
-    ]);
-    expect(result).toEqual({ overlay1: "user/view/id:1" });
-  });
-
-  it("writes stacked overlays as overlay1..overlayN", () => {
-    const result = writeOverlays({}, [
-      { resource: "user", operation: "view", params: { id: "1" } },
-      { resource: "ticket", operation: "view", params: { id: "42" } },
-    ]);
-    expect(result).toEqual({
-      overlay1: "user/view/id:1",
-      overlay2: "ticket/view/id:42",
+    expect(writeOverlay({ foo: "bar", page: "2" }, null)).toEqual({
+      foo: "bar",
+      page: "2",
     });
   });
 
-  it("replaces existing overlays with a fresh stack", () => {
-    const result = writeOverlays(
-      {
-        q: "hello",
-        overlay1: "stale",
-        overlay2: "stale",
-        overlay3: "stale",
-      },
-      [{ resource: "user", operation: "view", params: { id: "1" } }],
-    );
-    expect(result).toEqual({
-      q: "hello",
-      overlay1: "user/view/id:1",
-    });
+  it("removes an existing overlay when writing null", () => {
+    expect(
+      writeOverlay({ foo: "bar", overlay: "user/view/id:1" }, null),
+    ).toEqual({ foo: "bar" });
+  });
+
+  it("writes an overlay, replacing any existing one", () => {
+    expect(
+      writeOverlay(
+        { foo: "bar", overlay: "stale/view/id:99" },
+        { resource: "user", operation: "view", params: { id: "1" } },
+      ),
+    ).toEqual({ foo: "bar", overlay: "user/view/id:1" });
   });
 });

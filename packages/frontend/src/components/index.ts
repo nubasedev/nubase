@@ -1,6 +1,7 @@
 export * from "./activity-indicator";
 export * from "./buttons/ActionBar";
 export * from "./buttons/ButtonBar";
+export * from "./buttons/ButtonGroup";
 export * from "./callout";
 export * from "./card";
 export * from "./charts";

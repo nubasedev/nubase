@@ -1,4 +1,4 @@
-import type { FC, ReactElement } from "react";
+import type { FC, ReactElement, ReactNode } from "react";
 import { cloneElement, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useResize } from "../../dock/useResize";
@@ -9,32 +9,58 @@ export type DrawerProps = {
   open: boolean;
   onClose: () => void;
   content: ReactElement<BaseModalFrameProps>;
-  depth?: number;
+  /** Optional content rendered at the top of the drawer (e.g. a command bar). */
+  header?: ReactNode;
   zIndex?: number;
 };
 
-const INITIAL_WIDTH_FRACTIONS = [0.6, 0.55, 0.5, 0.45] as const;
+const WIDTH_STORAGE_KEY = "nubase:drawer-width";
+const DEFAULT_WIDTH_FRACTION = 0.6;
 const MIN_WIDTH_PX = 400;
 const VIEWPORT_RESERVED_PX = 100;
 const SSR_FALLBACK_WIDTH = 600;
 
-function getInitialWidthPx(depth: number): number {
-  const fraction =
-    INITIAL_WIDTH_FRACTIONS[
-      Math.min(depth, INITIAL_WIDTH_FRACTIONS.length - 1)
-    ] ?? 0.4;
+function getDefaultWidthPx(): number {
   if (typeof window === "undefined") return SSR_FALLBACK_WIDTH;
-  return Math.round(window.innerWidth * fraction);
+  return Math.round(window.innerWidth * DEFAULT_WIDTH_FRACTION);
+}
+
+function readPersistedWidth(): number | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(WIDTH_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < MIN_WIDTH_PX) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function persistWidth(width: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(WIDTH_STORAGE_KEY, String(width));
+  } catch {
+    /* ignore quota / privacy errors */
+  }
 }
 
 export const Drawer: FC<DrawerProps> = ({
   open,
   onClose,
   content,
-  depth = 0,
+  header,
   zIndex = 50,
 }) => {
-  const [width, setWidth] = useState(() => getInitialWidthPx(depth));
+  const [width, setWidth] = useState(
+    () => readPersistedWidth() ?? getDefaultWidthPx(),
+  );
+
+  useEffect(() => {
+    persistWidth(width);
+  }, [width]);
 
   const getConstraints = useCallback(
     () => ({
@@ -65,18 +91,18 @@ export const Drawer: FC<DrawerProps> = ({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0"
-      style={{ zIndex: zIndex + depth, pointerEvents: "none" }}
-    >
+    <div className="fixed inset-0" style={{ zIndex, pointerEvents: "none" }}>
       <div
         role="dialog"
         aria-modal="false"
-        className="absolute right-0 top-0 h-full bg-background text-foreground shadow-2xl border-l border-border"
+        className="absolute right-0 top-0 h-full bg-background text-foreground shadow-2xl border-l border-border flex flex-col min-h-0"
         style={{ width, pointerEvents: "auto" }}
       >
         <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
-        {cloneElement(content, { onClose })}
+        {header && <div className="flex-shrink-0">{header}</div>}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {cloneElement(content, { onClose })}
+        </div>
       </div>
     </div>,
     document.body,

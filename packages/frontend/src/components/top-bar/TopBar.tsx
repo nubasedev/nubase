@@ -31,7 +31,7 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
       <div
         ref={ref}
         className={cn(
-          "flex items-center gap-4 px-4 py-2 bg-background border-b border-border",
+          "flex h-12 items-center gap-4 px-4 bg-background border-b border-border",
           className,
         )}
         {...props}

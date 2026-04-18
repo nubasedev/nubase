@@ -4,7 +4,7 @@ export type Overlay = {
   params: Record<string, string>;
 };
 
-const OVERLAY_KEY_PATTERN = /^overlay(\d+)$/;
+export const OVERLAY_KEY = "overlay";
 
 export function parseOverlayString(input: string): Overlay | null {
   if (!input) return null;
@@ -34,46 +34,28 @@ export function stringifyOverlay(overlay: Overlay): string {
   return segments.join("/");
 }
 
-export function readOverlays(
+export function readOverlay(
   search: Record<string, unknown> | undefined | null,
-): Overlay[] {
-  if (!search) return [];
-
-  const indexed: Array<{ index: number; overlay: Overlay }> = [];
-  for (const [key, value] of Object.entries(search)) {
-    const match = key.match(OVERLAY_KEY_PATTERN);
-    if (!match) continue;
-    if (typeof value !== "string") continue;
-    const overlay = parseOverlayString(value);
-    if (!overlay) continue;
-    indexed.push({ index: Number(match[1]), overlay });
-  }
-
-  indexed.sort((a, b) => a.index - b.index);
-
-  const result: Overlay[] = [];
-  let expected = 1;
-  for (const { index, overlay } of indexed) {
-    if (index !== expected) break;
-    result.push(overlay);
-    expected += 1;
-  }
-  return result;
+): Overlay | null {
+  if (!search) return null;
+  const raw = search[OVERLAY_KEY];
+  if (typeof raw !== "string") return null;
+  return parseOverlayString(raw);
 }
 
-export function writeOverlays(
+export function writeOverlay(
   search: Record<string, unknown> | undefined | null,
-  overlays: Overlay[],
+  overlay: Overlay | null,
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   if (search) {
     for (const [key, value] of Object.entries(search)) {
-      if (OVERLAY_KEY_PATTERN.test(key)) continue;
+      if (key === OVERLAY_KEY) continue;
       result[key] = value;
     }
   }
-  overlays.forEach((overlay, i) => {
-    result[`overlay${i + 1}`] = stringifyOverlay(overlay);
-  });
+  if (overlay) {
+    result[OVERLAY_KEY] = stringifyOverlay(overlay);
+  }
   return result;
 }
