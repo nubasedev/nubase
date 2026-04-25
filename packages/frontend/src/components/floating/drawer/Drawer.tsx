@@ -1,4 +1,4 @@
-import type { FC, ReactElement, ReactNode } from "react";
+import type { AnimationEvent, FC, ReactElement, ReactNode } from "react";
 import { cloneElement, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useResize } from "../../dock/useResize";
@@ -11,6 +11,8 @@ export type DrawerProps = {
   content: ReactElement<BaseModalFrameProps>;
   /** Optional content rendered at the top of the drawer (e.g. a command bar). */
   header?: ReactNode;
+  /** Fires after the exit animation completes and the drawer unmounts its surface. */
+  onExited?: () => void;
   zIndex?: number;
 };
 
@@ -52,11 +54,23 @@ export const Drawer: FC<DrawerProps> = ({
   onClose,
   content,
   header,
+  onExited,
   zIndex = 50,
 }) => {
   const [width, setWidth] = useState(
     () => readPersistedWidth() ?? getDefaultWidthPx(),
   );
+  const [shouldRender, setShouldRender] = useState(open);
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      setIsExiting(false);
+    } else if (shouldRender) {
+      setIsExiting(true);
+    }
+  }, [open, shouldRender]);
 
   useEffect(() => {
     persistWidth(width);
@@ -87,16 +101,30 @@ export const Drawer: FC<DrawerProps> = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!shouldRender) return null;
   if (typeof document === "undefined") return null;
+
+  const handleAnimationEnd = (e: AnimationEvent<HTMLDivElement>) => {
+    if (e.target !== e.currentTarget) return;
+    if (isExiting) {
+      setShouldRender(false);
+      setIsExiting(false);
+      onExited?.();
+    }
+  };
+
+  const animationClasses = isExiting
+    ? "animate-out slide-out-to-right fade-out duration-200"
+    : "animate-in slide-in-from-right fade-in duration-200";
 
   return createPortal(
     <div className="fixed inset-0" style={{ zIndex, pointerEvents: "none" }}>
       <div
         role="dialog"
         aria-modal="false"
-        className="absolute right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0"
-        style={{ width, pointerEvents: "auto" }}
+        onAnimationEnd={handleAnimationEnd}
+        className={`absolute right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
+        style={{ width, pointerEvents: "auto", animationFillMode: "forwards" }}
       >
         <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
         {header && <div className="flex-shrink-0">{header}</div>}

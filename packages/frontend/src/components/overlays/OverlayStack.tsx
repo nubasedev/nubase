@@ -1,6 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ExternalLink, X } from "lucide-react";
-import { type FC, type ReactElement, useCallback } from "react";
+import {
+  type FC,
+  type ReactElement,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { useOverlays } from "../../hooks/useOverlays";
 import type { Overlay } from "../../utils/overlay-url";
@@ -68,10 +74,17 @@ const CommandBar: FC<CommandBarProps> = ({
 
 type OverlayDrawerProps = {
   overlay: Overlay;
+  open: boolean;
   onClose: () => void;
+  onExited: () => void;
 };
 
-const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
+const OverlayDrawer: FC<OverlayDrawerProps> = ({
+  overlay,
+  open,
+  onClose,
+  onExited,
+}) => {
   const context = useNubaseContext();
   const navigate = useNavigate();
   const workspace = useWorkspace();
@@ -147,8 +160,9 @@ const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
 
   return (
     <Drawer
-      open={true}
+      open={open}
       onClose={onClose}
+      onExited={onExited}
       content={content}
       header={
         <CommandBar
@@ -164,8 +178,26 @@ const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
 
 export const OverlayStack: FC = () => {
   const { overlay, closeOverlay } = useOverlays();
+  const [renderedOverlay, setRenderedOverlay] = useState<Overlay | null>(
+    overlay,
+  );
 
-  if (!overlay) return null;
+  useEffect(() => {
+    if (overlay) setRenderedOverlay(overlay);
+  }, [overlay]);
 
-  return <OverlayDrawer overlay={overlay} onClose={closeOverlay} />;
+  const handleExited = useCallback(() => {
+    if (!overlay) setRenderedOverlay(null);
+  }, [overlay]);
+
+  if (!renderedOverlay) return null;
+
+  return (
+    <OverlayDrawer
+      overlay={renderedOverlay}
+      open={!!overlay}
+      onClose={closeOverlay}
+      onExited={handleExited}
+    />
+  );
 };
