@@ -46,7 +46,7 @@
     "dev": "concurrently \"npm:watch:ts\" \"npm:watch:css\" \"npm:storybook\""
   },
   "peerDependencies": {
-    "react": "^19.2.4"
+    "react": "^19.2.5"
   },
   "devDependencies": {
     "@faker-js/faker": "^10.3.0",
@@ -103,7 +103,7 @@
     "monaco-editor": "^0.55.1",
     "monaco-spellchecker": "^0.6.0",
     "postcss": "^8.5.8",
-    "react-dom": "^19.2.4",
+    "react-dom": "^19.2.5",
     "react-grid-layout": "^2.2.2",
     "react-hotkeys-hook": "^5.2.4",
     "react-monaco-editor": "^0.59.0",
