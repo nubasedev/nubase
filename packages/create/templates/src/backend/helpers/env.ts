@@ -1,5 +1,5 @@
-import dotenv from "dotenv";
 import path from "node:path";
+import dotenv from "dotenv";
 
 export function loadEnv(): void {
   const nodeEnv = process.env.NODE_ENV || "development";

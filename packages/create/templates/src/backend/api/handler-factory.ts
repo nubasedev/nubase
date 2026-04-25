@@ -1,5 +1,5 @@
 import { createHandlerFactory } from "@nubase/backend";
-import { apiEndpoints, type ApiEndpoints } from "../../common";
+import { type ApiEndpoints, apiEndpoints } from "../../common";
 import type { __PROJECT_NAME_PASCAL__User } from "../auth";
 
 /**
@@ -29,6 +29,9 @@ import type { __PROJECT_NAME_PASCAL__User } from "../auth";
  * }),
  * ```
  */
-export const createHandler = createHandlerFactory<ApiEndpoints, __PROJECT_NAME_PASCAL__User>({
+export const createHandler = createHandlerFactory<
+  ApiEndpoints,
+  __PROJECT_NAME_PASCAL__User
+>({
   endpoints: apiEndpoints,
 });

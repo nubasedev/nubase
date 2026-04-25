@@ -41,7 +41,10 @@ export const handleClearDatabase = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "__TEST_PORT__") {
+    if (
+      process.env.NODE_ENV !== "test" &&
+      process.env.DB_PORT !== "__TEST_PORT__"
+    ) {
       throw new Error("Database cleanup is only allowed in test environment");
     }
 
@@ -123,7 +126,10 @@ export const handleSeedTestData = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "__TEST_PORT__") {
+    if (
+      process.env.NODE_ENV !== "test" &&
+      process.env.DB_PORT !== "__TEST_PORT__"
+    ) {
       throw new Error("Test seeding is only allowed in test environment");
     }
 
@@ -175,7 +181,10 @@ export const handleGetDatabaseStats = createHttpHandler({
   },
   handler: async ({ params }) => {
     // Only allow in test environment
-    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "__TEST_PORT__") {
+    if (
+      process.env.NODE_ENV !== "test" &&
+      process.env.DB_PORT !== "__TEST_PORT__"
+    ) {
       throw new Error("Database stats are only available in test environment");
     }
 
@@ -216,7 +225,10 @@ export const handleEnsureWorkspace = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "__TEST_PORT__") {
+    if (
+      process.env.NODE_ENV !== "test" &&
+      process.env.DB_PORT !== "__TEST_PORT__"
+    ) {
       throw new Error(
         "Workspace management is only allowed in test environment",
       );
@@ -297,7 +309,10 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "__TEST_PORT__") {
+    if (
+      process.env.NODE_ENV !== "test" &&
+      process.env.DB_PORT !== "__TEST_PORT__"
+    ) {
       throw new Error(
         "Multi-workspace user seeding is only allowed in test environment",
       );

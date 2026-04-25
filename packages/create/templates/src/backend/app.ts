@@ -4,12 +4,12 @@ import { authHandlers } from "./api/routes/auth";
 import { dashboardHandlers } from "./api/routes/dashboard";
 import { testUtilsHandlers } from "./api/routes/test-utils";
 import { ticketHandlers } from "./api/routes/ticket";
+import { __PROJECT_NAME_CAMEL__AuthController } from "./auth";
+import { loadEnv } from "./helpers/env";
 import {
   createPostAuthWorkspaceMiddleware,
   createWorkspaceMiddleware,
 } from "./middleware/workspace-middleware";
-import { __PROJECT_NAME_CAMEL__AuthController } from "./auth";
-import { loadEnv } from "./helpers/env";
 
 // Load environment variables
 loadEnv();
@@ -31,7 +31,9 @@ app.use("*", createPostAuthWorkspaceMiddleware());
 // API routes - all handlers are mounted under /api
 const api = new Hono();
 
-api.get("/", (c) => c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }));
+api.get("/", (c) =>
+  c.json({ message: "Welcome to __PROJECT_NAME_PASCAL__ API" }),
+);
 
 registerHandlers(api, authHandlers);
 registerHandlers(api, ticketHandlers);

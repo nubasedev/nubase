@@ -27,7 +27,6 @@
       "!**/theme.css",
       "!**/playwright-report",
       "!**/test-results",
-      "!**/templates",
       "!**/nubase/snapshots",
       "!**/nubase/migrations"
     ]
@@ -79,6 +78,16 @@
           },
           "correctness": {
             "useExhaustiveDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/create/templates/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noNonNullAssertion": "off"
           }
         }
       }

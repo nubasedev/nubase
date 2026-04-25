@@ -13,233 +13,250 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 interface ProjectOptions {
-	name: string;
-	dbName: string;
-	dbUser: string;
-	dbPassword: string;
-	devPort: number;
-	testPort: number;
-	port: number;
-	testPortApp: number;
-	nubaseTag: string;
+  name: string;
+  dbName: string;
+  dbUser: string;
+  dbPassword: string;
+  devPort: number;
+  testPort: number;
+  port: number;
+  testPortApp: number;
+  nubaseTag: string;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "..", "templates");
 
 function toPascalCase(str: string): string {
-	return str
-		.split(/[-_\s]+/)
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-		.join("");
+  return str
+    .split(/[-_\s]+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("");
 }
 
 function toCamelCase(str: string): string {
-	const pascal = toPascalCase(str);
-	return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+  const pascal = toPascalCase(str);
+  return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
 
 function toKebabCase(str: string): string {
-	return str
-		.replace(/([a-z])([A-Z])/g, "$1-$2")
-		.replace(/[\s_]+/g, "-")
-		.toLowerCase();
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
+    .replace(/[\s_]+/g, "-")
+    .toLowerCase();
 }
 
-function replaceInContent(
-	content: string,
-	options: ProjectOptions,
-): string {
-	const kebabName = toKebabCase(options.name);
-	const pascalName = toPascalCase(options.name);
-	const camelName = toCamelCase(options.name);
+function replaceInContent(content: string, options: ProjectOptions): string {
+  const kebabName = toKebabCase(options.name);
+  const pascalName = toPascalCase(options.name);
+  const camelName = toCamelCase(options.name);
 
-	// Determine the @nubase/* package version string
-	// For "latest", use "*" (any version). For other tags like "dev", use the tag name directly.
-	const nubaseVersion = options.nubaseTag === "latest" ? "*" : options.nubaseTag;
+  // Determine the @nubase/* package version string
+  // For "latest", use "*" (any version). For other tags like "dev", use the tag name directly.
+  const nubaseVersion =
+    options.nubaseTag === "latest" ? "*" : options.nubaseTag;
 
-	return content
-		.replace(/__PROJECT_NAME__/g, kebabName)
-		.replace(/__PROJECT_NAME_PASCAL__/g, pascalName)
-		.replace(/__PROJECT_NAME_CAMEL__/g, camelName)
-		.replace(/__DB_NAME__/g, options.dbName)
-		.replace(/__DB_USER__/g, options.dbUser)
-		.replace(/__DB_PASSWORD__/g, options.dbPassword)
-		.replace(/__DEV_PORT__/g, String(options.devPort))
-		.replace(/__TEST_PORT__/g, String(options.testPort))
-		.replace(/__PORT__/g, String(options.port))
-		.replace(/__TEST_PORT_APP__/g, String(options.testPortApp))
-		.replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
-		.replace(/"@nubase\/frontend": "\*"/g, `"@nubase/frontend": "${nubaseVersion}"`)
-		.replace(/"@nubase\/backend": "\*"/g, `"@nubase/backend": "${nubaseVersion}"`)
-		.replace(/"@nubase\/create": "\*"/g, `"@nubase/create": "${nubaseVersion}"`);
+  return content
+    .replace(/__PROJECT_NAME__/g, kebabName)
+    .replace(/__PROJECT_NAME_PASCAL__/g, pascalName)
+    .replace(/__PROJECT_NAME_CAMEL__/g, camelName)
+    .replace(/__DB_NAME__/g, options.dbName)
+    .replace(/__DB_USER__/g, options.dbUser)
+    .replace(/__DB_PASSWORD__/g, options.dbPassword)
+    .replace(/__DEV_PORT__/g, String(options.devPort))
+    .replace(/__TEST_PORT__/g, String(options.testPort))
+    .replace(/__PORT__/g, String(options.port))
+    .replace(/__TEST_PORT_APP__/g, String(options.testPortApp))
+    .replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
+    .replace(
+      /"@nubase\/frontend": "\*"/g,
+      `"@nubase/frontend": "${nubaseVersion}"`,
+    )
+    .replace(
+      /"@nubase\/backend": "\*"/g,
+      `"@nubase/backend": "${nubaseVersion}"`,
+    )
+    .replace(
+      /"@nubase\/create": "\*"/g,
+      `"@nubase/create": "${nubaseVersion}"`,
+    );
 }
 
 function copyTemplateDir(
-	src: string,
-	dest: string,
-	options: ProjectOptions,
+  src: string,
+  dest: string,
+  options: ProjectOptions,
 ): void {
-	fse.ensureDirSync(dest);
-	const entries = fs.readdirSync(src, { withFileTypes: true });
+  fse.ensureDirSync(dest);
+  const entries = fs.readdirSync(src, { withFileTypes: true });
 
-	for (const entry of entries) {
-		const srcPath = path.join(src, entry.name);
-		let destName = replaceInContent(entry.name, options);
-		// Handle .template extension
-		if (destName.endsWith(".template")) {
-			destName = destName.slice(0, -9);
-		}
-		const destPath = path.join(dest, destName);
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    let destName = replaceInContent(entry.name, options);
+    // Handle .template extension
+    if (destName.endsWith(".template")) {
+      destName = destName.slice(0, -9);
+    }
+    const destPath = path.join(dest, destName);
 
-		if (entry.isDirectory()) {
-			copyTemplateDir(srcPath, destPath, options);
-		} else {
-			const content = fs.readFileSync(srcPath, "utf-8");
-			const processedContent = replaceInContent(content, options);
-			fs.writeFileSync(destPath, processedContent, "utf-8");
-			// Preserve executable permission for shell scripts
-			if (destName.endsWith(".sh")) {
-				fs.chmodSync(destPath, 0o755);
-			}
-		}
-	}
+    if (entry.isDirectory()) {
+      copyTemplateDir(srcPath, destPath, options);
+    } else {
+      const content = fs.readFileSync(srcPath, "utf-8");
+      const processedContent = replaceInContent(content, options);
+      fs.writeFileSync(destPath, processedContent, "utf-8");
+      // Preserve executable permission for shell scripts
+      if (destName.endsWith(".sh")) {
+        fs.chmodSync(destPath, 0o755);
+      }
+    }
+  }
 }
 
 async function main() {
-	program
-		.name("@nubase/create")
-		.description("Create a new Nubase application")
-		.argument("[project-name]", "Name of the project")
-		.option("--db-name <name>", "Database name")
-		.option("--db-user <user>", "Database user")
-		.option("--db-password <password>", "Database password")
-		.option("--dev-port <port>", "Development database port", "5434")
-		.option("--test-port <port>", "Test database port", "5435")
-		.option("--port <port>", "Application server port", "3000")
-		.option("--test-port-app <port>", "Test application server port", "4000")
-		.option("--skip-install", "Skip npm install")
-		.option("--tag <tag>", "npm tag for @nubase/* packages (latest, dev)", "latest")
-		.parse();
+  program
+    .name("@nubase/create")
+    .description("Create a new Nubase application")
+    .argument("[project-name]", "Name of the project")
+    .option("--db-name <name>", "Database name")
+    .option("--db-user <user>", "Database user")
+    .option("--db-password <password>", "Database password")
+    .option("--dev-port <port>", "Development database port", "5434")
+    .option("--test-port <port>", "Test database port", "5435")
+    .option("--port <port>", "Application server port", "3000")
+    .option("--test-port-app <port>", "Test application server port", "4000")
+    .option("--skip-install", "Skip npm install")
+    .option(
+      "--tag <tag>",
+      "npm tag for @nubase/* packages (latest, dev)",
+      "latest",
+    )
+    .parse();
 
-	const args = program.args;
-	const opts = program.opts();
+  const args = program.args;
+  const opts = program.opts();
 
-	console.log(chalk.bold.cyan("\n  Welcome to Nubase!\n"));
+  console.log(chalk.bold.cyan("\n  Welcome to Nubase!\n"));
 
-	let projectName = args[0];
+  let projectName = args[0];
 
-	if (!projectName) {
-		const response = await prompts({
-			type: "text",
-			name: "projectName",
-			message: "What is your project name?",
-			initial: "my-app",
-			validate: (value) =>
-				/^[a-z0-9-]+$/.test(value)
-					? true
-					: "Project name must be lowercase with hyphens only",
-		});
+  if (!projectName) {
+    const response = await prompts({
+      type: "text",
+      name: "projectName",
+      message: "What is your project name?",
+      initial: "my-app",
+      validate: (value) =>
+        /^[a-z0-9-]+$/.test(value)
+          ? true
+          : "Project name must be lowercase with hyphens only",
+    });
 
-		if (!response.projectName) {
-			console.log(chalk.red("\nProject name is required."));
-			process.exit(1);
-		}
+    if (!response.projectName) {
+      console.log(chalk.red("\nProject name is required."));
+      process.exit(1);
+    }
 
-		projectName = response.projectName;
-	}
+    projectName = response.projectName;
+  }
 
-	const dbName = opts.dbName || toKebabCase(projectName).replace(/-/g, "_");
-	const dbUser = opts.dbUser || dbName;
-	const dbPassword = opts.dbPassword || dbName;
+  const dbName = opts.dbName || toKebabCase(projectName).replace(/-/g, "_");
+  const dbUser = opts.dbUser || dbName;
+  const dbPassword = opts.dbPassword || dbName;
 
-	const options: ProjectOptions = {
-		name: projectName,
-		dbName,
-		dbUser,
-		dbPassword,
-		devPort: Number.parseInt(opts.devPort, 10),
-		testPort: Number.parseInt(opts.testPort, 10),
-		port: Number.parseInt(opts.port, 10),
-		testPortApp: Number.parseInt(opts.testPortApp, 10),
-		nubaseTag: opts.tag,
-	};
+  const options: ProjectOptions = {
+    name: projectName,
+    dbName,
+    dbUser,
+    dbPassword,
+    devPort: Number.parseInt(opts.devPort, 10),
+    testPort: Number.parseInt(opts.testPort, 10),
+    port: Number.parseInt(opts.port, 10),
+    testPortApp: Number.parseInt(opts.testPortApp, 10),
+    nubaseTag: opts.tag,
+  };
 
-	const targetDir = path.join(process.cwd(), projectName);
+  const targetDir = path.join(process.cwd(), projectName);
 
-	if (fs.existsSync(targetDir)) {
-		const response = await prompts({
-			type: "confirm",
-			name: "overwrite",
-			message: `Directory ${projectName} already exists. Overwrite?`,
-			initial: false,
-		});
+  if (fs.existsSync(targetDir)) {
+    const response = await prompts({
+      type: "confirm",
+      name: "overwrite",
+      message: `Directory ${projectName} already exists. Overwrite?`,
+      initial: false,
+    });
 
-		if (!response.overwrite) {
-			console.log(chalk.yellow("\nOperation cancelled."));
-			process.exit(0);
-		}
+    if (!response.overwrite) {
+      console.log(chalk.yellow("\nOperation cancelled."));
+      process.exit(0);
+    }
 
-		fse.removeSync(targetDir);
-	}
+    fse.removeSync(targetDir);
+  }
 
-	console.log(chalk.blue(`\nCreating project in ${chalk.bold(targetDir)}...\n`));
+  console.log(
+    chalk.blue(`\nCreating project in ${chalk.bold(targetDir)}...\n`),
+  );
 
-	// Copy templates - each template maps to a destination directory
-	const templates = [
-		{ name: "root", dest: "" },
-		{ name: "src", dest: "src" },
-		{ name: "docker", dest: "docker" },
-		{ name: "db", dest: "db" },
-		{ name: "e2e", dest: "e2e" },
-		{ name: "nubase", dest: "nubase" },
-	];
+  // Copy templates - each template maps to a destination directory
+  const templates = [
+    { name: "root", dest: "" },
+    { name: "src", dest: "src" },
+    { name: "docker", dest: "docker" },
+    { name: "db", dest: "db" },
+    { name: "e2e", dest: "e2e" },
+    { name: "nubase", dest: "nubase" },
+  ];
 
-	for (const template of templates) {
-		const templatePath = path.join(TEMPLATE_DIR, template.name);
-		if (!fs.existsSync(templatePath)) {
-			console.log(chalk.yellow(`Template ${template.name} not found, skipping...`));
-			continue;
-		}
+  for (const template of templates) {
+    const templatePath = path.join(TEMPLATE_DIR, template.name);
+    if (!fs.existsSync(templatePath)) {
+      console.log(
+        chalk.yellow(`Template ${template.name} not found, skipping...`),
+      );
+      continue;
+    }
 
-		const destPath = template.dest
-			? path.join(targetDir, template.dest)
-			: targetDir;
-		copyTemplateDir(templatePath, destPath, options);
+    const destPath = template.dest
+      ? path.join(targetDir, template.dest)
+      : targetDir;
+    copyTemplateDir(templatePath, destPath, options);
 
-		console.log(chalk.green(`  ✓ Created ${template.name}`));
-	}
+    console.log(chalk.green(`  ✓ Created ${template.name}`));
+  }
 
-	// Install dependencies
-	if (!opts.skipInstall) {
-		console.log(chalk.blue("\nInstalling dependencies...\n"));
-		try {
-			execSync("npm install", {
-				cwd: targetDir,
-				stdio: "inherit",
-			});
-			console.log(chalk.green("\n  ✓ Dependencies installed"));
-		} catch {
-			console.log(
-				chalk.yellow("\n  ⚠ Failed to install dependencies. Run npm install manually."),
-			);
-		}
-	}
+  // Install dependencies
+  if (!opts.skipInstall) {
+    console.log(chalk.blue("\nInstalling dependencies...\n"));
+    try {
+      execSync("npm install", {
+        cwd: targetDir,
+        stdio: "inherit",
+      });
+      console.log(chalk.green("\n  ✓ Dependencies installed"));
+    } catch {
+      console.log(
+        chalk.yellow(
+          "\n  ⚠ Failed to install dependencies. Run npm install manually.",
+        ),
+      );
+    }
+  }
 
-	// Print next steps
-	console.log(chalk.bold.green("\n  Success! Your Nubase project is ready.\n"));
-	console.log(chalk.bold("  Next steps:\n"));
-	console.log(chalk.cyan(`    cd ${projectName}`));
-	console.log(chalk.cyan("    npm run db:up          # Start PostgreSQL"));
-	console.log(chalk.cyan("    npm run db:seed        # Seed the database"));
-	console.log(chalk.cyan("    npm run dev            # Start development\n"));
-	console.log(chalk.dim("  Database connection:"));
-	console.log(chalk.dim(`    Host: localhost:${options.devPort}`));
-	console.log(chalk.dim(`    Database: ${options.dbName}`));
-	console.log(chalk.dim(`    User: ${options.dbUser}`));
-	console.log(chalk.dim(`    Password: ${options.dbPassword}\n`));
+  // Print next steps
+  console.log(chalk.bold.green("\n  Success! Your Nubase project is ready.\n"));
+  console.log(chalk.bold("  Next steps:\n"));
+  console.log(chalk.cyan(`    cd ${projectName}`));
+  console.log(chalk.cyan("    npm run db:up          # Start PostgreSQL"));
+  console.log(chalk.cyan("    npm run db:seed        # Seed the database"));
+  console.log(chalk.cyan("    npm run dev            # Start development\n"));
+  console.log(chalk.dim("  Database connection:"));
+  console.log(chalk.dim(`    Host: localhost:${options.devPort}`));
+  console.log(chalk.dim(`    Database: ${options.dbName}`));
+  console.log(chalk.dim(`    User: ${options.dbUser}`));
+  console.log(chalk.dim(`    Password: ${options.dbPassword}\n`));
 }
 
 main().catch((error) => {
-	console.error(chalk.red("Error:"), error.message);
-	process.exit(1);
+  console.error(chalk.red("Error:"), error.message);
+  process.exit(1);
 });

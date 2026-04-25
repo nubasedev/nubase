@@ -7,7 +7,8 @@ import { createHandler } from "../handler-factory";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
 const LOGIN_TOKEN_SECRET =
-  process.env.LOGIN_TOKEN_SECRET || "nubase-login-token-secret-change-in-production";
+  process.env.LOGIN_TOKEN_SECRET ||
+  "nubase-login-token-secret-change-in-production";
 const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
 
 interface LoginTokenPayload {
@@ -36,7 +37,10 @@ export const authHandlers = {
       }
 
       // Verify password
-      const isValidPassword = await bcrypt.compare(body.password, user.passwordHash);
+      const isValidPassword = await bcrypt.compare(
+        body.password,
+        user.passwordHash,
+      );
       if (!isValidPassword) {
         throw new HttpError(401, "Invalid email or password");
       }
@@ -88,13 +92,17 @@ export const authHandlers = {
    */
   loginComplete: createHandler((e) => e.loginComplete, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const authController =
+        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
       const db = getDb();
 
       // Verify the login token
       let decoded: LoginTokenPayload;
       try {
-        decoded = jwt.verify(body.loginToken, LOGIN_TOKEN_SECRET) as LoginTokenPayload;
+        decoded = jwt.verify(
+          body.loginToken,
+          LOGIN_TOKEN_SECRET,
+        ) as LoginTokenPayload;
       } catch {
         throw new HttpError(401, "Invalid or expired login token");
       }
@@ -166,7 +174,8 @@ export const authHandlers = {
    */
   login: createHandler((e) => e.login, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const authController =
+        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
       const db = getDb();
 
       // Look up workspace
@@ -192,7 +201,10 @@ export const authHandlers = {
       }
 
       // Verify password
-      const isValidPassword = await bcrypt.compare(body.password, dbUser.passwordHash);
+      const isValidPassword = await bcrypt.compare(
+        body.password,
+        dbUser.passwordHash,
+      );
       if (!isValidPassword) {
         throw new HttpError(401, "Invalid email or password");
       }
@@ -261,7 +273,8 @@ export const authHandlers = {
   /** Signup handler - creates a new workspace and admin user. */
   signup: createHandler((e) => e.signup, {
     handler: async ({ body, ctx }) => {
-      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const authController =
+        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
       const db = getDb();
 
       // Validate workspace slug format

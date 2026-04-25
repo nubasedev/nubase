@@ -3,4 +3,6 @@ import { createRoot } from "react-dom/client";
 import { config } from "./frontend-config";
 import "./styles/theme.css";
 
-createRoot(document.getElementById("root")!).render(<NubaseApp config={config} />);
+createRoot(document.getElementById("root")!).render(
+  <NubaseApp config={config} />,
+);

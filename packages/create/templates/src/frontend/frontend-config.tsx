@@ -10,8 +10,9 @@ import { userResource } from "./resources/user";
 const apiBaseUrl = "/api";
 
 // Preserve auth controller across HMR to prevent losing authentication state during development
-const authController: __PROJECT_NAME_PASCAL__AuthController = (import.meta.hot
-  ?.data?.authController as __PROJECT_NAME_PASCAL__AuthController) ??
+const authController: __PROJECT_NAME_PASCAL__AuthController =
+  (import.meta.hot?.data
+    ?.authController as __PROJECT_NAME_PASCAL__AuthController) ??
   new __PROJECT_NAME_PASCAL__AuthController(apiBaseUrl);
 
 // Store auth controller in HMR data so it survives hot reloads

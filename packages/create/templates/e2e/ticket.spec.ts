@@ -14,13 +14,17 @@ test.describe("Ticket Management", () => {
     );
 
     // Submit the form using test-id - wait for button to be visible and enabled
-    const submitButton = authenticatedPage.locator('[data-testid="form-submit-button"]');
+    const submitButton = authenticatedPage.locator(
+      '[data-testid="form-submit-button"]',
+    );
     await expect(submitButton).toBeVisible();
     await expect(submitButton).toBeEnabled();
 
     // Click and wait for navigation
     await Promise.all([
-      authenticatedPage.waitForURL(/\/r\/ticket\/view\?id=\d+/, { timeout: 15000 }),
+      authenticatedPage.waitForURL(/\/r\/ticket\/view\?id=\d+/, {
+        timeout: 15000,
+      }),
       submitButton.click(),
     ]);
 

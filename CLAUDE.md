@@ -53,7 +53,7 @@ Turborepo monorepo.
 
 **Any infrastructural change to the framework requires the matching change in `packages/create/templates/`.** End users get the starter, not questlog. If you add a field to `NubaseBackendConfig`, update the starter's `backend-config.ts`. If you rename a hook or change a controller signature, the starter must follow. The starter is part of the framework's public API.
 
-**Indent template files with 2 spaces, not tabs.** Biome does not run inside `packages/create/templates/` — those files are template input, not project source — so there is no auto-format to clean up tabs. When you create or edit anything under `packages/create/templates/`, write 2-space indentation by hand and don't copy whitespace from elsewhere in the repo without checking it.
+Biome runs on the templates (with `noNonNullAssertion` disabled, since `process.env.X!` and `getElementById("root")!` are legitimate template patterns). Formatting, import order, and the rest of the lint surface are enforced automatically — `npm run lint:fix` covers the templates the same as anywhere else.
 
 ### Code style
 

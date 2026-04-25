@@ -45,12 +45,9 @@ export class TestAPI {
     password: string = TEST_USER.password,
     workspace: string = TEST_WORKSPACE,
   ) {
-    const response = await this.request.post(
-      `${API_BASE_URL}/api/auth/login`,
-      {
-        data: { email, password, workspace },
-      },
-    );
+    const response = await this.request.post(`${API_BASE_URL}/api/auth/login`, {
+      data: { email, password, workspace },
+    });
 
     if (!response.ok()) {
       const body = await response.text();
@@ -79,12 +76,9 @@ export class TestAPI {
   async seedTestData(data: {
     tickets?: Array<{ title: string; description?: string }>;
   }) {
-    const response = await this.request.post(
-      `${API_BASE_URL}/api/test/seed`,
-      {
-        data,
-      },
-    );
+    const response = await this.request.post(`${API_BASE_URL}/api/test/seed`, {
+      data,
+    });
     if (!response.ok()) {
       throw new Error(`Failed to seed test data: ${response.status()}`);
     }
@@ -92,9 +86,7 @@ export class TestAPI {
   }
 
   async getDatabaseStats() {
-    const response = await this.request.get(
-      `${API_BASE_URL}/api/test/stats`,
-    );
+    const response = await this.request.get(`${API_BASE_URL}/api/test/stats`);
     if (!response.ok()) {
       const body = await response.text();
       throw new Error(

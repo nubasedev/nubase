@@ -14,8 +14,8 @@
     "build": "tsup src/index.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts --format esm --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "biome lint .",
-    "lint:fix": "biome lint --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
     "publish:latest": "npm publish --access public",
     "publish:dev": "npm publish --access public --tag dev"

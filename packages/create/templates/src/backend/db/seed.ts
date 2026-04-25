@@ -12,7 +12,9 @@ async function seed() {
   const db = getDb();
 
   // Clear existing data using TRUNCATE (respects FKs with CASCADE)
-  await sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(db);
+  await sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
+    db,
+  );
 
   // Create tavern workspace
   const workspace = await db
