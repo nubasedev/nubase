@@ -177,13 +177,12 @@ export function NqlEditor({
         h-9, rounded-md, border-input, bg-transparent (with the dark-mode
         input wash), shadow-xs. Monaco renders an inner `<textarea>` that
         receives focus, so `:focus-within` triggers when the user is
-        editing — same effective behaviour as TextInput's `:focus-visible`,
-        and crucially the same CSS specificity, so `aria-invalid:*`
-        variants can override the focus ring on error (a `:has()` selector
-        would outrank them and let the focus ring beat destructive).
+        editing — same effective behaviour as TextInput's `:focus-visible`.
+        Error state is communicated only by the floating message below;
+        the shell keeps its neutral border/ring so the editor doesn't feel
+        noisy mid-typing.
       */}
       <div
-        aria-invalid={errorMessage ? true : undefined}
         className={cn(
           "nql-editor-shell relative flex h-9 w-full min-w-0 overflow-hidden",
           "rounded-md border border-input",
@@ -191,9 +190,6 @@ export function NqlEditor({
           "shadow-xs transition-[color,box-shadow]",
           "focus-within:border-ring",
           "focus-within:ring-ring/50 focus-within:ring-[3px]",
-          "aria-invalid:border-destructive",
-          "aria-invalid:ring-destructive/20",
-          "dark:aria-invalid:ring-destructive/40",
         )}
       >
         <div ref={containerRef} className="w-full h-full" />
