@@ -61,7 +61,10 @@ This script:
 
 1. Builds `@nubase/create` from `packages/create/` source
 2. Removes any existing `apps/starter/` directory
-3. Runs the built CLI to generate a new project in `apps/starter/` with `--tag dev` (so it references `@nubase/*@dev` packages)
+3. Runs the built CLI to scaffold `apps/starter/` from the templates
+4. Runs `npm install` at the workspace root so `apps/starter` links to the local `@nubase/*` packages
+
+Because `apps/*` is in the root `workspaces` array, `apps/starter` becomes a workspace member: its `@nubase/*` deps resolve to the local sources via symlinks. No npm publish required to test the templates end-to-end.
 
 :::note
 The `apps/starter/` directory is git-ignored. It's meant to be regenerated for testing.

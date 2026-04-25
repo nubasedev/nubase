@@ -35,11 +35,11 @@
     "e2e:headed": "cd apps/questlog && npm run e2e:headed",
     "e2e:install": "cd apps/questlog && npm run e2e:install",
     "bump": "./scripts/bump-versions.sh",
-    "publish": "./scripts/publish.sh latest",
-    "publish:dev": "./scripts/publish.sh dev",
+    "publish": "./scripts/publish.sh",
     "starter:create": "./scripts/create-starter-example.sh",
     "starter:dev": "./scripts/dev-starter-example.sh",
     "starter:test": "./scripts/test-starter-example.sh",
+    "starter:create-and-test": "npm run starter:create && npm run starter:test",
     "cli": "npm run -w @nubase/cli build && cd apps/questlog && node ../../packages/cli/dist/cli.js",
     "cli:envs": "npm run cli -- envs",
     "cli:db:diff": "npm run cli -- db diff",
@@ -63,8 +63,7 @@
   },
   "packageManager": "npm@10.9.2",
   "workspaces": [
-    "apps/docs",
-    "apps/questlog",
+    "apps/*",
     "packages/*"
   ]
 }

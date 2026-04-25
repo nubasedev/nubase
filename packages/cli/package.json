@@ -22,8 +22,7 @@
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "prepublishOnly": "npm run build",
-    "publish:latest": "npm publish --access public",
-    "publish:dev": "npm publish --access public --tag dev"
+    "publish": "npm publish --access public"
   },
   "dependencies": {
     "@nubase/pg": "*",

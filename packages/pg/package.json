@@ -25,8 +25,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
-    "publish:latest": "npm publish --access public",
-    "publish:dev": "npm publish --access public --tag dev",
+    "publish": "npm publish --access public",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d --wait",
     "docker:down": "docker compose -f docker/docker-compose.yml down -v",
     "dev": "tsup --watch"

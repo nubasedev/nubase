@@ -1,9 +1,7 @@
 #!/bin/bash
 set -e
 
-TAG="${1:-latest}"
-
-echo "Publishing @nubase/* packages with tag: $TAG"
+echo "Publishing @nubase/* packages..."
 echo ""
 
 # Build all packages first
@@ -32,8 +30,8 @@ for pkg in "${PACKAGES[@]}"; do
     continue
   fi
 
-  echo "📦 Publishing $NAME@$VERSION (tag: $TAG)..."
-  (cd "$pkg" && npm publish --access public --tag "$TAG")
+  echo "📦 Publishing $NAME@$VERSION..."
+  (cd "$pkg" && npm publish --access public)
   echo "✅ $NAME@$VERSION published"
   echo ""
 done

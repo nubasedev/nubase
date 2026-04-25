@@ -21,7 +21,6 @@ interface ProjectOptions {
   testPort: number;
   port: number;
   testPortApp: number;
-  nubaseTag: string;
 }
 
 const TEMPLATE_DIR = path.join(__dirname, "..", "templates");
@@ -50,11 +49,6 @@ function replaceInContent(content: string, options: ProjectOptions): string {
   const pascalName = toPascalCase(options.name);
   const camelName = toCamelCase(options.name);
 
-  // Determine the @nubase/* package version string
-  // For "latest", use "*" (any version). For other tags like "dev", use the tag name directly.
-  const nubaseVersion =
-    options.nubaseTag === "latest" ? "*" : options.nubaseTag;
-
   return content
     .replace(/__PROJECT_NAME__/g, kebabName)
     .replace(/__PROJECT_NAME_PASCAL__/g, pascalName)
@@ -65,20 +59,7 @@ function replaceInContent(content: string, options: ProjectOptions): string {
     .replace(/__DEV_PORT__/g, String(options.devPort))
     .replace(/__TEST_PORT__/g, String(options.testPort))
     .replace(/__PORT__/g, String(options.port))
-    .replace(/__TEST_PORT_APP__/g, String(options.testPortApp))
-    .replace(/"@nubase\/core": "\*"/g, `"@nubase/core": "${nubaseVersion}"`)
-    .replace(
-      /"@nubase\/frontend": "\*"/g,
-      `"@nubase/frontend": "${nubaseVersion}"`,
-    )
-    .replace(
-      /"@nubase\/backend": "\*"/g,
-      `"@nubase/backend": "${nubaseVersion}"`,
-    )
-    .replace(
-      /"@nubase\/create": "\*"/g,
-      `"@nubase/create": "${nubaseVersion}"`,
-    );
+    .replace(/__TEST_PORT_APP__/g, String(options.testPortApp));
 }
 
 function copyTemplateDir(
@@ -125,11 +106,6 @@ async function main() {
     .option("--port <port>", "Application server port", "3000")
     .option("--test-port-app <port>", "Test application server port", "4000")
     .option("--skip-install", "Skip npm install")
-    .option(
-      "--tag <tag>",
-      "npm tag for @nubase/* packages (latest, dev)",
-      "latest",
-    )
     .parse();
 
   const args = program.args;
@@ -172,7 +148,6 @@ async function main() {
     testPort: Number.parseInt(opts.testPort, 10),
     port: Number.parseInt(opts.port, 10),
     testPortApp: Number.parseInt(opts.testPortApp, 10),
-    nubaseTag: opts.tag,
   };
 
   const targetDir = path.join(process.cwd(), projectName);
@@ -239,6 +214,17 @@ async function main() {
           "\n  ⚠ Failed to install dependencies. Run npm install manually.",
         ),
       );
+    }
+
+    // Format-fix the scaffolded project so its output matches the installed
+    // Biome version regardless of any project-name-driven layout differences.
+    try {
+      execSync("npx biome check --write .", {
+        cwd: targetDir,
+        stdio: "inherit",
+      });
+    } catch {
+      // Non-fatal — formatting is a polish step.
     }
   }
 

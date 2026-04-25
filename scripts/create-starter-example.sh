@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to create apps/starter using local @nubase/create build
-# This creates the starter example app using @dev tagged @nubase/* packages for testing
+# Script to create apps/starter using local @nubase/create build.
+# apps/starter is a workspace member, so @nubase/* deps resolve to local sources.
 
 set -e
 
@@ -21,14 +21,25 @@ fi
 # Create the starter example using the local build
 cd "$ROOT_DIR/apps"
 echo "Creating nubase-app in apps/starter..."
-node "$ROOT_DIR/packages/create/dist/index.js" starter --skip-install --tag dev
+node "$ROOT_DIR/packages/create/dist/index.js" starter --skip-install
+
+# Reinstall at root so apps/starter is wired up as a workspace.
+echo ""
+echo "Linking apps/starter into the workspace..."
+cd "$ROOT_DIR"
+npm install
+
+# Format-fix the scaffolded starter so its output matches the local Biome
+# version (project-name-driven layout differences would otherwise fail lint).
+echo ""
+echo "Formatting apps/starter with Biome..."
+npx biome check --write apps/starter
 
 echo ""
-echo "Successfully created apps/starter (using @nubase/*@dev packages)"
+echo "Successfully created apps/starter (linked to local @nubase/* sources)"
 echo ""
-echo "To complete setup:"
+echo "To run it:"
 echo "  cd apps/starter"
-echo "  npm install"
 echo "  npm run db:up"
 echo "  npm run db:seed"
 echo "  npm run dev"

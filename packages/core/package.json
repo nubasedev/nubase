@@ -32,8 +32,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "prepublishOnly": "npm run build",
-    "publish:latest": "npm publish --access public",
-    "publish:dev": "npm publish --access public --tag dev",
+    "publish": "npm publish --access public",
     "watch:ts": "tsup --watch",
     "dev": "concurrently \"npm:watch:ts\""
   },
