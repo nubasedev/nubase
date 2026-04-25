@@ -169,7 +169,7 @@ export function NqlEditor({
   }, [value]);
 
   return (
-    <div className={cn("flex-1 min-w-0", className)}>
+    <div className={cn("relative flex-1 min-w-0", className)}>
       {/*
         Shell mirrors the `textInputVariants` CVA in
         `components/form-controls/controls/TextInput/TextInput.tsx` so the
@@ -209,7 +209,11 @@ export function NqlEditor({
       {errorMessage && (
         <div
           role="alert"
-          className="mt-1 text-xs text-destructive"
+          className={cn(
+            "absolute left-0 top-full z-10 mt-1 max-w-full w-fit",
+            "rounded-md border border-destructive/30 bg-background",
+            "px-2 py-1 text-xs text-destructive shadow-md",
+          )}
           data-slot="nql-editor-error"
         >
           {errorMessage}
