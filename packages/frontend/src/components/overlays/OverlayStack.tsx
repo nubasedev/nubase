@@ -44,7 +44,7 @@ const CommandBar: FC<CommandBarProps> = ({
   onOpenInNewTab,
 }) => {
   return (
-    <div className="flex h-12 items-center justify-end gap-2 px-4 bg-background border-b border-border">
+    <div className="flex h-12 items-center justify-end gap-2 px-4 border-b border-border">
       <ButtonGroup>
         <Button variant="outline" size="sm" onClick={onOpenHere}>
           Open here

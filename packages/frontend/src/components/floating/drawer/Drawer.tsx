@@ -95,7 +95,7 @@ export const Drawer: FC<DrawerProps> = ({
       <div
         role="dialog"
         aria-modal="false"
-        className="absolute right-0 top-0 h-full bg-background text-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0"
+        className="absolute right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0"
         style={{ width, pointerEvents: "auto" }}
       >
         <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
