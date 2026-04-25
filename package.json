@@ -5,7 +5,8 @@
     "build": "turbo run build",
     "build:docs": "cd apps/docs && npm run build",
     "build:storybook": "cd packages/frontend && npm run build:storybook",
-    "dev": "npm run db:up && turbo run dev",
+    "dev": "npm run db:up && turbo run dev --filter=!starter",
+    "kill": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
     "dev:e2e": "turbo run dev dev:e2e",
     "dev:test": "turbo run dev:test",
     "lint": "turbo run lint",
@@ -65,5 +66,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "overrides": {
+    "@rolldown/pluginutils": "1.0.0-rc.17"
+  }
 }
