@@ -19,4 +19,5 @@ export type ModalConfig = {
 export type ModalInstance = {
   id: string;
   config: ModalConfig;
+  open: boolean;
 };

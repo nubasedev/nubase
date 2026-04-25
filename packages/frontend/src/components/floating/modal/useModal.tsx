@@ -27,6 +27,7 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const newModal: ModalInstance = {
       id,
       config,
+      open: true,
     };
 
     setModals((prev) => [...prev, newModal]);
@@ -36,14 +37,30 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const closeModal = useCallback((id?: string) => {
     setModals((prev) => {
       if (id) {
-        return prev.filter((modal) => modal.id !== id);
+        return prev.map((modal) =>
+          modal.id === id ? { ...modal, open: false } : modal,
+        );
       }
-      return prev.slice(0, -1);
+      let lastOpenIdx = -1;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (prev[i]?.open) {
+          lastOpenIdx = i;
+          break;
+        }
+      }
+      if (lastOpenIdx === -1) return prev;
+      return prev.map((modal, i) =>
+        i === lastOpenIdx ? { ...modal, open: false } : modal,
+      );
     });
   }, []);
 
+  const removeModal = useCallback((id: string) => {
+    setModals((prev) => prev.filter((modal) => modal.id !== id));
+  }, []);
+
   const closeAllModals = useCallback(() => {
-    setModals([]);
+    setModals((prev) => prev.map((modal) => ({ ...modal, open: false })));
   }, []);
 
   const handleModalClose = useCallback(
@@ -72,8 +89,9 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
         return (
           <Modal
             key={modal.id}
-            open={true}
+            open={modal.open}
             onClose={() => handleModalClose(modal.id)}
+            onExited={() => removeModal(modal.id)}
             content={content}
             zIndex={(modalProps.zIndex || 50) + index}
             {...modalProps}

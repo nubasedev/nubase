@@ -1,6 +1,7 @@
-import type { AnimationEvent, FC, ReactElement, ReactNode } from "react";
+import type { FC, ReactElement, ReactNode } from "react";
 import { cloneElement, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePresence } from "../../../hooks/usePresence";
 import { useResize } from "../../dock/useResize";
 import { HorizontalResizeHandle } from "../../resize-handle/HorizontalResizeHandle";
 import type { BaseModalFrameProps } from "../modal/types";
@@ -60,12 +61,7 @@ export const Drawer: FC<DrawerProps> = ({
   const [width, setWidth] = useState(
     () => readPersistedWidth() ?? getDefaultWidthPx(),
   );
-  const [shouldRender, setShouldRender] = useState(open);
-  const isExiting = shouldRender && !open;
-
-  useEffect(() => {
-    if (open) setShouldRender(true);
-  }, [open]);
+  const { shouldRender, presenceProps } = usePresence(open, { onExited });
 
   useEffect(() => {
     persistWidth(width);
@@ -99,23 +95,14 @@ export const Drawer: FC<DrawerProps> = ({
   if (!shouldRender) return null;
   if (typeof document === "undefined") return null;
 
-  const handleAnimationEnd = (e: AnimationEvent<HTMLDivElement>) => {
-    if (e.target !== e.currentTarget) return;
-    if (isExiting) {
-      setShouldRender(false);
-      onExited?.();
-    }
-  };
-
-  const animationClasses = isExiting
-    ? "animate-out slide-out-to-right fade-out duration-200"
-    : "animate-in slide-in-from-right fade-in duration-200";
+  const animationClasses =
+    "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=open]:fade-in data-[state=closed]:fade-out duration-200";
 
   return createPortal(
     <div
       role="dialog"
       aria-modal="false"
-      onAnimationEnd={handleAnimationEnd}
+      {...presenceProps}
       className={`fixed right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-12px_0_32px_-8px_rgba(0,0,0,0.18)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
       style={{ width, zIndex, animationFillMode: "forwards" }}
     >
