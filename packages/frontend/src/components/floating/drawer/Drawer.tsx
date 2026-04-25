@@ -116,7 +116,7 @@ export const Drawer: FC<DrawerProps> = ({
       role="dialog"
       aria-modal="false"
       onAnimationEnd={handleAnimationEnd}
-      className={`fixed right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
+      className={`fixed right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-12px_0_32px_-8px_rgba(0,0,0,0.18)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
       style={{ width, zIndex, animationFillMode: "forwards" }}
     >
       <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
