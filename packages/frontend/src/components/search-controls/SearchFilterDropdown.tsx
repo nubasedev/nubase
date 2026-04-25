@@ -199,10 +199,10 @@ const SearchFilterDropdown = React.forwardRef<
 SearchFilterDropdown.displayName = "SearchFilterDropdown";
 
 export {
-  SearchFilterDropdown,
   SearchFilterBadge,
-  SearchFilterChevron,
   SearchFilterCheckIndicator,
-  searchFilterTriggerVariants,
+  SearchFilterChevron,
+  SearchFilterDropdown,
   searchFilterContentVariants,
+  searchFilterTriggerVariants,
 };

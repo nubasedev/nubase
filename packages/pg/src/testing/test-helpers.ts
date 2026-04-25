@@ -31,12 +31,12 @@ async function setupSchema(client: Client, sql: string): Promise<void> {
   await client.query(sql);
 }
 
+export type { TestContext };
 export {
-  SOURCE_URL,
-  TARGET_URL,
   createTestContext,
   destroyTestContext,
   resetDatabase,
+  SOURCE_URL,
   setupSchema,
+  TARGET_URL,
 };
-export type { TestContext };

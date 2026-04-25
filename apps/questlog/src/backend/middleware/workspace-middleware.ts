@@ -82,7 +82,7 @@ export function createPostAuthWorkspaceMiddleware() {
     // Get user from auth middleware
     const user = c.get("user");
 
-    if (!user || !user.workspaceId) {
+    if (!user?.workspaceId) {
       // No authenticated user - proceed without workspace context
       // Protected routes will fail at the auth level
       return next();

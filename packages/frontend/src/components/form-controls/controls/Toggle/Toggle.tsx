@@ -94,4 +94,4 @@ const Toggle = React.forwardRef<
 
 Toggle.displayName = "Toggle";
 
-export { Toggle, toggleVariants, toggleThumbVariants };
+export { Toggle, toggleThumbVariants, toggleVariants };

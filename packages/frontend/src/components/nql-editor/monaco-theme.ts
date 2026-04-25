@@ -218,7 +218,7 @@ function resolveVar(
 
 function rgbStringToHex(input: string): string | null {
   const m = input.match(/rgba?\(([^)]+)\)/i);
-  if (!m || !m[1]) return null;
+  if (!m?.[1]) return null;
   const parts = m[1].split(/[,\s/]+/).filter(Boolean);
   const r = Number.parseFloat(parts[0] ?? "0");
   const g = Number.parseFloat(parts[1] ?? "0");

@@ -53,9 +53,9 @@
     "@parcel/watcher-linux-x64-glibc": "^2.5.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.6",
+    "@biomejs/biome": "^2.4.13",
     "turbo": "^2.8.15",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.5"
   },
   "engines": {
     "node": ">=18",

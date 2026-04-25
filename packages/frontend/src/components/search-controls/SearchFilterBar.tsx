@@ -198,7 +198,7 @@ SearchFilterBar.displayName = "SearchFilterBar";
 
 export {
   SearchFilterBar,
-  searchFilterBarVariants,
-  searchFilterBarInputVariants,
   searchFilterBarClearButtonVariants,
+  searchFilterBarInputVariants,
+  searchFilterBarVariants,
 };

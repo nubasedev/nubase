@@ -9,9 +9,8 @@ import "react-resizable/css/styles.css";
 import type { DashboardGridConfig } from "../../config/dashboard-widget";
 import { cn } from "../../styling/cn";
 
-export type { LayoutItem, Layout };
 // Re-export for backwards compatibility
-export type { DashboardGridConfig };
+export type { DashboardGridConfig, Layout, LayoutItem };
 
 export interface DashboardDragConfig {
   /** Enable dragging */

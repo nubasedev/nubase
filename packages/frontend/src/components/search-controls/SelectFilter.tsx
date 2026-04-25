@@ -339,4 +339,4 @@ const SelectFilter = SelectFilterBase as <T = string>(
   props: SelectFilterProps<T> & { ref?: React.Ref<HTMLButtonElement> },
 ) => React.ReactElement;
 
-export { SelectFilter, optionVariants };
+export { optionVariants, SelectFilter };

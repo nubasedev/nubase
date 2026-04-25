@@ -278,12 +278,12 @@ const EnhancedPagination = React.forwardRef<
 EnhancedPagination.displayName = "EnhancedPagination";
 
 export {
+  EnhancedPagination,
   Pagination,
   PaginationContent,
-  PaginationLink,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
   PaginationEllipsis,
-  EnhancedPagination,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 };
