@@ -7,355 +7,355 @@ import { createHandler } from "../handler-factory";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
 const LOGIN_TOKEN_SECRET =
-	process.env.LOGIN_TOKEN_SECRET || "nubase-login-token-secret-change-in-production";
+  process.env.LOGIN_TOKEN_SECRET || "nubase-login-token-secret-change-in-production";
 const LOGIN_TOKEN_EXPIRY = "5m"; // 5 minutes to complete workspace selection
 
 interface LoginTokenPayload {
-	userId: number;
-	email: string;
+  userId: number;
+  email: string;
 }
 
 export const authHandlers = {
-	/**
-	 * Login Start handler - Step 1 of two-step auth.
-	 * Validates credentials and returns list of workspaces.
-	 */
-	loginStart: createHandler((e) => e.loginStart, {
-		handler: async ({ body }) => {
-			const db = getDb();
+  /**
+   * Login Start handler - Step 1 of two-step auth.
+   * Validates credentials and returns list of workspaces.
+   */
+  loginStart: createHandler((e) => e.loginStart, {
+    handler: async ({ body }) => {
+      const db = getDb();
 
-			// Find user by email
-			const user = await db
-				.selectFrom("users")
-				.selectAll()
-				.where("email", "=", body.email)
-				.executeTakeFirst();
+      // Find user by email
+      const user = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-			if (!user) {
-				throw new HttpError(401, "Invalid email or password");
-			}
+      if (!user) {
+        throw new HttpError(401, "Invalid email or password");
+      }
 
-			// Verify password
-			const isValidPassword = await bcrypt.compare(body.password, user.passwordHash);
-			if (!isValidPassword) {
-				throw new HttpError(401, "Invalid email or password");
-			}
+      // Verify password
+      const isValidPassword = await bcrypt.compare(body.password, user.passwordHash);
+      if (!isValidPassword) {
+        throw new HttpError(401, "Invalid email or password");
+      }
 
-			// Get all workspaces this user belongs to
-			const userWorkspaceRows = await db
-				.selectFrom("userWorkspaces")
-				.selectAll()
-				.where("userId", "=", user.id)
-				.execute();
+      // Get all workspaces this user belongs to
+      const userWorkspaceRows = await db
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", user.id)
+        .execute();
 
-			if (userWorkspaceRows.length === 0) {
-				throw new HttpError(401, "User has no workspace access");
-			}
+      if (userWorkspaceRows.length === 0) {
+        throw new HttpError(401, "User has no workspace access");
+      }
 
-			// Fetch workspace details
-			const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-			const workspaceList = await db
-				.selectFrom("workspaces")
-				.selectAll()
-				.where("id", "in", workspaceIds)
-				.execute();
+      // Fetch workspace details
+      const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
+      const workspaceList = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("id", "in", workspaceIds)
+        .execute();
 
-			// Create a short-lived login token
-			const loginToken = jwt.sign(
-				{
-					userId: user.id,
-					email: body.email,
-				} satisfies LoginTokenPayload,
-				LOGIN_TOKEN_SECRET,
-				{ expiresIn: LOGIN_TOKEN_EXPIRY },
-			);
+      // Create a short-lived login token
+      const loginToken = jwt.sign(
+        {
+          userId: user.id,
+          email: body.email,
+        } satisfies LoginTokenPayload,
+        LOGIN_TOKEN_SECRET,
+        { expiresIn: LOGIN_TOKEN_EXPIRY },
+      );
 
-			return {
-				loginToken,
-				email: body.email,
-				workspaces: workspaceList.map((w) => ({
-					id: w.id,
-					slug: w.slug,
-					name: w.name,
-				})),
-			};
-		},
-	}),
+      return {
+        loginToken,
+        email: body.email,
+        workspaces: workspaceList.map((w) => ({
+          id: w.id,
+          slug: w.slug,
+          name: w.name,
+        })),
+      };
+    },
+  }),
 
-	/**
-	 * Login Complete handler - Step 2 of two-step auth.
-	 * Validates the login token and selected workspace.
-	 */
-	loginComplete: createHandler((e) => e.loginComplete, {
-		handler: async ({ body, ctx }) => {
-			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
-			const db = getDb();
+  /**
+   * Login Complete handler - Step 2 of two-step auth.
+   * Validates the login token and selected workspace.
+   */
+  loginComplete: createHandler((e) => e.loginComplete, {
+    handler: async ({ body, ctx }) => {
+      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const db = getDb();
 
-			// Verify the login token
-			let decoded: LoginTokenPayload;
-			try {
-				decoded = jwt.verify(body.loginToken, LOGIN_TOKEN_SECRET) as LoginTokenPayload;
-			} catch {
-				throw new HttpError(401, "Invalid or expired login token");
-			}
+      // Verify the login token
+      let decoded: LoginTokenPayload;
+      try {
+        decoded = jwt.verify(body.loginToken, LOGIN_TOKEN_SECRET) as LoginTokenPayload;
+      } catch {
+        throw new HttpError(401, "Invalid or expired login token");
+      }
 
-			// Look up the selected workspace
-			const workspace = await db
-				.selectFrom("workspaces")
-				.selectAll()
-				.where("slug", "=", body.workspace)
-				.executeTakeFirst();
+      // Look up the selected workspace
+      const workspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-			if (!workspace) {
-				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
-			}
+      if (!workspace) {
+        throw new HttpError(404, `Workspace not found: ${body.workspace}`);
+      }
 
-			// Verify user has access to this workspace
-			const access = await db
-				.selectFrom("userWorkspaces")
-				.selectAll()
-				.where("userId", "=", decoded.userId)
-				.where("workspaceId", "=", workspace.id)
-				.executeTakeFirst();
+      // Verify user has access to this workspace
+      const access = await db
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", decoded.userId)
+        .where("workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-			if (!access) {
-				throw new HttpError(403, "You do not have access to this workspace");
-			}
+      if (!access) {
+        throw new HttpError(403, "You do not have access to this workspace");
+      }
 
-			// Fetch the user
-			const dbUser = await db
-				.selectFrom("users")
-				.selectAll()
-				.where("id", "=", decoded.userId)
-				.executeTakeFirst();
+      // Fetch the user
+      const dbUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("id", "=", decoded.userId)
+        .executeTakeFirst();
 
-			if (!dbUser) {
-				throw new HttpError(401, "User not found");
-			}
+      if (!dbUser) {
+        throw new HttpError(401, "User not found");
+      }
 
-			// Create user object for token
-			const user: __PROJECT_NAME_PASCAL__User = {
-				id: dbUser.id,
-				email: dbUser.email,
-				displayName: dbUser.displayName,
-				workspaceId: workspace.id,
-			};
+      // Create user object for token
+      const user: __PROJECT_NAME_PASCAL__User = {
+        id: dbUser.id,
+        email: dbUser.email,
+        displayName: dbUser.displayName,
+        workspaceId: workspace.id,
+      };
 
-			// Create and set the auth token
-			const token = await authController.createToken(user);
-			authController.setTokenInResponse(ctx, token);
+      // Create and set the auth token
+      const token = await authController.createToken(user);
+      authController.setTokenInResponse(ctx, token);
 
-			return {
-				user: {
-					id: user.id,
-					email: user.email,
-					displayName: user.displayName,
-				},
-				workspace: {
-					id: workspace.id,
-					slug: workspace.slug,
-					name: workspace.name,
-				},
-			};
-		},
-	}),
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+        workspace: {
+          id: workspace.id,
+          slug: workspace.slug,
+          name: workspace.name,
+        },
+      };
+    },
+  }),
 
-	/**
-	 * Legacy Login handler - validates credentials and sets HttpOnly cookie.
-	 * @deprecated Use loginStart and loginComplete for two-step flow
-	 */
-	login: createHandler((e) => e.login, {
-		handler: async ({ body, ctx }) => {
-			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
-			const db = getDb();
+  /**
+   * Legacy Login handler - validates credentials and sets HttpOnly cookie.
+   * @deprecated Use loginStart and loginComplete for two-step flow
+   */
+  login: createHandler((e) => e.login, {
+    handler: async ({ body, ctx }) => {
+      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const db = getDb();
 
-			// Look up workspace
-			const workspace = await db
-				.selectFrom("workspaces")
-				.selectAll()
-				.where("slug", "=", body.workspace)
-				.executeTakeFirst();
+      // Look up workspace
+      const workspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-			if (!workspace) {
-				throw new HttpError(404, `Workspace not found: ${body.workspace}`);
-			}
+      if (!workspace) {
+        throw new HttpError(404, `Workspace not found: ${body.workspace}`);
+      }
 
-			// Find user by email
-			const dbUser = await db
-				.selectFrom("users")
-				.selectAll()
-				.where("email", "=", body.email)
-				.executeTakeFirst();
+      // Find user by email
+      const dbUser = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-			if (!dbUser) {
-				throw new HttpError(401, "Invalid email or password");
-			}
+      if (!dbUser) {
+        throw new HttpError(401, "Invalid email or password");
+      }
 
-			// Verify password
-			const isValidPassword = await bcrypt.compare(body.password, dbUser.passwordHash);
-			if (!isValidPassword) {
-				throw new HttpError(401, "Invalid email or password");
-			}
+      // Verify password
+      const isValidPassword = await bcrypt.compare(body.password, dbUser.passwordHash);
+      if (!isValidPassword) {
+        throw new HttpError(401, "Invalid email or password");
+      }
 
-			// Verify user has access to this workspace
-			const access = await db
-				.selectFrom("userWorkspaces")
-				.selectAll()
-				.where("userId", "=", dbUser.id)
-				.where("workspaceId", "=", workspace.id)
-				.executeTakeFirst();
+      // Verify user has access to this workspace
+      const access = await db
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", dbUser.id)
+        .where("workspaceId", "=", workspace.id)
+        .executeTakeFirst();
 
-			if (!access) {
-				throw new HttpError(403, "You do not have access to this workspace");
-			}
+      if (!access) {
+        throw new HttpError(403, "You do not have access to this workspace");
+      }
 
-			// Create user object for token
-			const user: __PROJECT_NAME_PASCAL__User = {
-				id: dbUser.id,
-				email: dbUser.email,
-				displayName: dbUser.displayName,
-				workspaceId: workspace.id,
-			};
+      // Create user object for token
+      const user: __PROJECT_NAME_PASCAL__User = {
+        id: dbUser.id,
+        email: dbUser.email,
+        displayName: dbUser.displayName,
+        workspaceId: workspace.id,
+      };
 
-			// Create and set token
-			const token = await authController.createToken(user);
-			authController.setTokenInResponse(ctx, token);
+      // Create and set token
+      const token = await authController.createToken(user);
+      authController.setTokenInResponse(ctx, token);
 
-			return {
-				user: {
-					id: user.id,
-					email: user.email,
-					displayName: user.displayName,
-				},
-			};
-		},
-	}),
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+      };
+    },
+  }),
 
-	/** Logout handler - clears the auth cookie. */
-	logout: createHandler((e) => e.logout, {
-		handler: async ({ ctx }) => {
-			const authController = getAuthController(ctx);
-			authController.clearTokenFromResponse(ctx);
-			return { success: true };
-		},
-	}),
+  /** Logout handler - clears the auth cookie. */
+  logout: createHandler((e) => e.logout, {
+    handler: async ({ ctx }) => {
+      const authController = getAuthController(ctx);
+      authController.clearTokenFromResponse(ctx);
+      return { success: true };
+    },
+  }),
 
-	/** Get current user handler. */
-	getMe: createHandler((e) => e.getMe, {
-		auth: "optional",
-		handler: async ({ user }) => {
-			if (!user) {
-				return { user: undefined };
-			}
+  /** Get current user handler. */
+  getMe: createHandler((e) => e.getMe, {
+    auth: "optional",
+    handler: async ({ user }) => {
+      if (!user) {
+        return { user: undefined };
+      }
 
-			return {
-				user: {
-					id: user.id,
-					email: user.email,
-					displayName: user.displayName,
-				},
-			};
-		},
-	}),
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+      };
+    },
+  }),
 
-	/** Signup handler - creates a new workspace and admin user. */
-	signup: createHandler((e) => e.signup, {
-		handler: async ({ body, ctx }) => {
-			const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
-			const db = getDb();
+  /** Signup handler - creates a new workspace and admin user. */
+  signup: createHandler((e) => e.signup, {
+    handler: async ({ body, ctx }) => {
+      const authController = getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const db = getDb();
 
-			// Validate workspace slug format
-			if (!/^[a-z0-9-]+$/.test(body.workspace)) {
-				throw new HttpError(
-					400,
-					"Workspace slug must be lowercase and contain only letters, numbers, and hyphens",
-				);
-			}
+      // Validate workspace slug format
+      if (!/^[a-z0-9-]+$/.test(body.workspace)) {
+        throw new HttpError(
+          400,
+          "Workspace slug must be lowercase and contain only letters, numbers, and hyphens",
+        );
+      }
 
-			// Check if workspace slug already exists
-			const existingWorkspace = await db
-				.selectFrom("workspaces")
-				.selectAll()
-				.where("slug", "=", body.workspace)
-				.executeTakeFirst();
+      // Check if workspace slug already exists
+      const existingWorkspace = await db
+        .selectFrom("workspaces")
+        .selectAll()
+        .where("slug", "=", body.workspace)
+        .executeTakeFirst();
 
-			if (existingWorkspace) {
-				throw new HttpError(409, "Organization slug is already taken");
-			}
+      if (existingWorkspace) {
+        throw new HttpError(409, "Organization slug is already taken");
+      }
 
-			// Check if email already exists
-			const existingEmail = await db
-				.selectFrom("users")
-				.selectAll()
-				.where("email", "=", body.email)
-				.executeTakeFirst();
+      // Check if email already exists
+      const existingEmail = await db
+        .selectFrom("users")
+        .selectAll()
+        .where("email", "=", body.email)
+        .executeTakeFirst();
 
-			if (existingEmail) {
-				throw new HttpError(409, "Email is already registered");
-			}
+      if (existingEmail) {
+        throw new HttpError(409, "Email is already registered");
+      }
 
-			// Validate password length
-			if (body.password.length < 8) {
-				throw new HttpError(400, "Password must be at least 8 characters long");
-			}
+      // Validate password length
+      if (body.password.length < 8) {
+        throw new HttpError(400, "Password must be at least 8 characters long");
+      }
 
-			// Create the workspace
-			const newWorkspace = await db
-				.insertInto("workspaces")
-				.values({
-					slug: body.workspace,
-					name: body.workspaceName,
-				})
-				.returningAll()
-				.executeTakeFirstOrThrow();
+      // Create the workspace
+      const newWorkspace = await db
+        .insertInto("workspaces")
+        .values({
+          slug: body.workspace,
+          name: body.workspaceName,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
-			// Hash the password
-			const passwordHash = await bcrypt.hash(body.password, 10);
+      // Hash the password
+      const passwordHash = await bcrypt.hash(body.password, 10);
 
-			// Create the admin user
-			const newUser = await db
-				.insertInto("users")
-				.values({
-					email: body.email,
-					displayName: body.displayName,
-					passwordHash,
-				})
-				.returningAll()
-				.executeTakeFirstOrThrow();
+      // Create the admin user
+      const newUser = await db
+        .insertInto("users")
+        .values({
+          email: body.email,
+          displayName: body.displayName,
+          passwordHash,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
-			// Link user to workspace
-			await db
-				.insertInto("userWorkspaces")
-				.values({
-					userId: newUser.id,
-					workspaceId: newWorkspace.id,
-				})
-				.execute();
+      // Link user to workspace
+      await db
+        .insertInto("userWorkspaces")
+        .values({
+          userId: newUser.id,
+          workspaceId: newWorkspace.id,
+        })
+        .execute();
 
-			// Create user object for token
-			const user: __PROJECT_NAME_PASCAL__User = {
-				id: newUser.id,
-				email: newUser.email,
-				displayName: newUser.displayName,
-				workspaceId: newWorkspace.id,
-			};
+      // Create user object for token
+      const user: __PROJECT_NAME_PASCAL__User = {
+        id: newUser.id,
+        email: newUser.email,
+        displayName: newUser.displayName,
+        workspaceId: newWorkspace.id,
+      };
 
-			// Create and set the auth token
-			const token = await authController.createToken(user);
-			authController.setTokenInResponse(ctx, token);
+      // Create and set the auth token
+      const token = await authController.createToken(user);
+      authController.setTokenInResponse(ctx, token);
 
-			return {
-				user: {
-					id: user.id,
-					email: user.email,
-					displayName: user.displayName,
-				},
-				workspace: {
-					id: newWorkspace.id,
-					slug: newWorkspace.slug,
-					name: newWorkspace.name,
-				},
-			};
-		},
-	}),
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+        },
+        workspace: {
+          id: newWorkspace.id,
+          slug: newWorkspace.slug,
+          name: newWorkspace.name,
+        },
+      };
+    },
+  }),
 };

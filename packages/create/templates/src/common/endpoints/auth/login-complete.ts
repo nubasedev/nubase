@@ -9,17 +9,17 @@ import { workspaceSchema } from "../../resources/workspace";
  * Completes login by selecting a workspace and issuing the full auth token.
  */
 export const loginCompleteSchema = {
-	method: "POST" as const,
-	path: "/auth/login/complete",
-	requestParams: emptySchema,
-	requestBody: nu.object({
-		/** Temporary login token from login/start */
-		loginToken: nu.string(),
-		/** Selected workspace slug */
-		workspace: nu.string(),
-	}),
-	responseBody: nu.object({
-		user: userSchema,
-		workspace: workspaceSchema,
-	}),
+  method: "POST" as const,
+  path: "/auth/login/complete",
+  requestParams: emptySchema,
+  requestBody: nu.object({
+    /** Temporary login token from login/start */
+    loginToken: nu.string(),
+    /** Selected workspace slug */
+    workspace: nu.string(),
+  }),
+  responseBody: nu.object({
+    user: userSchema,
+    workspace: workspaceSchema,
+  }),
 } satisfies RequestSchema;

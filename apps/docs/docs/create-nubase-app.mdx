@@ -24,19 +24,17 @@ my-app/
 ├── nubase/                        # Database configuration and migrations
 │   ├── nubase.config.ts           # Configuration file
 │   └── migrations/                # SQL migration files
-├── frontend/                      # React frontend (Vite)
-│   ├── src/
-│   │   ├── config/                # Application configuration
+├── src/
+│   ├── frontend/                  # React frontend (Vite)
+│   │   ├── frontend-config.tsx    # Frontend application config
 │   │   ├── resources/             # Resource definitions
 │   │   └── main.tsx               # Entry point
-│   └── package.json
-├── backend/                       # Node.js backend (Hono)
-│   ├── src/
+│   ├── backend/                   # Node.js backend (Hono)
+│   │   ├── backend-config.ts      # Backend application config
 │   │   ├── api/                   # API routes
 │   │   ├── db/                    # Database schemas
-│   │   └── index.ts               # Server entry point
-│   ├── docker/                    # Docker configuration
-│   └── package.json
+│   │   └── app.ts                 # Server entry point
+│   └── common/                    # Shared types between frontend and backend
 ├── schema/                        # Shared TypeScript schemas
 │   ├── src/
 │   │   ├── schema/                # One folder per resource

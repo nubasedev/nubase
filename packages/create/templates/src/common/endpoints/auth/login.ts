@@ -9,16 +9,16 @@ import { userSchema } from "../../resources/user";
  * @deprecated Use loginStartSchema and loginCompleteSchema for two-step flow
  */
 export const loginSchema = {
-	method: "POST" as const,
-	path: "/auth/login",
-	requestParams: emptySchema,
-	requestBody: nu.object({
-		email: nu.string(),
-		password: nu.string(),
-		/** Workspace slug for path-based multi-workspace */
-		workspace: nu.string(),
-	}),
-	responseBody: nu.object({
-		user: userSchema,
-	}),
+  method: "POST" as const,
+  path: "/auth/login",
+  requestParams: emptySchema,
+  requestBody: nu.object({
+    email: nu.string(),
+    password: nu.string(),
+    /** Workspace slug for path-based multi-workspace */
+    workspace: nu.string(),
+  }),
+  responseBody: nu.object({
+    user: userSchema,
+  }),
 } satisfies RequestSchema;

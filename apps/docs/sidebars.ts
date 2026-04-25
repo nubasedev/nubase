@@ -19,6 +19,7 @@ const sidebars: SidebarsConfig = {
         "schema",
         "resources",
         "searching",
+        "application-config",
         "frontend",
         "authentication",
         "dashboards",

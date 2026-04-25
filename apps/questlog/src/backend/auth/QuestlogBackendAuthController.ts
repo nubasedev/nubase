@@ -1,6 +1,7 @@
 import type {
   BackendAuthController,
   BackendUser,
+  NubaseBackendAuthConfig,
   TokenPayload,
   VerifyTokenResult,
 } from "@nubase/backend";
@@ -33,12 +34,6 @@ export interface QuestlogTokenPayload extends TokenPayload {
   workspaceId: number; // The selected workspace for this session
 }
 
-// Configuration
-const JWT_SECRET =
-  process.env.JWT_SECRET || "nubase-dev-secret-change-in-production";
-const JWT_EXPIRY = "1h";
-const COOKIE_NAME = "nubase_auth";
-
 /**
  * Get the debug token secret for development/testing.
  * Read lazily to ensure environment variables are loaded.
@@ -68,6 +63,8 @@ function getDebugAuthToken(): string | undefined {
 export class QuestlogBackendAuthController
   implements BackendAuthController<QuestlogUser, QuestlogTokenPayload>
 {
+  constructor(private readonly config: NubaseBackendAuthConfig) {}
+
   /**
    * Extract the authentication token from the request.
    *
@@ -103,7 +100,7 @@ export class QuestlogBackendAuthController
 
     // Fall back to cookie
     const cookieHeader = ctx.req.header("Cookie") || "";
-    return getCookie(cookieHeader, COOKIE_NAME);
+    return getCookie(cookieHeader, this.config.cookieName);
   }
 
   /**
@@ -138,7 +135,10 @@ export class QuestlogBackendAuthController
 
     try {
       // Verify JWT signature and expiration
-      const decoded = jwt.verify(token, JWT_SECRET) as QuestlogTokenPayload;
+      const decoded = jwt.verify(
+        token,
+        this.config.jwtSecret,
+      ) as QuestlogTokenPayload;
 
       // Validate workspace if provided
       if (
@@ -263,7 +263,9 @@ export class QuestlogBackendAuthController
       ...additionalPayload,
     };
 
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+    return jwt.sign(payload, this.config.jwtSecret, {
+      expiresIn: this.config.sessionMaxAgeSeconds,
+    });
   }
 
   /**
@@ -281,7 +283,7 @@ export class QuestlogBackendAuthController
   setTokenInResponse(ctx: Context, token: string): void {
     ctx.header(
       "Set-Cookie",
-      `${COOKIE_NAME}=${token}; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=3600`,
+      `${this.config.cookieName}=${token}; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=${this.config.sessionMaxAgeSeconds}`,
     );
   }
 
@@ -291,7 +293,7 @@ export class QuestlogBackendAuthController
   clearTokenFromResponse(ctx: Context): void {
     ctx.header(
       "Set-Cookie",
-      `${COOKIE_NAME}=; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=0`,
+      `${this.config.cookieName}=; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=0`,
     );
   }
 
@@ -349,9 +351,3 @@ export class QuestlogBackendAuthController
     };
   }
 }
-
-/**
- * Singleton instance of the auth controller.
- * Use this in your Hono app setup.
- */
-export const questlogAuthController = new QuestlogBackendAuthController();

@@ -1,0 +1,92 @@
+---
+title: "ADR 0009: Application config as named TypeScript modules"
+description: Each Nubase app has exactly two config files — frontend-config.tsx and backend-config.ts — colocated with the side they configure. The names are intentional, not generic, so a new contributor can find both halves of the application's wiring at a glance.
+sidebar_position: 9
+---
+
+**Status:** accepted
+
+## Context
+
+Nubase is configuration-driven: an app declares its menu, resources, themes, API endpoints, auth settings, and session policy as plain TypeScript values, and the framework reads those values to build the running application. As soon as a config has more than one knob, two questions become load-bearing:
+
+1. **Where does the config live?** A single project has three TypeScript subtrees — `src/frontend`, `src/backend`, `src/common` — and the config could plausibly live in any of them, or in a top-level `src/config/` folder.
+2. **What is the file called?** A generic `config.ts` is the easy default and the path most projects fall into; a more explicit `frontend-config.tsx` / `backend-config.ts` pair is more verbose to type but more searchable.
+
+When the project had only a frontend config, this didn't matter — `src/frontend/config.tsx` was unambiguous. The decision became real when we added a second config (session duration / JWT secret / cookie name on the backend). At that point we needed a rule that scaled to the next config too, not just the second one.
+
+A few alternatives were considered:
+
+- **`src/common/config.ts`** — a single shared config, with frontend and backend each reading the keys they care about. Rejected: the JWT secret and cookie `Max-Age` are pure backend concerns; the cookie is HttpOnly so the frontend literally cannot read it. Putting both halves in `common` would leak server-only values into the client bundle.
+- **`src/frontend/config.tsx` and `src/backend/config.ts`** — generic name, scoped by directory. This is what the project shipped initially. Works in isolation but the moment a contributor opens a tab named `config.ts` in their editor they have to read the breadcrumb to know which side they're on, and a search for "config" matches every file in the codebase.
+- **`src/frontend/frontend-config.tsx` and `src/backend/backend-config.ts`** — explicit, redundant-looking, but unambiguous in tabs, in error stacks, in `git log`, and in grep. Adopted.
+
+## Decision
+
+Each Nubase app has **exactly two application config files**, named explicitly:
+
+- `src/frontend/frontend-config.tsx` — exports `config: NubaseFrontendConfig`. Type owned by `@nubase/frontend`. Holds the menu, resources, dashboards, theme list, API base URL, public routes, keybindings, and the frontend `AuthenticationController` instance. Read by `main.tsx` and passed to `<NubaseApp>`.
+- `src/backend/backend-config.ts` — exports `config: NubaseBackendConfig`. Type owned by `@nubase/backend`. Holds the JWT secret, session duration, cookie name, and any other backend runtime knobs the framework defines. Read by the wiring code that constructs the controller singletons (e.g. `src/backend/auth/index.ts`).
+
+There is no `common/config.ts`. Anything that genuinely needs to be shared between sides — API endpoint definitions, schemas — lives in `src/common` under its own descriptive name (`api-endpoints.ts`, `resources/`), not under the word `config`.
+
+### Framework owns the shape, the app owns the values
+
+This is the load-bearing half of the decision. Both `NubaseFrontendConfig` and `NubaseBackendConfig` are **framework types** exported from the corresponding `@nubase/*` package. The app file is small and uniform across projects:
+
+```ts
+// src/backend/backend-config.ts
+import type { NubaseBackendConfig } from "@nubase/backend";
+
+export const config: NubaseBackendConfig = {
+  auth: {
+    jwtSecret: process.env.JWT_SECRET ?? "dev-secret",
+    sessionMaxAgeSeconds: 60 * 60 * 24 * 30,
+    cookieName: "nubase_auth",
+  },
+};
+```
+
+Putting the type in the framework rather than the app pays off in three ways:
+
+- **Adding a knob is a framework change, not a per-app change.** When `@nubase/backend` grows a new opt-in section (rate limiting, request logging, CSRF policy), every app picks up the new field with autocomplete and default semantics described in one place. If each app defined its own `<App>BackendConfig`, the framework would have no way to introduce shared concepts.
+- **Apps stay declarative.** A new contributor opening `backend-config.ts` sees a value, not a schema. The schema is one click away in `@nubase/backend`, where it belongs.
+- **The boundary is symmetric.** `NubaseFrontendConfig` already lives in `@nubase/frontend`; doing the same on the backend is the obvious move once the framework has more than one knob to standardise.
+
+Apps that need additional, app-specific config sections intersect or extend the framework type rather than rewriting it:
+
+```ts
+import type { NubaseBackendConfig } from "@nubase/backend";
+
+interface QuestlogBackendConfig extends NubaseBackendConfig {
+  rateLimit: { maxRequestsPerMinute: number };
+}
+
+export const config: QuestlogBackendConfig = { /* ... */ };
+```
+
+Sub-sections of the config that consumers depend on are also framework types. The auth controller's constructor signature, for example, is `constructor(config: NubaseBackendAuthConfig)` — so an app can pass `config.auth` directly without redeclaring its shape.
+
+### Rules that flow from the convention
+
+1. **Plain TypeScript modules, no DSL.** Both files export a typed `config` constant. No `defineConfig()` helper, no JSON schema. The framework types (`NubaseFrontendConfig`, `NubaseBackendConfig`) are the only contract.
+2. **Read environment variables here, not in the consumer.** `process.env.JWT_SECRET` is read once, in `backend-config.ts`. Downstream code (the auth controller, middleware) takes the resolved value via constructor parameters and never touches `process.env` itself. This is what makes the controllers unit-testable in isolation.
+3. **Wiring lives next to the consumer, not in the config.** `backend-config.ts` is data; it does not import or instantiate controllers. The wiring (`new QuestlogBackendAuthController(config.auth)`) lives in the directory of the thing being wired — currently `src/backend/auth/index.ts`. The same rule applies on the frontend, where `frontend-config.tsx` instantiates the `AuthenticationController` because the controller is itself part of the config object passed to `<NubaseApp>`.
+4. **One place to add a framework-level knob.** Adding a new framework-defined backend setting is a two-step change: extend the framework's `NubaseBackendConfig` type, then thread the new field through the constructor of whatever consumes it. Apps pick up the field automatically.
+
+## Consequences
+
+- **Search is unambiguous.** `grep -r "frontend-config"` or `grep -r "backend-config"` finds the configuration of the application without false positives from `vite.config.ts`, `tsconfig.json`, `playwright.config.ts`, or any of the other tool configs that share the word.
+- **Editor tabs are self-describing.** When two config files are open at once, the tab labels read `frontend-config.tsx` and `backend-config.ts` — no need to look at the breadcrumb to disambiguate.
+- **Onboarding is faster.** New contributors looking for "where the app gets configured" find both halves by listing the directory once. The naming makes the symmetry between sides explicit rather than relying on the reader to notice it.
+- **Server secrets stay server-side.** Because there is no shared config object, there is no temptation to put the JWT secret somewhere the frontend bundle could see it. The compiler enforces the boundary: `backend-config.ts` is in `tsconfig.backend.json`'s include set; the frontend cannot import it.
+- **Trade-offs accepted:**
+  - **More keystrokes.** `frontend-config.tsx` is longer than `config.tsx`. The redundancy buys the ergonomics described above; in practice the file is typed once and imported via autocomplete from then on.
+  - **Two files per app.** Tiny apps that only need a frontend config still have an empty-feeling backend (no `backend-config.ts` is created until there's something to put in it). The convention says "if you need backend config, this is what you call it" — it does not require the file to exist preemptively.
+  - **Symmetric naming is a project convention, not enforced by the framework.** Nothing in `@nubase/frontend` or `@nubase/backend` requires the file to be called `frontend-config.tsx`; they accept the exported `config` value, not a file path. The convention is enforced by documentation and code review, the same way the rest of Nubase's "highly-opinionated layout" is enforced.
+
+## Cross-references
+
+- [Application Configuration](/docs/application-config) — practical guide: what goes in each file, env-var handling, common patterns.
+- [Frontend](/docs/frontend) — what `NubaseFrontendConfig` accepts.
+- [Authentication](/docs/authentication) — example consumer of `backend-config.ts` (session duration, JWT secret, cookie name).

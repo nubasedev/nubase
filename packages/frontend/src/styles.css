@@ -154,8 +154,8 @@
  * combined with our `aria-invalid` destructive outer ring). */
 .nql-editor-shell .monaco-editor,
 .nql-editor-shell .monaco-editor .overflow-guard {
-  background: transparent !important;
-  border: 0 !important;
-  outline: none !important;
-  box-shadow: none !important;
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
 }

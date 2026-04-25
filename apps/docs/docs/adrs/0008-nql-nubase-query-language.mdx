@@ -11,7 +11,7 @@ sidebar_position: 8
 Nubase resource search started out as a structured object: for each `getXxx` endpoint, the request params were a partial of the resource schema (`{ q, title, assigneeId }`) and the handler translated those into hand-written Kysely `.where()` calls. That works well for simple lookups but cannot express:
 
 - **Disjunctions across fields** — "Title contains *override* OR Title contains *vulnerability*".
-- **Mixed-field logic** — "Description starts with *Bibo* AND assignee is one of {a, b, c}".
+- **Mixed-field logic** — "Description starts with *Bibo* AND assignee is one of `{a, b, c}`".
 - **Negation and grouping** — "NOT (title CONTAINS X) AND assigneeId IS NULL".
 
 Adding a query parameter for every combinatorial filter the UI might want (an `OR_title_contains` array, a `between` shape, …) does not scale. Power users want a single text input where they can express a criterion directly; routine users still get the structured filter chips. We needed a query language that:

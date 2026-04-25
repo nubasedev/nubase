@@ -1,0 +1,252 @@
+---
+title: Application Configuration
+description: How to configure a Nubase application — where the config files live, what goes in each, and how environment variables flow through them.
+---
+
+A Nubase app has exactly two application config files:
+
+```text
+apps/<app>/
+└── src/
+    ├── frontend/
+    │   └── frontend-config.tsx     # Frontend config — menu, resources, themes, auth controller
+    └── backend/
+        └── backend-config.ts       # Backend config — JWT secret, session duration, cookie name
+```
+
+Both files export a typed `config` constant. They are plain TypeScript modules — no DSL, no `defineConfig` helper. The decision to keep them as named modules colocated with the side they configure is recorded in [ADR 0009](/docs/adrs/application-config-files).
+
+:::note
+Don't confuse this with `nubase/nubase.config.ts` at the project root. That one configures the **CLI** (database environments and migration tooling) and is documented under [Database → Configuration](/docs/configuration). The two files solve different problems.
+:::
+
+## frontend-config.tsx
+
+The frontend config is the value passed to `<NubaseApp>`. It's typed by `NubaseFrontendConfig` from `@nubase/frontend`.
+
+```tsx
+// src/frontend/frontend-config.tsx
+import type { NubaseFrontendConfig } from "@nubase/frontend";
+import { defaultKeybindings, resourceLink } from "@nubase/frontend";
+import { Home, TicketIcon } from "lucide-react";
+import { apiEndpoints } from "../common";
+import { QuestlogAuthController } from "./auth/QuestlogAuthController";
+import { ticketResource } from "./resources/ticket";
+
+const apiBaseUrl = "/api";
+const authController = new QuestlogAuthController(apiBaseUrl);
+
+export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
+  appName: "Questlog",
+  apiBaseUrl,
+  apiEndpoints,
+  mainMenu: [
+    { id: "home", icon: Home, label: "Home", href: "/" },
+    { id: "tickets", icon: TicketIcon, label: "Tickets", href: resourceLink(ticketResource, "search") },
+  ],
+  resources: { [ticketResource.id]: ticketResource },
+  themeIds: ["dark", "light"],
+  defaultThemeId: "dark",
+  authentication: authController,
+  publicRoutes: ["/signin"],
+  keybindings: defaultKeybindings.extend(),
+};
+```
+
+It's then handed to `<NubaseApp>` from `main.tsx`:
+
+```tsx
+// src/frontend/main.tsx
+import { NubaseApp } from "@nubase/frontend";
+import { createRoot } from "react-dom/client";
+import { config } from "./frontend-config";
+
+createRoot(document.getElementById("root")!).render(<NubaseApp config={config} />);
+```
+
+For the full list of fields `NubaseFrontendConfig` accepts, see the [Frontend](/docs/frontend) reference.
+
+## backend-config.ts
+
+The backend config holds runtime values consumed by the server-side wiring — typically the auth controller, but the same pattern applies to anything else with knobs (rate limits, feature flags, third-party API keys).
+
+The shape is **owned by `@nubase/backend`**, not by the app. The app imports `NubaseBackendConfig` and exports a value that satisfies it:
+
+```ts
+// src/backend/backend-config.ts
+import type { NubaseBackendConfig } from "@nubase/backend";
+
+const SECONDS_IN_A_DAY = 60 * 60 * 24;
+
+export const config: NubaseBackendConfig = {
+  auth: {
+    jwtSecret:
+      process.env.JWT_SECRET || "nubase-dev-secret-change-in-production",
+    sessionMaxAgeSeconds: 30 * SECONDS_IN_A_DAY, // 30 days
+    cookieName: "nubase_auth",
+  },
+};
+```
+
+This mirrors `NubaseFrontendConfig`: the framework defines what fields exist and what they mean; the app fills them in. When `@nubase/backend` grows a new section, every app picks it up via autocomplete; nobody has to copy a schema between projects.
+
+The config is **data only**. It does not import controllers, does not instantiate anything, and does not have side effects beyond reading `process.env`. The wiring that constructs the controller lives next to the controller, not in the config:
+
+```ts
+// src/backend/auth/index.ts
+import { config } from "../backend-config";
+import { QuestlogBackendAuthController } from "./QuestlogBackendAuthController";
+
+export const questlogAuthController = new QuestlogBackendAuthController(
+  config.auth,
+);
+```
+
+The controller takes `NubaseBackendAuthConfig` (also exported from `@nubase/backend`) so `config.auth` slots in directly:
+
+```ts
+import type { NubaseBackendAuthConfig } from "@nubase/backend";
+
+export class QuestlogBackendAuthController {
+  constructor(private readonly config: NubaseBackendAuthConfig) {}
+  // ...
+}
+```
+
+### Adding app-specific sections
+
+If your app needs config beyond what the framework declares, extend `NubaseBackendConfig` rather than redefining it:
+
+```ts
+import type { NubaseBackendConfig } from "@nubase/backend";
+
+interface QuestlogBackendConfig extends NubaseBackendConfig {
+  rateLimit: {
+    maxRequestsPerMinute: number;
+  };
+}
+
+export const config: QuestlogBackendConfig = {
+  auth: { /* ... */ },
+  rateLimit: { maxRequestsPerMinute: 60 },
+};
+```
+
+The framework sections stay validated against the framework type; app-specific sections are typed by the app extension. Either way, the file still exports a single `config` constant.
+
+This separation matters for two reasons:
+
+1. **The controller is testable in isolation** — its constructor takes plain config, so unit tests can pass arbitrary fixtures without monkey-patching `process.env`.
+2. **Server secrets never leak to the frontend bundle.** `backend-config.ts` is included only by `tsconfig.backend.json`. Importing it from frontend code is a compile error.
+
+## Why two files, not one shared config
+
+You might be tempted to put both halves in `src/common/`. Don't.
+
+- The **JWT secret** is server-only — it signs tokens and must not appear in any client-bundled module.
+- The **cookie name** could be shared in principle, but the cookie itself is `HttpOnly`, so the frontend cannot read it; the symmetric "backend writes / frontend reads" use case doesn't exist.
+- Anything that genuinely _is_ shared (API endpoint definitions, schemas) already has a home in `src/common` under its own descriptive name (`api-endpoints.ts`, `resources/`). It doesn't belong under the word `config`.
+
+The two-file split is what keeps the boundary honest: the type checker enforces that backend secrets stay backend-side, because `tsconfig.frontend.json` simply doesn't see `backend-config.ts`.
+
+## Environment variables
+
+Read environment variables in the config file, not in the consumer.
+
+```ts
+// src/backend/backend-config.ts  ✅ — env access lives here
+jwtSecret: process.env.JWT_SECRET || "nubase-dev-secret-change-in-production",
+```
+
+```ts
+// src/backend/auth/QuestlogBackendAuthController.ts  ❌ — don't reach for process.env here
+class QuestlogBackendAuthController {
+  async createToken(user) {
+    return jwt.sign(payload, process.env.JWT_SECRET, /* ... */);
+  }
+}
+```
+
+The right shape: env vars resolve once, at module load time, in `backend-config.ts`. The controller takes the resolved value via its constructor and never knows whether it came from an env var, a hard-coded default, a test fixture, or a secret manager.
+
+```ts
+class QuestlogBackendAuthController {
+  constructor(private readonly config: QuestlogAuthConfig) {}
+
+  async createToken(user) {
+    return jwt.sign(payload, this.config.jwtSecret, /* ... */);
+  }
+}
+```
+
+Two payoffs:
+
+- **Tests pass arbitrary configs.** `new QuestlogBackendAuthController({ jwtSecret: "test", ... })` works without touching `process.env`.
+- **One place to audit.** Reviewing `backend-config.ts` tells you every env var the backend depends on.
+
+For how Nubase loads `.env` files at startup, see [Configuration → Environment Variables](/docs/configuration#environment-variables).
+
+## Adding a new knob
+
+The path depends on whether the knob is **framework-defined** (every app should have it) or **app-specific** (only this app cares).
+
+### Framework-defined knobs
+
+These extend `NubaseBackendConfig` itself and live in `@nubase/backend`. Two steps:
+
+1. **Add the field to the framework type** in `packages/backend/src/config/nubase-backend-config.ts`.
+2. **Thread it through the consumer's constructor** so it can read the value off `config.<section>`.
+
+After that every existing app picks up the new field automatically — autocomplete shows it, the type checker requires it (or makes it optional with a default), and there's exactly one place to look up its meaning.
+
+### App-specific knobs
+
+These extend the app's own config interface in `backend-config.ts`. Three steps:
+
+1. **Extend `NubaseBackendConfig`** in `backend-config.ts` and add the value to the literal.
+
+   ```ts
+   import type { NubaseBackendConfig } from "@nubase/backend";
+
+   interface QuestlogBackendConfig extends NubaseBackendConfig {
+     rateLimit: {
+       maxRequestsPerMinute: number;
+     };
+   }
+
+   export const config: QuestlogBackendConfig = {
+     auth: { /* ... */ },
+     rateLimit: {
+       maxRequestsPerMinute: Number(process.env.RATE_LIMIT_RPM ?? 60),
+     },
+   };
+   ```
+
+2. **Take it via constructor** in the consumer.
+
+   ```ts
+   export interface RateLimitMiddlewareConfig {
+     maxRequestsPerMinute: number;
+   }
+
+   export function createRateLimitMiddleware(config: RateLimitMiddlewareConfig) {
+     /* ... */
+   }
+   ```
+
+3. **Wire it in the directory of the consumer**, passing `config.rateLimit`.
+
+   ```ts
+   // src/backend/middleware/index.ts
+   import { config } from "../backend-config";
+   export const rateLimitMiddleware = createRateLimitMiddleware(config.rateLimit);
+   ```
+
+Don't reach into `process.env` from inside the consumer. Don't put wiring inside `backend-config.ts`. Each step has one place.
+
+## See also
+
+- [ADR 0009](/docs/adrs/application-config-files) — the rationale for the file naming convention.
+- [Frontend](/docs/frontend) — what `NubaseFrontendConfig` accepts.
+- [Authentication](/docs/authentication) — concrete example of consuming `backend-config.ts`.
+- [Configuration](/docs/configuration) — the other config file (CLI / database), not to be confused with this one.

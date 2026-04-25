@@ -1,6 +1,6 @@
 import { NubaseApp } from "@nubase/frontend";
 import { createRoot } from "react-dom/client";
-import { config } from "./config";
+import { config } from "./frontend-config";
 import "./styles/theme-example.css";
 
 const root = document.getElementById("root");

@@ -2,729 +2,103 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## About
+## What this repo is
 
-This project, Nubase, is highly-opinionated full-stack framework for creating internal tools and business
-applications. It's extremely opinionated. Meaning, amongst other things, it expects things to be in very particular locations.
-The main proposition of Nubase is that it's configuration based.
+**Nubase is a framework.** It is highly opinionated and configuration-driven, aimed at internal tools and business applications. The framework lives in `packages/`.
 
-As an example, the `apps/questlog` folder is a **single fullstack app** (not a mono-project-within-a-monorepo). Its internal layout is:
+**Questlog is the in-repo example app**, used to develop the framework against. It lives in `apps/questlog` and imports `@nubase/*` from local sources via the workspace. When in doubt about how an app should be structured, **questlog is the canonical example**.
 
-- `apps/questlog/src/backend` — Hono-based API server code
-- `apps/questlog/src/frontend` — React + Vite frontend code
-- `apps/questlog/src/common` — shared TypeScript definitions imported by both sides
-- `apps/questlog/nubase` — schema migrations and the `schema.json` snapshot, managed by `@nubase/cli`
-
-A single dev server (Vite + `@hono/vite-dev-server`) serves the frontend and mounts the backend under `/api/*` on the same port. In production, `vite build --mode client && vite build --mode server` produces a single `dist/` bundle that `node dist/index.js` runs.
+**The starter** in `packages/create/templates/` is the code that ships to end users via `npx @nubase/create`. End users see this code, not questlog's. Keeping the starter in sync with the framework is a hard rule (see Conventions).
 
 ## Documentation
 
-If you're curious about how the architecture works internally you can read the docs at apps/docs/docs/ and apps/docs/docs/internal/
+All user-facing documentation lives in **`apps/docs`** (Docusaurus). Write docs there — never as `README.md` files inside source packages. Architectural decisions go in `apps/docs/docs/adrs/` as numbered ADRs.
 
-## Development Commands
+## Daily commands
 
-### Build, Development and Code quality
+- `npm run typecheck` — TypeScript across all packages.
+- `npm run lint:fix` — Biome with auto-fix.
+- `npm run build` — Turbo build (also builds the docs site, which catches broken MDX and broken doc links).
+- `cd packages/core && npm run test` — Vitest. Test files use `.test.ts`.
 
-- `npm run build` - Build all packages using Turbo
-- `npm run dev` - Start development mode for all packages
-- `npm run typecheck` - Run TypeScript type checking across all packages
-- `npm run lint` - Run linting across all packages
+**After every change, run `typecheck`, `lint:fix`, AND `build`.** Build catches things that typecheck does not — broken MDX, broken doc cross-references, package re-export drift, Storybook compilation, frontend bundling.
 
-### IMPORTANT: Do NOT run development servers
+**Do not** start dev servers (`npm run dev`, `npm run storybook`). Assume the user is already running them; trying to start them again will collide on ports.
 
-- **NEVER** run `npm run dev`, `npm run storybook`, or any development servers
-- **ALWAYS** assume the user is already running the development environment
-- Port conflicts will occur if you try to start servers that are already running
-- **ALWAYS** run `npm run typecheck` and `npm run lint:fix` to verify changes
-- Focus on code changes, type checking, and linting - not running applications
+## Project layout
 
-### Package-Specific Commands
+Turborepo monorepo.
 
-- `cd packages/core && npm run test` - Run Vitest tests for core package
-- `cd packages/frontend && npm run storybook` - Start Storybook development server
-- `cd packages/frontend && npm run build:storybook` - Build Storybook for production
+**Framework packages (`packages/`):**
 
-### Publishing
+- `core` — `@nubase/core` — schema system (Zod-based) with computed metadata and layouts.
+- `frontend` — `@nubase/frontend` — React components, the `NubaseApp` shell, hooks, theming.
+- `backend` — `@nubase/backend` — typed handlers, auth controller interface, Hono middleware, NQL.
+- `cli` — `@nubase/cli` — `nubase db diff/pull/push/reset` migration workflow.
+- `pg` — `@nubase/pg` — Postgres schema extraction & migration SQL generation (used by the CLI).
+- `create` — `@nubase/create` — the `npx @nubase/create` scaffolder. Templates live in `templates/`.
 
-- `npm run publish` - Publish all `@nubase/*` packages (latest tag) via Turbo
-- `npm run publish:dev` - Publish all `@nubase/*` packages under the `dev` tag via Turbo
+**Apps (`apps/`):**
 
-## Project Architecture
+- `questlog` — single fullstack example app served by one Vite dev server on `http://localhost:3000`. Vite + `@hono/vite-dev-server` mount the API at `/api/*` on the same port. Layout:
+  - `src/frontend` — React frontend; `frontend-config.tsx` is the entry config.
+  - `src/backend` — Hono API; `backend-config.ts` is the entry config.
+  - `src/common` — types and API endpoint definitions shared by both sides.
+  - `nubase/` — migration SQL and the `schema.json` snapshot, managed by `@nubase/cli`.
+- `docs` — Docusaurus documentation site.
 
-### Monorepo Structure
+## Conventions
 
-This is a Turborepo-based monorepo with the following structure:
+### Framework + starter coupling
 
-**Core Packages:**
+**Any infrastructural change to the framework requires the matching change in `packages/create/templates/`.** End users get the starter, not questlog. If you add a field to `NubaseBackendConfig`, update the starter's `backend-config.ts`. If you rename a hook or change a controller signature, the starter must follow. The starter is part of the framework's public API.
 
-- `packages/core` — `@nubase/core` — Schema system (Zod-based validation, computed metadata, layout definitions)
-- `packages/frontend` — `@nubase/frontend` — React components, form controls, hooks, and the `NubaseApp` application shell
-- `packages/backend` — `@nubase/backend` — Backend runtime utilities: typed HTTP handlers, auth controllers, Hono middleware
-- `packages/cli` — `@nubase/cli` — Command-line tool for schema `diff` / `pull` / `push` / `reset` migration workflow (see `apps/docs/docs/cli.mdx`)
-- `packages/pg` — `@nubase/pg` — Postgres schema extraction and migration SQL generation, used internally by `@nubase/cli`
-- `packages/create` — `@nubase/create` — Project scaffolder invoked via `npx @nubase/create` (source of `apps/starter` when created)
+**Indent template files with 2 spaces, not tabs.** Biome does not run inside `packages/create/templates/` — those files are template input, not project source — so there is no auto-format to clean up tabs. When you create or edit anything under `packages/create/templates/`, write 2-space indentation by hand and don't copy whitespace from elsewhere in the repo without checking it.
 
-**Example Applications:**
+### Code style
 
-- `apps/docs` - Docusaurus documentation site
+- **Use `type`, not `interface`.** Even for object shapes. Reserve `interface` for the rare case where declaration merging is genuinely needed.
+- **No barrel `index.ts` files.** Don't create `index.ts` files whose only purpose is re-exporting from siblings. Import from the file that defines the thing. Public package entry points (`packages/*/src/index.ts`) are the only exception, since they're the package's external surface.
+- **Explicit named exports** — never `export *`. This applies inside packages and inside apps.
+- **Inline event handlers** for short handlers; extract to a named function only when the handler grows complex.
+- **No comments** unless the WHY is non-obvious. Don't narrate what the code does — names should do that.
 
-There are two types of example applications in the repository:
+### Application configuration
 
-**1. apps/questlog (In-Repo Example)**
+Each app has exactly two config files:
 
-This is the primary example application used for framework development. It's part of the Turborepo workspace and imports local (unpublished) `@nubase/*` packages directly.
+- `src/frontend/frontend-config.tsx` — exports `config: NubaseFrontendConfig`.
+- `src/backend/backend-config.ts` — exports `config: NubaseBackendConfig`.
 
-It is a single fullstack app served by one Vite dev server on **http://localhost:3000**:
+Both types are owned by the framework (`@nubase/frontend` and `@nubase/backend`). See `apps/docs/docs/application-config.mdx` and ADR 0009 for the full convention.
 
-- `apps/questlog/src/frontend` — React frontend (Vite)
-- `apps/questlog/src/backend` — Hono API, mounted at `/api/*` on the same port via `@hono/vite-dev-server`
-- `apps/questlog/src/common` — shared TypeScript types, API endpoint definitions, and resource descriptors imported by both sides
-- `apps/questlog/nubase` — `nubase.config.ts` + `migrations/` + `snapshots/schema.json`, managed by `@nubase/cli`
+### URL parameter coercion
 
-**Use this when**: Contributing to Nubase, testing local package changes, or understanding the framework internals.
+URL params arrive as strings; schemas expect typed values. Both the frontend router (search params) and the backend `createHttpHandler` (path params) automatically coerce via `ObjectSchema.toZodWithCoercion()`. Just define schemas with the right types — coercion is handled.
 
-**2. apps/starter (Standalone Example)**
+## Component conventions
 
-This is a standalone application created by `npx @nubase/create`. It uses published `@nubase/*` packages from npm and has its own Turborepo configuration. This folder is git-ignored since it's meant to be regenerated for testing.
+- **Centralised `<ActivityIndicator>`** for loading states; don't roll your own spinner. Use `<Button isLoading>` for submitting buttons.
+- **No size variants** (sm/md/lg) on new components unless explicitly requested. Pick one well-tuned default.
+- **Field renderers** live in `packages/frontend/src/components/form/renderers/{string,number,boolean,unsupported}/`. Import each renderer from its own file. The renderer maps live in `renderer-factory.tsx`.
+- **Type definitions inline before the component**, e.g. `export type CardProps = ...` immediately above the `Card` component, not grouped at the top of the file.
 
-**Use this when**: Testing the CLI output, verifying that published packages work correctly, or seeing what end users will experience.
+## Storybook
 
-**Note:** The starter example is git-ignored and meant to be created manually for testing. The E2E test scripts are not currently configured in the root package.json.
+- **Title format**: `Category/ComponentName` — never `Components/Category/ComponentName`.
+- **`ToastProvider` and `ModalProvider` are already wired** in `.storybook/preview.tsx`. Don't wrap stories in them.
+- **Self-contained stories**: use `render: () => { ... }` with all logic inline. No external helper components.
+- **No dark-mode stories** — the dark-mode plugin renders every story in both themes.
+- **No wrapper containers, borders, or explanatory copy** around stories. Let the component speak for itself.
+- **`showToast(...)` directly** from `../../floating/toast` inside stories — not `useToast`.
 
-### Example Application Architecture
+## Theming
 
-When you run the development environment (`npm run dev`), you're running the questlog example application located in the `apps/questlog/` folder. This demonstrates a real-world Nubase application as a single fullstack app with three interconnected subtrees inside `src/`:
+Tailwind v4 + CSS variables. The complete colour list and Tailwind mapping is in `packages/frontend/src/theme/theme.css`. Themes live in `packages/frontend/src/theming/themes/`. To add a theme, register it in `packages/frontend/src/theming/themes/index.ts` and add its id to `apps/questlog/src/frontend/frontend-config.tsx`'s `themeIds` array.
 
-**Frontend (`apps/questlog/src/frontend`)**
+## Help
 
-- The main application configuration is defined in `apps/questlog/src/frontend/config.tsx`
-- The application entry point (`apps/questlog/src/frontend/main.tsx`) simply renders the `NubaseApp` component with this configuration
-- Most of the application's functionality is automatically generated by the `NubaseApp` component from the `@nubase/frontend` package
+If the user asks about feedback or reporting issues:
 
-**Backend (`apps/questlog/src/backend`)**
-
-- Provides REST API endpoints under `/api/*`, served by Hono (`src/backend/app.ts` is the entry point)
-- Uses Drizzle ORM with PostgreSQL for data persistence; Drizzle schema definitions live in `src/backend/db/schema/`
-- Database migrations are **not** kept here — they live in `apps/questlog/nubase/migrations/` and are managed by `@nubase/cli` (`nubase db pull`, `nubase db diff`, `nubase db push`). The canonical schema snapshot is `apps/questlog/nubase/snapshots/schema.json`.
-
-**Common (`apps/questlog/src/common`)**
-
-- Shared TypeScript definitions used by both frontend and backend
-- Defines API endpoint types and data schemas for type safety across the stack
-
-#### NubaseApp Component Architecture
-
-The `NubaseApp` component (`packages/frontend/src/components/nubase-app/NubaseApp.tsx`) serves as the application shell that automatically generates a complete application from configuration:
-
-**Automatic Code Generation:**
-
-- **Routing System** - Automatically creates routes for all views and resources defined in the config
-  - View routes: `/v/{viewId}` (e.g., `/v/create-ticket`)
-  - Resource routes: `/r/{resourceId}/{operation}` (e.g., `/r/ticket/create`, `/r/ticket/edit`)
-- **Navigation** - Generates the main navigation menu from the `mainMenu` configuration
-- **HTTP Client** - Sets up API client with the configured `apiBaseUrl` and `apiEndpoints`
-- **Theme System** - Provides theme switching capabilities based on `themeIds` and `defaultThemeId`
-- **Provider Context** - Wraps the app with necessary providers (Modal, Services, Router)
-
-**What Gets Generated:**
-
-- Complete routing infrastructure using TanStack Router
-- Type-safe API client for backend communication
-- Fully functional navigation with hierarchical menu support
-- Theme switching UI and runtime CSS variable injection
-- Modal and dialog management systems
-- Form rendering from schema definitions
-- CRUD operation screens for resources
-
-**Configuration-Driven Development:**
-Instead of manually coding routes, API calls, forms, and navigation, developers only need to:
-
-1. Define schemas using `@nubase/core`
-2. Create view configurations that reference these schemas
-3. Define resource operations (create, view, edit, etc.)
-4. Configure the main menu structure
-5. Specify API endpoints and theme preferences
-
-The `NubaseApp` component then automatically generates a fully functional application with consistent UI, proper routing, type safety, and theme support.
-
-### Schema System Architecture
-
-The core package implements a schema system with these key concepts:
-
-1. **BaseSchema** - Abstract base class for all schemas with metadata support
-2. **Primitive Schemas** - StringSchema, NumberSchema, BooleanSchema for basic types
-3. **Complex Schemas** - ObjectSchema for object validation with computed metadata and layout support
-4. **Layout System** - Flexible layout configurations (form, grid, tabs, accordion) with groups and fields
-5. **Computed Metadata** - Async functions that compute metadata based on form data
-6. **URL Parameter Coercion** - Built-in system for converting string URL parameters to typed values
-
-#### URL Parameter Coercion System
-
-**The Problem:**
-URL parameters always arrive as strings (e.g., `?id=37` gives `id: "37"`), but schemas expect typed values (numbers, booleans).
-
-**The Solution:**
-ObjectSchema provides a `toZodWithCoercion()` method that leverages Zod's built-in coercion to automatically convert string values to expected types:
-
-```typescript
-const paramsSchema = nu.object({
-  id: nu.number(),
-  active: nu.boolean(),
-  name: nu.string(),
-});
-
-// Use toZodWithCoercion() for URL parameter parsing
-const coercionSchema = paramsSchema.toZodWithCoercion();
-const result = coercionSchema.parse({ id: "37", active: "true", name: "test" });
-// Result: { id: 37, active: true, name: "test" }
-```
-
-**Type Conversions:**
-
-- `"37"` → `37` (string to number)
-- `"true"/"false"` → `true`/`false` (string to boolean)
-- `"1"/"0"` → `true`/`false` (string to boolean, Zod's coerce.boolean behavior)
-- `"hello"` → `"hello"` (string remains unchanged)
-
-**Usage in Nubase:**
-
-- **Frontend:** `resource-screen.tsx` uses `toZodWithCoercion()` to parse URL search parameters
-- **Backend:** `typed-handlers.ts` uses `toZodWithCoercion()` to parse URL path parameters
-- **Static Typing:** The coerced schema maintains the same TypeScript output type as the original schema
-
-**Example Use Cases:**
-
-- Resource view URLs: `/r/ticket/view?id=37` → `{ id: 37 }`
-- API endpoints: `/tickets/:id` with `id: "42"` → `{ id: 42 }`
-- Query parameters: `?page=2&active=true` → `{ page: 2, active: true }`
-
-### Configuration System Architecture
-
-The frontend package provides a structured configuration system for Nubase applications:
-
-#### NubaseFrontendConfig Interface
-
-- **Core Settings** - `appName`, `mainMenu` for app identity and navigation structure
-- **Views System** - Map of view IDs to view configurations for UI screens and forms
-- **Resources System** - Map of resource IDs to resource descriptors defining CRUD operations
-- **API Integration** - `apiEndpoints` for type-safe client generation, `apiBaseUrl` for request routing
-- **Theming** - `themeIds` and `defaultThemeId` for theme management and switching
-
-#### Resource System Architecture
-
-Resources define the operations available for entities in your application:
-
-1. **ResourceDescriptor** - Container for all operations available on a resource entity
-2. **ResourceOperation** - Individual operation (create, view, edit, etc.) referencing a view
-3. **Standard Operations** - Common CRUD operations: create, view, edit (extensible for custom operations)
-4. **Type Safety** - Full TypeScript generics preserve operation and view type information
-5. **Extensibility** - Both ResourceDescriptor and ResourceOperation can be extended with additional properties
-
-#### Usage Pattern
-
-```typescript
-// Define resource with operations (following same pattern as views)
-const ticketResource = createResource({
-  id: "ticket", // Used as URL segment in /r/ticket/operation
-  operations: {
-    create: { view: createTicketView },
-    view: { view: viewTicketView },
-    edit: { view: editTicketView },
-  },
-});
-
-// Register in app config using resource.id as key (same as views)
-const config: NubaseFrontendConfig = {
-  resources: {
-    [ticketResource.id]: ticketResource, // Same pattern as views
-  },
-};
-```
-
-### React Component Architecture
-
-The Frontend package provides a comprehensive component library organized into these categories:
-
-#### Component Categories
-
-1. **Button System** - Button (5 variants, 4 sizes), ButtonBar (flexible alignment)
-2. **Form Controls** - FormControl (TanStack Form integration), TextInput (multiple types), Label (required indicators)
-3. **Form System** - SchemaForm (schema-driven forms with computed metadata and layouts)
-4. **Floating UI** - Dialog (confirmations), Modal (multi-size), Toast (6 types including promise toasts)
-5. **Navigation** - MainNav (hierarchical navigation with search and badges)
-6. **Application Shell** - NubaseApp (router integration and app bootstrap)
-
-#### Design Patterns
-
-- **Class Variance Authority (CVA)** - Type-safe variant-based styling across all components
-- **Compound Components** - FormControl enhances child form elements with labels, hints, and error states
-- **Hook-based APIs** - Custom hooks (useDialog, useModal, useToast) for programmatic control
-- **Provider Pattern** - Context-based state management for floating UI components
-- **Schema Integration** - Automatic form generation from @nubase/core ObjectSchema definitions
-
-#### Key Features
-
-- **Type Safety** - Full TypeScript support with generics preserving schema types
-- **Accessibility** - ARIA attributes, screen reader support, keyboard navigation, focus management
-- **Material Design 3 Theming** - Complete MD3 color system with 26 semantic color roles, runtime theme switching
-- **Performance** - Debounced form updates (200ms), memoized filtering, efficient re-rendering
-- **Storybook Integration** - Comprehensive documentation with interactive examples and variant showcases
-
-### Key Files to Understand
-
-#### Core Package
-
-- `packages/core/src/schema/schema.ts` - Core schema definitions and types
-- `packages/core/src/schema/nu.ts` - Schema builder utilities
-
-#### Frontend Package - Components
-
-- `packages/frontend/src/components/form/SchemaForm.tsx` - Main schema-driven form component
-- `packages/frontend/src/components/form-controls/FormControl/` - Form control wrapper with validation
-- `packages/frontend/src/components/buttons/Button/` - Primary button component with CVA variants
-- `packages/frontend/src/components/floating/dialog/` - Confirmation dialog system
-- `packages/frontend/src/components/floating/modal/` - Modal system with backdrop and stacking
-- `packages/frontend/src/components/floating/toast/` - Toast notification system
-- `packages/frontend/src/components/main-nav/` - Hierarchical navigation component
-- `packages/frontend/src/components/nubase-app/` - Application shell and router integration
-
-#### Frontend Package - Hooks & Utilities
-
-- `packages/frontend/src/hooks/useComputedMetadata.ts` - Computed metadata hook with debouncing
-- `packages/frontend/src/hooks/useLayout.ts` - Layout management hook for schema forms
-- `packages/frontend/src/hooks/useDialog.ts` - Programmatic dialog control
-- `packages/frontend/src/hooks/useModal.ts` - Programmatic modal control
-- `packages/frontend/src/hooks/useToast.ts` - Toast notification management
-
-#### Frontend Package - Configuration & Resources
-
-- `packages/frontend/src/config/nubase-frontend-config.ts` - Main configuration interface for Nubase applications, defines NubaseFrontendConfig type with app settings, views, resources, API endpoints, and theming options
-- `packages/frontend/src/config/view.ts` - View system types (CreateView, ViewView) for defining UI views with schemas and handlers
-- `packages/frontend/src/config/create-view-factory.ts` - Factory function for creating type-safe view configurations
-- `packages/frontend/src/config/resource.ts` - Resource system types (ResourceOperation, ResourceDescriptor) for defining CRUD operations on entities
-- `packages/frontend/src/config/create-resource-factory.ts` - Factory function for creating type-safe resource configurations with operations
-
-#### Frontend Package - Theming System
-
-- `packages/frontend/src/theming/theme.ts` - Material Design 3 theme interface and color type definitions
-- `packages/frontend/src/theming/themes/light/lightTheme.ts` - Standard MD3 light theme
-- `packages/frontend/src/theming/themes/dark/darkTheme.ts` - Standard MD3 dark theme
-- `packages/frontend/src/theming/themes/darkhc/darkHighContrastTheme.ts` - Dark high contrast MD3 theme
-- `packages/frontend/src/theming/themes/lighthc/lightHighContrastTheme.ts` - Light high contrast MD3 theme
-- `packages/frontend/src/theming/runtime-theme-generator.ts` - Runtime CSS variable generation and theme switching
-- `packages/frontend/src/theme/theme.css` - Tailwind v4 theme configuration with MD3 color mappings
-
-## Theming System
-
-The theming system uses Tailwind CSS v4 with CSS variables for dynamic color themes.
-
-#### Available Colors
-
-**IMPORTANT**: For the complete and up-to-date list of available color classes, refer to:
-
-- `packages/frontend/src/theme/theme.css` - Contains all available color mappings and CSS variables
-
-#### Theme Structure
-
-Each theme contains:
-
-- `id`: Unique theme identifier
-- `name`: Display name for the theme
-- `type`: Either "light" or "dark" for system preference matching
-
-#### Available Themes
-
-1. **Light Theme** (`lightTheme`) - Standard Material Design 3 light color scheme
-2. **Dark Theme** (`darkTheme`) - Standard Material Design 3 dark color scheme
-3. **Dark High Contrast Theme** (`darkHighContrastTheme`) - High contrast dark theme for accessibility
-4. **Light High Contrast Theme** (`lightHighContrastTheme`) - High contrast light theme for accessibility
-
-#### Runtime Theme System
-
-**CSS Variable Generation**
-
-- Themes are converted to CSS variables at runtime via `runtime-theme-generator.ts`
-- Pattern: theme color `primary` becomes `--theme-color-primary`
-- Automatically injected into document head when themes change
-
-**Tailwind Integration**
-
-- `packages/frontend/src/theme/theme.css` maps MD3 colors to Tailwind classes
-- Pattern: `--color-primary: var(--theme-color-primary)`
-- Enables classes like `bg-primary`, `text-onPrimary`, `border-outline`
-
-**Usage in Components**
-
-```tsx
-// Semantic color usage following MD3 guidelines
-<Button variant="primary">        // bg-primary text-onPrimary
-<Button variant="secondary">      // bg-secondaryContainer text-onSecondaryContainer
-<Button variant="danger">         // bg-error text-onError
-
-<TextInput />                     // bg-surface text-onSurface border-outline
-<TextInput hasError />            // border-error focus:ring-error/10
-
-<Dialog title="...">              // border-outline text-onSurface
-<Modal>                           // bg-surface ring-outline/20
-```
-
-**Theme Switching**
-
-- Themes can be switched at runtime via the theme context
-- Component styles automatically update through CSS variable changes
-- No component re-renders required for theme changes
-
-#### Adding New Themes
-
-1. Create new theme file in `packages/frontend/src/theming/themes/[name].ts`
-2. Implement all 26 color roles following MD3 contrast requirements
-3. Export theme with unique `id` and appropriate `type`
-4. Add import and register theme in `packages/frontend/src/theming/themes/index.ts`
-5. **IMPORTANT**: Update `apps/questlog/frontend/src/config/config.ts` to include the new theme ID in the `themeIds` array - themes won't be visible in the example application without this step
-
-#### Usage
-
-Refer to `packages/frontend/src/theme/theme.css` for available color classes. Common patterns:
-
-- **Backgrounds**: `bg-primary`, `bg-secondary`, `bg-accent`
-- **Text**: `text-foreground`, `text-muted-foreground`
-- **Borders**: `border-border`, `border-input`
-- **Utilities**: `ring-ring`, `bg-muted`
-
-## Documentation
-
-**All documentation should be written to the `apps/docs` Docusaurus application, not as .md files in the source code.**
-
-- The main documentation site is located in `apps/docs/`
-- Documentation files go in `apps/docs/docs/`
-- If you think it's relevant to add docs to your changes, you can do it in the docs app
-- Use Docusaurus features like sidebar configuration, frontmatter, and MDX
-- Run the docs locally with: `cd apps/docs && npm start`
-- **Do NOT create README.md files in source packages** - document features in the docs app instead
-
-## Development Notes
-
-- Uses Biome for code formatting and linting (configured in biome.json)
-- Tailwind CSS v4 for styling with Material Design 3 color system
-- Icons from https://tabler.io/icons (SVG icons inline in components)
-- Storybook for component development
-- Vitest for testing
-- All packages are published to npm under @nubase scope
-
-## Component Development Guidelines
-
-### React Component Export Standards
-
-All components in `packages/frontend/src/components/` must follow these export patterns:
-
-#### Props Type Definition
-
-Every component must have an explicit Props type exported inline, directly before the component:
-
-```tsx
-// ✅ Correct - inline type export before component
-export type CardProps = React.HTMLAttributes<HTMLDivElement>;
-
-const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("...", className)} {...props} />
-  ),
-);
-Card.displayName = "Card";
-
-export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
-
-const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("...", className)} {...props} />
-  ),
-);
-CardHeader.displayName = "CardHeader";
-
-// Export components at the end
-export { Card, CardHeader };
-```
-
-```tsx
-// ❌ Incorrect - types grouped at top, separate from components
-export type CardProps = React.HTMLAttributes<HTMLDivElement>;
-export type CardHeaderProps = React.HTMLAttributes<HTMLDivElement>;
-
-const Card = React.forwardRef<HTMLDivElement, CardProps>(...);
-const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(...);
-```
-
-#### Index File Exports
-
-Each component directory must have an `index.ts` with explicit named exports. Never use `export *`:
-
-```tsx
-// ✅ Correct - explicit named exports with types
-export {
-  Card,
-  CardHeader,
-  CardTitle,
-  type CardProps,
-  type CardHeaderProps,
-  type CardTitleProps,
-} from "./Card";
-```
-
-```tsx
-// ❌ Incorrect - star exports
-export * from "./Card";
-```
-
-#### Why Explicit Exports Matter
-
-- **Tree-shaking**: Bundlers can eliminate unused exports more effectively
-- **IDE Performance**: Faster autocomplete and type inference
-- **API Clarity**: Makes the public API of each module explicit
-- **Refactoring Safety**: Catches missing exports at compile time
-
-### ActivityIndicator Component
-
-- **Always use the centralized ActivityIndicator component** for loading states instead of custom spinners
-- **Location**: `packages/frontend/src/components/activity-indicator/ActivityIndicator.tsx`
-- **Import**: `import { ActivityIndicator } from "@nubase/frontend"`
-- **Usage**: `<ActivityIndicator size="sm" color="primary" aria-label="Loading..." />`
-- **Available sizes**: `xs`, `sm`, `md`, `lg`, `xl`
-- **Available colors**: `primary`, `secondary`, `surface`, `surfaceVariant`, `inherit`
-- **Button loading states**: Use the `isLoading` prop on Button components instead of manual ActivityIndicator placement
-- **Form submissions**: SchemaFormButtonBar automatically uses ActivityIndicator via Button's isLoading prop
-- **Toast notifications**: Toast component automatically uses ActivityIndicator for promise-based toasts
-
-### Size Variants
-
-- **Do not** add size variants (sm, md, lg) to new components unless explicitly requested
-- Components should have a single, well-designed default size
-- Only implement size variants when there is a clear use case and explicit requirement
-
-### Field Renderers
-
-The field renderers are located in `packages/frontend/src/components/form/renderers/`. This folder has a specific convention:
-
-- Each renderer type has its own subfolder (e.g., `string/`, `number/`, `boolean/`, `unsupported/`)
-- Import renderers directly from their specific files (e.g., `from "../renderers/string/StringEditFieldRenderer"`)
-- The renderer maps are defined in `renderer-factory.tsx`, not in an index file
-
-## Storybook Guidelines
-
-### Story Naming Convention
-
-- **Never** start story titles with "Components" - skip directly to the category
-- Use format: `"Category/ComponentName"` instead of `"Components/Category/ComponentName"`
-- Examples:
-  - ✅ Good: `title: "Form Controls/Label"`
-  - ✅ Good: `title: "Buttons/Button"`
-  - ✅ Good: `title: "Floating/Toast"`
-  - ❌ Bad: `title: "Components/Form Controls/Label"`
-
-### Dark Mode Stories
-
-- **Never** create stories specifically for dark mode (e.g., `DarkModeDemo`, `DarkMode` stories)
-- Storybook has an automatic dark mode plugin with a toggle that shows all stories in both light and dark modes
-- Focus on creating comprehensive stories that demonstrate functionality, variants, and use cases
-- The dark mode plugin will automatically test visual appearance in both themes
-
-### Story Structure and Self-Containment
-
-- **CRITICAL**: Both `ToastProvider` and `ModalProvider` are already included in `packages/frontend/.storybook/preview.tsx`
-- **Never** wrap stories with `<ModalProvider>` or `<ToastProvider>` - they're already available globally
-- **Always** use the `render` function in stories and make them self-contained
-- **Never** create external components that stories render - embed all logic directly in the story's render function
-
-#### ❌ Incorrect Story Structure:
-
-```tsx
-// Don't do this - external component + unnecessary provider
-const ExampleComponent = () => {
-  const { openModal } = useModal();
-  return <Button onClick={() => openModal(...)}>Open Modal</Button>;
-};
-
-export const Example: Story = {
-  render: () => (
-    <ModalProvider>  // ← Already in preview.tsx!
-      <ExampleComponent />  // ← External component
-    </ModalProvider>
-  ),
-};
-```
-
-#### ✅ Correct Story Structure:
-
-```tsx
-// Do this - self-contained story with direct render function
-export const Example: Story = {
-  render: () => {
-    // ← Self-contained
-    const { openModal } = useModal(); // ← Hooks work directly
-
-    const handleClick = () => {
-      openModal(/* content */);
-    };
-
-    return <Button onClick={handleClick}>Open Modal</Button>;
-  },
-};
-```
-
-### Story Structure and Presentation
-
-- **Never** add wrapper components with borders, padding, or explanatory text around stories
-- **Never** include explanatory text like "The component appears below" or similar descriptions
-- Don't use `args` in stories. Use the `render` function per story and render the component without wrappers
-- Let the story title and component props speak for themselves
-- Keep stories clean and minimal - focus on demonstrating component functionality
-- Avoid visual noise like borders, background colors, or unnecessary containers unless they're part of the component's intended usage
-
-## Testing
-
-- Core package: `cd packages/core && npm run test`
-- Tests use Vitest framework
-- Test files follow `.test.ts` naming convention
-
-## Toast Notifications
-
-### Usage in Stories and Components
-
-When you need to show notifications or feedback in Storybook stories or components, use the `showToast` function:
-
-```tsx
-import { showToast } from "../../floating/toast";
-
-// Basic usage
-showToast("Operation completed successfully!", "success");
-showToast("Something went wrong", "error");
-showToast("Processing...", "info");
-showToast("Please review this", "warning");
-```
-
-### Important Notes
-
-- **Use `showToast` directly** - Do NOT use `useToast` hook in stories or standalone examples
-- **Toast infrastructure works out of the box in Storybook** - No additional setup required
-- **Available toast types**: `"success"`, `"error"`, `"info"`, `"warning"`, `"loading"`, `"default"`
-- **Automatic positioning and styling** - Toasts appear in the top-right corner with proper theming
-
-### Examples
-
-```tsx
-// In a story or component
-const handleAction = async () => {
-  showToast("Starting operation...", "loading");
-
-  try {
-    await someAsyncOperation();
-    showToast("Operation completed!", "success");
-  } catch (error) {
-    showToast("Operation failed", "error");
-  }
-};
-
-// For form operations
-const handlePatch = async (fieldName: string, value: any) => {
-  showToast(`Updating ${fieldName}...`, "info");
-
-  await updateField(fieldName, value);
-
-  showToast(`${fieldName} updated successfully`, "success");
-};
-```
-
-## Development Guidelines
-
-- **NEVER run development servers** (`npm run dev`, `npm run storybook`) - assume user is already running them
-- **ALWAYS run `npm run lint:fix` at the end of every task** to ensure code style compliance
-- **ALWAYS run `npm run typecheck` at the end of every task** to ensure TypeScript compliance
-- Fix any remaining type errors or linting issues before considering a task complete
-- Use proper TypeScript types for all APIs and components
-
-### Testing @nubase/create Changes
-
-When making changes to `packages/create`, verify the templates are valid by running `npm run typecheck` and `npm run lint:fix`. The templates in `packages/create/templates/` should follow the same patterns as the questlog example.
-
-### Event Handler Guidelines
-
-- **Prefer inline event handlers** for short, simple functions to improve readability and reduce code clutter
-- Use inline arrow functions directly in JSX when the handler logic is concise
-- Extract to separate named functions only when the handler logic is complex or lengthy
-
-#### ✅ Preferred (for simple handlers):
-
-```tsx
-return (
-  <Button
-    onClick={() => {
-      openModalSchemaForm({
-        title: "Contact Information Form",
-        submitText: "Save Contact",
-        form,
-        size: "lg",
-      });
-    }}
-  >
-    Open Schema Form Modal
-  </Button>
-);
-```
-
-#### ❌ Avoid (unnecessary extraction for simple handlers):
-
-```tsx
-const handleOpenFormModal = () => {
-  openModalSchemaForm({
-    title: "Contact Information Form",
-    submitText: "Save Contact",
-    form,
-    size: "lg",
-  });
-};
-
-return <Button onClick={handleOpenFormModal}>Open Schema Form Modal</Button>;
-```
-
-Use your best judgment - extract to named functions when handlers become complex, contain multiple operations, or exceed reasonable inline length.
-
-## URL Parameter Type Coercion
-
-### Important Technical Detail
-
-**URL parameters always arrive as strings**, but Nubase schemas often expect typed values (numbers, booleans). Both frontend and backend have automatic type coercion to handle this:
-
-### Frontend (Search Params)
-
-The router automatically coerces URL search params (`?id=37`) before schema validation:
-
-- `"37"` → `37` (number)
-- `"true"` → `true` (boolean)
-- Strings remain as strings
-
-### Backend (Path Params)
-
-The `createHttpHandler` automatically coerces URL path params (`/tickets/37`) before schema validation using the same logic.
-
-### Example
-
-```typescript
-// Schema expects number
-const paramsSchema = nu.object({
-  id: nu.number(), // Schema expects number
-});
-
-// URL: /r/ticket/view?id=37
-// Raw param: { id: "37" }      ← String from URL
-// Coerced: { id: 37 }          ← Number for schema
-// Validated: ✅ passes schema validation
-```
-
-### Why This Matters
-
-Without coercion, you'd get validation errors like:
-
-```
-400 Bad Request: Expected number, received string
-```
-
-The coercion is automatic and transparent - just define your schemas with the correct types and the system handles URL string conversion.
+- `/help` for Claude Code help.
+- Issues: <https://github.com/anthropics/claude-code/issues>

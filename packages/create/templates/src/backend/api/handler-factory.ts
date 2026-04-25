@@ -30,5 +30,5 @@ import type { __PROJECT_NAME_PASCAL__User } from "../auth";
  * ```
  */
 export const createHandler = createHandlerFactory<ApiEndpoints, __PROJECT_NAME_PASCAL__User>({
-	endpoints: apiEndpoints,
+  endpoints: apiEndpoints,
 });

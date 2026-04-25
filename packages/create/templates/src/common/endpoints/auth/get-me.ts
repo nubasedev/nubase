@@ -6,10 +6,10 @@ import { userSchema } from "../../resources/user";
  * GET /auth/me
  */
 export const getMeSchema = {
-	method: "GET" as const,
-	path: "/auth/me",
-	requestParams: emptySchema,
-	responseBody: nu.object({
-		user: userSchema.optional(),
-	}),
+  method: "GET" as const,
+  path: "/auth/me",
+  requestParams: emptySchema,
+  responseBody: nu.object({
+    user: userSchema.optional(),
+  }),
 } satisfies RequestSchema;

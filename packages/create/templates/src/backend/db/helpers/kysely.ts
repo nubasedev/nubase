@@ -3,28 +3,28 @@ import pg from "pg";
 import type { DB } from "../db-types";
 
 declare global {
-	var db: Kysely<DB> | undefined;
+  var db: Kysely<DB> | undefined;
 }
 
 /**
  * Get the database connection.
  */
 export function getDb(): Kysely<DB> {
-	if (!global.db) {
-		if (!process.env.DATABASE_URL) {
-			throw new Error(
-				"DATABASE_URL is not defined in the environment variables.",
-			);
-		}
-		global.db = new Kysely<DB>({
-			dialect: new PostgresDialect({
-				pool: new pg.Pool({ connectionString: process.env.DATABASE_URL }),
-			}),
-			plugins: [new CamelCasePlugin()],
-		});
-	}
+  if (!global.db) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error(
+        "DATABASE_URL is not defined in the environment variables.",
+      );
+    }
+    global.db = new Kysely<DB>({
+      dialect: new PostgresDialect({
+        pool: new pg.Pool({ connectionString: process.env.DATABASE_URL }),
+      }),
+      plugins: [new CamelCasePlugin()],
+    });
+  }
 
-	return global.db;
+  return global.db;
 }
 
 /**
@@ -33,10 +33,10 @@ export function getDb(): Kysely<DB> {
  * workspace-scoped tables (tickets, user_workspaces).
  */
 export async function setWorkspaceContext(workspaceId: number) {
-	const db = getDb();
-	await sql`SELECT set_config('app.current_workspace_id', ${workspaceId.toString()}, false)`.execute(
-		db,
-	);
+  const db = getDb();
+  await sql`SELECT set_config('app.current_workspace_id', ${workspaceId.toString()}, false)`.execute(
+    db,
+  );
 }
 
 /**
@@ -44,6 +44,6 @@ export async function setWorkspaceContext(workspaceId: number) {
  * to prevent context leakage between requests.
  */
 export async function clearWorkspaceContext() {
-	const db = getDb();
-	await sql`RESET app.current_workspace_id`.execute(db);
+  const db = getDb();
+  await sql`RESET app.current_workspace_id`.execute(db);
 }

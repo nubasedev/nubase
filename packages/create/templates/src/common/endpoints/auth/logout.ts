@@ -5,10 +5,10 @@ import { emptySchema, nu, type RequestSchema } from "@nubase/core";
  * POST /auth/logout
  */
 export const logoutSchema = {
-	method: "POST" as const,
-	path: "/auth/logout",
-	requestParams: emptySchema,
-	responseBody: nu.object({
-		success: nu.boolean(),
-	}),
+  method: "POST" as const,
+  path: "/auth/logout",
+  requestParams: emptySchema,
+  responseBody: nu.object({
+    success: nu.boolean(),
+  }),
 } satisfies RequestSchema;

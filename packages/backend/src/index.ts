@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./config";
 export * from "./handler-factory";
 export * from "./nql";
 export * from "./typed-handlers";
