@@ -258,6 +258,24 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     error,
   } = useResourceSearchQuery(resourceName || "unknown", view, mergedParams);
 
+  // Sticky-hold the NQL error message during in-flight fetches. While
+  // `isFetching` is true, TanStack drops `error` back to `undefined`
+  // until the next response settles — without this hold, the floating
+  // error under the editor unmounts and remounts on every keystroke
+  // and visibly flickers.
+  const liveNqlError = nqlMode ? extractNqlErrorMessage(error) : undefined;
+  const [displayedNqlError, setDisplayedNqlError] = useState<
+    string | undefined
+  >(undefined);
+  useEffect(() => {
+    if (!nqlMode) {
+      setDisplayedNqlError(undefined);
+      return;
+    }
+    if (isFetching) return;
+    setDisplayedNqlError(liveNqlError);
+  }, [nqlMode, isFetching, liveNqlError]);
+
   // Debounce the fetching overlay - only show if fetch takes longer than 150ms.
   // This prevents flickering for fast fetches. Failing queries don't arm the
   // timer at all — we never want the spinner to paint over stale data while
@@ -494,9 +512,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               onNqlModeChange={setNqlMode}
               nqlValue={nqlValue}
               onNqlValueChange={setNqlValue}
-              nqlErrorMessage={
-                nqlMode ? extractNqlErrorMessage(error) : undefined
-              }
+              nqlErrorMessage={displayedNqlError}
             />
           )}
           {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
