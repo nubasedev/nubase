@@ -1,0 +1,134 @@
+---
+title: "ADR 0008: NQL — a schema-aware criteria DSL"
+description: Nubase ships a small text query language (NQL) that compiles to Kysely WHERE clauses through a four-stage pipeline, gated by a type-safe bindings map that ties schema fields to real database columns.
+sidebar_position: 8
+---
+
+**Status:** accepted
+
+## Context
+
+Nubase resource search started out as a structured object: for each `getXxx` endpoint, the request params were a partial of the resource schema (`{ q, title, assigneeId }`) and the handler translated those into hand-written Kysely `.where()` calls. That works well for simple lookups but cannot express:
+
+- **Disjunctions across fields** — "Title contains *override* OR Title contains *vulnerability*".
+- **Mixed-field logic** — "Description starts with *Bibo* AND assignee is one of {a, b, c}".
+- **Negation and grouping** — "NOT (title CONTAINS X) AND assigneeId IS NULL".
+
+Adding a query parameter for every combinatorial filter the UI might want (an `OR_title_contains` array, a `between` shape, …) does not scale. Power users want a single text input where they can express a criterion directly; routine users still get the structured filter chips. We needed a query language that:
+
+1. Validates incoming queries against a real schema (no SQL injection vector, no leaking columns).
+2. Resolves to actual Kysely refs, not opaque strings, so cross-table joins are first-class.
+3. Lives in the existing `@nubase/core` / `@nubase/backend` boundary — no new server, no separate parser binary.
+4. Has a tiny, learnable surface: the grammar a user can type into a filter bar without a manual.
+
+## Decision
+
+Nubase ships **NQL (Nubase Query Language)**, a small criteria DSL in `packages/backend/src/nql/`, with a public entry point:
+
+```ts
+compileNql(source: string, schema: ObjectSchema, { fields }): Result<CompiledNql, NqlError>
+```
+
+It runs a four-stage pipeline and gates everything behind a **type-safe field bindings map** that the handler builds once, at module load.
+
+### Grammar
+
+Surveyed the operator vocabularies of JQL (Atlassian), KQL (Kusto), Lucene/Elasticsearch, SQL/Postgres, and the Notion API. NQL converges on the readable / non-cryptic dialect Notion and KQL share rather than the symbol-heavy `~` family in JQL or wildcard-in-value approach in Lucene.
+
+- **Logical:** `AND`, `OR`, `NOT`, parentheses. Precedence: `NOT` &gt; `AND` &gt; `OR`.
+- **Comparison (numbers):** `=`, `!=`, `<`, `<=`, `>`, `>=`.
+- **Comparison (strings):** `=`, `!=`, `CONTAINS`, `STARTS_WITH`, `ENDS_WITH`. **All string comparisons — including `=` and `!=` — are case-insensitive**, matching JQL/KQL/Notion defaults; SQL's case-sensitive `=` is the outlier here, not the norm. They compile to Postgres `ILIKE`.
+- **Comparison (booleans):** `=`, `!=`.
+- **Set membership:** `IN (v1, v2, …)`, `NOT IN (…)` — list must be non-empty; every literal must match the field's base type.
+- **Null:** `IS NULL`, `IS NOT NULL`. Allowed only on optional schema fields; rejected on required ones.
+- **Literals:** double-quoted strings (with `\"` and `\\` escapes), integers, decimals, signed numbers, `true` / `false`, `null`.
+- **Identifiers and keywords:** matched case-insensitively. The validator canonicalises every identifier to the schema's spelling.
+
+The canonical example query:
+
+```
+(Title CONTAINS "override" OR Title CONTAINS "vulnerability")
+  AND Description STARTS_WITH "Bibo"
+```
+
+### Four-stage pipeline
+
+```
+source string
+   │
+   ▼  tokenizer        → Token[]      (packages/backend/src/nql/tokenizer.ts)
+   ▼  parser           → ParsedNode   (packages/backend/src/nql/parser.ts)
+   ▼  validator+schema → ValidNode    (packages/backend/src/nql/validator.ts)
+   ▼  compiler+kysely  → (eb) => expr (packages/backend/src/nql/compiler.ts)
+```
+
+Each stage owns one job and returns a discriminated-union `Result<T, NqlError>`:
+
+1. **Tokenize.** Hand-written lexer; produces `Token[]` with 1-based `{ line, column, offset, length }` spans on every token. Fails closed on unterminated strings, invalid escapes, unknown characters, malformed numbers.
+2. **Parse.** Recursive-descent / precedence-climbing parser. Returns a `ParsedNode` tree (`comparison`, `nullCheck`, `in`, `logical`). Errors carry the offending token's span.
+3. **Validate.** Walks the parsed tree against an `ObjectSchema`:
+   - Resolves identifiers case-insensitively, canonicalising to the schema spelling.
+   - Unwraps `OptionalSchema` to find each field's `baseType` (`string` / `number` / `boolean`).
+   - Enforces a per-base-type operator allow-list (e.g. `<` is rejected on strings, `CONTAINS` on numbers).
+   - Checks that `IS [NOT] NULL` is used only on optional fields.
+   - Rejects unsupported field types (`array`, `object`, `record`, `relationship`) with a clear message rather than silently miscompiling.
+   - Honours the `allowFields` whitelist (the bindings' keys, see below).
+4. **Compile.** Walks the validated tree and emits a Kysely `ExpressionWrapper<any, any, SqlBool>`. String operators map to `ilike` / `not ilike` with `%` and `_` and `\` escaped in the user's literal (no wildcard injection). `IN` maps to Kysely's `in` operator with a parameterised array. `AND` / `OR` / `NOT` use `eb.and`, `eb.or`, `eb.not`. **Every value goes through Kysely as a parameter** — no string interpolation into SQL.
+
+Each layer has its own error code (`TOKENIZE`, `PARSE`, `VALIDATE`); the failure that surfaces to the user always carries the original line, column, and length so the UI can underline the offending token.
+
+### Type-safe field bindings
+
+The non-obvious decision is the `fields` option. A query language that operated against the schema alone would assume one schema field maps to exactly one column on one table — a poor assumption the moment the endpoint joins (the questlog `tickets` list joins `users` to surface assignee fields). Naming a field as a string `"users.displayName"` works at runtime but offers zero protection: a typo is silent, a deleted column is silent, dropping a join is silent.
+
+NQL instead requires callers to declare bindings via `createNqlBindings`:
+
+```ts
+import type { DB } from "./db-types";          // generated by kysely-codegen
+
+const ticketBindings = createNqlBindings<DB>()(ticketListSchema, {
+  id:            "tickets.id",
+  title:         "tickets.title",
+  description:   "tickets.description",
+  assigneeId:    "tickets.assigneeId",
+  assigneeName:  "users.displayName",          // cross-table — only valid if joined
+  assigneeEmail: "users.email",
+});
+```
+
+Two checks happen at the type level:
+
+- **Keys** are constrained to `keyof TShape` of the supplied schema. Mistyping `descripton` is a compile error.
+- **Values** are constrained to Kysely's `StringReference<DB, TB>`. Mistyping `users.disaplyName` is a compile error; referencing a table the current query has not joined is a compile error at the call site `query.where(compiled.value)`.
+
+The outer call is curried (`createNqlBindings<DB>()`) so each app pins its `DB` type once at import, and TypeScript can infer the schema shape and table union at the inner call without ceremony.
+
+At runtime the bindings are a plain `Record<string, string>` carried through the pipeline. They serve double duty: their **keys are the queryable universe** (the validator rejects anything else with an "unknown field" error and a span), and their **values are the actual column refs** the compiler emits. A small defensive runtime check throws at handler-module load time if a binding key has drifted out of the schema (e.g. someone `.omit()`ed a field).
+
+### Schema alignment
+
+The endpoint's `requestParams` schema and the NQL domain schema are the *same* object. For list endpoints with joins, that's the list-view schema (e.g. `ticketListSchema`), so the wire contract, the generated frontend types, the filter-bar field chips, and NQL bindings all describe one queryable universe. The shared search params (`q`, `nql`) live on `baseSearchParams` in `@nubase/core`; both are excluded from filter introspection because they're meta, not fields.
+
+### Backend is the source of truth
+
+For now NQL parses and validates **only** on the backend. The frontend sends the raw `nql` string and renders the inline error message returned in a 400 response (`{ error, code, line, column, length }`). This keeps one parser in one place and means a security-sensitive layer never trusts the client. Moving the tokenize/parse/validate stages into `@nubase/core` so the editor can pre-validate is a follow-up, not part of this ADR.
+
+## Consequences
+
+- **Resource search gains real expressive power.** Disjunctions, grouping, IS NULL, and IN all work uniformly across every endpoint that uses `withSearchParams`, with zero per-endpoint plumbing beyond declaring the bindings map.
+- **No new attack surface.** All values flow through Kysely parameters; ILIKE patterns escape `%`, `_`, and `\` from the user's literal; only fields explicitly bound by the handler are queryable. The validator runs before the compiler ever sees a tree, so SQL injection isn't reachable.
+- **Joined columns are first-class.** `assigneeName` (a `users.displayName` column on a joined table) is queryable from NQL just like `title`. The bindings map is the single place a developer says "how does this NQL field reach SQL".
+- **Type safety on both ends.** Schema keys on the key side, Kysely DB refs on the value side. Drift on either side is caught at compile time, with one runtime sanity check at module load for the schema-vs-bindings symmetry.
+- **The grammar is ASCII-readable.** No `~`, no wildcard-in-value, no operator overloading. Users can type `Title CONTAINS "x"` without consulting a manual; the operator names match Notion's API and KQL closely enough that users coming from those tools are immediately productive.
+- **Errors are precise.** Every failure carries the stage that produced it (`TOKENIZE` / `PARSE` / `VALIDATE`) and a 1-based line/column. The UI underlines the bad token and the inline message tells the user what to fix.
+- **The pipeline is small enough to keep in your head.** Around 1.5k lines of TypeScript across tokenizer, parser, validator, compiler, plus tests. Each stage is independently unit-tested with a Kysely `DummyDriver` (no real DB) so the suite runs in milliseconds.
+- **Trade-offs accepted:**
+  - **Backend-only validation.** Until the parse/validate path is also published from `@nubase/core`, the editor only knows a query is bad after a round-trip. This is mitigated by a 400 ms input debounce and by skipping retries on 4xx responses, but live red squiggles need the core move.
+  - **No relationship traversal.** NQL queries the columns named in the bindings; you cannot write `assignee.team.name CONTAINS "x"`. Such a query is expressible only by exposing it as a flat field in the schema (and its corresponding join-derived column in the bindings).
+  - **No stored / named queries.** The grammar describes a single criterion; persistence ("save this query as *My critical bugs*") is out of scope.
+  - **No richer operators yet.** `BETWEEN`, regex, date-math literals (`-1w`), `LIKE` with explicit wildcards — all deliberately deferred. The current set is the smallest grammar that covers the example queries we care about.
+
+## Cross-references
+
+- [Searching & Filtering](../searching.mdx) — how the structured filter bar and NQL toggle integrate at the UI layer.
+- ADR 0007 — path-based multi-tenancy. The questlog handler's workspace-isolation `WHERE` is ANDed with the NQL expression, not replaced by it.
