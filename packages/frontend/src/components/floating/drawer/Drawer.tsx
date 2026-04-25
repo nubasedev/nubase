@@ -61,16 +61,11 @@ export const Drawer: FC<DrawerProps> = ({
     () => readPersistedWidth() ?? getDefaultWidthPx(),
   );
   const [shouldRender, setShouldRender] = useState(open);
-  const [isExiting, setIsExiting] = useState(false);
+  const isExiting = shouldRender && !open;
 
   useEffect(() => {
-    if (open) {
-      setShouldRender(true);
-      setIsExiting(false);
-    } else if (shouldRender) {
-      setIsExiting(true);
-    }
-  }, [open, shouldRender]);
+    if (open) setShouldRender(true);
+  }, [open]);
 
   useEffect(() => {
     persistWidth(width);
@@ -108,7 +103,6 @@ export const Drawer: FC<DrawerProps> = ({
     if (e.target !== e.currentTarget) return;
     if (isExiting) {
       setShouldRender(false);
-      setIsExiting(false);
       onExited?.();
     }
   };
@@ -118,19 +112,17 @@ export const Drawer: FC<DrawerProps> = ({
     : "animate-in slide-in-from-right fade-in duration-200";
 
   return createPortal(
-    <div className="fixed inset-0" style={{ zIndex, pointerEvents: "none" }}>
-      <div
-        role="dialog"
-        aria-modal="false"
-        onAnimationEnd={handleAnimationEnd}
-        className={`absolute right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
-        style={{ width, pointerEvents: "auto", animationFillMode: "forwards" }}
-      >
-        <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
-        {header && <div className="flex-shrink-0">{header}</div>}
-        <div className="flex-1 min-h-0 overflow-hidden">
-          {cloneElement(content, { onClose })}
-        </div>
+    <div
+      role="dialog"
+      aria-modal="false"
+      onAnimationEnd={handleAnimationEnd}
+      className={`fixed right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-24px_0_64px_-8px_rgba(0,0,0,0.55)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
+      style={{ width, zIndex, animationFillMode: "forwards" }}
+    >
+      <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
+      {header && <div className="flex-shrink-0">{header}</div>}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {cloneElement(content, { onClose })}
       </div>
     </div>,
     document.body,
