@@ -5,7 +5,7 @@
  */
 
 export { workbenchOpenResourceOperation } from "./workbench.openResource";
-export { workbenchOpenResourceOperationInModal } from "./workbench.openResourceInModal";
+export { workbenchOpenResourceOperationInDrawer } from "./workbench.openResourceInDrawer";
 export { workbenchRunCommand } from "./workbench.runCommand";
 export { workbenchSetTheme } from "./workbench.setTheme";
 export { workbenchViewHistory } from "./workbench.viewHistory";

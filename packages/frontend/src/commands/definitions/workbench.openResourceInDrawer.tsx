@@ -1,15 +1,14 @@
 import { nu } from "@nubase/core";
-import { Settings } from "lucide-react";
+import { PanelRightOpen } from "lucide-react";
 import { ModalFrame } from "../../components/floating/modal";
 import { SearchableTreeNavigator } from "../../components/navigation/searchable-tree-navigator/SearchableTreeNavigator";
-import { ModalViewRenderer } from "../../components/views/ViewRenderer/modal";
 import type { View } from "../../config/view";
-import { emitEvent } from "../../events";
+import type { NubaseContextData } from "../../context/types";
 import type { MenuItem } from "../../menu/types";
+import { writeOverlay } from "../../utils/overlay-url";
 import { createCommand } from "../defineCommand";
 
-// Schema for command arguments
-const workbenchOpenResourceOperationInModalArgsSchema = nu.object({
+const workbenchOpenResourceOperationInDrawerArgsSchema = nu.object({
   resourceId: nu
     .string()
     .withComputedMeta({
@@ -26,45 +25,46 @@ const workbenchOpenResourceOperationInModalArgsSchema = nu.object({
     .optional(),
 });
 
-export const workbenchOpenResourceOperationInModal = createCommand({
-  id: "workbench.openResourceOperationInModal",
-  name: "Open Resource Operation in Modal",
-  icon: Settings,
-  argsSchema: workbenchOpenResourceOperationInModalArgsSchema.optional(),
+function openInDrawer(
+  context: NubaseContextData,
+  resourceId: string,
+  operation: string,
+) {
+  const currentSearch = (context.router.state.location.search ?? {}) as Record<
+    string,
+    unknown
+  >;
+  const nextSearch = writeOverlay(currentSearch, {
+    resource: resourceId,
+    operation,
+    params: {},
+  });
+  const pathname = context.router.state.location.pathname;
+  context.router.navigate({
+    to: pathname as any,
+    search: nextSearch as any,
+  });
+}
+
+export const workbenchOpenResourceOperationInDrawer = createCommand({
+  id: "workbench.openResourceOperationInDrawer",
+  name: "Open Resource Operation in Drawer",
+  icon: PanelRightOpen,
+  argsSchema: workbenchOpenResourceOperationInDrawerArgsSchema.optional(),
   execute: (context, args) => {
-    // If both resourceId and operation are provided, open the specific operation directly
     if (args?.resourceId && args?.operation) {
       const { resourceId, operation } = args;
 
-      // Validate that the resource and view exist
       const resource = context.config?.resources?.[resourceId];
       const resourceView = resource?.views?.[operation];
 
       if (resourceView) {
-        context.modal.openModal({
-          content: (
-            <ModalViewRenderer
-              view={resourceView}
-              context={context}
-              resourceName={resourceId}
-              onClose={() => context.modal.closeModal()}
-              onError={(error) => {
-                emitEvent("view.error", {
-                  resourceId,
-                  viewId: operation,
-                  error: error.message,
-                });
-              }}
-            />
-          ),
-          alignment: "top",
-          size: "lg",
-          showBackdrop: true,
-        });
+        openInDrawer(context, resourceId, operation);
         return;
       }
       console.warn(`Resource "${resourceId}" or view "${operation}" not found`);
     }
+
     const resources = context.config?.resources || {};
     const resourceEntries = Object.entries(resources);
 
@@ -84,53 +84,28 @@ export const workbenchOpenResourceOperationInModal = createCommand({
       return;
     }
 
-    // Create flat list of resource views
     const viewItems: MenuItem[] = [];
-    const filterView = args?.operation; // Filter by view if provided
+    const filterView = args?.operation;
 
     for (const [resourceId, resource] of resourceEntries) {
       const viewEntries = Object.entries(resource.views);
 
       for (const [viewId, view] of viewEntries as [string, View][]) {
-        // Apply filter if view is specified
         if (!filterView || viewId === filterView) {
           viewItems.push({
             id: `${resourceId}-${viewId}`,
-            icon: Settings,
+            icon: PanelRightOpen,
             label: `${resource.id} → ${view.title}`,
-            subtitle: `Open ${resourceId} ${viewId} view in modal`,
+            subtitle: `Open ${resourceId} ${viewId} view in drawer`,
             onExecute: () => {
-              // Close the current modal (the resource selector)
               context.modal.closeModal();
-
-              // Open the actual resource view in a new modal
-              context.modal.openModal({
-                content: (
-                  <ModalViewRenderer
-                    view={view}
-                    context={context}
-                    resourceName={resourceId}
-                    onClose={() => context.modal.closeModal()}
-                    onError={(error) => {
-                      emitEvent("view.error", {
-                        resourceId,
-                        viewId,
-                        error: error.message,
-                      });
-                    }}
-                  />
-                ),
-                alignment: "top",
-                size: "lg",
-                showBackdrop: true,
-              });
+              openInDrawer(context, resourceId, viewId);
             },
           });
         }
       }
     }
 
-    // Show empty state if filter results in no items
     if (viewItems.length === 0 && filterView) {
       context.modal.openModal({
         content: (

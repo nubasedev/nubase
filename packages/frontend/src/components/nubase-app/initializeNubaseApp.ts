@@ -1,6 +1,6 @@
 import { commandRegistry } from "../../commands";
 import { workbenchOpenResourceOperation } from "../../commands/definitions/workbench.openResource";
-import { workbenchOpenResourceOperationInModal } from "../../commands/definitions/workbench.openResourceInModal";
+import { workbenchOpenResourceOperationInDrawer } from "../../commands/definitions/workbench.openResourceInDrawer";
 import { workbenchRunCommand } from "../../commands/definitions/workbench.runCommand";
 import { workbenchSetTheme } from "../../commands/definitions/workbench.setTheme";
 import { workbenchViewHistory } from "../../commands/definitions/workbench.viewHistory";
@@ -45,7 +45,7 @@ export async function initializeNubaseApp({
   // Register default commands (one-time registration)
   commandRegistry.register(workbenchRunCommand);
   commandRegistry.register(workbenchSetTheme);
-  commandRegistry.register(workbenchOpenResourceOperationInModal);
+  commandRegistry.register(workbenchOpenResourceOperationInDrawer);
   commandRegistry.register(workbenchOpenResourceOperation);
   commandRegistry.register(workbenchViewHistory);
 
