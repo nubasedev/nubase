@@ -132,6 +132,7 @@ export function NqlEditor({
       acceptSuggestionOnEnter: "on",
     });
     editorRef.current = editor;
+    editor.focus();
 
     const changeSub = editor.onDidChangeModelContent(() => {
       if (isInternalChangeRef.current) return;
