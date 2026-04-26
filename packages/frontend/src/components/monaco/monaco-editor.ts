@@ -15,7 +15,7 @@ export async function initializeJsonSchema(): Promise<void> {
     const jsonSchema = z.toJSONSchema(exampleSchema, { target: "draft-7" });
 
     // Configure JSON language settings
-    monaco.json.jsonDefaults.setDiagnosticsOptions({
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
       validate: true,
       allowComments: true,
       schemas: [
@@ -31,7 +31,7 @@ export async function initializeJsonSchema(): Promise<void> {
     });
 
     // Configure completion and formatting settings
-    monaco.json.jsonDefaults.setModeConfiguration({
+    monaco.languages.json.jsonDefaults.setModeConfiguration({
       documentFormattingEdits: true,
       documentRangeFormattingEdits: true,
       completionItems: true,
