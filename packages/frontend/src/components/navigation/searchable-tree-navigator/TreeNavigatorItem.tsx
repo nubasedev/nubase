@@ -73,7 +73,7 @@ export const MenuItemComponent = ({
   const searchParams = isResourceLink(item.href) ? item.href.search : undefined;
 
   const commonClassName = cn(
-    "flex items-center gap-3 rounded-md py-2 pr-3 text-sm cursor-pointer w-full text-left transition-colors",
+    "flex items-center gap-3 rounded-md py-2 pr-3 text-sm cursor-pointer w-full text-left",
     isSelected
       ? "bg-primary text-primary-foreground"
       : "hover:bg-muted hover:text-muted-foreground",
@@ -150,12 +150,3 @@ export const MenuItemComponent = ({
     </button>
   );
 };
-
-// Legacy exports for backward compatibility during migration
-// TODO: Remove these after full migration
-/** @deprecated Use MenuItem from '../../menu/types' instead */
-export type TreeNavigatorItem = MenuItem;
-/** @deprecated Use FlatMenuItem instead */
-export type FlatItem = FlatMenuItem;
-/** @deprecated Use MenuItemComponent instead */
-export const TreeNavigatorItemComponent = MenuItemComponent;

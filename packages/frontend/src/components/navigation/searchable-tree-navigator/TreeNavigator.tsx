@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MenuItem } from "../../../menu/types";
 import { type FlatMenuItem, MenuItemComponent } from "./TreeNavigatorItem";
 
@@ -12,6 +12,36 @@ export interface TreeNavigatorProps {
   "data-testid"?: string;
 }
 
+const flattenItems = (
+  items: MenuItem[],
+  expandedItems: Set<string>,
+  level = 0,
+  parentId?: string,
+): FlatMenuItem[] => {
+  const result: FlatMenuItem[] = [];
+
+  for (const item of items) {
+    const hasChildren = Boolean(item.children?.length);
+    const isExpanded = expandedItems.has(item.id);
+
+    result.push({
+      ...item,
+      level,
+      parentId,
+      hasChildren,
+      isExpanded,
+    });
+
+    if (hasChildren && isExpanded && item.children) {
+      result.push(
+        ...flattenItems(item.children, expandedItems, level + 1, item.id),
+      );
+    }
+  }
+
+  return result;
+};
+
 const TreeNavigatorComponent = ({
   items,
   searchInputRef,
@@ -21,34 +51,10 @@ const TreeNavigatorComponent = ({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Flatten tree structure for keyboard navigation
-  const flattenItems = useCallback(
-    (items: MenuItem[], level = 0, parentId?: string): FlatMenuItem[] => {
-      const result: FlatMenuItem[] = [];
-
-      for (const item of items) {
-        const hasChildren = Boolean(item.children?.length);
-        const isExpanded = expandedItems.has(item.id);
-
-        result.push({
-          ...item,
-          level,
-          parentId,
-          hasChildren,
-          isExpanded,
-        });
-
-        if (hasChildren && isExpanded && item.children) {
-          result.push(...flattenItems(item.children, level + 1, item.id));
-        }
-      }
-
-      return result;
-    },
-    [expandedItems],
+  const flatItems = useMemo(
+    () => flattenItems(items, expandedItems),
+    [items, expandedItems],
   );
-
-  const flatItems = flattenItems(items);
   const itemsLength = flatItems.length;
 
   const toggleExpanded = useCallback((itemId: string) => {
@@ -121,14 +127,7 @@ const TreeNavigatorComponent = ({
 
   useEffect(() => {
     if (selectedIndex >= 0) {
-      const currentItem = itemRefs.current[selectedIndex];
-      if (currentItem) {
-        currentItem.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-      }
-      // Call onFocus when item gets selected via keyboard
+      itemRefs.current[selectedIndex]?.scrollIntoView({ block: "nearest" });
       flatItems[selectedIndex]?.onFocus?.();
     }
   }, [selectedIndex, flatItems]);
@@ -166,17 +165,6 @@ const TreeNavigatorComponent = ({
   );
 };
 
-// Export both names for backward compatibility and new functionality
 export const TreeNavigator = TreeNavigatorComponent;
-/** @deprecated Use TreeNavigator instead */
-export const ListNavigator = TreeNavigatorComponent;
-/** @deprecated Use MenuItem from '../../menu/types' instead */
-export type ListNavigatorItem = MenuItem;
-export type ListNavigatorProps = TreeNavigatorProps;
 
-// Re-export types from TreeNavigatorItem for backward compatibility
-export type {
-  FlatItem,
-  FlatMenuItem,
-  TreeNavigatorItem,
-} from "./TreeNavigatorItem";
+export type { FlatMenuItem } from "./TreeNavigatorItem";

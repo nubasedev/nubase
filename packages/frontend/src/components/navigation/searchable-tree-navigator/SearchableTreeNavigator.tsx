@@ -130,7 +130,3 @@ export const SearchableTreeNavigator = forwardRef<
 });
 
 SearchableTreeNavigator.displayName = "SearchableTreeNavigator";
-
-// Backward compatibility export
-export const SearchableListNavigator = SearchableTreeNavigator;
-export type SearchableListNavigatorProps = SearchableTreeNavigatorProps;
