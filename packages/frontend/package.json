@@ -99,7 +99,7 @@
     "downshift": "^9.3.2",
     "lodash-es": "^4.17.22",
     "lucide-react": "^0.577.0",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "^0.52.2",
     "monaco-spellchecker": "^0.6.0",
     "postcss": "^8.5.8",
     "react-dom": "^19.2.5",
