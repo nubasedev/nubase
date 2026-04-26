@@ -1,6 +1,6 @@
 {
   "name": "@nubase/cli",
-  "version": "0.1.35",
+  "version": "0.1.37",
   "description": "CLI tool for Nubase database schema management",
   "type": "module",
   "bin": {
@@ -21,8 +21,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
-    "prepublishOnly": "npm run build",
-    "publish": "npm publish --access public"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@nubase/pg": "*",
