@@ -186,7 +186,7 @@ const LookupAvatar = ({ src, title }: { src?: string; title: string }) => {
 
   if (!src || hasError) {
     return (
-      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
         {getInitials(title)}
       </div>
     );
@@ -196,7 +196,7 @@ const LookupAvatar = ({ src, title }: { src?: string; title: string }) => {
     <img
       src={src}
       alt={title}
-      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+      className="w-8 h-8 rounded-full object-cover shrink-0"
       onError={() => setHasError(true)}
     />
   );
@@ -473,7 +473,7 @@ const LookupSelectInner = (
                     {/* Selected checkmark */}
                     {isSelected && (
                       <svg
-                        className="w-4 h-4 flex-shrink-0"
+                        className="w-4 h-4 shrink-0"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                         aria-hidden="true"

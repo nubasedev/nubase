@@ -38,10 +38,10 @@ export const Toast: FC<ToastProps> = ({ toast, onClose }) => {
           size="md"
           color="inherit"
           aria-label="Loading"
-          className="flex-shrink-0"
+          className="shrink-0"
         />
       ) : (
-        Icon && <Icon className="h-5 w-5 flex-shrink-0" />
+        Icon && <Icon className="h-5 w-5 shrink-0" />
       )}
 
       <div className="flex-1 text-sm">

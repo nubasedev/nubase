@@ -107,7 +107,7 @@ export const Drawer: FC<DrawerProps> = ({
       style={{ width, zIndex, animationFillMode: "forwards" }}
     >
       <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
-      {header && <div className="flex-shrink-0">{header}</div>}
+      {header && <div className="shrink-0">{header}</div>}
       <div className="flex-1 min-h-0 overflow-hidden">
         {cloneElement(content, { onClose })}
       </div>

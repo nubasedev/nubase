@@ -84,12 +84,12 @@ export const MenuItemComponent = ({
   // Instantiate icon if it's a component type
   const IconComponent = item.icon;
   const iconElement = IconComponent ? (
-    <IconComponent size={16} className="flex-shrink-0" />
+    <IconComponent size={16} className="shrink-0" />
   ) : null;
 
   const content = (
     <>
-      {iconElement && <div className="flex-shrink-0">{iconElement}</div>}
+      {iconElement && <div className="shrink-0">{iconElement}</div>}
       <div className="flex-1 min-w-0">
         <div className="font-medium truncate">{item.label}</div>
         {item.subtitle && (
@@ -104,7 +104,7 @@ export const MenuItemComponent = ({
         )}
       </div>
       {item.hasChildren && (
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div className="w-4 h-4 flex items-center justify-center">
             <ChevronRight
               size={12}

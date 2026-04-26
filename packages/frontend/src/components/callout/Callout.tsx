@@ -35,7 +35,7 @@ export const Callout: React.FC<CalloutProps> = ({
   const defaultIcon =
     variant === "danger" ? (
       <svg
-        className="h-5 w-5 flex-shrink-0 mt-0.5"
+        className="h-5 w-5 shrink-0 mt-0.5"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -48,7 +48,7 @@ export const Callout: React.FC<CalloutProps> = ({
       </svg>
     ) : (
       <svg
-        className="h-5 w-5 flex-shrink-0 mt-0.5"
+        className="h-5 w-5 shrink-0 mt-0.5"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"

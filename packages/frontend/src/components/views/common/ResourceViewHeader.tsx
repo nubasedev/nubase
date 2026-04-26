@@ -27,7 +27,7 @@ export const ResourceViewHeader: FC<ResourceViewHeaderProps> = ({
 }) => {
   const breadcrumbs = evaluateBreadcrumbs(breadcrumbDef, context, params, data);
   return (
-    <div className="flex-shrink-0">
+    <div className="shrink-0">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <BreadcrumbBar items={breadcrumbs} className="mb-2" />
       )}

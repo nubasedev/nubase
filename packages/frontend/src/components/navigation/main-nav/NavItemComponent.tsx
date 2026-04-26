@@ -70,7 +70,7 @@ export const NavItemComponent: FC<NavItemComponentProps> = ({
       {hasChildren && (
         <span
           className={cn(
-            "flex-shrink-0 w-4 h-4 transition-transform duration-200",
+            "shrink-0 w-4 h-4 transition-transform duration-200",
             isExpanded ? "transform rotate-90" : "",
           )}
         >

@@ -17,12 +17,9 @@ export const FullScreenFixedHeaderLayout: FC<
   return (
     <div data-component="FullScreenLayout" className="flex flex-col h-full p-4">
       {props.breadcrumbs && props.breadcrumbs.length > 0 && (
-        <BreadcrumbBar
-          items={props.breadcrumbs}
-          className="mb-2 flex-shrink-0"
-        />
+        <BreadcrumbBar items={props.breadcrumbs} className="mb-2 shrink-0" />
       )}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <PageHeader title={props.title} />
       </div>
       <div className="flex-1 min-h-0">{props.children}</div>

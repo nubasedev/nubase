@@ -58,7 +58,7 @@ export const ModalFrameSchemaForm = <TSchema extends ObjectSchema<any>>({
         footer={
           <div className="flex items-center justify-between w-full">
             <div className="flex-1">{renderCustomFooter?.(form)}</div>
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <SchemaFormButtonBar
                 form={form}
                 submitText={submitText}

@@ -28,7 +28,7 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
 
   return (
     <div className={containerClass} style={containerStyle}>
-      {header && <div className="flex-shrink-0 p-4 pb-3">{header}</div>}
+      {header && <div className="shrink-0 p-4 pb-3">{header}</div>}
 
       {body && (
         <div
@@ -38,7 +38,7 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
         </div>
       )}
 
-      {footer && <div className="flex-shrink-0 border-t">{footer}</div>}
+      {footer && <div className="shrink-0 border-t">{footer}</div>}
     </div>
   );
 };

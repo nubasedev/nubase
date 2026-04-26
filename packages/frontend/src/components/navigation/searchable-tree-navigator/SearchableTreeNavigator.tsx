@@ -107,7 +107,7 @@ export const SearchableTreeNavigator = forwardRef<
       data-testid={testId}
     >
       {/* Search Input - Always visible */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <SearchTextInput
           ref={internalRef}
           placeholder={props.placeHolder}
