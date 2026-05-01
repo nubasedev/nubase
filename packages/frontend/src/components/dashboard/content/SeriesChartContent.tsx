@@ -19,7 +19,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "../../charts/Chart";
-import { CHART_ANIMATION_DURATION } from "./constants";
 
 export interface SeriesChartContentProps {
   data: SeriesData;
@@ -77,7 +76,7 @@ export function SeriesChartContent({ data, variant }: SeriesChartContentProps) {
               stroke={`var(--color-${key})`}
               strokeWidth={2}
               dot={false}
-              animationDuration={CHART_ANIMATION_DURATION}
+              isAnimationActive={false}
             />
           ))}
         </LineChart>
@@ -104,7 +103,7 @@ export function SeriesChartContent({ data, variant }: SeriesChartContentProps) {
               fill={`var(--color-${key})`}
               fillOpacity={0.4}
               stroke={`var(--color-${key})`}
-              animationDuration={CHART_ANIMATION_DURATION}
+              isAnimationActive={false}
             />
           ))}
         </AreaChart>
@@ -129,7 +128,7 @@ export function SeriesChartContent({ data, variant }: SeriesChartContentProps) {
               dataKey={key}
               fill={`var(--color-${key})`}
               radius={4}
-              animationDuration={CHART_ANIMATION_DURATION}
+              isAnimationActive={false}
             />
           ))}
         </BarChart>
