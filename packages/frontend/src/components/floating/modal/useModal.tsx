@@ -24,55 +24,26 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const openModal = useCallback((config: ModalConfig) => {
     const id = Math.random().toString(36).substr(2, 9);
-    const newModal: ModalInstance = {
-      id,
-      config,
-      open: true,
-    };
-
-    setModals((prev) => [...prev, newModal]);
+    setModals((prev) => [...prev, { id, config, open: true }]);
     return id;
   }, []);
 
   const closeModal = useCallback((id?: string) => {
     setModals((prev) => {
-      if (id) {
-        return prev.map((modal) =>
-          modal.id === id ? { ...modal, open: false } : modal,
-        );
-      }
-      let lastOpenIdx = -1;
-      for (let i = prev.length - 1; i >= 0; i--) {
-        if (prev[i]?.open) {
-          lastOpenIdx = i;
-          break;
-        }
-      }
-      if (lastOpenIdx === -1) return prev;
-      return prev.map((modal, i) =>
-        i === lastOpenIdx ? { ...modal, open: false } : modal,
-      );
+      const targetId = id ?? prev[prev.length - 1]?.id;
+      if (!targetId) return prev;
+      const target = prev.find((m) => m.id === targetId);
+      target?.config.onDismiss?.();
+      return prev.filter((m) => m.id !== targetId);
     });
   }, []);
 
-  const removeModal = useCallback((id: string) => {
-    setModals((prev) => prev.filter((modal) => modal.id !== id));
-  }, []);
-
   const closeAllModals = useCallback(() => {
-    setModals((prev) => prev.map((modal) => ({ ...modal, open: false })));
+    setModals((prev) => {
+      for (const modal of prev) modal.config.onDismiss?.();
+      return [];
+    });
   }, []);
-
-  const handleModalClose = useCallback(
-    (modalId: string) => {
-      const modal = modals.find((m) => m.id === modalId);
-      if (modal?.config.onDismiss) {
-        modal.config.onDismiss();
-      }
-      closeModal(modalId);
-    },
-    [closeModal, modals],
-  );
 
   return (
     <ModalContext.Provider
@@ -90,8 +61,7 @@ export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
           <Modal
             key={modal.id}
             open={modal.open}
-            onClose={() => handleModalClose(modal.id)}
-            onExited={() => removeModal(modal.id)}
+            onClose={() => closeModal(modal.id)}
             content={content}
             zIndex={(modalProps.zIndex || 50) + index}
             {...modalProps}

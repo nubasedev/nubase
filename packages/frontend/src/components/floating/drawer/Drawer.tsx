@@ -1,19 +1,15 @@
-import type { FC, ReactElement, ReactNode } from "react";
-import { cloneElement, useCallback, useEffect, useState } from "react";
+import type { FC, ReactNode } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { usePresence } from "../../../hooks/usePresence";
 import { useResize } from "../../dock/useResize";
 import { HorizontalResizeHandle } from "../../resize-handle/HorizontalResizeHandle";
-import type { BaseModalFrameProps } from "../modal/types";
 
 export type DrawerProps = {
   open: boolean;
   onClose: () => void;
-  content: ReactElement<BaseModalFrameProps>;
+  content: ReactNode;
   /** Optional content rendered at the top of the drawer (e.g. a command bar). */
   header?: ReactNode;
-  /** Fires after the exit animation completes and the drawer unmounts its surface. */
-  onExited?: () => void;
   zIndex?: number;
 };
 
@@ -55,13 +51,11 @@ export const Drawer: FC<DrawerProps> = ({
   onClose,
   content,
   header,
-  onExited,
   zIndex = 50,
 }) => {
   const [width, setWidth] = useState(
     () => readPersistedWidth() ?? getDefaultWidthPx(),
   );
-  const { shouldRender, presenceProps } = usePresence(open, { onExited });
 
   useEffect(() => {
     persistWidth(width);
@@ -92,25 +86,19 @@ export const Drawer: FC<DrawerProps> = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onClose]);
 
-  if (!shouldRender) return null;
+  if (!open) return null;
   if (typeof document === "undefined") return null;
-
-  const animationClasses =
-    "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=open]:fade-in data-[state=closed]:fade-out duration-200";
 
   return createPortal(
     <div
       role="dialog"
       aria-modal="false"
-      {...presenceProps}
-      className={`fixed right-0 top-0 h-full bg-popover text-popover-foreground shadow-[-12px_0_32px_-8px_rgba(0,0,0,0.18)] border-l border-border flex flex-col min-h-0 ${animationClasses}`}
-      style={{ width, zIndex, animationFillMode: "forwards" }}
+      className="fixed right-0 top-0 h-full bg-popover text-popover-foreground border-l border-border flex flex-col min-h-0"
+      style={{ width, zIndex }}
     >
       <HorizontalResizeHandle onMouseDown={handleResize} align="left" />
       {header && <div className="shrink-0">{header}</div>}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        {cloneElement(content, { onClose })}
-      </div>
+      <div className="flex-1 min-h-0 overflow-hidden">{content}</div>
     </div>,
     document.body,
   );

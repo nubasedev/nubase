@@ -5,27 +5,31 @@ description: Nubase is a highly-opinionated, batteries-included, meta-framework 
 
 ## What is Nubase?
 
-Nubase is a highly-opinionated, batteries-included, meta-framework for building business applications and internal tools with TypeScript. Nubase is primarily a frontend framework for the web.
+Nubase is a highly-opinionated, batteries-included, meta-framework for building internal tools with TypeScript. 
+Nubase is not designed to be a general-purpose framework. Instead, it focuses on applications centered around CRUD operations (Create, Read, Update, Delete),
+business logic, workflows, dashboards and configuration pages.
 
-Nubase is not designed to be a general-purpose framework. Instead, it focuses on applications centered around dashboards and CRUD operations (Create, Read, Update, Delete).
+Nubase is a good fit for domain-centric applications, tools whose sole purpose is to manipulate data within a well-defined domain. Salesforce, for instance, exists entirely to manage customer relationship data.
 
-Applications that are a good fit for Nubase include:
-- Business applications (e.g CRM, ERP, Ticket Management)
-- Internal tools (e.g Admin panels, Data management systems)
-
-Think of Nubase as an open-source alternative to platforms like Retool and Airtable, except that you have full control over the code and data.
+Think of Nubase as an open-source alternative to platforms like Retool and Airtable, except that it's open-source and
+you have full control over the database and the business logic. You don't have full control over the frontend, and the wiring
+between the frontend and your business logic. And that's the intentional trade-off we will discuss in the next section.
 
 
 ## Why Nubase?
 
-Every business application and internal tool has a common set of requirements:
+Every modern internal tool has a common set of requirements:
 - Authentication and authorization.
 - Dashboards.
 - Searching, filtering, viewing and editing data.
+- Business logic that happens when data is created, updated or deleted.
 - Configuration pages.
 - Theming.
+- A frontend infrastructure that supports menus, navigation, forms, tables, and other common UI components, and 
+non-functional requirements like responsiveness, accessibility, and internationalization.
+- An AI infrastructure that supports actions to be executed by AI agents, and a UI for users to interact with those agents.
 
-Too often, teams reinvent these core components for each new project. This leads to wasted development cycles, inconsistent user experiences, and a gradual drift away from modern UX and accessibility standards.
+Teams often reinvent these core components for each new project. This leads to wasted development cycles, inconsistent user experiences, and a gradual drift away from modern UX and accessibility standards.
 
 This highlights a fundamental trade-off in software engineering: flexibility versus constraint. A highly flexible system allows for tailored solutions but sacrifices development speed and consistency. A rigid, constrained system is fast and consistent but can't adapt to unique requirements, forcing compromises in the user experience.
 
