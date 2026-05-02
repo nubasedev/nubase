@@ -65,13 +65,22 @@ export type RelationshipFieldHandler<
   TRow = any,
 > = {
   /**
-   * Loads the related rows for a "searchable" relationship. Called whenever
-   * the (debounced) query changes. `parent` is the loaded record from the
-   * parent view's `onLoad`.
+   * Loads the related rows for a remote relationship. Called whenever the
+   * (debounced) `query` or `nql` changes.
+   *
+   * - `query` — the plain text typed in the simplified search input. Empty
+   *   string when the user is in NQL mode.
+   * - `nql` — the NQL expression typed in the NQL editor. Empty string
+   *   when the user is in Search mode.
+   *
+   * Handlers typically forward `query` to the endpoint's text search field
+   * (e.g. `title`) and `nql` to the standard `nql` parameter, leaving the
+   * empty one undefined.
    */
   onSearch: (args: {
     parent: TParent;
     query: string;
+    nql: string;
     context: NubaseContextData<TApiEndpoints>;
   }) => Promise<HttpResponse<TRow[]>>;
 };

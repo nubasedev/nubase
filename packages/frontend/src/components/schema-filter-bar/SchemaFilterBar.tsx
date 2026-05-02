@@ -70,6 +70,24 @@ export type SchemaFilterBarProps<TSchema extends ObjectSchema<any>> = {
    * from a 400 response from the backend's NQL compiler.
    */
   nqlErrorMessage?: string;
+
+  /**
+   * Presentation mode.
+   *
+   * - `"full"` (default): toggle is labelled `Filters / NQL`. The non-NQL
+   *   branch shows the search input plus one chip per filter descriptor.
+   *   Used by top-level resource search pages where users want fine-grained
+   *   filtering.
+   * - `"simplified"`: toggle is labelled `Search / NQL`. The non-NQL branch
+   *   shows only the search input — per-field chips and the clear button
+   *   are hidden. Used inside view overlays (e.g. tickets on a user) where
+   *   a single search box plus optional NQL is enough.
+   *
+   * `mode` is purely presentational; `filterState` is not cleared when the
+   * caller switches modes, so a hook driving both a full bar and a
+   * simplified bar elsewhere keeps its per-field state intact.
+   */
+  mode?: "full" | "simplified";
 };
 
 // Boolean filter options
@@ -112,8 +130,11 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
   nqlValue = "",
   onNqlValueChange,
   nqlErrorMessage,
+  mode = "full",
 }: SchemaFilterBarProps<TSchema>) {
   const canToggleNql = Boolean(onNqlModeChange && schema && onNqlValueChange);
+  const isSimplified = mode === "simplified";
+  const filtersToggleLabel = isSimplified ? "Search" : "Filters";
   const modeToggle = canToggleNql ? (
     <ToggleGroup
       type="single"
@@ -130,7 +151,7 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
       aria-label="Filter mode"
     >
       <ToggleGroupItem value="filters" className="px-3">
-        Filters
+        {filtersToggleLabel}
       </ToggleGroupItem>
       <ToggleGroupItem value="nql" className="px-3">
         NQL
@@ -241,8 +262,13 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
     }
   };
 
-  // If there's nothing to show (no filters AND no NQL toggle), hide the bar.
-  if (filterDescriptors.length === 0 && !canToggleNql) {
+  // Hide the bar when nothing meaningful would render. In simplified mode
+  // the search input alone (driven by `onSearchChange`) is enough to keep
+  // the bar visible; the per-field descriptors are not used.
+  const hasMeaningfulContent = isSimplified
+    ? Boolean(onSearchChange) || canToggleNql
+    : filterDescriptors.length > 0 || canToggleNql;
+  if (!hasMeaningfulContent) {
     return null;
   }
 
@@ -270,13 +296,14 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
       onSearchChange={onSearchChange || (() => {})}
       searchPlaceholder={searchPlaceholder}
       searchDebounceMs={searchDebounceMs}
+      searchExpand={isSimplified}
       onClearFilters={onClearFilters}
-      showClearFilters={showClearFilters}
+      showClearFilters={isSimplified ? false : showClearFilters}
       disabled={disabled}
       className={cn(className)}
       leading={modeToggle}
     >
-      {filterDescriptors.map(renderFilter)}
+      {isSimplified ? null : filterDescriptors.map(renderFilter)}
     </SearchFilterBar>
   );
 }

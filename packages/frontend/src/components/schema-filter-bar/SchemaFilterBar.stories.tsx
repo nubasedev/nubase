@@ -328,3 +328,79 @@ export const NoClearButton: Story = {
     );
   },
 };
+
+export const Simplified: Story = {
+  render: () => {
+    const [searchValue, setSearchValue] = useState("");
+    const [nqlMode, setNqlMode] = useState(false);
+    const [nqlValue, setNqlValue] = useState("");
+    const filterDescriptors = introspectSchemaForFilters(ticketFilterSchema);
+
+    return (
+      <div className="w-[600px]">
+        <SchemaFilterBar
+          mode="simplified"
+          schema={ticketFilterSchema}
+          filterDescriptors={filterDescriptors}
+          filterState={{}}
+          onFilterChange={() => {}}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          searchPlaceholder="Search tickets..."
+          nqlMode={nqlMode}
+          onNqlModeChange={setNqlMode}
+          nqlValue={nqlValue}
+          onNqlValueChange={setNqlValue}
+        />
+      </div>
+    );
+  },
+};
+
+export const SimplifiedSearchOnly: Story = {
+  render: () => {
+    const [searchValue, setSearchValue] = useState("");
+
+    return (
+      <div className="w-[600px]">
+        <SchemaFilterBar
+          mode="simplified"
+          filterDescriptors={[]}
+          filterState={{}}
+          onFilterChange={() => {}}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          searchPlaceholder="Search tickets..."
+        />
+      </div>
+    );
+  },
+};
+
+export const SimplifiedNqlActive: Story = {
+  render: () => {
+    const [searchValue, setSearchValue] = useState("");
+    const [nqlMode, setNqlMode] = useState(true);
+    const [nqlValue, setNqlValue] = useState("title contains 'bug'");
+    const filterDescriptors = introspectSchemaForFilters(ticketFilterSchema);
+
+    return (
+      <div className="w-[600px]">
+        <SchemaFilterBar
+          mode="simplified"
+          schema={ticketFilterSchema}
+          filterDescriptors={filterDescriptors}
+          filterState={{}}
+          onFilterChange={() => {}}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          searchPlaceholder="Search tickets..."
+          nqlMode={nqlMode}
+          onNqlModeChange={setNqlMode}
+          nqlValue={nqlValue}
+          onNqlValueChange={setNqlValue}
+        />
+      </div>
+    );
+  },
+};

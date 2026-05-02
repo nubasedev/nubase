@@ -58,6 +58,14 @@ export type SearchFilterBarProps = {
   /** Width of the search input */
   searchWidth?: number | string;
 
+  /**
+   * When true, the search input grows to fill remaining horizontal space
+   * (the wrapping div becomes `flex-1 min-w-0` and the input width is
+   * forced to 100%). Useful for simplified bars where the search box
+   * should span the row.
+   */
+  searchExpand?: boolean;
+
   /** Debounce delay in ms for search input (default: 300, set to 0 to disable) */
   searchDebounceMs?: number;
 
@@ -94,6 +102,7 @@ const SearchFilterBar = React.forwardRef<HTMLDivElement, SearchFilterBarProps>(
       onSearchChange,
       searchPlaceholder = "Search...",
       searchWidth = 200,
+      searchExpand = false,
       searchDebounceMs = 300,
       leading,
       children,
@@ -156,7 +165,7 @@ const SearchFilterBar = React.forwardRef<HTMLDivElement, SearchFilterBarProps>(
       >
         {leading}
         {/* Search Input */}
-        <div className="relative">
+        <div className={cn("relative", searchExpand && "flex-1 min-w-0")}>
           <input
             ref={inputRef}
             type="search"
@@ -165,7 +174,7 @@ const SearchFilterBar = React.forwardRef<HTMLDivElement, SearchFilterBarProps>(
             placeholder={searchPlaceholder}
             disabled={disabled}
             className={cn(searchFilterBarInputVariants())}
-            style={{ width: searchWidthStyle }}
+            style={{ width: searchExpand ? "100%" : searchWidthStyle }}
             data-slot="search-filter-bar-input"
           />
           <div className="absolute top-1/2 left-3 transform -translate-y-1/2 text-muted-foreground pointer-events-none">

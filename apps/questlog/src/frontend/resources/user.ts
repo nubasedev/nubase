@@ -83,6 +83,7 @@ export const userResource = createResource("user")
           .omit("id")
           .extend({
             tickets: nu.relation({
+              source: "remote",
               targetResourceId: "ticket",
               schema: userTicketSchema,
               label: "Tickets",
@@ -121,11 +122,12 @@ export const userResource = createResource("user")
       },
       fieldHandlers: {
         tickets: {
-          onSearch: ({ parent, query, context }) =>
+          onSearch: ({ parent, query, nql, context }) =>
             context.http.getTickets({
               params: {
                 assigneeId: parent.id,
                 title: query || undefined,
+                nql: nql || undefined,
               },
             }),
         },
