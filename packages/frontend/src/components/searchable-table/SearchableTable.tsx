@@ -3,11 +3,13 @@ import {
   type ObjectSchema,
   OptionalSchema,
 } from "@nubase/core";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator } from "../activity-indicator";
 import { DataGrid } from "../data-grid/DataGrid";
 import type { Column } from "../data-grid/types";
 import { SearchFilterBar } from "../search-controls/SearchFilterBar";
+
+const LOADING_OVERLAY_DELAY_MS = 150;
 
 const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
   number: 100,
@@ -40,7 +42,7 @@ export type SearchableTableProps<TRow extends Record<string, any>> = {
   onRowClick?: (row: TRow) => void;
   /** Placeholder for the search input. */
   searchPlaceholder?: string;
-  /** Debounce delay for the search input in ms. Defaults to 200. */
+  /** Debounce delay for the search input in ms. Defaults to 300. */
   searchDebounceMs?: number;
   /** Additional className for the container. */
   className?: string;
@@ -61,11 +63,23 @@ export const SearchableTable = <TRow extends Record<string, any>>({
   loading = false,
   onRowClick,
   searchPlaceholder = "Search...",
-  searchDebounceMs = 200,
+  searchDebounceMs = 300,
   className,
 }: SearchableTableProps<TRow>) => {
   const tableLayout = schema.getTableLayout();
   const idField = String(schema.getIdField() || "id");
+
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false);
+  useEffect(() => {
+    if (!loading) {
+      setShowLoadingOverlay(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setShowLoadingOverlay(true);
+    }, LOADING_OVERLAY_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const columns: Column<TRow>[] = useMemo(() => {
     const cols: Column<TRow>[] = [];
@@ -115,7 +129,7 @@ export const SearchableTable = <TRow extends Record<string, any>>({
         showClearFilters={false}
       />
       <div className="flex-1 relative min-h-[200px]">
-        {loading && (
+        {showLoadingOverlay && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10 pointer-events-none">
             <ActivityIndicator size="md" aria-label="Loading..." />
           </div>
