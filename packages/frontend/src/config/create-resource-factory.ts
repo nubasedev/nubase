@@ -21,6 +21,12 @@ export type InlineResourceActionConfig<TApiEndpoints> = {
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   disabled?: boolean;
   variant?: "default" | "destructive";
+  /**
+   * When true (default), the action is disabled in table toolbars unless at
+   * least one row is selected. Set to false for actions that don't operate on
+   * the current selection (e.g. "Create").
+   */
+  requiresSelection?: boolean;
   onExecute: (args: {
     selectedIds: (string | number)[];
     context: NubaseContextData<TApiEndpoints>;
@@ -332,6 +338,7 @@ class ResourceBuilder<
             }>;
             disabled?: boolean;
             variant?: "default" | "destructive";
+            requiresSelection?: boolean;
             onExecute: (
               context: ResourceActionExecutionContext,
             ) => void | Promise<void>;
@@ -385,6 +392,7 @@ class ResourceBuilder<
           icon: config.icon,
           disabled: config.disabled,
           variant: config.variant || "default",
+          requiresSelection: config.requiresSelection,
           onExecute: ({
             selectedIds,
             context,

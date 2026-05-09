@@ -472,10 +472,19 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
 
     return wrappedActions
       .filter((action) => action !== "separator" && action.type === "resource")
-      .map((action) => ({
-        ...action,
-        disabled: action.disabled || selectedRows.size === 0, // Disable when no items selected
-      }));
+      .map((action) => {
+        const resourceAction = action as Extract<
+          typeof action,
+          { type: "resource" }
+        >;
+        const requiresSelection = resourceAction.requiresSelection !== false;
+        return {
+          ...resourceAction,
+          disabled:
+            resourceAction.disabled ||
+            (requiresSelection && selectedRows.size === 0),
+        };
+      });
   }, [
     view.tableActions,
     resource?.actions,

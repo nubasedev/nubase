@@ -64,6 +64,12 @@ export interface CommandAction<TCommand = any> extends BaseAction {
  */
 export interface ResourceAction extends BaseAction {
   type: "resource";
+  /**
+   * When true (default), the action is disabled in table toolbars unless at
+   * least one row is selected. Set to false for actions that don't operate on
+   * the current selection (e.g. "Create").
+   */
+  requiresSelection?: boolean;
   onExecute: (
     executionContext: ResourceActionExecutionContext,
   ) => void | Promise<void>;

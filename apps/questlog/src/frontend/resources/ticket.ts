@@ -1,5 +1,5 @@
-import { createResource, showToast } from "@nubase/frontend";
-import { TrashIcon } from "lucide-react";
+import { commands, createResource, showToast } from "@nubase/frontend";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
 
 export const ticketResource = createResource("ticket")
@@ -56,6 +56,17 @@ export const ticketResource = createResource("ticket")
         }
       },
     },
+    create: {
+      label: "Create",
+      icon: PlusIcon,
+      requiresSelection: false,
+      onExecute: async ({ context }) => {
+        await context.commands.execute(
+          commands.workbenchOpenResourceOperationInDrawer.id,
+          { resourceId: "ticket", operation: "create" },
+        );
+      },
+    },
   })
   .withViews({
     create: {
@@ -103,7 +114,7 @@ export const ticketResource = createResource("ticket")
       schemaFilter: (api) => api.getTickets.requestParams,
       schemaPatch: (api) => api.patchTicket.requestBody,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
-      tableActions: ["delete"],
+      tableActions: ["create", "delete"],
       rowActions: ["delete"],
       onLoad: async ({ context }) => {
         return context.http.getTickets({

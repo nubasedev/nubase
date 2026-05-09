@@ -10,6 +10,7 @@ export interface CreateResourceActionConfig {
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   disabled?: boolean;
   variant?: "default" | "destructive";
+  requiresSelection?: boolean;
   onExecute: (context: ResourceActionExecutionContext) => void | Promise<void>;
 }
 
@@ -47,6 +48,7 @@ export function createResourceAction(
     icon: config.icon,
     disabled: config.disabled,
     variant: config.variant || "default",
+    requiresSelection: config.requiresSelection,
     onExecute: config.onExecute,
   };
 }
