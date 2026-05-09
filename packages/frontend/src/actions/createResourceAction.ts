@@ -1,5 +1,9 @@
 import type React from "react";
-import type { ResourceAction, ResourceActionExecutionContext } from "./types";
+import type {
+  ResourceAction,
+  ResourceActionConfirm,
+  ResourceActionExecutionContext,
+} from "./types";
 
 /**
  * Configuration for creating a resource action
@@ -11,6 +15,7 @@ export interface CreateResourceActionConfig {
   disabled?: boolean;
   variant?: "default" | "destructive";
   requiresSelection?: boolean;
+  confirm?: ResourceActionConfirm;
   onExecute: (context: ResourceActionExecutionContext) => void | Promise<void>;
 }
 
@@ -49,6 +54,7 @@ export function createResourceAction(
     disabled: config.disabled,
     variant: config.variant || "default",
     requiresSelection: config.requiresSelection,
+    confirm: config.confirm,
     onExecute: config.onExecute,
   };
 }

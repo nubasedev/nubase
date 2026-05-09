@@ -13,48 +13,27 @@ export const userResource = createResource("user")
       label: "Remove",
       icon: TrashIcon,
       variant: "destructive" as const,
+      confirm: ({ selectedIds }) => {
+        const count = selectedIds.length;
+        const label = count === 1 ? "user" : "users";
+        return {
+          title: `Remove ${count} ${label}`,
+          content: `Are you sure you want to remove ${count} ${label}? This action cannot be undone.`,
+        };
+      },
       onExecute: async ({ selectedIds, context }) => {
-        if (!selectedIds || selectedIds.length === 0) {
-          showToast("No users selected for removal", "error");
-          return;
-        }
-
-        const userCount = selectedIds.length;
-        const userLabel = userCount === 1 ? "user" : "users";
-
-        // Show confirmation dialog
-        const confirmed = await new Promise<boolean>((resolve) => {
-          context.dialog.openDialog({
-            title: "Remove Users",
-            content: `Are you sure you want to remove ${userCount} ${userLabel}? This action cannot be undone.`,
-            confirmText: "Remove",
-            confirmVariant: "destructive",
-            onConfirm: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
-
-        if (!confirmed) {
-          return;
-        }
-
+        const count = selectedIds.length;
+        const label = count === 1 ? "user" : "users";
         try {
-          // Remove all selected users in parallel
           await Promise.all(
             selectedIds.map((id) =>
-              context.http.deleteUser({
-                params: { id: Number(id) },
-              }),
+              context.http.deleteUser({ params: { id: Number(id) } }),
             ),
           );
-
-          showToast(
-            `${userCount} ${userLabel} removed successfully`,
-            "default",
-          );
+          showToast(`${count} ${label} removed successfully`, "default");
         } catch (error) {
           console.error("Error removing users:", error);
-          showToast(`Failed to remove ${userLabel}`, "error");
+          showToast(`Failed to remove ${label}`, "error");
         }
       },
     },

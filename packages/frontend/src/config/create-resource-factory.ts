@@ -1,6 +1,9 @@
 import type { ArraySchema, Infer, Lookup, ObjectSchema } from "@nubase/core";
 import type React from "react";
-import type { ResourceActionExecutionContext } from "../actions/types";
+import type {
+  ResourceActionConfirm,
+  ResourceActionExecutionContext,
+} from "../actions/types";
 import type { NubaseContextData } from "../context/types";
 import type { HttpResponse } from "../http/http-client";
 import type { ActionLayout } from "./action-layout";
@@ -27,6 +30,14 @@ export type InlineResourceActionConfig<TApiEndpoints> = {
    * the current selection (e.g. "Create").
    */
   requiresSelection?: boolean;
+  /**
+   * Optional confirmation gate. When defined, the framework opens a
+   * confirmation dialog before invoking `onExecute`. Return a config object to
+   * open the dialog or `false` to skip confirmation. `confirmText` defaults to
+   * the action's label, `confirmVariant` to its variant; user-supplied values
+   * win.
+   */
+  confirm?: ResourceActionConfirm;
   onExecute: (args: {
     selectedIds: (string | number)[];
     context: NubaseContextData<TApiEndpoints>;
@@ -339,6 +350,7 @@ class ResourceBuilder<
             disabled?: boolean;
             variant?: "default" | "destructive";
             requiresSelection?: boolean;
+            confirm?: ResourceActionConfirm;
             onExecute: (
               context: ResourceActionExecutionContext,
             ) => void | Promise<void>;
@@ -393,6 +405,7 @@ class ResourceBuilder<
           disabled: config.disabled,
           variant: config.variant || "default",
           requiresSelection: config.requiresSelection,
+          confirm: config.confirm,
           onExecute: ({
             selectedIds,
             context,

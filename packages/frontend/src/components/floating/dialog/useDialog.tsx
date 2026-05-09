@@ -6,7 +6,7 @@ import { ModalFrameStructured } from "../modal/ModalFrameStructured";
 import type { ModalAlignment } from "../modal/types";
 import { useModal } from "../modal/useModal";
 
-type DialogConfig = {
+export type DialogConfig = {
   title?: string;
   content: ReactNode;
   onConfirm?: () => void;
@@ -21,8 +21,15 @@ type DialogConfig = {
   zIndex?: number;
 };
 
+export type DialogConfirmConfig = Omit<DialogConfig, "onConfirm" | "onCancel">;
+
 export type UseDialogResult = {
   openDialog: (config: DialogConfig) => void;
+  /**
+   * Promise-returning confirmation dialog. Resolves true on confirm, false on
+   * cancel or dismissal (backdrop click / Escape).
+   */
+  confirm: (config: DialogConfirmConfig) => Promise<boolean>;
   hide: () => void;
   isOpen: boolean;
   DialogComponent: null;
@@ -50,6 +57,10 @@ export const useDialog = (): UseDialogResult => {
         zIndex,
       } = dialogConfig;
 
+      // Single-shot guard so a click on Confirm/Cancel doesn't also fire
+      // the modal's onDismiss callback when closeModal triggers it.
+      let resolved = false;
+
       const handleClose = () => {
         if (modalIdRef.current) {
           closeModal(modalIdRef.current);
@@ -58,11 +69,15 @@ export const useDialog = (): UseDialogResult => {
       };
 
       const handleConfirm = () => {
+        if (resolved) return;
+        resolved = true;
         onConfirm?.();
         handleClose();
       };
 
       const handleCancel = () => {
+        if (resolved) return;
+        resolved = true;
         onCancel?.();
         handleClose();
       };
@@ -97,9 +112,27 @@ export const useDialog = (): UseDialogResult => {
         alignment,
         showBackdrop,
         zIndex,
+        // Backdrop click / Escape dismissal goes through here; treat it as cancel.
+        onDismiss: () => {
+          if (resolved) return;
+          resolved = true;
+          onCancel?.();
+        },
       });
     },
     [openModal, closeModal],
+  );
+
+  const confirm = useCallback(
+    (config: DialogConfirmConfig) =>
+      new Promise<boolean>((resolve) => {
+        openDialog({
+          ...config,
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false),
+        });
+      }),
+    [openDialog],
   );
 
   const hide = useCallback(() => {
@@ -112,12 +145,14 @@ export const useDialog = (): UseDialogResult => {
   if (!dialogApiRef.current) {
     dialogApiRef.current = {
       openDialog,
+      confirm,
       hide,
       isOpen: false,
       DialogComponent: null,
     };
   } else {
     dialogApiRef.current.openDialog = openDialog;
+    dialogApiRef.current.confirm = confirm;
     dialogApiRef.current.hide = hide;
     dialogApiRef.current.isOpen = modalIdRef.current !== null;
   }

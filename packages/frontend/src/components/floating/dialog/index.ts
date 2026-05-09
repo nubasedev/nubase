@@ -1,2 +1,7 @@
 export { Dialog, type DialogProps } from "./Dialog";
-export { type UseDialogResult, useDialog } from "./useDialog";
+export {
+  type DialogConfig,
+  type DialogConfirmConfig,
+  type UseDialogResult,
+  useDialog,
+} from "./useDialog";

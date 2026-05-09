@@ -9,48 +9,27 @@ export const ticketResource = createResource("ticket")
       label: "Delete",
       icon: TrashIcon,
       variant: "destructive" as const,
+      confirm: ({ selectedIds }) => {
+        const count = selectedIds.length;
+        const label = count === 1 ? "ticket" : "tickets";
+        return {
+          title: `Delete ${count} ${label}`,
+          content: `Are you sure you want to delete ${count} ${label}? This action cannot be undone.`,
+        };
+      },
       onExecute: async ({ selectedIds, context }) => {
-        if (!selectedIds || selectedIds.length === 0) {
-          showToast("No tickets selected for deletion", "error");
-          return;
-        }
-
-        const ticketCount = selectedIds.length;
-        const ticketLabel = ticketCount === 1 ? "ticket" : "tickets";
-
-        // Show confirmation dialog
-        const confirmed = await new Promise<boolean>((resolve) => {
-          context.dialog.openDialog({
-            title: "Delete Tickets",
-            content: `Are you sure you want to delete ${ticketCount} ${ticketLabel}? This action cannot be undone.`,
-            confirmText: "Delete",
-            confirmVariant: "destructive",
-            onConfirm: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
-
-        if (!confirmed) {
-          return;
-        }
-
+        const count = selectedIds.length;
+        const label = count === 1 ? "ticket" : "tickets";
         try {
-          // Delete all selected tickets in parallel
           await Promise.all(
             selectedIds.map((id) =>
-              context.http.deleteTicket({
-                params: { id: Number(id) },
-              }),
+              context.http.deleteTicket({ params: { id: Number(id) } }),
             ),
           );
-
-          showToast(
-            `${ticketCount} ${ticketLabel} deleted successfully`,
-            "default",
-          );
+          showToast(`${count} ${label} deleted successfully`, "default");
         } catch (error) {
           console.error("Error deleting tickets:", error);
-          showToast(`Failed to delete ${ticketLabel}`, "error");
+          showToast(`Failed to delete ${label}`, "error");
         }
       },
     },

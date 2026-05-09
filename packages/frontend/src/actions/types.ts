@@ -1,6 +1,7 @@
 import type { BaseSchema, Infer } from "@nubase/core";
 import type React from "react";
 import type { TypedCommandDefinition } from "../commands/types";
+import type { DialogConfirmConfig } from "../components/floating/dialog";
 
 /**
  * Base action interface with common properties shared by all action types.
@@ -58,6 +59,34 @@ export interface CommandAction<TCommand = any> extends BaseAction {
 }
 
 /**
+ * Function returning a confirmation-dialog config to gate a resource action's
+ * execution. May be sync or async — the executor awaits it, so you can perform
+ * server checks (permissions, business rules) before deciding whether to
+ * confirm.
+ *
+ * Returning a config opens a dialog; the action runs only if the user
+ * confirms. Returning `false` aborts the action entirely (no dialog, no
+ * `onExecute`). Throwing also aborts.
+ *
+ * The framework defaults `confirmText` to the action's label and
+ * `confirmVariant` to the action's variant when not provided in the returned
+ * config; user-supplied fields always win.
+ *
+ * @example
+ * confirm: async ({ context, selectedIds }) => {
+ *   const me = await context.http.getCurrentUser();
+ *   if (!me.data.isAdmin) return false; // silently abort
+ *   return {
+ *     title: `Delete ${selectedIds.length} item(s)`,
+ *     content: "This cannot be undone.",
+ *   };
+ * }
+ */
+export type ResourceActionConfirm = (
+  ctx: ResourceActionExecutionContext,
+) => DialogConfirmConfig | false | Promise<DialogConfirmConfig | false>;
+
+/**
  * Resource-based action that executes on selected resources.
  * Best for bulk operations on multiple selected items (e.g., delete multiple tickets).
  * Requires ResourceContext to provide selected resource IDs.
@@ -70,6 +99,11 @@ export interface ResourceAction extends BaseAction {
    * the current selection (e.g. "Create").
    */
   requiresSelection?: boolean;
+  /**
+   * Optional confirmation gate. When defined, the framework opens a
+   * confirmation dialog before invoking `onExecute`. See `ResourceActionConfirm`.
+   */
+  confirm?: ResourceActionConfirm;
   onExecute: (
     executionContext: ResourceActionExecutionContext,
   ) => void | Promise<void>;

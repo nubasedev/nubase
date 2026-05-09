@@ -15,50 +15,27 @@ export const userResource = createResource("user")
       label: "Delete",
       icon: TrashIcon,
       variant: "destructive" as const,
+      confirm: ({ selectedIds }) => {
+        const count = selectedIds.length;
+        const label = count === 1 ? "user" : "users";
+        return {
+          title: `Delete ${count} ${label}`,
+          content: `Are you sure you want to delete ${count} ${label} from this workspace? They will no longer have access.`,
+        };
+      },
       onExecute: async ({ selectedIds, context }) => {
-        if (!selectedIds || selectedIds.length === 0) {
-          showToast("No users selected for deletion", "error");
-          return;
-        }
-
-        const userCount = selectedIds.length;
-        const userLabel = userCount === 1 ? "user" : "users";
-
-        // Show confirmation dialog
-        const confirmed = await new Promise<boolean>((resolve) => {
-          context.dialog.openDialog({
-            title: "Delete Users",
-            content: `Are you sure you want to delete ${userCount} ${userLabel} from this workspace? They will no longer have access.`,
-            confirmText: "Delete",
-            confirmVariant: "destructive",
-            onConfirm: () => resolve(true),
-            onCancel: () => resolve(false),
-          });
-        });
-
-        if (!confirmed) {
-          return;
-        }
-
+        const count = selectedIds.length;
+        const label = count === 1 ? "user" : "users";
         try {
-          // Delete all selected users in parallel
           await Promise.all(
             selectedIds.map((id) =>
-              context.http.deleteUser({
-                params: { id: Number(id) },
-              }),
+              context.http.deleteUser({ params: { id: Number(id) } }),
             ),
           );
-
-          showToast(
-            `${userCount} ${userLabel} deleted successfully`,
-            "default",
-          );
-
-          // Query invalidation is now handled automatically by ResourceSearchViewRenderer
+          showToast(`${count} ${label} deleted successfully`, "default");
         } catch (error) {
           console.error("Error deleting users:", error);
-          showToast(`Failed to delete ${userLabel}`, "error");
+          showToast(`Failed to delete ${label}`, "error");
         }
       },
     },
