@@ -6,11 +6,11 @@ import { createCommand } from "../defineCommand";
 import { pickResourceOperation } from "../pickResourceOperation";
 
 const workbenchOpenResourceOperationInDrawerArgsSchema = nu.object({
-  resourceId: nu.string().withComputedMeta({
+  resourceId: nu.string().optional().withComputedMeta({
     label: "Resource ID",
     description: "The ID of the resource to open",
   }),
-  operation: nu.string().withComputedMeta({
+  operation: nu.string().optional().withComputedMeta({
     label: "Operation",
     description: "The operation to perform on the resource",
   }),

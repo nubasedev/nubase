@@ -29,13 +29,27 @@ Every modern internal tool has a common set of requirements:
 non-functional requirements like responsiveness, accessibility, and internationalization.
 - An AI infrastructure that supports actions to be executed by AI agents, and a UI for users to interact with those agents.
 
-Teams often reinvent these core components for each new project. This leads to wasted development cycles, inconsistent user experiences, and a gradual drift away from modern UX and accessibility standards.
+Implementing all of the above is a massive endeavor, and when you're done, your app works but it does nothing useful.
+You still need to implement all your business logic. So, basically, all of the above is toil.
 
-This highlights a fundamental trade-off in software engineering: flexibility versus constraint. A highly flexible system allows for tailored solutions but sacrifices development speed and consistency. A rigid, constrained system is fast and consistent but can't adapt to unique requirements, forcing compromises in the user experience.
+Also, implementing all of the above incur in hundreds, maybe thousands of architecture decisions and every decision
+has a unique set of trade-offs. To make matters worse, you can't afford to properly think of every minute details of the
+infrastructure, before start implementing your tool. This will unavoidly lead to poor decisions and inconsistency. For example,
+maybe, Product decides that a proper Query Language would be too much work in the beginning, so you decide to do that later,
+but now, once you do, you now have maybe hundreds of incompatible endpoints. Now the UI components you used everywhere don't
+support that.
 
-Nubase is built on a strong conviction: With the right architecture, by deliberately choosing low-flexibility we can achieve exceptional gains in development speed, consistency, and out-of-the-box quality. Our architecture is meticulously designed to optimize for this approach.
+Nubase purports to solve this problem by giving you an architecture that was well thought out, and that should support most
+use-cases. For example, the UI in Nubase is completely handled by the framework, so subsequent Framework changes, if 
+done in a backwards compatible way, should give you the benefit of a fresher UI, with more feartures for free.
 
-We are explicit about this trade-off. Nubase is designed to excel at the 85% of common business application requirements. We acknowledge that this focus means the remaining 15% of highly specific or unique features will have to be adapted and there will be compromises. We believe that for the vast majority of business applications, the benefits of super fast development, guaranteed consistency, and built-in quality far outweigh the limitations of this focused approach.
+The obvious trade-off is that you're giving away flexibility. Maybe your app will have specific use-cases that
+Nubase can't cover and this is a risk you need to evaluate. But we believe that domain-centric applications, focusing
+on manipulating data, have a strict-enough scope, that we can confidently assume we will cover around 90% of your app's needs,
+and the other 10% would be achievable through compromises (You settle with a less-than-ideal solution some times).
+
+Another drawback is that Nubase apps will look the same, despite the extensive support for theming. But we believe this problem
+is acceptable for internal tools. We believe noone really cares long as it looks good and the UX is great.
 
 ## Which constraints does Nubase impose?
 

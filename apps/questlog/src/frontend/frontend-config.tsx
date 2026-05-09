@@ -53,7 +53,7 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   globalActions: [
     createCommandAction(
       { id: "create", label: "Create", icon: Plus },
-      commands.workbenchOpenResourceOperation,
+      commands.workbenchOpenResourceOperationInDrawer,
       { operation: "create" },
     ),
   ],
