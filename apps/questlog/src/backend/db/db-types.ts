@@ -77,10 +77,18 @@ export interface PgStatStatementsInfo {
   statsReset: Timestamp | null;
 }
 
+export interface Teams {
+  description: string | null;
+  id: Generated<number>;
+  name: string;
+  workspaceId: number;
+}
+
 export interface Tickets {
   assigneeId: number | null;
   description: string | null;
   id: Generated<number>;
+  teamId: number | null;
   title: string;
   workspaceId: number;
 }
@@ -92,6 +100,12 @@ export interface Users {
   id: Generated<number>;
   passwordHash: string;
   updatedAt: Generated<Timestamp | null>;
+}
+
+export interface UserTeams {
+  createdAt: Generated<Timestamp | null>;
+  teamId: number;
+  userId: number;
 }
 
 export interface UserWorkspaces {
@@ -111,8 +125,10 @@ export interface Workspaces {
 export interface DB {
   pgStatStatements: PgStatStatements;
   pgStatStatementsInfo: PgStatStatementsInfo;
+  teams: Teams;
   tickets: Tickets;
   users: Users;
+  userTeams: UserTeams;
   userWorkspaces: UserWorkspaces;
   workspaces: Workspaces;
 }

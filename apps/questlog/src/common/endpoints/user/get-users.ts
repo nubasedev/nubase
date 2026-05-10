@@ -4,6 +4,8 @@ import { userSchema } from "../../resources/user";
 export const getUsersSchema = {
   method: "GET" as const,
   path: "/users",
-  requestParams: withSearchParams(userSchema.omit("id").partial()),
+  requestParams: withSearchParams(
+    userSchema.omit("id").partial().extend({ teamId: nu.number().optional() }),
+  ),
   responseBody: nu.array(userSchema),
 } satisfies RequestSchema;

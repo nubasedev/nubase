@@ -2,6 +2,7 @@ import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
 import { authHandlers } from "./api/routes/auth";
 import { dashboardHandlers } from "./api/routes/dashboard";
+import { teamHandlers } from "./api/routes/team";
 import { testUtils } from "./api/routes/test-utils";
 import { ticketHandlers } from "./api/routes/ticket";
 import { userHandlers } from "./api/routes/user";
@@ -35,6 +36,7 @@ api.get("/", (c) => c.json({ message: "Welcome to Questlog API" }));
 registerHandlers(api, authHandlers);
 registerHandlers(api, ticketHandlers);
 registerHandlers(api, userHandlers);
+registerHandlers(api, teamHandlers);
 registerHandlers(api, dashboardHandlers);
 
 // Test utility routes - only enabled in test environment

@@ -16,6 +16,14 @@ import {
   getTotalRevenueSchema,
 } from "./endpoints/dashboard";
 import {
+  deleteTeamSchema,
+  getTeamSchema,
+  getTeamsSchema,
+  lookupTeamsSchema,
+  patchTeamSchema,
+  postTeamSchema,
+} from "./endpoints/team";
+import {
   deleteTicketSchema,
   getTicketSchema,
   getTicketsSchema,
@@ -58,6 +66,14 @@ export const apiEndpoints = {
   patchUser: patchUserSchema, // PATCH /users/:id
   deleteUser: deleteUserSchema, // DELETE /users/:id
   lookupUsers: lookupUsersSchema, // GET /lookup/users?q=...
+
+  // Team endpoints
+  getTeams: getTeamsSchema, // GET /teams
+  getTeam: getTeamSchema, // GET /teams/:id
+  postTeam: postTeamSchema, // POST /teams
+  patchTeam: patchTeamSchema, // PATCH /teams/:id
+  deleteTeam: deleteTeamSchema, // DELETE /teams/:id
+  lookupTeams: lookupTeamsSchema, // GET /lookup/teams?q=...
 
   // Dashboard widget endpoints
   getRevenueChart: getRevenueChartSchema, // GET /dashboard/revenue-chart

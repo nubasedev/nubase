@@ -2,6 +2,7 @@ import { nu } from "@nubase/core";
 import { createResource, showToast } from "@nubase/frontend";
 import { TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
+import { userTeamSchema } from "../../common/resources/user-team";
 import { userTicketSchema } from "../../common/resources/user-ticket";
 
 export const userResource = createResource("user")
@@ -66,6 +67,13 @@ export const userResource = createResource("user")
               label: "Tickets",
               searchPlaceholder: "Search tickets...",
             }),
+            teams: nu.relation({
+              source: "remote",
+              targetResourceId: "team",
+              schema: userTeamSchema,
+              label: "Teams",
+              searchPlaceholder: "Search teams...",
+            }),
           })
           .withFormLayout({
             groups: [
@@ -74,6 +82,7 @@ export const userResource = createResource("user")
                   { name: "email", fieldWidth: 12 },
                   { name: "displayName", fieldWidth: 12 },
                   { name: "tickets", fieldWidth: 12 },
+                  { name: "teams", fieldWidth: 12 },
                 ],
               },
             ],
@@ -105,6 +114,15 @@ export const userResource = createResource("user")
                 assigneeId: parent.id,
                 title: query || undefined,
                 nql: nql || undefined,
+              },
+            }),
+        },
+        teams: {
+          onSearch: ({ parent, query, context }) =>
+            context.http.getTeams({
+              params: {
+                userId: parent.id,
+                q: query || undefined,
               },
             }),
         },

@@ -22,12 +22,19 @@ export const ticketSchema = nu
       renderer: "lookup",
       lookupResource: "user",
     }),
+    teamId: nu.number().optional().withComputedMeta({
+      label: "Team",
+      description: "Select a team to assign this ticket to",
+      renderer: "lookup",
+      lookupResource: "team",
+    }),
   })
   .withId("id");
 
 /**
  * Extended ticket schema for list/table views.
- * Includes joined assignee fields (name, email) from the users table.
+ * Includes joined assignee fields (name, email) from the users table
+ * and team name from the teams table.
  */
 export const ticketListSchema = ticketSchema
   .extend({
@@ -36,6 +43,9 @@ export const ticketListSchema = ticketSchema
     }),
     assigneeEmail: nu.string().optional().withComputedMeta({
       label: "Assignee Email",
+    }),
+    teamName: nu.string().optional().withComputedMeta({
+      label: "Team",
     }),
   })
   .withTableLayout({
@@ -50,6 +60,7 @@ export const ticketListSchema = ticketSchema
       },
       { name: "assigneeName", label: "Assignee Name", columnWidthPx: 150 },
       { name: "assigneeEmail", label: "Assignee Email", columnWidthPx: 200 },
+      { name: "teamName", label: "Team", columnWidthPx: 150 },
     ],
     metadata: {
       patchable: true,

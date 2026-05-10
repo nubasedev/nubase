@@ -22,12 +22,22 @@ interface NewTicket {
   workspaceId: number;
   title: string;
   description: string | null;
+  teamId: number | null;
 }
+
+const DEFAULT_TEAMS = [
+  { name: "Engineering", description: "Builds and maintains the product." },
+  { name: "Product", description: "Owns roadmap and customer requirements." },
+  {
+    name: "Support",
+    description: "Helps customers and triages incoming issues.",
+  },
+];
 
 /**
  * Generate fake ticket data using faker.js
  */
-function generateFakeTicket(workspaceId: number): NewTicket {
+function generateFakeTicket(workspaceId: number, teamIds: number[]): NewTicket {
   const ticketTypes = [
     "Bug Report",
     "Feature Request",
@@ -63,10 +73,17 @@ function generateFakeTicket(workspaceId: number): NewTicket {
     ? faker.lorem.paragraphs(faker.number.int({ min: 1, max: 3 }), "\n\n")
     : null;
 
+  // ~50% chance of being assigned to a team
+  const teamId =
+    teamIds.length > 0 && faker.datatype.boolean(0.5)
+      ? faker.helpers.arrayElement(teamIds)
+      : null;
+
   return {
     workspaceId,
     title,
     description,
+    teamId,
   };
 }
 
@@ -80,7 +97,7 @@ async function seedWorkspaces() {
 
   // Clear existing data using TRUNCATE (respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
-  await sql`TRUNCATE TABLE tickets, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
+  await sql`TRUNCATE TABLE tickets, user_teams, teams, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
     db,
   );
 
@@ -132,19 +149,58 @@ async function seedUsers(workspaceId: number) {
     .execute();
 
   console.log(`✅ Created user: ${insertedUser.email} (password: password123)`);
+
+  return insertedUser;
+}
+
+/**
+ * Seed teams for the given workspace and add the given user to all of them.
+ * Returns the inserted team ids so seeded tickets can be linked to teams.
+ */
+async function seedTeams(workspaceId: number, userId: number) {
+  console.log("👥 Seeding teams...");
+
+  const db = getDb();
+
+  const insertedTeams = await db
+    .insertInto("teams")
+    .values(
+      DEFAULT_TEAMS.map((t) => ({
+        workspaceId,
+        name: t.name,
+        description: t.description,
+      })),
+    )
+    .returningAll()
+    .execute();
+
+  await db
+    .insertInto("userTeams")
+    .values(insertedTeams.map((t) => ({ teamId: t.id, userId })))
+    .execute();
+
+  console.log(
+    `✅ Created ${insertedTeams.length} teams and added user to all of them`,
+  );
+
+  return insertedTeams.map((t) => t.id);
 }
 
 /**
  * Seed the database with fake tickets for the given workspace
  */
-async function seedTickets(count: number, workspaceId: number) {
+async function seedTickets(
+  count: number,
+  workspaceId: number,
+  teamIds: number[],
+) {
   console.log(`📝 Generating ${count} fake tickets...`);
 
   const db = getDb();
 
   // Generate and insert fake tickets
   const fakeTickets = Array.from({ length: count }, () =>
-    generateFakeTicket(workspaceId),
+    generateFakeTicket(workspaceId, teamIds),
   );
 
   console.log("💾 Inserting tickets into database...");
@@ -186,10 +242,13 @@ async function main(ticketCount: number = DEFAULT_TICKET_COUNT) {
   const workspace = await seedWorkspaces();
 
   // Seed users for the workspace
-  await seedUsers(workspace.id);
+  const user = await seedUsers(workspace.id);
 
-  // Seed tickets for the workspace
-  await seedTickets(ticketCount, workspace.id);
+  // Seed teams for the workspace and add the user to all of them
+  const teamIds = await seedTeams(workspace.id, user.id);
+
+  // Seed tickets for the workspace; ~half get a random team
+  await seedTickets(ticketCount, workspace.id, teamIds);
 
   console.log("\n🎉 Database seeding complete!");
   process.exit(0);

@@ -49,6 +49,18 @@ export const userHandlers = {
         query = query.where("users.email", "ilike", `%${params.email}%`);
       }
 
+      // Filter to users that belong to a specific team
+      if (params.teamId !== undefined) {
+        query = query.where(
+          "users.id",
+          "in",
+          db
+            .selectFrom("userTeams")
+            .select("userTeams.userId")
+            .where("userTeams.teamId", "=", params.teamId),
+        );
+      }
+
       const users = await query.orderBy("users.id", "asc").execute();
       return users;
     },

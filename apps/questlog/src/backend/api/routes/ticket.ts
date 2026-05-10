@@ -7,14 +7,16 @@ import { createHandler } from "../handler-factory";
 
 // Schema-to-column bindings for NQL on the /tickets list endpoint. Keys are
 // checked against `ticketListSchema`; values against the generated Kysely
-// `DB` type plus the tables joined below (`tickets`, `users`).
+// `DB` type plus the tables joined below (`tickets`, `users`, `teams`).
 const ticketListNqlBindings = createNqlBindings<DB>()(ticketListSchema, {
   id: "tickets.id",
   title: "tickets.title",
   description: "tickets.description",
   assigneeId: "tickets.assigneeId",
+  teamId: "tickets.teamId",
   assigneeName: "users.displayName",
   assigneeEmail: "users.email",
+  teamName: "teams.name",
 });
 
 /**
@@ -35,13 +37,16 @@ export const ticketHandlers = {
       let query = db
         .selectFrom("tickets")
         .leftJoin("users", "tickets.assigneeId", "users.id")
+        .leftJoin("teams", "tickets.teamId", "teams.id")
         .select([
           "tickets.id",
           "tickets.title",
           "tickets.description",
           "tickets.assigneeId",
+          "tickets.teamId",
           "users.displayName as assigneeName",
           "users.email as assigneeEmail",
+          "teams.name as teamName",
         ])
         .where("tickets.workspaceId", "=", workspace.id);
 
@@ -96,6 +101,17 @@ export const ticketHandlers = {
         }
       }
 
+      // Filter by teamId (supports single value or array for multi-select)
+      if (params.teamId !== undefined) {
+        if (Array.isArray(params.teamId)) {
+          if (params.teamId.length > 0) {
+            query = query.where("tickets.teamId", "in", params.teamId);
+          }
+        } else {
+          query = query.where("tickets.teamId", "=", params.teamId);
+        }
+      }
+
       const tickets = await query.orderBy("tickets.id", "asc").execute();
 
       return tickets.map((ticket) => ({
@@ -103,8 +119,10 @@ export const ticketHandlers = {
         title: ticket.title,
         description: ticket.description ?? undefined,
         assigneeId: ticket.assigneeId ?? undefined,
+        teamId: ticket.teamId ?? undefined,
         assigneeName: ticket.assigneeName ?? undefined,
         assigneeEmail: ticket.assigneeEmail ?? undefined,
+        teamName: ticket.teamName ?? undefined,
       }));
     },
   }),
@@ -134,6 +152,7 @@ export const ticketHandlers = {
         title: ticket.title,
         description: ticket.description ?? undefined,
         assigneeId: ticket.assigneeId ?? undefined,
+        teamId: ticket.teamId ?? undefined,
       };
     },
   }),
@@ -156,6 +175,7 @@ export const ticketHandlers = {
           title: body.title,
           description: body.description,
           assigneeId: body.assigneeId,
+          teamId: body.teamId,
         })
         .returningAll()
         .executeTakeFirstOrThrow();
@@ -165,6 +185,7 @@ export const ticketHandlers = {
         title: createdTicket.title,
         description: createdTicket.description ?? undefined,
         assigneeId: createdTicket.assigneeId ?? undefined,
+        teamId: createdTicket.teamId ?? undefined,
       };
     },
   }),
@@ -190,6 +211,9 @@ export const ticketHandlers = {
       if (body.assigneeId !== undefined) {
         updateData.assigneeId = body.assigneeId;
       }
+      if (body.teamId !== undefined) {
+        updateData.teamId = body.teamId;
+      }
 
       const updatedTicket = await db
         .updateTable("tickets")
@@ -208,6 +232,7 @@ export const ticketHandlers = {
         title: updatedTicket.title,
         description: updatedTicket.description ?? undefined,
         assigneeId: updatedTicket.assigneeId ?? undefined,
+        teamId: updatedTicket.teamId ?? undefined,
       };
     },
   }),

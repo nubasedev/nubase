@@ -5,10 +5,11 @@ import {
   defaultKeybindings,
   resourceLink,
 } from "@nubase/frontend";
-import { Home, Plus, TicketIcon, UsersIcon } from "lucide-react";
+import { Home, Plus, TicketIcon, Users2, UsersIcon } from "lucide-react";
 import { apiEndpoints } from "../common";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
+import { teamResource } from "./resources/team";
 import { ticketResource } from "./resources/ticket";
 import { userResource } from "./resources/user";
 
@@ -45,10 +46,17 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
       label: "Users",
       href: resourceLink(userResource, "search"),
     },
+    {
+      id: "teams",
+      icon: Users2,
+      label: "Teams",
+      href: resourceLink(teamResource, "search"),
+    },
   ],
   resources: {
     [ticketResource.id]: ticketResource,
     [userResource.id]: userResource,
+    [teamResource.id]: teamResource,
   },
   globalActions: [
     createCommandAction(
