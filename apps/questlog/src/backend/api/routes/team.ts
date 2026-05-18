@@ -6,7 +6,7 @@ import { createHandler } from "../handler-factory";
 /**
  * Team CRUD endpoints.
  * Teams are workspace-scoped via the workspace_id column.
- * Membership lives in the user_teams junction table.
+ * Each user belongs to at most one team via users.team_id.
  */
 export const teamHandlers = {
   /** Get all teams in the current workspace, with member counts. */
@@ -22,12 +22,12 @@ export const teamHandlers = {
 
       let query = db
         .selectFrom("teams")
-        .leftJoin("userTeams", "teams.id", "userTeams.teamId")
+        .leftJoin("users", "users.teamId", "teams.id")
         .select((eb) => [
           "teams.id",
           "teams.name",
           "teams.description",
-          eb.fn.count<string>("userTeams.userId").as("memberCount"),
+          eb.fn.count<string>("users.id").as("memberCount"),
         ])
         .where("teams.workspaceId", "=", workspace.id)
         .groupBy(["teams.id", "teams.name", "teams.description"]);
@@ -52,18 +52,6 @@ export const teamHandlers = {
           "teams.description",
           "ilike",
           `%${params.description}%`,
-        );
-      }
-
-      // Filter to teams that contain a specific user
-      if (params.userId !== undefined) {
-        query = query.where(
-          "teams.id",
-          "in",
-          db
-            .selectFrom("userTeams")
-            .select("userTeams.teamId")
-            .where("userTeams.userId", "=", params.userId),
         );
       }
 

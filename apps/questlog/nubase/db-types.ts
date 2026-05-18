@@ -99,13 +99,8 @@ export interface Users {
   email: string;
   id: Generated<number>;
   passwordHash: string;
+  teamId: number | null;
   updatedAt: Generated<Timestamp | null>;
-}
-
-export interface UserTeams {
-  createdAt: Generated<Timestamp | null>;
-  teamId: number;
-  userId: number;
 }
 
 export interface UserWorkspaces {
@@ -128,7 +123,6 @@ export interface DB {
   teams: Teams;
   tickets: Tickets;
   users: Users;
-  userTeams: UserTeams;
   userWorkspaces: UserWorkspaces;
   workspaces: Workspaces;
 }

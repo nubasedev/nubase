@@ -14,6 +14,12 @@ export const userSchema = nu
       label: "Display Name",
       description: "The user's display name",
     }),
+    teamId: nu.number().optional().withComputedMeta({
+      label: "Team",
+      description: "Select the team this user belongs to",
+      renderer: "lookup",
+      lookupResource: "team",
+    }),
   })
   .withId("id")
   .withTableLayout({

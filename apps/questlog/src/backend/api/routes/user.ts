@@ -6,6 +6,7 @@ import { createHandler } from "../handler-factory";
 /**
  * User CRUD endpoints.
  * Users are scoped to workspace via user_workspaces junction table.
+ * Each user belongs to at most one team via users.team_id.
  */
 export const userHandlers = {
   /** Get all users in the current workspace. */
@@ -21,7 +22,12 @@ export const userHandlers = {
       let query = db
         .selectFrom("users")
         .innerJoin("userWorkspaces", "users.id", "userWorkspaces.userId")
-        .select(["users.id", "users.email", "users.displayName"])
+        .select([
+          "users.id",
+          "users.email",
+          "users.displayName",
+          "users.teamId",
+        ])
         .where("userWorkspaces.workspaceId", "=", workspace.id);
 
       // Global text search - OR across searchable text fields
@@ -51,18 +57,16 @@ export const userHandlers = {
 
       // Filter to users that belong to a specific team
       if (params.teamId !== undefined) {
-        query = query.where(
-          "users.id",
-          "in",
-          db
-            .selectFrom("userTeams")
-            .select("userTeams.userId")
-            .where("userTeams.teamId", "=", params.teamId),
-        );
+        query = query.where("users.teamId", "=", params.teamId);
       }
 
       const users = await query.orderBy("users.id", "asc").execute();
-      return users;
+      return users.map((u) => ({
+        id: u.id,
+        email: u.email,
+        displayName: u.displayName,
+        teamId: u.teamId ?? undefined,
+      }));
     },
   }),
 
@@ -79,7 +83,12 @@ export const userHandlers = {
       const found = await db
         .selectFrom("users")
         .innerJoin("userWorkspaces", "users.id", "userWorkspaces.userId")
-        .select(["users.id", "users.email", "users.displayName"])
+        .select([
+          "users.id",
+          "users.email",
+          "users.displayName",
+          "users.teamId",
+        ])
         .where("users.id", "=", params.id)
         .where("userWorkspaces.workspaceId", "=", workspace.id)
         .executeTakeFirst();
@@ -88,7 +97,12 @@ export const userHandlers = {
         throw new HttpError(404, "User not found");
       }
 
-      return found;
+      return {
+        id: found.id,
+        email: found.email,
+        displayName: found.displayName,
+        teamId: found.teamId ?? undefined,
+      };
     },
   }),
 
@@ -137,6 +151,7 @@ export const userHandlers = {
             email: body.email,
             displayName: body.displayName,
             passwordHash: "placeholder-requires-password-reset",
+            teamId: body.teamId ?? null,
           })
           .returningAll()
           .executeTakeFirstOrThrow();
@@ -155,6 +170,7 @@ export const userHandlers = {
         id: createdUser.id,
         email: createdUser.email,
         displayName: createdUser.displayName,
+        teamId: createdUser.teamId ?? undefined,
       };
     },
   }),
@@ -189,6 +205,9 @@ export const userHandlers = {
       if (body.displayName !== undefined) {
         updateData.displayName = body.displayName;
       }
+      if (body.teamId !== undefined) {
+        updateData.teamId = body.teamId;
+      }
 
       const updatedUser = await db
         .updateTable("users")
@@ -205,6 +224,7 @@ export const userHandlers = {
         id: updatedUser.id,
         email: updatedUser.email,
         displayName: updatedUser.displayName,
+        teamId: updatedUser.teamId ?? undefined,
       };
     },
   }),

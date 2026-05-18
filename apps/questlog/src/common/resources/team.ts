@@ -21,7 +21,7 @@ export const teamSchema = nu
 
 /**
  * Extended team schema for list/table views.
- * Includes member count joined from the user_teams table.
+ * Includes member count derived from users.team_id.
  */
 export const teamListSchema = teamSchema
   .extend({

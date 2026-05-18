@@ -20,6 +20,12 @@ export type Numeric = ColumnType<string, number | string, number | string>;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface _NubaseMigrations {
+  appliedAt: Generated<Timestamp>;
+  id: Generated<number>;
+  name: string;
+}
+
 export interface PgStatStatements {
   calls: Int8 | null;
   dbid: number | null;
@@ -99,13 +105,8 @@ export interface Users {
   email: string;
   id: Generated<number>;
   passwordHash: string;
+  teamId: number | null;
   updatedAt: Generated<Timestamp | null>;
-}
-
-export interface UserTeams {
-  createdAt: Generated<Timestamp | null>;
-  teamId: number;
-  userId: number;
 }
 
 export interface UserWorkspaces {
@@ -123,12 +124,12 @@ export interface Workspaces {
 }
 
 export interface DB {
+  _NubaseMigrations: _NubaseMigrations;
   pgStatStatements: PgStatStatements;
   pgStatStatementsInfo: PgStatStatementsInfo;
   teams: Teams;
   tickets: Tickets;
   users: Users;
-  userTeams: UserTeams;
   userWorkspaces: UserWorkspaces;
   workspaces: Workspaces;
 }

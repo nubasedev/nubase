@@ -97,7 +97,7 @@ async function seedWorkspaces() {
 
   // Clear existing data using TRUNCATE (respects FKs with CASCADE)
   console.log("🗑️  Clearing existing data...");
-  await sql`TRUNCATE TABLE tickets, user_teams, teams, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
+  await sql`TRUNCATE TABLE tickets, teams, user_workspaces, users, workspaces RESTART IDENTITY CASCADE`.execute(
     db,
   );
 
@@ -154,7 +154,7 @@ async function seedUsers(workspaceId: number) {
 }
 
 /**
- * Seed teams for the given workspace and add the given user to all of them.
+ * Seed teams for the given workspace and place the given user on the first team.
  * Returns the inserted team ids so seeded tickets can be linked to teams.
  */
 async function seedTeams(workspaceId: number, userId: number) {
@@ -175,12 +175,13 @@ async function seedTeams(workspaceId: number, userId: number) {
     .execute();
 
   await db
-    .insertInto("userTeams")
-    .values(insertedTeams.map((t) => ({ teamId: t.id, userId })))
+    .updateTable("users")
+    .set({ teamId: insertedTeams[0].id })
+    .where("id", "=", userId)
     .execute();
 
   console.log(
-    `✅ Created ${insertedTeams.length} teams and added user to all of them`,
+    `✅ Created ${insertedTeams.length} teams and placed user on "${insertedTeams[0].name}"`,
   );
 
   return insertedTeams.map((t) => t.id);
