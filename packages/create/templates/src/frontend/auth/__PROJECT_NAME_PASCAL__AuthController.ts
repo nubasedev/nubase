@@ -20,6 +20,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
   private state: AuthenticationState = {
     status: "loading",
     user: null,
+    workspaces: [],
     error: null,
   };
 
@@ -77,6 +78,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspaces ?? [],
         error: null,
       });
     } catch (error) {
@@ -84,6 +86,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;
@@ -103,6 +106,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
     this.setState({
       status: "unauthenticated",
       user: null,
+      workspaces: [],
       error: null,
     });
   }
@@ -120,6 +124,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
         this.setState({
           status: "unauthenticated",
           user: null,
+          workspaces: [],
           error: null,
         });
         return;
@@ -131,12 +136,14 @@ export class __PROJECT_NAME_PASCAL__AuthController
         this.setState({
           status: "authenticated",
           user: data.user,
+          workspaces: data.workspaces ?? [],
           error: null,
         });
       } else {
         this.setState({
           status: "unauthenticated",
           user: null,
+          workspaces: [],
           error: null,
         });
       }
@@ -145,6 +152,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: null,
       });
     }
@@ -211,6 +219,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspace ? [data.workspace] : [],
         error: null,
       });
 
@@ -220,6 +229,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;
@@ -254,6 +264,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspace ? [data.workspace] : [],
         error: null,
       });
     } catch (error) {
@@ -261,6 +272,7 @@ export class __PROJECT_NAME_PASCAL__AuthController
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;

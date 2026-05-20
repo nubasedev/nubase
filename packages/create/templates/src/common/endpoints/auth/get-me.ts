@@ -1,5 +1,6 @@
 import { emptySchema, nu, type RequestSchema } from "@nubase/core";
 import { userSchema } from "../../resources/user";
+import { workspaceSchema } from "../../resources/workspace";
 
 /**
  * Get current user schema
@@ -11,5 +12,6 @@ export const getMeSchema = {
   requestParams: emptySchema,
   responseBody: nu.object({
     user: userSchema.optional(),
+    workspaces: nu.array(workspaceSchema),
   }),
 } satisfies RequestSchema;

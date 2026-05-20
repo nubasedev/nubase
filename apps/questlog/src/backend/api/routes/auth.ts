@@ -261,8 +261,24 @@ export const authHandlers = {
     auth: "optional",
     handler: async ({ user }) => {
       if (!user) {
-        return { user: undefined };
+        return { user: undefined, workspaces: [] };
       }
+
+      const db = getDb();
+      const userWorkspaceRows = await db
+        .selectFrom("userWorkspaces")
+        .selectAll()
+        .where("userId", "=", user.id)
+        .execute();
+
+      const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
+      const workspaces = workspaceIds.length
+        ? await db
+            .selectFrom("workspaces")
+            .selectAll()
+            .where("id", "in", workspaceIds)
+            .execute()
+        : [];
 
       return {
         user: {
@@ -270,6 +286,11 @@ export const authHandlers = {
           email: user.email,
           displayName: user.displayName,
         },
+        workspaces: workspaces.map((w) => ({
+          id: w.id,
+          slug: w.slug,
+          name: w.name,
+        })),
       };
     },
   }),

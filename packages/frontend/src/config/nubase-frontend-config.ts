@@ -6,6 +6,11 @@ import type { DashboardDescriptor } from "./dashboard-widget";
 import type { GlobalActionsConfig } from "./global-action";
 import type { ResourceDescriptor } from "./resource";
 
+export type HomeScreenConfig = {
+  tagline?: string;
+  description?: string;
+};
+
 export type NubaseFrontendConfig<TApiEndpoints = any> = {
   appName: string;
   /**
@@ -83,4 +88,10 @@ export type NubaseFrontendConfig<TApiEndpoints = any> = {
    * ```
    */
   notificationRules?: NotificationRules;
+  /**
+   * Optional copy shown on the standardized home screen at `/`.
+   * The heading is always the `appName`; `tagline` and `description` appear below it.
+   * Sign in and Sign up buttons render automatically when `authentication` is configured.
+   */
+  homeScreen?: HomeScreenConfig;
 };

@@ -85,4 +85,9 @@ export const config: NubaseFrontendConfig<typeof apiEndpoints> = {
   dashboards: {
     [analyticsDashboard.id]: analyticsDashboard,
   },
+  homeScreen: {
+    tagline: "Track quests, tickets, and your team in one place.",
+    description:
+      "Sign in to continue, or create a new organization to get started.",
+  },
 };

@@ -18,6 +18,7 @@ export class QuestlogAuthController implements AuthenticationController {
   private state: AuthenticationState = {
     status: "loading",
     user: null,
+    workspaces: [],
     error: null,
   };
 
@@ -75,6 +76,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspaces ?? [],
         error: null,
       });
     } catch (error) {
@@ -82,6 +84,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;
@@ -101,6 +104,7 @@ export class QuestlogAuthController implements AuthenticationController {
     this.setState({
       status: "unauthenticated",
       user: null,
+      workspaces: [],
       error: null,
     });
   }
@@ -118,6 +122,7 @@ export class QuestlogAuthController implements AuthenticationController {
         this.setState({
           status: "unauthenticated",
           user: null,
+          workspaces: [],
           error: null,
         });
         return;
@@ -129,12 +134,14 @@ export class QuestlogAuthController implements AuthenticationController {
         this.setState({
           status: "authenticated",
           user: data.user,
+          workspaces: data.workspaces ?? [],
           error: null,
         });
       } else {
         this.setState({
           status: "unauthenticated",
           user: null,
+          workspaces: [],
           error: null,
         });
       }
@@ -143,6 +150,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: null,
       });
     }
@@ -209,6 +217,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspace ? [data.workspace] : [],
         error: null,
       });
 
@@ -218,6 +227,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;
@@ -252,6 +262,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "authenticated",
         user,
+        workspaces: data.workspace ? [data.workspace] : [],
         error: null,
       });
     } catch (error) {
@@ -259,6 +270,7 @@ export class QuestlogAuthController implements AuthenticationController {
       this.setState({
         status: "unauthenticated",
         user: null,
+        workspaces: [],
         error: err,
       });
       throw err;

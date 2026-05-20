@@ -17,7 +17,7 @@
     --rdg-color: var(--foreground);
     --rdg-border-color: var(--border);
     --rdg-summary-border-color: var(--border);
-    --rdg-background-color: var(--background);
+    --rdg-background-color: var(--card);
     --rdg-header-background-color: var(--muted);
     --rdg-header-draggable-background-color: var(--accent);
     --rdg-row-hover-background-color: var(--muted);
@@ -33,7 +33,7 @@
     /* size containment is not used as it could break "width: min-content" for example, and the grid would infinitely resize on Chromium browsers */
     contain: content;
     content-visibility: auto;
-    border: 1px solid var(--rdg-border-color);
+    border: 1px solid var(--input);
     border-radius: var(--radius-md);
     box-sizing: border-box;
     overflow: auto;

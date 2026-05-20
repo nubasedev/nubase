@@ -16,6 +16,8 @@ export interface AuthenticationState {
   status: "loading" | "authenticated" | "unauthenticated";
   /** The authenticated user, if any */
   user: AuthenticatedUser | null;
+  /** Workspaces the authenticated user belongs to. Empty when unauthenticated. */
+  workspaces: WorkspaceInfo[];
   /** Any error that occurred during authentication */
   error: Error | null;
 }
