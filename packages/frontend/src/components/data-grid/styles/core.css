@@ -25,6 +25,8 @@
     --rdg-row-selected-hover-background-color: var(--accent);
 
     display: grid;
+    block-size: 100%;
+    inline-size: 100%;
 
     accent-color: var(--primary);
 

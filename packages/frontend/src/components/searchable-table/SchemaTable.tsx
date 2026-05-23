@@ -124,8 +124,6 @@ export const SchemaTable = <TRow extends Record<string, any>>({
       <DataGrid
         columns={columns}
         rows={rows as TRow[]}
-        className="h-full w-full"
-        style={{ height: "100%" }}
         rowKeyGetter={(row) => row[idField] ?? row}
         onCellClick={
           onRowClick

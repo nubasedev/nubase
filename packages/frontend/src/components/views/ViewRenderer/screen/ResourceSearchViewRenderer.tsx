@@ -567,7 +567,6 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
             <DataGrid
               columns={columns}
               rows={data}
-              className="h-full w-full"
               selectedRows={selectedRows}
               onSelectedRowsChange={setSelectedRows}
               rowKeyGetter={(row) => row[idField] || row}
