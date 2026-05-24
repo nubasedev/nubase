@@ -1,0 +1,116 @@
+---
+title: "ADR 0010: Relation fields embed a target-resource view"
+description: A 1×N relation field on a parent's schema names a target-resource search view to embed and a function that derives that view's params from the parent record. Everything about the related table — fetch, filters, actions, columns — lives once on the target resource. There is no parallel `fieldHandlers` system.
+sidebar_position: 10
+---
+
+**Status:** accepted
+
+## Context
+
+A nubase resource view often needs to display related rows: a user view shows the user's tickets, a team view shows the team's members and the team's tickets. The framework needs a way for the parent's schema to declare such a relation, and for the rendered form to show a working table for it.
+
+The earliest version of this used a sidecar map on the parent view called `fieldHandlers`. For each relation field declared in the schema, the parent's view supplied a runtime handler:
+
+```ts
+// user view (before)
+schemaGet: (api) => api.getUser.responseBody.extend({
+  tickets: nu.relation({
+    source: "remote",
+    targetResourceId: "ticket",
+    schema: userTicketSchema,
+  }),
+}),
+fieldHandlers: {
+  tickets: {
+    onSearch: ({ parent, query, nql, context }) =>
+      context.http.getTickets({ params: { assigneeId: parent.id, title: query, nql } }),
+  },
+},
+```
+
+This worked but the design did not scale once relation tables needed more than a fetch:
+
+- **Adding toolbar actions to the relation table** (Delete, Create) meant growing `RelationshipFieldHandler` with `tableActions` and `rowActions` — a second copy of fields that `ResourceSearchView` already has at the top level.
+- **Adding row-context actions** (e.g. "create a ticket assigned to *this* user") required a new `RelationActionExecutionContext` type carrying a `parent` field, parallel to `ResourceActionExecutionContext` — yet another concept whose only purpose was to thread parent data through.
+- **Column layout**, **filter shape**, and **invalidation behavior** for the relation table were declared once on the parent view's `fieldHandlers` and again on the target resource's top-level view, with no enforcement that they stayed consistent.
+
+In short: `fieldHandlers` was a parallel mini-framework. It described the same concepts as `ResourceSearchView` — `onSearch`/`onLoad`, `tableActions`, `rowActions`, filter wiring — but under different names and with a parent-bound API. Every feature that came to `ResourceSearchView` had to be re-added to `fieldHandlers`, and each addition widened the framework surface a contributor had to learn.
+
+A few alternatives were considered:
+
+- **Keep `fieldHandlers` and let it grow.** Adopted briefly; this is what produced the `tableActions`/`rowActions`/`RelationAction` extensions on the field handler. Rejected on the next pass: every feature added is doubled.
+- **Inline-only actions on each relation.** Push everything into the parent's relation declaration — onSearch, tableActions, action bodies. Maximally simple per-call-site, maximally duplicated across parents that share a target (a user-view and a team-view both showing "tickets for X" would each redeclare delete/create).
+- **String-id lookups against the target resource.** `tableActions: ["delete"]` on the relation, resolved at runtime against `ticketResource.actions`. Cleaner than inline, but doesn't solve the deeper problem — relations still need their *own* fetch logic declared somewhere, separately from the target resource's own views.
+
+The breakthrough was noticing that the framework already has a concept that solves this end-to-end: a **view**. A view declares its `schemaParams`, `schemaFilter`, `onLoad`, `tableActions`, `rowActions`, column layout (via `schemaGet`), and renders through the existing `ResourceSearchViewRenderer`. The drawer overlay (`?overlay=ticket%2Fview%2Fid%3A1`) already embeds a view with route-supplied params. Relations are the same shape, just invoked from inside another view's form instead of from the URL.
+
+## Decision
+
+A relation field declares two things, and only two:
+
+1. **Which view to embed.** Passed by value reference to the target resource's view (e.g. `ticketResource.views.userTicketsSearch`).
+2. **How to derive that view's params from the parent record.** A `paramsFrom: (parent) => params` function.
+
+Everything else — what rows to load, how to filter them, what actions to show, what columns to render — lives on the embedded view, alongside every other view of that target resource. The parent's only job is to name the view and feed it the right params.
+
+```ts
+// ticket resource — owns the view that "tickets for a user" needs
+.withViews({
+  // ... regular search/view/create views ...
+  userTicketsSearch: {
+    type: "resource-search",
+    id: "user-tickets-search",
+    title: "Tickets",
+    schemaGet: () => nu.array(userTicketSchema),
+    schemaParams: () => nu.object({ userId: nu.number() }),
+    schemaFilter: (api) => api.getTickets.requestParams,
+    tableActions: ["create", "delete"],
+    rowActions: ["delete"],
+    onLoad: async ({ context }) =>
+      context.http.getTickets({
+        params: { assigneeId: context.params.userId, /* ...filter merge... */ },
+      }),
+  },
+});
+
+// user resource — just points at it
+schemaGet: (api) => api.getUser.responseBody.omit("id").extend({
+  tickets: nu.relation({
+    view: ticketResource.views.userTicketsSearch,
+    paramsFrom: (parent: { id: number }) => ({ userId: parent.id }),
+    label: "Tickets",
+  }),
+}),
+// No fieldHandlers.
+```
+
+The frontend renders such a relation by delegating to `ResourceSearchViewRenderer` with a new `embedded` prop. The renderer is unchanged in substance — same filter state, same action wrapping, same selection, same `ResourceContextProvider`, same `DataGrid` — it just hides the page-level chrome (header + breadcrumbs) and switches the filter bar to its `simplified` mode. The relation field renderer (`RelationshipViewFieldRenderer`) is a thin (~50-line) delegator that reads the parent record from a context provider, calls `paramsFrom(parent)`, and embeds the view.
+
+`fieldHandlers` is gone. So are `RelationshipFieldHandler`, `FieldHandlers`, `RelationAction`, and `RelationActionExecutionContext`. The `FieldHandlersProvider` that flowed `parent` into form descendants is renamed `ParentRecordProvider` — it now only carries the parent record, which is all the relation renderer ever needed from it.
+
+### Type safety
+
+`context.params` inside the embedded view is already narrowed by the view's `schemaParams` (per the existing flow described in `Infer<TParamsSchema>` on `NubaseContextData`). Because the relation passes `view` by value reference rather than by string id, TypeScript can structurally infer the params shape from the view and check that `paramsFrom`'s return type satisfies it. The `parent` argument defaults to `any` because the parent schema isn't known at relation-declaration time; users annotate it inline when they want full typing (`(parent: User) => ...`).
+
+### Parent binding
+
+The deferred case — "create a ticket already assigned to *this* user" — falls out for free. The create action, whether reused from `ticketResource.actions.create` or specialised as a new `createForUser`, reads `context.params.userId` directly. No new framework concept is needed; the params channel that the view already exposes is the same channel that the relation just populated.
+
+## Consequences
+
+- **One mental model, not two.** Search views and relation tables are the same thing. A contributor who learns `ResourceSearchView` already knows how relation tables work.
+- **Cohesion on the right axis.** "Tickets for a user" is a fact about tickets; it lives in `ticketResource`. Every parent that wants to display tickets-for-X just points at one of `ticketResource`'s views.
+- **Framework surface shrank.** Deleted: `RelationshipFieldHandler`, `FieldHandlers`, the `fieldHandlers` config field, `RelationAction`, `RelationActionExecutionContext`, and the bespoke fetch/filter/action wiring inside the relation renderer (~200 lines).
+- **Action context stays simple.** `ResourceActionExecutionContext` remains the only execution-context shape. The `parent` field that a parent-bound action needs comes through `context.params` instead of a new top-level slot.
+- **Adding a new "tickets-for-X" context is a new view, not a new wiring concept.** Define `dashboardTicketsSearch` on the ticket resource with its own `schemaParams: { dashboardId }`; any dashboard view that wants to embed it just declares the relation. The parent doesn't learn any new framework concepts.
+- **Trade-offs accepted:**
+  - **More views per target resource.** A target resource that's embedded in N parent contexts has N+1 search views (one top-level, N embedded). This is the right place for the multiplication to land — the alternative was N copies of duplicated wiring in the parents.
+  - **One-directional import coupling.** Parent resources import target resources by value (`user.ts → ticket.ts`, `team.ts → user.ts + ticket.ts`). This is the same coupling that already exists for action reuse (`tableActions: ["delete"]` referencing the target's actions); the new model just makes it more visible. Cyclic relation graphs would need restructuring to keep the import graph acyclic.
+  - **`RelationshipSchema` is a marker schema.** Its `toZod()` returns `z.any().optional()` — it validates nothing. It exists on the schema layer purely so a relation field can be declared inline with the rest of the parent's shape (`nu.relation(...)` alongside `nu.string()`). Core stays loose-typed on the `view` field (`view: TView = unknown`) so it doesn't import frontend types; the structural inference of `paramsFrom`'s return is duck typing. A clean fix would either move `relation` to `@nubase/frontend` (splits the schema namespace) or recognise marker schemas as a first-class category (bigger refactor). Left as-is.
+  - **Params/filter merging in `onLoad` is unergonomic.** `mergedParams` at runtime is `routeParams ⊕ filterValues`, but `context.params` is typed only against `schemaParams`. Embedded views that need to read filter values too must currently destructure with a cast. Pre-existing issue, but more visible now that more views declare `schemaParams`.
+
+## Cross-references
+
+- [Layouts](/docs/layouts) — relation fields appear in form layouts as their own section; one group per relation.
+- [Application Configuration](/docs/application-config) — where resources, views, and the frontend config are declared.

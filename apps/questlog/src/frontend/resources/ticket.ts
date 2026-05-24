@@ -1,6 +1,9 @@
+import { nu } from "@nubase/core";
 import { commands, createResource, showToast } from "@nubase/frontend";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
+import { teamTicketSchema } from "../../common/resources/team-ticket";
+import { userTicketSchema } from "../../common/resources/user-ticket";
 
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)
@@ -102,6 +105,44 @@ export const ticketResource = createResource("ticket")
         return context.http.patchTicket({
           params: { id: Number(id) },
           data: { [fieldName]: value },
+        });
+      },
+    },
+    userTicketsSearch: {
+      type: "resource-search",
+      id: "user-tickets-search",
+      title: "Tickets",
+      schemaGet: () => nu.array(userTicketSchema),
+      schemaParams: () => nu.object({ userId: nu.number() }),
+      schemaFilter: (api) => api.getTickets.requestParams,
+      tableActions: ["create", "delete"],
+      rowActions: ["delete"],
+      onLoad: async ({ context }) => {
+        const { userId, ...rest } = context.params as {
+          userId: number;
+          [k: string]: unknown;
+        };
+        return context.http.getTickets({
+          params: { ...(rest as any), assigneeId: userId },
+        });
+      },
+    },
+    teamTicketsSearch: {
+      type: "resource-search",
+      id: "team-tickets-search",
+      title: "Tickets",
+      schemaGet: () => nu.array(teamTicketSchema),
+      schemaParams: () => nu.object({ teamId: nu.number() }),
+      schemaFilter: (api) => api.getTickets.requestParams,
+      tableActions: ["create", "delete"],
+      rowActions: ["delete"],
+      onLoad: async ({ context }) => {
+        const { teamId, ...rest } = context.params as {
+          teamId: number;
+          [k: string]: unknown;
+        };
+        return context.http.getTickets({
+          params: { ...(rest as any), teamId },
         });
       },
     },

@@ -5,7 +5,7 @@ import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceViewQuery } from "../../../../hooks/useNubaseQuery";
 import { DataState } from "../../../data-state";
-import { FieldHandlersProvider } from "../../../form/field-handlers-context";
+import { ParentRecordProvider } from "../../../form/parent-record-context";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
@@ -147,10 +147,7 @@ const ResourceViewForm: FC<{
 
   return (
     <div className="h-full overflow-y-auto">
-      <FieldHandlersProvider
-        parent={initialData}
-        fieldHandlers={view.fieldHandlers}
-      >
+      <ParentRecordProvider parent={initialData}>
         <SchemaForm
           form={form}
           className="space-y-4"
@@ -159,7 +156,7 @@ const ResourceViewForm: FC<{
           <SchemaFormBody form={form} />
           <SchemaFormValidationErrors form={form} />
         </SchemaForm>
-      </FieldHandlersProvider>
+      </ParentRecordProvider>
     </div>
   );
 };

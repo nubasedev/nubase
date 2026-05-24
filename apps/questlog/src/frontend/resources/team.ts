@@ -2,8 +2,8 @@ import { nu } from "@nubase/core";
 import { commands, createResource, showToast } from "@nubase/frontend";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
-import { teamTicketSchema } from "../../common/resources/team-ticket";
-import { teamUserSchema } from "../../common/resources/team-user";
+import { ticketResource } from "./ticket";
+import { userResource } from "./user";
 
 export const teamResource = createResource("team")
   .withApiEndpoints(apiEndpoints)
@@ -67,23 +67,19 @@ export const teamResource = createResource("team")
       type: "resource-view",
       id: "view-team",
       title: "View Team",
-      schemaGet: (api) =>
-        api.getTeam.responseBody
+      schemaGet: (api) => {
+        return api.getTeam.responseBody
           .omit("id")
           .extend({
             members: nu.relation({
-              source: "remote",
-              targetResourceId: "user",
-              schema: teamUserSchema,
+              view: userResource.views.teamMembersSearch,
+              paramsFrom: (parent: { id: number }) => ({ teamId: parent.id }),
               label: "Members",
-              searchPlaceholder: "Search members...",
             }),
             tickets: nu.relation({
-              source: "remote",
-              targetResourceId: "ticket",
-              schema: teamTicketSchema,
+              view: ticketResource.views.teamTicketsSearch,
+              paramsFrom: (parent: { id: number }) => ({ teamId: parent.id }),
               label: "Tickets",
-              searchPlaceholder: "Search tickets...",
             }),
           })
           .withFormLayout({
@@ -97,7 +93,8 @@ export const teamResource = createResource("team")
                 ],
               },
             ],
-          }),
+          });
+      },
       schemaParams: (api) => api.getTeam.requestParams,
       breadcrumbs: ({ context, data }) => [
         { label: "Teams", to: "/r/team/search" },
@@ -115,27 +112,6 @@ export const teamResource = createResource("team")
           params: { id: context.params.id },
           data: data,
         });
-      },
-      fieldHandlers: {
-        members: {
-          onSearch: ({ parent, query, context }) =>
-            context.http.getUsers({
-              params: {
-                teamId: parent.id,
-                q: query || undefined,
-              },
-            }),
-        },
-        tickets: {
-          onSearch: ({ parent, query, nql, context }) =>
-            context.http.getTickets({
-              params: {
-                teamId: parent.id,
-                title: query || undefined,
-                nql: nql || undefined,
-              },
-            }),
-        },
       },
     },
     search: {

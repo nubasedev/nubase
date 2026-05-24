@@ -58,11 +58,10 @@ export const nu = {
    * Declares a 1×N relationship field on an ObjectSchema. The field is
    * virtual — it does not appear in API payloads — but it can be referenced
    * by name in form layouts, at which point the frontend relationship
-   * renderer fetches and displays the related rows.
-   *
-   * The actual `onSearch` handler is wired at the view level via
-   * `view.fieldHandlers[fieldName].onSearch`, so that it has access to the
-   * typed HTTP client.
+   * renderer embeds the target resource's search view to display the
+   * related rows. The relation declares which view to embed (`view`) and
+   * how to derive its params from the parent record (`paramsFrom`); all
+   * fetch/filter/action logic lives on the embedded view itself.
    */
   relation: createRelationship,
 };

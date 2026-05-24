@@ -106,12 +106,19 @@ export type ResourceSearchViewRendererProps = {
   resourceName?: string;
   resource?: ResourceDescriptor;
   onError?: (error: Error) => void;
+  /**
+   * When true the renderer drops the page-level chrome — no
+   * `ResourceViewHeader` (title + breadcrumbs) and the filter bar uses
+   * its `simplified` mode. Used when this view is embedded inside
+   * another view's form (e.g. a 1×N relation field).
+   */
+  embedded?: boolean;
 };
 
 export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   props,
 ) => {
-  const { view, params, resourceName, resource, onError } = props;
+  const { view, params, resourceName, resource, onError, embedded } = props;
   const context = useNubaseContext();
   const { openOverlay } = useOverlays();
   const { invalidateResource } = useResourceInvalidation();
@@ -493,14 +500,16 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   ]);
 
   return (
-    <div className="flex flex-col h-full w-full gap-4">
-      <ResourceViewHeader
-        title={view.title}
-        breadcrumbs={view.breadcrumbs}
-        context={context}
-        params={params}
-        data={data}
-      />
+    <div className={`flex flex-col h-full w-full ${embedded ? "" : "gap-4"}`}>
+      {!embedded && (
+        <ResourceViewHeader
+          title={view.title}
+          breadcrumbs={view.breadcrumbs}
+          context={context}
+          params={params}
+          data={data}
+        />
+      )}
       <ResourceContextProvider
         resourceType={resourceName || "unknown"}
         selectedIds={selectedRows}
@@ -509,6 +518,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           {/* Filter bar is outside DataState to prevent unmounting during loading */}
           {view.schemaFilter && (
             <SchemaFilterBar
+              mode={embedded ? "simplified" : "full"}
               schema={view.schemaFilter}
               filterDescriptors={filterDescriptors}
               filterState={filterState}

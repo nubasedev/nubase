@@ -1,8 +1,9 @@
 import { nu } from "@nubase/core";
-import { createResource, showToast } from "@nubase/frontend";
-import { TrashIcon } from "lucide-react";
+import { commands, createResource, showToast } from "@nubase/frontend";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
-import { userTicketSchema } from "../../common/resources/user-ticket";
+import { teamUserSchema } from "../../common/resources/team-user";
+import { ticketResource } from "./ticket";
 
 export const userResource = createResource("user")
   .withApiEndpoints(apiEndpoints)
@@ -39,6 +40,17 @@ export const userResource = createResource("user")
         }
       },
     },
+    create: {
+      label: "Create",
+      icon: PlusIcon,
+      requiresSelection: false,
+      onExecute: async ({ context }) => {
+        await context.commands.execute(
+          commands.workbenchOpenResourceOperationInDrawer.id,
+          { resourceId: "user", operation: "create" },
+        );
+      },
+    },
   })
   .withViews({
     create: {
@@ -60,11 +72,9 @@ export const userResource = createResource("user")
           .omit("id")
           .extend({
             tickets: nu.relation({
-              source: "remote",
-              targetResourceId: "ticket",
-              schema: userTicketSchema,
+              view: ticketResource.views.userTicketsSearch,
+              paramsFrom: (parent: { id: number }) => ({ userId: parent.id }),
               label: "Tickets",
-              searchPlaceholder: "Search tickets...",
             }),
           })
           .withFormLayout({
@@ -98,18 +108,6 @@ export const userResource = createResource("user")
           data: data,
         });
       },
-      fieldHandlers: {
-        tickets: {
-          onSearch: ({ parent, query, nql, context }) =>
-            context.http.getTickets({
-              params: {
-                assigneeId: parent.id,
-                title: query || undefined,
-                nql: nql || undefined,
-              },
-            }),
-        },
-      },
     },
     search: {
       type: "resource-search",
@@ -123,6 +121,25 @@ export const userResource = createResource("user")
       onLoad: async ({ context }) => {
         return context.http.getUsers({
           params: context.params || {},
+        });
+      },
+    },
+    teamMembersSearch: {
+      type: "resource-search",
+      id: "team-members-search",
+      title: "Members",
+      schemaGet: () => nu.array(teamUserSchema),
+      schemaParams: () => nu.object({ teamId: nu.number() }),
+      schemaFilter: (api) => api.getUsers.requestParams,
+      tableActions: ["delete"],
+      rowActions: ["delete"],
+      onLoad: async ({ context }) => {
+        const { teamId, ...rest } = context.params as {
+          teamId: number;
+          [k: string]: unknown;
+        };
+        return context.http.getUsers({
+          params: { ...(rest as any), teamId },
         });
       },
     },

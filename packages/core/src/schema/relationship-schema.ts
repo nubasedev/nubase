@@ -1,114 +1,94 @@
 import { z } from "zod";
-import { BaseSchema, type ObjectSchema, OptionalSchema } from "./schema";
+import {
+  BaseSchema,
+  type Infer,
+  type ObjectSchema,
+  OptionalSchema,
+} from "./schema";
 
 /**
- * Configuration for a 1×N relationship field on an ObjectSchema.
- * Attached as a shape entry via `nu.relation()` — the field appears in
- * layouts just like any other field, but carries relationship metadata
- * instead of a primitive type.
+ * Configuration for a 1×N relationship field on an ObjectSchema. Declares
+ * which target-resource search view should be embedded for this relation,
+ * and how to derive that view's params from the parent record.
  *
- * The `onSearch` handler is *not* declared on the schema — schemas live in
- * `common/` and cannot access the frontend HTTP client. The handler is
- * wired at the view level via `view.fieldHandlers[fieldName]`.
+ * The relation reuses the target view's machinery wholesale: its
+ * `schemaParams`, `onLoad`, `tableActions`, `rowActions`, filter bar — all
+ * already declared on the target resource. The parent's only job is to
+ * (a) name the view and (b) compute its params from the parent record.
+ *
+ * @example
+ * ```ts
+ * import { ticketResource } from "./ticket";
+ *
+ * tickets: nu.relation({
+ *   view: ticketResource.views.userTicketsSearch,
+ *   paramsFrom: (parent) => ({ userId: parent.id }),
+ *   label: "Tickets",
+ * })
+ * ```
  */
-export interface RelationshipConfig<
-  TTargetSchema extends ObjectSchema<any> = ObjectSchema<any>,
-> {
+export interface RelationshipConfig<TView = unknown, TParent = any> {
   /**
-   * Where the related rows live.
-   *
-   * - `"remote"` (default): rows are fetched from a separate API via the
-   *   view's `fieldHandlers[fieldName].onSearch`. The renderer drives a
-   *   simplified Search/NQL bar against that handler.
-   * - `"embedded"`: rows are part of the parent record's payload at
-   *   `parent[fieldName]` — no API call. The renderer filters the
-   *   embedded array client-side via a single search input.
+   * The target resource's search view to embed. Pass the view by value
+   * reference (e.g. `ticketResource.views.userTicketsSearch`) so
+   * TypeScript can structurally infer the view's params shape and check
+   * `paramsFrom`'s return type.
    */
-  source?: "remote" | "embedded";
-  /** The id of the resource each row points to (for row-click navigation). */
-  targetResourceId: string;
-  /** Row-shape schema. Columns derive from its `default`/`table` layout. */
-  schema: TTargetSchema;
+  view: TView;
+  /**
+   * Derive the embedded view's params from the parent record. Return
+   * value must satisfy the view's `schemaParams` shape.
+   */
+  paramsFrom: (parent: TParent) => ParamsOf<TView>;
   /** Field label, rendered by FormControl in the shared label column. */
   label?: string;
-  /** Placeholder for the search input. */
-  searchPlaceholder?: string;
 }
 
 /**
- * Virtual schema that marks a shape entry as a 1×N relationship.
- *
- * For `source: "remote"` the runtime value is always undefined — rows are
- * fetched on demand by the relationship renderer. For `source: "embedded"`
- * the runtime value is the array of related rows from the parent payload.
- *
- * Wrapped in `OptionalSchema` by `nu.relation()` so it's absent from the
- * parent payload's required keys in either case.
+ * Structural extraction of the params shape from a view value. If the view
+ * declares `schemaParams: ObjectSchema<...>`, we infer its output type;
+ * otherwise we fall back to a loose record.
+ */
+export type ParamsOf<TView> = TView extends { schemaParams?: infer P }
+  ? P extends ObjectSchema<any>
+    ? Infer<P>
+    : Record<string, any>
+  : Record<string, any>;
+
+/**
+ * Virtual schema that marks a shape entry as a 1×N relationship. Its
+ * runtime value is always undefined — the embedded view fetches its own
+ * data using params derived from the parent.
  */
 export class RelationshipSchema<
-  TTargetSchema extends ObjectSchema<any> = ObjectSchema<any>,
-> extends BaseSchema<TTargetSchema["_outputType"][] | undefined> {
+  TView = unknown,
+  TParent = any,
+> extends BaseSchema<undefined> {
   readonly type = "relationship" as const;
 
-  readonly _targetResourceId: string;
-  readonly _targetSchema: TTargetSchema;
-  readonly _source: "remote" | "embedded";
-  readonly _searchPlaceholder: string | undefined;
+  readonly _view: TView;
+  readonly _paramsFrom: (parent: TParent) => ParamsOf<TView>;
 
-  constructor(config: RelationshipConfig<TTargetSchema>) {
+  constructor(config: RelationshipConfig<TView, TParent>) {
     super();
-    this._targetResourceId = config.targetResourceId;
-    this._targetSchema = config.schema;
-    this._source = config.source ?? "remote";
-    this._searchPlaceholder = config.searchPlaceholder;
+    this._view = config.view;
+    this._paramsFrom = config.paramsFrom;
     if (config.label !== undefined) {
       this._meta = { ...this._meta, label: config.label };
     }
   }
 
-  /**
-   * For embedded relationships the field is a real array on the parent
-   * payload — validate it as such. For remote relationships the field is
-   * absent from the payload, so any optional value validates.
-   */
-  toZod(): z.ZodSchema<TTargetSchema["_outputType"][] | undefined> {
-    if (this._source === "embedded") {
-      return z
-        .array(this._targetSchema.toZod())
-        .optional() as unknown as z.ZodSchema<
-        TTargetSchema["_outputType"][] | undefined
-      >;
-    }
-    return z.any().optional() as unknown as z.ZodSchema<
-      TTargetSchema["_outputType"][] | undefined
-    >;
+  toZod(): z.ZodSchema<undefined> {
+    return z.any().optional() as unknown as z.ZodSchema<undefined>;
   }
 }
 
 /**
  * Creates a 1×N relationship field. The returned schema is wrapped in an
- * `OptionalSchema` so the field appears as an optional key in
+ * `OptionalSchema` so the field appears as an optional key on the parent's
  * `ObjectOutput`.
- *
- * @example
- * ```ts
- * // Remote relation — rows fetched lazily via fieldHandlers.onSearch.
- * tickets: nu.relation({
- *   targetResourceId: "ticket",
- *   schema: userTicketSchema,
- *   label: "Tickets",
- * })
- *
- * // Embedded relation — rows live on the parent payload.
- * addresses: nu.relation({
- *   source: "embedded",
- *   targetResourceId: "address",
- *   schema: addressSchema,
- *   label: "Addresses",
- * })
- * ```
  */
-export const createRelationship = <TTargetSchema extends ObjectSchema<any>>(
-  config: RelationshipConfig<TTargetSchema>,
-): OptionalSchema<RelationshipSchema<TTargetSchema>> =>
+export const createRelationship = <TView, TParent = any>(
+  config: RelationshipConfig<TView, TParent>,
+): OptionalSchema<RelationshipSchema<TView, TParent>> =>
   new OptionalSchema(new RelationshipSchema(config));

@@ -50,51 +50,6 @@ export type ResourceCreateView<
   }) => Promise<HttpResponse<any>>;
 };
 
-/**
- * Per-field handler for a virtual relationship field (declared on the
- * schema via `nu.relation(...)`). The schema declares *what* the
- * relationship is (target resource, row shape, label); this handler
- * declares *how* to fetch the related rows at runtime.
- *
- * Lives on the view rather than the schema because it needs `context.http`,
- * which is frontend-only — schemas live in `common/`.
- */
-export type RelationshipFieldHandler<
-  TParent = any,
-  TApiEndpoints = any,
-  TRow = any,
-> = {
-  /**
-   * Loads the related rows for a remote relationship. Called whenever the
-   * (debounced) `query` or `nql` changes.
-   *
-   * - `query` — the plain text typed in the simplified search input. Empty
-   *   string when the user is in NQL mode.
-   * - `nql` — the NQL expression typed in the NQL editor. Empty string
-   *   when the user is in Search mode.
-   *
-   * Handlers typically forward `query` to the endpoint's text search field
-   * (e.g. `title`) and `nql` to the standard `nql` parameter, leaving the
-   * empty one undefined.
-   */
-  onSearch: (args: {
-    parent: TParent;
-    query: string;
-    nql: string;
-    context: NubaseContextData<TApiEndpoints>;
-  }) => Promise<HttpResponse<TRow[]>>;
-};
-
-/**
- * Map of field-name → handler for virtual relationship fields on the view's
- * schema. Each key must match a field declared via `nu.relation(...)` in
- * the schema shape.
- */
-export type FieldHandlers<TParent = any, TApiEndpoints = any> = Record<
-  string,
-  RelationshipFieldHandler<TParent, TApiEndpoints>
->;
-
 export type ResourceViewView<
   TSchema extends ObjectSchema<any> = ObjectSchema<any>,
   TApiEndpoints = any,
@@ -132,12 +87,6 @@ export type ResourceViewView<
     data: Partial<Infer<TSchema>>;
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
   }) => Promise<HttpResponse<any>>;
-  /**
-   * Optional handlers for virtual relationship fields declared on the
-   * schema via `nu.relation(...)`. Keyed by field name. Each handler
-   * provides the runtime fetch logic for its field.
-   */
-  fieldHandlers?: FieldHandlers<Infer<TSchema>, TApiEndpoints>;
 };
 
 export type ResourceSearchView<

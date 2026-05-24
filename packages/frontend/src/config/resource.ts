@@ -48,10 +48,12 @@ export type ResourceDescriptor<
   id: string;
   views: TViews;
   /**
-   * Available actions for this resource, defined as an object mapping action IDs to action definitions.
-   * This allows views to reference actions by ID in a type-safe manner.
+   * Available actions for this resource, defined as an object mapping
+   * action IDs to action definitions. Always present (empty object when
+   * no actions are configured) — the builder sets it to `{}` by default,
+   * so consumers can safely access `.actions` without optional-chaining.
    */
-  actions?: TActions;
+  actions: TActions;
   /**
    * Lookup configuration for when this resource is used as a search/reference target.
    * Enables other resources to reference this one via lookup fields.
