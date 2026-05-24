@@ -76,8 +76,7 @@ export const ticketResource = createResource("ticket")
       schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
-      tableActions: ["delete"],
-      rowActions: ["delete"],
+      actions: ["delete"],
       onLoad: async ({ context }) => {
         return context.http.getTickets({
           params: context.params || {},

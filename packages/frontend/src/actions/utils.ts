@@ -73,6 +73,31 @@ export function createCommandAction(
 }
 
 /**
+ * Strips structurally-meaningless separators from an action list:
+ * leading separators, trailing separators, and runs of consecutive
+ * separators (collapsed to one). Used when filtering an action list
+ * (e.g. dropping global actions to build a per-row dropdown) can leave
+ * the remaining separators orphaned.
+ */
+export function normalizeActionSeparators(
+  actions: ActionOrSeparator[],
+): ActionOrSeparator[] {
+  const result: ActionOrSeparator[] = [];
+  for (const item of actions) {
+    if (item === "separator") {
+      // Skip leading separators and runs of consecutive separators.
+      if (result.length === 0 || result[result.length - 1] === "separator") {
+        continue;
+      }
+    }
+    result.push(item);
+  }
+  // Trim a trailing separator.
+  if (result[result.length - 1] === "separator") result.pop();
+  return result;
+}
+
+/**
  * Utility to convert a list of actions with separators into grouped structure.
  * Splits actions at "separator" markers into separate arrays.
  */

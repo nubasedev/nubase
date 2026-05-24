@@ -39,7 +39,7 @@ export const ticketResource = createResource("ticket")
     create: {
       label: "Create",
       icon: PlusIcon,
-      requiresSelection: false,
+      scope: "global",
       onExecute: async ({ context }) => {
         await context.commands.execute(
           commands.workbenchOpenResourceOperationInDrawer.id,
@@ -91,8 +91,7 @@ export const ticketResource = createResource("ticket")
       schemaFilter: (api) => api.getTickets.requestParams,
       schemaPatch: (api) => api.patchTicket.requestBody,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
-      tableActions: ["create", "delete"],
-      rowActions: ["delete"],
+      actions: ["create", "delete"],
       onLoad: async ({ context }) => {
         return context.http.getTickets({
           params: context.params || {},
@@ -111,8 +110,7 @@ export const ticketResource = createResource("ticket")
       schema: () => nu.array(userTicketSchema),
       schemaParams: () => nu.object({ userId: nu.number() }),
       schemaFilter: (api) => api.getTickets.requestParams,
-      tableActions: ["create", "delete"],
-      rowActions: ["delete"],
+      actions: ["create", "delete"],
       onLoad: async ({ context }) => {
         const { userId, ...rest } = context.params as {
           userId: number;
@@ -129,8 +127,7 @@ export const ticketResource = createResource("ticket")
       schema: () => nu.array(teamTicketSchema),
       schemaParams: () => nu.object({ teamId: nu.number() }),
       schemaFilter: (api) => api.getTickets.requestParams,
-      tableActions: ["create", "delete"],
-      rowActions: ["delete"],
+      actions: ["create", "delete"],
       onLoad: async ({ context }) => {
         const { teamId, ...rest } = context.params as {
           teamId: number;

@@ -114,8 +114,7 @@ search: {
   async loader({ context }) {
     return context.http.getTickets({});
   },
-  rowActions: ['view', 'delete'],
-  tableActions: ['create', 'delete'],
+  actions: ['create', 'view', 'delete'],
 }
 ```
 
@@ -149,8 +148,7 @@ export const ticketResource = createResource('ticket')
     // Views can reference actions by ID
     search: {
       type: 'resource-search',
-      rowActions: ['delete', 'duplicate'],
-      tableActions: ['delete'],
+      actions: ['delete', 'duplicate'],
       // ...
     },
   });

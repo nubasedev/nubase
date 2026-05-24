@@ -43,7 +43,7 @@ export const teamResource = createResource("team")
     create: {
       label: "Create",
       icon: PlusIcon,
-      requiresSelection: false,
+      scope: "global",
       onExecute: async ({ context }) => {
         await context.commands.execute(
           commands.workbenchOpenResourceOperationInDrawer.id,
@@ -118,8 +118,7 @@ export const teamResource = createResource("team")
       schema: (api) => api.getTeams.responseBody,
       schemaFilter: (api) => api.getTeams.requestParams,
       breadcrumbs: () => [{ label: "Teams", to: "/r/team/search" }],
-      tableActions: ["create", "delete"],
-      rowActions: ["delete"],
+      actions: ["create", "delete"],
       onLoad: async ({ context }) => {
         return context.http.getTeams({
           params: context.params || {},

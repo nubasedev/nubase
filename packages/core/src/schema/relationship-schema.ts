@@ -12,9 +12,9 @@ import {
  * and how to derive that view's params from the parent record.
  *
  * The relation reuses the target view's machinery wholesale: its
- * `schemaParams`, `onLoad`, `tableActions`, `rowActions`, filter bar — all
- * already declared on the target resource. The parent's only job is to
- * (a) name the view and (b) compute its params from the parent record.
+ * `schemaParams`, `onLoad`, `actions`, filter bar — all already declared
+ * on the target resource. The parent's only job is to (a) name the view
+ * and (b) compute its params from the parent record.
  *
  * @example
  * ```ts

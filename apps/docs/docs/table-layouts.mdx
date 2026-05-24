@@ -94,53 +94,24 @@ Display status with badges:
 }
 ```
 
-## Row Actions
+## Actions
 
-Add actions to each row:
+Add actions to the view with a single `actions` list. The renderer splits it two ways automatically: every action appears in the table toolbar; only *selection-scoped* actions also appear in the per-row dropdown.
 
 ```typescript
 {
   type: 'resource-search',
   columns: [/* ... */],
-  rowActions: ['view', 'edit', 'delete'],
+  actions: ['create', 'delete', 'export'],
   async loader({ context }) {
     return context.http.getTickets({});
   },
 }
 ```
 
-Actions appear in a dropdown menu on each row.
+Each referenced action declares whether it operates on a selection via `scope: 'global' | 'selection'` (default `'selection'`). `create` would be `scope: 'global'` (toolbar only); `delete` defaults to selection-scoped (toolbar + per-row dropdown).
 
-## Table Actions
-
-Add bulk actions to the table toolbar:
-
-```typescript
-{
-  type: 'resource-search',
-  columns: [/* ... */],
-  tableActions: ['create', 'delete', 'export'],
-  async loader({ context }) {
-    return context.http.getTickets({});
-  },
-}
-```
-
-Bulk actions operate on selected rows.
-
-## Row Selection
-
-Enable row selection for bulk operations:
-
-```typescript
-{
-  type: 'resource-search',
-  columns: [/* ... */],
-  selectable: true,          // Enable row selection
-  multiSelect: true,         // Allow multiple selection
-  tableActions: ['delete'],  // Actions for selected rows
-}
-```
+`'separator'` strings can appear in the list. Leading, trailing, and consecutive separators are stripped automatically — including when filtering global actions out for the per-row dropdown.
 
 ## Sorting
 

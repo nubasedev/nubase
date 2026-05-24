@@ -82,8 +82,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
-      tableActions?: ActionLayout<TActionIds>;
-      rowActions?: ActionLayout<TActionIds>;
+      actions?: ActionLayout<TActionIds>;
       breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
       onLoad: (args: {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;

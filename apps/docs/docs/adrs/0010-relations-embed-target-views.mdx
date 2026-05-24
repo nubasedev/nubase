@@ -64,8 +64,7 @@ Everything else — what rows to load, how to filter them, what actions to show,
     schema: () => nu.array(userTicketSchema),
     schemaParams: () => nu.object({ userId: nu.number() }),
     schemaFilter: (api) => api.getTickets.requestParams,
-    tableActions: ["create", "delete"],
-    rowActions: ["delete"],
+    actions: ["create", "delete"],
     onLoad: async ({ context }) =>
       context.http.getTickets({
         params: { assigneeId: context.params.userId, /* ...filter merge... */ },

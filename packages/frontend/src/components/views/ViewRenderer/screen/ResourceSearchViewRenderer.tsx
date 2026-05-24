@@ -7,6 +7,7 @@ import type {
   HandlerAction,
   ResourceAction,
 } from "../../../../actions/types";
+import { normalizeActionSeparators } from "../../../../actions/utils";
 import type { ActionLayout } from "../../../../config/action-layout";
 import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
@@ -340,6 +341,49 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     view.onPatch !== undefined &&
     patchSchema !== undefined;
 
+  // Resolve view.actions once — every downstream slot (toolbar + per-row
+  // dropdown) derives from this single list. Selection-scoped actions in
+  // the toolbar are disabled when nothing is selected; global actions are
+  // dropped from the per-row dropdown. Orphan separators from filtering
+  // are normalized away before each consumer renders.
+  const resolvedActions = useMemo(
+    () =>
+      wrapActionsWithInvalidation(
+        resolveActionLayout(view.actions, resource?.actions),
+      ),
+    [view.actions, resource?.actions, wrapActionsWithInvalidation],
+  );
+
+  const bulkActions = useMemo(
+    () =>
+      normalizeActionSeparators(
+        resolvedActions.map((action) => {
+          if (action === "separator") return action;
+          if (action.type !== "resource") return action;
+          const requiresSelection = action.scope !== "global";
+          return {
+            ...action,
+            disabled:
+              action.disabled || (requiresSelection && selectedRows.size === 0),
+          };
+        }),
+      ),
+    [resolvedActions, selectedRows.size],
+  );
+
+  const rowActions = useMemo(
+    () =>
+      normalizeActionSeparators(
+        resolvedActions.filter(
+          (action) =>
+            action === "separator" ||
+            action.type !== "resource" ||
+            action.scope !== "global",
+        ),
+      ),
+    [resolvedActions],
+  );
+
   // For dynamic column generation fallback (only when no tableLayout), track the first row's keys
   // This prevents columns from recalculating on every data change
   // When tableLayout exists, this returns empty string and never changes
@@ -358,16 +402,9 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const columns: Column<any>[] = useMemo(() => {
     const cols: Column<any>[] = [SelectColumn]; // Always include selection column first
 
-    // Add action column if view has rowActions
-    if (view.rowActions) {
-      // Resolve the action layout to actual actions
-      const resolvedActions = resolveActionLayout(
-        view.rowActions,
-        resource?.actions,
-      );
-      // Wrap the actions with automatic query invalidation
-      const wrappedActions = wrapActionsWithInvalidation(resolvedActions);
-      cols.push(createActionColumn(wrappedActions, context, idField));
+    // Add per-row action column when the derived row-action list is non-empty.
+    if (rowActions.length > 0) {
+      cols.push(createActionColumn(rowActions, context, idField));
     }
 
     // Add navigate column if the resource has a "view" operation
@@ -452,51 +489,13 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     resourceName,
     openOverlay,
     elementSchema,
-    view.rowActions,
-    resource?.actions,
+    rowActions,
     context,
-    wrapActionsWithInvalidation,
     idField,
     isPatchEnabled,
     patchSchema,
     handleCellPatch,
     isNavigable,
-  ]);
-
-  // Filter resource actions for the ActionBar (bulk operations)
-  // This must come before early returns to avoid hook order issues
-  const bulkActions = useMemo(() => {
-    if (!view.tableActions) return [];
-
-    // Resolve the action layout to actual actions
-    const resolvedActions = resolveActionLayout(
-      view.tableActions,
-      resource?.actions,
-    );
-
-    // First wrap the actions with invalidation logic, then filter and map
-    const wrappedActions = wrapActionsWithInvalidation(resolvedActions);
-
-    return wrappedActions
-      .filter((action) => action !== "separator" && action.type === "resource")
-      .map((action) => {
-        const resourceAction = action as Extract<
-          typeof action,
-          { type: "resource" }
-        >;
-        const requiresSelection = resourceAction.requiresSelection !== false;
-        return {
-          ...resourceAction,
-          disabled:
-            resourceAction.disabled ||
-            (requiresSelection && selectedRows.size === 0),
-        };
-      });
-  }, [
-    view.tableActions,
-    resource?.actions,
-    selectedRows.size,
-    wrapActionsWithInvalidation,
   ]);
 
   return (

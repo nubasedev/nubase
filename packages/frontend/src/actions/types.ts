@@ -94,11 +94,16 @@ export type ResourceActionConfirm = (
 export interface ResourceAction extends BaseAction {
   type: "resource";
   /**
-   * When true (default), the action is disabled in table toolbars unless at
-   * least one row is selected. Set to false for actions that don't operate on
-   * the current selection (e.g. "Create").
+   * Where the action makes sense:
+   *
+   * - `"selection"` (default) — operates on the rows currently selected.
+   *   In a search view, appears in the toolbar (disabled when no rows are
+   *   selected) AND in the per-row dropdown (acting on that single row).
+   *   Use for Delete, Assign, Archive, etc.
+   * - `"global"` — doesn't act on a selection. Appears only in the
+   *   toolbar; always enabled. Use for Create, Export, Refresh, etc.
    */
-  requiresSelection?: boolean;
+  scope?: "global" | "selection";
   /**
    * Optional confirmation gate. When defined, the framework opens a
    * confirmation dialog before invoking `onExecute`. See `ResourceActionConfirm`.

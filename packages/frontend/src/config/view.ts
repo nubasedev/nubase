@@ -117,13 +117,13 @@ export type ResourceSearchView<
    */
   schemaPatch?: TPatchSchema;
   /**
-   * Optional actions to display above the table for bulk operations on selected items.
+   * Actions exposed by this search view. A single ordered list (with
+   * `"separator"` strings allowed). The renderer splits it two ways:
+   * every action appears in the toolbar (selection-scoped actions are
+   * disabled when no rows are selected), and only selection-scoped
+   * actions appear in the per-row dropdown.
    */
-  tableActions?: ActionLayout<TActionIds>;
-  /**
-   * Optional actions to display in the dropdown for each row.
-   */
-  rowActions?: ActionLayout<TActionIds>;
+  actions?: ActionLayout<TActionIds>;
   /**
    * Loads the search results data.
    */

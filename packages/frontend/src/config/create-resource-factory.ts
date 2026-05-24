@@ -24,11 +24,12 @@ export type InlineResourceActionConfig<TApiEndpoints> = {
   disabled?: boolean;
   variant?: "default" | "destructive";
   /**
-   * When true (default), the action is disabled in table toolbars unless at
-   * least one row is selected. Set to false for actions that don't operate on
-   * the current selection (e.g. "Create").
+   * Where the action makes sense — see `ResourceAction.scope`. Defaults to
+   * `"selection"` (acts on selected rows; appears in toolbar and per-row
+   * dropdown). Set to `"global"` for actions that don't operate on a
+   * selection (e.g. "Create").
    */
-  requiresSelection?: boolean;
+  scope?: "global" | "selection";
   /**
    * Optional confirmation gate. When defined, the framework opens a
    * confirmation dialog before invoking `onExecute`. Return a config object to
@@ -118,8 +119,14 @@ export type InlineSearchViewConfig<
    * Typically this is the requestBody schema of the patch endpoint.
    */
   schemaPatch?: (api: TApiEndpoints) => TPatchSchema;
-  tableActions?: ActionLayout<TActionIds>;
-  rowActions?: ActionLayout<TActionIds>;
+  /**
+   * Actions exposed by this search view. Single ordered list (with
+   * `"separator"` strings allowed). The renderer splits this list two
+   * ways: every action goes into the toolbar (selection-scoped actions
+   * are disabled when no rows are selected); only selection-scoped
+   * actions go into the per-row dropdown.
+   */
+  actions?: ActionLayout<TActionIds>;
   breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
   onLoad: (args: {
     context: NubaseContextData<TApiEndpoints, TParamsSchema>;
@@ -269,7 +276,7 @@ class ResourceBuilder<
 
   /**
    * Configure views for this resource.
-   * Views can reference API endpoints for schemas and action keys for tableActions/rowActions.
+   * Views can reference API endpoints for schemas and action keys for `actions`.
    * This is the final step that produces the ResourceDescriptor.
    */
   withViews<
@@ -340,7 +347,7 @@ class ResourceBuilder<
             }>;
             disabled?: boolean;
             variant?: "default" | "destructive";
-            requiresSelection?: boolean;
+            scope?: "global" | "selection";
             confirm?: ResourceActionConfirm;
             onExecute: (
               context: ResourceActionExecutionContext,
@@ -396,7 +403,7 @@ class ResourceBuilder<
           icon: config.icon,
           disabled: config.disabled,
           variant: config.variant || "default",
-          requiresSelection: config.requiresSelection,
+          scope: config.scope,
           confirm: config.confirm,
           onExecute: ({
             selectedIds,

@@ -23,9 +23,14 @@ Most actions come from the resource builder:
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)
   .withActions({
+    create: {
+      label: "Create",
+      scope: "global",            // doesn't act on a selection
+      onExecute: async ({ context }) => { /* open create drawer */ },
+    },
     delete: {
       label: "Delete",
-      variant: "destructive",
+      variant: "destructive",     // scope defaults to "selection"
       onExecute: async ({ selectedIds, context }) => {
         await Promise.all(
           selectedIds.map((id) =>
@@ -38,8 +43,7 @@ export const ticketResource = createResource("ticket")
   .withViews({
     search: {
       type: "resource-search",
-      rowActions: ["delete"],      // row-level menu
-      tableActions: ["delete"],    // bulk toolbar
+      actions: ["create", "delete"],   // single list; renderer splits
       // ...
     },
   });
@@ -47,7 +51,12 @@ export const ticketResource = createResource("ticket")
 
 ### Action Layouts
 
-Views reference actions by id through `ActionLayout` arrays. `ResourceSearchViewRenderer` resolves these layouts into actual `Action` objects via `resource.actions`, which preserves type-safety and keeps view configs declarative.
+A search view references actions by id through a single `ActionLayout` (`view.actions`). Each action declares `scope: "global" | "selection"` — the renderer derives both presentations from that single list:
+
+- **Toolbar** — every action; selection-scoped actions are disabled when no rows are selected.
+- **Per-row dropdown** — only selection-scoped actions (the toolbar's `create` is filtered out; a row clicked acts on its own id).
+
+`"separator"` strings are allowed anywhere; leading, trailing, and consecutive separators are stripped automatically (via `normalizeActionSeparators`) so filtering global actions out can't leave orphan dividers.
 
 ## Runtime Plumbing
 
@@ -69,8 +78,10 @@ Views reference actions by id through `ActionLayout` arrays. `ResourceSearchView
 
 - Wraps the grid in `ResourceContextProvider`, storing the current resource id and selected row ids
 - Builds a `SelectColumn` so bulk actions know which rows are active
-- Adds an `Action` column when `rowActions` exist
-- Computes toolbar (`tableActions`) actions, disabling them when `selectedRows.size === 0`
+- Resolves `view.actions` once, then derives:
+  - **`bulkActions`** for the toolbar — every action, with selection-scoped ones disabled when `selectedRows.size === 0`
+  - **`rowActions`** for the per-row dropdown — selection-scoped actions only (separators re-normalized)
+- Adds an `Action` column to the grid when the derived `rowActions` list is non-empty
 - Wraps handler/resource actions with query invalidation so successful operations refresh the current search query
 
 ### executeAction Bridge
@@ -81,14 +92,17 @@ Views reference actions by id through `ActionLayout` arrays. `ResourceSearchView
 - **Command** – enforces that the Nubase context is available, then calls `context.commands.execute(...)`
 - **Resource** – confirms both Nubase context and `ResourceContextData` exist, then proxies to `context.resourceActions.execute(...)`
 
-## Bulk vs Row Actions
+## Toolbar vs Per-Row Dropdown
 
-| Aspect          | Row actions                                   | Table actions                               |
+Both surfaces are derived from the same `view.actions` list — the difference is filtering, not declaration.
+
+| Aspect          | Per-row dropdown                              | Toolbar                                     |
 |-----------------|-----------------------------------------------|---------------------------------------------|
 | UI              | Dropdown per row                              | `ActionBar` toolbar                         |
+| Includes        | `scope: "selection"` actions only             | every action; global ones always enabled    |
 | Trigger context | Single-row `selectedIds` set (one id)         | `selectedRows` set from the grid selection  |
-| Typical use     | View / duplicate / row-scoped commands        | Delete, assign, export                      |
-| Selections      | Driven by `ActionCellFormatter` logic         | Driven by `ResourceContextProvider` state   |
+| Typical actions | Delete, Edit, View                            | Create, Delete (disabled w/o selection)     |
+| Selection wiring | Driven by `ActionCellFormatter` logic        | Driven by `ResourceContextProvider` state   |
 
 Both variants ultimately call into `executeAction`, so handler/command/resource logic stays identical.
 

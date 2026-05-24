@@ -78,8 +78,7 @@ export const userResource = createResource("user")
       schema: (api) => api.getUsers.responseBody,
       schemaFilter: (api) => api.getUsers.requestParams,
       breadcrumbs: () => [{ label: "Users", to: "/r/user/search" }],
-      tableActions: ["delete"],
-      rowActions: ["delete"],
+      actions: ["delete"],
       onLoad: async ({ context }) => {
         return context.http.getUsers({
           params: context.params || {},

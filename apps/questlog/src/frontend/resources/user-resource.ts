@@ -43,7 +43,7 @@ export const userResource = createResource("user")
     create: {
       label: "Create",
       icon: PlusIcon,
-      requiresSelection: false,
+      scope: "global",
       onExecute: async ({ context }) => {
         await context.commands.execute(
           commands.workbenchOpenResourceOperationInDrawer.id,
@@ -113,8 +113,7 @@ export const userResource = createResource("user")
       schema: (api) => api.getUsers.responseBody,
       schemaFilter: (api) => api.getUsers.requestParams,
       breadcrumbs: () => [{ label: "Users", to: "/r/user/search" }],
-      tableActions: ["delete"],
-      rowActions: ["delete"],
+      actions: ["delete"],
       onLoad: async ({ context }) => {
         return context.http.getUsers({
           params: context.params || {},
@@ -127,8 +126,7 @@ export const userResource = createResource("user")
       schema: () => nu.array(teamUserSchema),
       schemaParams: () => nu.object({ teamId: nu.number() }),
       schemaFilter: (api) => api.getUsers.requestParams,
-      tableActions: ["delete"],
-      rowActions: ["delete"],
+      actions: ["delete"],
       onLoad: async ({ context }) => {
         const { teamId, ...rest } = context.params as {
           teamId: number;

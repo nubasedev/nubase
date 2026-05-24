@@ -14,7 +14,7 @@ export interface CreateResourceActionConfig {
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   disabled?: boolean;
   variant?: "default" | "destructive";
-  requiresSelection?: boolean;
+  scope?: "global" | "selection";
   confirm?: ResourceActionConfirm;
   onExecute: (context: ResourceActionExecutionContext) => void | Promise<void>;
 }
@@ -53,7 +53,7 @@ export function createResourceAction(
     icon: config.icon,
     disabled: config.disabled,
     variant: config.variant || "default",
-    requiresSelection: config.requiresSelection,
+    scope: config.scope,
     confirm: config.confirm,
     onExecute: config.onExecute,
   };
