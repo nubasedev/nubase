@@ -4,8 +4,8 @@ import { Home, TicketIcon, UsersIcon } from "lucide-react";
 import { apiEndpoints } from "../common";
 import { __PROJECT_NAME_PASCAL__AuthController } from "./auth/__PROJECT_NAME_PASCAL__AuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
-import { ticketResource } from "./resources/ticket";
-import { userResource } from "./resources/user";
+import { ticketResource } from "./resources/ticket-resource";
+import { userResource } from "./resources/user-resource";
 
 const apiBaseUrl = "/api";
 

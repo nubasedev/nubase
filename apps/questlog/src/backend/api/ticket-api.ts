@@ -1,9 +1,9 @@
 import { compileNql, createNqlBindings, HttpError } from "@nubase/backend";
-import { ticketListSchema } from "../../../common/resources/ticket";
-import type { DB } from "../../db/db-types";
-import { getDb } from "../../db/helpers/kysely";
-import type { Workspace } from "../../middleware/workspace-middleware";
-import { createHandler } from "../handler-factory";
+import { ticketListSchema } from "../../common/schema/ticket-schema";
+import type { DB } from "../db/db-types";
+import { getDb } from "../db/helpers/kysely";
+import type { Workspace } from "../middleware/workspace-middleware";
+import { createHandler } from "./handler-factory";
 
 // Schema-to-column bindings for NQL on the /tickets list endpoint. Keys are
 // checked against `ticketListSchema`; values against the generated Kysely

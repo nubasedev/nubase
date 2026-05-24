@@ -1,5 +1,5 @@
 import { nu, type RequestSchema, withSearchParams } from "@nubase/core";
-import { ticketListSchema, ticketSchema } from "../../resources/ticket";
+import { ticketListSchema, ticketSchema } from "../../schema/ticket-schema";
 
 export const getTicketsSchema = {
   method: "GET" as const,

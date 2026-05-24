@@ -1,5 +1,5 @@
 import { idNumberSchema, type RequestSchema } from "@nubase/core";
-import { userSchema } from "../../resources/user";
+import { userSchema } from "../../schema/user-schema";
 
 export const getUserSchema = {
   method: "GET" as const,

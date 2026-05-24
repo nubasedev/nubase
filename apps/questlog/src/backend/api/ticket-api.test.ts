@@ -7,7 +7,7 @@ import {
   PostgresQueryCompiler,
 } from "kysely";
 import { describe, expect, it } from "vitest";
-import { ticketListSchema } from "../../../common/resources/ticket";
+import { ticketListSchema } from "../../common/schema/ticket-schema";
 
 /**
  * These tests pin the questlog ticket endpoint's NQL integration. They use

@@ -1,6 +1,6 @@
 import { HttpError } from "@nubase/backend";
-import { getDb } from "../../db/helpers/kysely";
-import { createHandler } from "../handler-factory";
+import { getDb } from "../db/helpers/kysely";
+import { createHandler } from "./handler-factory";
 
 export const ticketHandlers = {
   getTickets: createHandler((e) => e.getTickets, {

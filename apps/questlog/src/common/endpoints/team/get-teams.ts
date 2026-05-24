@@ -1,5 +1,5 @@
 import { nu, type RequestSchema, withSearchParams } from "@nubase/core";
-import { teamListSchema } from "../../resources/team";
+import { teamListSchema } from "../../schema/team-schema";
 
 export const getTeamsSchema = {
   method: "GET" as const,

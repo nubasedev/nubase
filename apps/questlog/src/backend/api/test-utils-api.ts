@@ -1,11 +1,15 @@
 import { createHttpHandler } from "@nubase/backend";
 import { emptySchema, nu } from "@nubase/core";
 import bcrypt from "bcryptjs";
+import { Hono } from "hono";
 import { sql } from "kysely";
-import { getDb } from "../../db/helpers/kysely";
+import { getDb } from "../db/helpers/kysely";
 
 // Default test workspace slug
 const DEFAULT_TEST_WORKSPACE = "tavern";
+
+// Test utility endpoints - only enabled in test environment
+const testUtils = new Hono();
 
 /**
  * Helper to get workspace by slug.
@@ -41,10 +45,7 @@ export const handleClearDatabase = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (
-      process.env.NODE_ENV !== "test" &&
-      process.env.DB_PORT !== "__TEST_PORT__"
-    ) {
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database cleanup is only allowed in test environment");
     }
 
@@ -52,8 +53,11 @@ export const handleClearDatabase = createHttpHandler({
     const workspace = await getWorkspaceBySlug(workspaceSlug);
     const db = getDb();
 
-    // Clear ALL tickets (not just for this workspace) to avoid sequence conflicts
-    await db.deleteFrom("tickets").execute();
+    // Clear all tickets for this workspace
+    await db
+      .deleteFrom("tickets")
+      .where("workspaceId", "=", workspace.id)
+      .execute();
 
     // Reset the ID sequence to start from 1
     await sql`ALTER SEQUENCE tickets_id_seq RESTART WITH 1`.execute(db);
@@ -74,8 +78,8 @@ export const handleClearDatabase = createHttpHandler({
     const newUser = await db
       .insertInto("users")
       .values({
-        email: "admin@example.com",
-        displayName: "Admin User",
+        email: "testuser@example.com",
+        displayName: "Test User",
         passwordHash,
       })
       .returningAll()
@@ -126,10 +130,7 @@ export const handleSeedTestData = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (
-      process.env.NODE_ENV !== "test" &&
-      process.env.DB_PORT !== "__TEST_PORT__"
-    ) {
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Test seeding is only allowed in test environment");
     }
 
@@ -181,17 +182,14 @@ export const handleGetDatabaseStats = createHttpHandler({
   },
   handler: async ({ params }) => {
     // Only allow in test environment
-    if (
-      process.env.NODE_ENV !== "test" &&
-      process.env.DB_PORT !== "__TEST_PORT__"
-    ) {
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error("Database stats are only available in test environment");
     }
 
     const workspaceSlug = params?.workspace || DEFAULT_TEST_WORKSPACE;
     const workspace = await getWorkspaceBySlug(workspaceSlug);
     const db = getDb();
-    const ticketRows = await db
+    const tickets = await db
       .selectFrom("tickets")
       .selectAll()
       .where("workspaceId", "=", workspace.id)
@@ -199,7 +197,7 @@ export const handleGetDatabaseStats = createHttpHandler({
 
     return {
       tickets: {
-        count: ticketRows.length,
+        count: tickets.length,
       },
     };
   },
@@ -225,10 +223,7 @@ export const handleEnsureWorkspace = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (
-      process.env.NODE_ENV !== "test" &&
-      process.env.DB_PORT !== "__TEST_PORT__"
-    ) {
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error(
         "Workspace management is only allowed in test environment",
       );
@@ -309,10 +304,7 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
   },
   handler: async ({ body }) => {
     // Only allow in test environment
-    if (
-      process.env.NODE_ENV !== "test" &&
-      process.env.DB_PORT !== "__TEST_PORT__"
-    ) {
+    if (process.env.NODE_ENV !== "test" && process.env.DB_PORT !== "5435") {
       throw new Error(
         "Multi-workspace user seeding is only allowed in test environment",
       );
@@ -400,11 +392,11 @@ export const handleSeedMultiWorkspaceUser = createHttpHandler({
   },
 });
 
-// Export test utils handlers object
-export const testUtilsHandlers = {
-  clearDatabase: handleClearDatabase,
-  ensureWorkspace: handleEnsureWorkspace,
-  seedTestData: handleSeedTestData,
-  getDatabaseStats: handleGetDatabaseStats,
-  seedMultiWorkspaceUser: handleSeedMultiWorkspaceUser,
-};
+// Export test utils router
+testUtils.post("/test/clear-database", handleClearDatabase);
+testUtils.post("/test/seed", handleSeedTestData);
+testUtils.get("/test/stats", handleGetDatabaseStats);
+testUtils.post("/test/ensure-workspace", handleEnsureWorkspace);
+testUtils.post("/test/seed-multi-workspace-user", handleSeedMultiWorkspaceUser);
+
+export { testUtils };

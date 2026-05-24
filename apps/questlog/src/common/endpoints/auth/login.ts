@@ -1,5 +1,5 @@
 import { emptySchema, nu, type RequestSchema } from "@nubase/core";
-import { userSchema } from "../../resources/user";
+import { userSchema } from "../../schema/user-schema";
 
 /**
  * Legacy login request schema (kept for backwards compatibility)

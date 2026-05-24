@@ -2,8 +2,8 @@ import { nu } from "@nubase/core";
 import { commands, createResource, showToast } from "@nubase/frontend";
 import { PlusIcon, TrashIcon } from "lucide-react";
 import { apiEndpoints } from "../../common";
-import { teamUserSchema } from "../../common/resources/team-user";
-import { ticketResource } from "./ticket";
+import { teamUserSchema } from "../../common/schema/team-user-schema";
+import { ticketResource } from "./ticket-resource";
 
 export const userResource = createResource("user")
   .withApiEndpoints(apiEndpoints)

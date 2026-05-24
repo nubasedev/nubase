@@ -1,4 +1,4 @@
-import { ticketListSchema } from "./ticket";
+import { ticketListSchema } from "./ticket-schema";
 
 /**
  * View-shape schema for tickets when shown as children of a team

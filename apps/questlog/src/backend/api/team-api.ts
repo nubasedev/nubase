@@ -1,7 +1,7 @@
 import { HttpError } from "@nubase/backend";
-import { getDb } from "../../db/helpers/kysely";
-import type { Workspace } from "../../middleware/workspace-middleware";
-import { createHandler } from "../handler-factory";
+import { getDb } from "../db/helpers/kysely";
+import type { Workspace } from "../middleware/workspace-middleware";
+import { createHandler } from "./handler-factory";
 
 /**
  * Team CRUD endpoints.

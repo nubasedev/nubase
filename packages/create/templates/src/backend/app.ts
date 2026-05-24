@@ -1,9 +1,9 @@
 import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
-import { authHandlers } from "./api/routes/auth";
-import { dashboardHandlers } from "./api/routes/dashboard";
-import { testUtilsHandlers } from "./api/routes/test-utils";
-import { ticketHandlers } from "./api/routes/ticket";
+import { authHandlers } from "./api/auth-api";
+import { dashboardHandlers } from "./api/dashboard-api";
+import { testUtilsHandlers } from "./api/test-utils-api";
+import { ticketHandlers } from "./api/ticket-api";
 import { __PROJECT_NAME_CAMEL__AuthController } from "./auth";
 import { loadEnv } from "./helpers/env";
 import {

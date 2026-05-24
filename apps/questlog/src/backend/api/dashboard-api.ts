@@ -1,4 +1,4 @@
-import { createHandler } from "../handler-factory";
+import { createHandler } from "./handler-factory";
 
 /**
  * Dashboard widget endpoints.

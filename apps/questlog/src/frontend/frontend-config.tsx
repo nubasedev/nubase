@@ -9,9 +9,9 @@ import { Home, Plus, TicketIcon, Users2, UsersIcon } from "lucide-react";
 import { apiEndpoints } from "../common";
 import { QuestlogAuthController } from "./auth/QuestlogAuthController";
 import { analyticsDashboard } from "./dashboards/analytics";
-import { teamResource } from "./resources/team";
-import { ticketResource } from "./resources/ticket";
-import { userResource } from "./resources/user";
+import { teamResource } from "./resources/team-resource";
+import { ticketResource } from "./resources/ticket-resource";
+import { userResource } from "./resources/user-resource";
 
 const apiBaseUrl = "/api";
 

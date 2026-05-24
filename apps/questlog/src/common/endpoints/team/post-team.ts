@@ -1,5 +1,5 @@
 import { emptySchema, type RequestSchema } from "@nubase/core";
-import { teamSchema } from "../../resources/team";
+import { teamSchema } from "../../schema/team-schema";
 
 export const postTeamSchema = {
   method: "POST" as const,

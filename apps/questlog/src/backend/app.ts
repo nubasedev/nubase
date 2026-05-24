@@ -1,11 +1,11 @@
 import { createAuthMiddleware, registerHandlers } from "@nubase/backend";
 import { Hono } from "hono";
-import { authHandlers } from "./api/routes/auth";
-import { dashboardHandlers } from "./api/routes/dashboard";
-import { teamHandlers } from "./api/routes/team";
-import { testUtils } from "./api/routes/test-utils";
-import { ticketHandlers } from "./api/routes/ticket";
-import { userHandlers } from "./api/routes/user";
+import { authHandlers } from "./api/auth-api";
+import { dashboardHandlers } from "./api/dashboard-api";
+import { teamHandlers } from "./api/team-api";
+import { testUtils } from "./api/test-utils-api";
+import { ticketHandlers } from "./api/ticket-api";
+import { userHandlers } from "./api/user-api";
 import { questlogAuthController } from "./auth";
 import { loadEnvironment } from "./helpers/env";
 import {

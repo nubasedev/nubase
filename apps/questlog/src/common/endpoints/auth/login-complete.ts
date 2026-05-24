@@ -1,6 +1,6 @@
 import { emptySchema, nu, type RequestSchema } from "@nubase/core";
-import { userSchema } from "../../resources/user";
-import { workspaceSchema } from "../../resources/workspace";
+import { userSchema } from "../../schema/user-schema";
+import { workspaceSchema } from "../../schema/workspace-schema";
 
 /**
  * Login complete request schema - Step 2 of two-step auth

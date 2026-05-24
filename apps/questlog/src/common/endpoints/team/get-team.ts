@@ -1,5 +1,5 @@
 import { idNumberSchema, type RequestSchema } from "@nubase/core";
-import { teamSchema } from "../../resources/team";
+import { teamSchema } from "../../schema/team-schema";
 
 export const getTeamSchema = {
   method: "GET" as const,

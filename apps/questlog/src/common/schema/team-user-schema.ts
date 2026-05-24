@@ -1,4 +1,4 @@
-import { userSchema } from "./user";
+import { userSchema } from "./user-schema";
 
 /**
  * View-shape schema for users when shown as members of a team

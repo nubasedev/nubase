@@ -1,9 +1,9 @@
 import { getAuthController, HttpError } from "@nubase/backend";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import type { __PROJECT_NAME_PASCAL__User } from "../../auth";
-import { getDb } from "../../db/helpers/kysely";
-import { createHandler } from "../handler-factory";
+import type { QuestlogUser } from "../auth";
+import { getDb } from "../db/helpers/kysely";
+import { createHandler } from "./handler-factory";
 
 // Short-lived secret for login tokens (in production, use a proper secret)
 const LOGIN_TOKEN_SECRET =
@@ -16,16 +16,20 @@ interface LoginTokenPayload {
   email: string;
 }
 
+/**
+ * Auth endpoints.
+ */
 export const authHandlers = {
   /**
    * Login Start handler - Step 1 of two-step auth.
-   * Validates credentials and returns list of workspaces.
+   * Validates credentials (email + password) at root level.
+   * Returns a temporary login token and list of workspaces the user belongs to.
    */
   loginStart: createHandler((e) => e.loginStart, {
     handler: async ({ body }) => {
       const db = getDb();
 
-      // Find user by email
+      // Find user by email (users are root-level now)
       const user = await db
         .selectFrom("users")
         .selectAll()
@@ -45,7 +49,7 @@ export const authHandlers = {
         throw new HttpError(401, "Invalid email or password");
       }
 
-      // Get all workspaces this user belongs to
+      // Get all workspaces this user belongs to via user_workspaces table
       const userWorkspaceRows = await db
         .selectFrom("userWorkspaces")
         .selectAll()
@@ -58,13 +62,13 @@ export const authHandlers = {
 
       // Fetch workspace details
       const workspaceIds = userWorkspaceRows.map((uw) => uw.workspaceId);
-      const workspaceList = await db
+      const workspaces = await db
         .selectFrom("workspaces")
         .selectAll()
         .where("id", "in", workspaceIds)
         .execute();
 
-      // Create a short-lived login token
+      // Create a short-lived login token containing the user ID
       const loginToken = jwt.sign(
         {
           userId: user.id,
@@ -77,7 +81,7 @@ export const authHandlers = {
       return {
         loginToken,
         email: body.email,
-        workspaces: workspaceList.map((w) => ({
+        workspaces: workspaces.map((w) => ({
           id: w.id,
           slug: w.slug,
           name: w.name,
@@ -88,12 +92,11 @@ export const authHandlers = {
 
   /**
    * Login Complete handler - Step 2 of two-step auth.
-   * Validates the login token and selected workspace.
+   * Validates the login token and selected workspace, then issues the full auth token.
    */
   loginComplete: createHandler((e) => e.loginComplete, {
     handler: async ({ body, ctx }) => {
-      const authController =
-        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const authController = getAuthController<QuestlogUser>(ctx);
       const db = getDb();
 
       // Verify the login token
@@ -119,14 +122,14 @@ export const authHandlers = {
       }
 
       // Verify user has access to this workspace
-      const access = await db
+      const userWorkspaceAccess = await db
         .selectFrom("userWorkspaces")
         .selectAll()
         .where("userId", "=", decoded.userId)
         .where("workspaceId", "=", workspace.id)
         .executeTakeFirst();
 
-      if (!access) {
+      if (!userWorkspaceAccess) {
         throw new HttpError(403, "You do not have access to this workspace");
       }
 
@@ -141,15 +144,15 @@ export const authHandlers = {
         throw new HttpError(401, "User not found");
       }
 
-      // Create user object for token
-      const user: __PROJECT_NAME_PASCAL__User = {
+      // Create user object for token (includes selected workspaceId)
+      const user: QuestlogUser = {
         id: dbUser.id,
         email: dbUser.email,
         displayName: dbUser.displayName,
         workspaceId: workspace.id,
       };
 
-      // Create and set the auth token
+      // Create and set the full auth token
       const token = await authController.createToken(user);
       authController.setTokenInResponse(ctx, token);
 
@@ -174,11 +177,10 @@ export const authHandlers = {
    */
   login: createHandler((e) => e.login, {
     handler: async ({ body, ctx }) => {
-      const authController =
-        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
-      const db = getDb();
+      const authController = getAuthController<QuestlogUser>(ctx);
 
-      // Look up workspace
+      // Look up workspace from the request body (path-based multi-workspace)
+      const db = getDb();
       const workspace = await db
         .selectFrom("workspaces")
         .selectAll()
@@ -189,7 +191,7 @@ export const authHandlers = {
         throw new HttpError(404, `Workspace not found: ${body.workspace}`);
       }
 
-      // Find user by email
+      // Find user by email (users are root-level)
       const dbUser = await db
         .selectFrom("users")
         .selectAll()
@@ -210,27 +212,29 @@ export const authHandlers = {
       }
 
       // Verify user has access to this workspace
-      const access = await db
+      const userWorkspaceAccess = await db
         .selectFrom("userWorkspaces")
         .selectAll()
         .where("userId", "=", dbUser.id)
         .where("workspaceId", "=", workspace.id)
         .executeTakeFirst();
 
-      if (!access) {
+      if (!userWorkspaceAccess) {
         throw new HttpError(403, "You do not have access to this workspace");
       }
 
-      // Create user object for token
-      const user: __PROJECT_NAME_PASCAL__User = {
+      // Create user object for token (includes selected workspaceId)
+      const user: QuestlogUser = {
         id: dbUser.id,
         email: dbUser.email,
         displayName: dbUser.displayName,
         workspaceId: workspace.id,
       };
 
-      // Create and set token
+      // Create token using auth controller
       const token = await authController.createToken(user);
+
+      // Set cookie using auth controller
       authController.setTokenInResponse(ctx, token);
 
       return {
@@ -294,8 +298,7 @@ export const authHandlers = {
   /** Signup handler - creates a new workspace and admin user. */
   signup: createHandler((e) => e.signup, {
     handler: async ({ body, ctx }) => {
-      const authController =
-        getAuthController<__PROJECT_NAME_PASCAL__User>(ctx);
+      const authController = getAuthController<QuestlogUser>(ctx);
       const db = getDb();
 
       // Validate workspace slug format
@@ -346,7 +349,7 @@ export const authHandlers = {
       // Hash the password
       const passwordHash = await bcrypt.hash(body.password, 10);
 
-      // Create the admin user
+      // Create the admin user (root-level, no workspaceId)
       const newUser = await db
         .insertInto("users")
         .values({
@@ -357,7 +360,7 @@ export const authHandlers = {
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      // Link user to workspace
+      // Link user to workspace via user_workspaces table
       await db
         .insertInto("userWorkspaces")
         .values({
@@ -366,8 +369,8 @@ export const authHandlers = {
         })
         .execute();
 
-      // Create user object for token
-      const user: __PROJECT_NAME_PASCAL__User = {
+      // Create user object for token (includes selected workspaceId)
+      const user: QuestlogUser = {
         id: newUser.id,
         email: newUser.email,
         displayName: newUser.displayName,
