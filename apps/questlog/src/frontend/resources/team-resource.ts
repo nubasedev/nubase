@@ -57,7 +57,7 @@ export const teamResource = createResource("team")
       type: "resource-create",
       id: "create-team",
       title: "Create Team",
-      schemaPost: (api) => api.postTeam.requestBody,
+      schema: (api) => api.postTeam.requestBody,
       breadcrumbs: [{ label: "Teams", to: "/r/team/search" }, "Create Team"],
       onSubmit: async ({ data, context }) => {
         return context.http.postTeam({ data });
@@ -67,7 +67,7 @@ export const teamResource = createResource("team")
       type: "resource-view",
       id: "view-team",
       title: "View Team",
-      schemaGet: (api) => {
+      schema: (api) => {
         return api.getTeam.responseBody
           .omit("id")
           .extend({
@@ -118,7 +118,7 @@ export const teamResource = createResource("team")
       type: "resource-search",
       id: "search-teams",
       title: "Teams",
-      schemaGet: (api) => api.getTeams.responseBody,
+      schema: (api) => api.getTeams.responseBody,
       schemaFilter: (api) => api.getTeams.requestParams,
       breadcrumbs: () => [{ label: "Teams", to: "/r/team/search" }],
       tableActions: ["create", "delete"],

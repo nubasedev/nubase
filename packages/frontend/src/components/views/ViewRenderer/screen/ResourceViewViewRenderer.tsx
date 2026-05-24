@@ -112,7 +112,7 @@ const ResourceViewForm: FC<{
   const { invalidateResource } = useResourceInvalidation();
 
   const form = useSchemaForm({
-    schema: view.schemaGet,
+    schema: view.schema,
     mode: "patch",
     initialValues: initialData,
     onPatch: async (fieldName: string, value) => {

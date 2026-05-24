@@ -55,7 +55,7 @@ export type InlineCreateViewConfig<
   type: "resource-create";
   id: string;
   title: string;
-  schemaPost: (api: TApiEndpoints) => TSchema;
+  schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
   actions?: ActionLayout<TActionIds>;
   breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
@@ -77,7 +77,7 @@ export type InlineViewViewConfig<
   type: "resource-view";
   id: string;
   title: string;
-  schemaGet: (api: TApiEndpoints) => TSchema;
+  schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
   actions?: ActionLayout<TActionIds>;
   breadcrumbs?: BreadcrumbDefinition<
@@ -108,7 +108,7 @@ export type InlineSearchViewConfig<
   type: "resource-search";
   id: string;
   title: string;
-  schemaGet: (api: TApiEndpoints) => TSchema;
+  schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
   /**
    * Optional schema for filter parameters (typically endpoint.requestParams).
@@ -358,9 +358,11 @@ class ResourceBuilder<
     for (const [key, viewConfig] of Object.entries(views)) {
       const config = viewConfig as any;
 
-      // Resolve schemas from API endpoints
-      const resolvedSchemaGet = config.schemaGet?.(this.config.apiEndpoints);
-      const resolvedSchemaPost = config.schemaPost?.(this.config.apiEndpoints);
+      // Resolve schemas from API endpoints. Each view type declares its
+      // primary schema as `schema` (the form for create, the displayed
+      // record for view, the row list for search); the qualified
+      // `schema{Params,Filter,Patch}` fields are secondary.
+      const resolvedSchema = config.schema?.(this.config.apiEndpoints);
       const resolvedSchemaParams = config.schemaParams?.(
         this.config.apiEndpoints,
       );
@@ -375,8 +377,7 @@ class ResourceBuilder<
       transformedViews[key] = {
         ...config,
         type: config.type,
-        schemaGet: resolvedSchemaGet,
-        schemaPost: resolvedSchemaPost,
+        schema: resolvedSchema,
         schemaParams: resolvedSchemaParams,
         schemaFilter: resolvedSchemaFilter,
         schemaPatch: resolvedSchemaPatch,
@@ -470,7 +471,7 @@ class ResourceBuilder<
  *   .withViews({
  *     create: {
  *       type: "resource-create",
- *       schemaPost: (api) => api.postTicket.requestBody,
+ *       schema: (api) => api.postTicket.requestBody,
  *       onSubmit: async ({ data, context }) => context.http.postTicket({ data })
  *     }
  *   });

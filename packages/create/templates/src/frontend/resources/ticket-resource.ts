@@ -39,7 +39,7 @@ export const ticketResource = createResource("ticket")
       type: "resource-create",
       id: "create-ticket",
       title: "Create Ticket",
-      schemaPost: (api) => api.postTicket.requestBody,
+      schema: (api) => api.postTicket.requestBody,
       breadcrumbs: [
         { label: "Tickets", to: "/r/ticket/search" },
         "Create Ticket",
@@ -52,7 +52,7 @@ export const ticketResource = createResource("ticket")
       type: "resource-view",
       id: "view-ticket",
       title: "View Ticket",
-      schemaGet: (api) => api.getTicket.responseBody.omit("id"),
+      schema: (api) => api.getTicket.responseBody.omit("id"),
       schemaParams: (api) => api.getTicket.requestParams,
       breadcrumbs: ({ context, data }) => [
         { label: "Tickets", to: "/r/ticket/search" },
@@ -76,7 +76,7 @@ export const ticketResource = createResource("ticket")
       type: "resource-search",
       id: "search-tickets",
       title: "Search Tickets",
-      schemaGet: (api) => api.getTickets.responseBody,
+      schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
       tableActions: ["delete"],

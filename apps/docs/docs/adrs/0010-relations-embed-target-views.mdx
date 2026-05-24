@@ -14,7 +14,7 @@ The earliest version of this used a sidecar map on the parent view called `field
 
 ```ts
 // user view (before)
-schemaGet: (api) => api.getUser.responseBody.extend({
+schema: (api) => api.getUser.responseBody.extend({
   tickets: nu.relation({
     source: "remote",
     targetResourceId: "ticket",
@@ -43,7 +43,7 @@ A few alternatives were considered:
 - **Inline-only actions on each relation.** Push everything into the parent's relation declaration — onSearch, tableActions, action bodies. Maximally simple per-call-site, maximally duplicated across parents that share a target (a user-view and a team-view both showing "tickets for X" would each redeclare delete/create).
 - **String-id lookups against the target resource.** `tableActions: ["delete"]` on the relation, resolved at runtime against `ticketResource.actions`. Cleaner than inline, but doesn't solve the deeper problem — relations still need their *own* fetch logic declared somewhere, separately from the target resource's own views.
 
-The breakthrough was noticing that the framework already has a concept that solves this end-to-end: a **view**. A view declares its `schemaParams`, `schemaFilter`, `onLoad`, `tableActions`, `rowActions`, column layout (via `schemaGet`), and renders through the existing `ResourceSearchViewRenderer`. The drawer overlay (`?overlay=ticket%2Fview%2Fid%3A1`) already embeds a view with route-supplied params. Relations are the same shape, just invoked from inside another view's form instead of from the URL.
+The breakthrough was noticing that the framework already has a concept that solves this end-to-end: a **view**. A view declares its `schemaParams`, `schemaFilter`, `onLoad`, `tableActions`, `rowActions`, column layout (via `schema`), and renders through the existing `ResourceSearchViewRenderer`. The drawer overlay (`?overlay=ticket%2Fview%2Fid%3A1`) already embeds a view with route-supplied params. Relations are the same shape, just invoked from inside another view's form instead of from the URL.
 
 ## Decision
 
@@ -62,7 +62,7 @@ Everything else — what rows to load, how to filter them, what actions to show,
     type: "resource-search",
     id: "user-tickets-search",
     title: "Tickets",
-    schemaGet: () => nu.array(userTicketSchema),
+    schema: () => nu.array(userTicketSchema),
     schemaParams: () => nu.object({ userId: nu.number() }),
     schemaFilter: (api) => api.getTickets.requestParams,
     tableActions: ["create", "delete"],
@@ -75,7 +75,7 @@ Everything else — what rows to load, how to filter them, what actions to show,
 });
 
 // user resource — just points at it
-schemaGet: (api) => api.getUser.responseBody.omit("id").extend({
+schema: (api) => api.getUser.responseBody.omit("id").extend({
   tickets: nu.relation({
     view: ticketResource.views.userTicketsSearch,
     paramsFrom: (parent: { id: number }) => ({ userId: parent.id }),

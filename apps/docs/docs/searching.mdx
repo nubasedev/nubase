@@ -193,7 +193,7 @@ export const ticketResource = createResource("ticket")
       type: "resource-search",
       id: "search-tickets",
       title: "Search Tickets",
-      schemaGet: (api) => api.getTickets.responseBody,
+      schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
       breadcrumbs: () => [{ label: "Tickets", to: "/r/ticket/search" }],
       onLoad: async ({ context }) => {
@@ -207,7 +207,7 @@ export const ticketResource = createResource("ticket")
 
 Key properties:
 
-- **`schemaGet`** - Schema for the data grid columns (derived from response)
+- **`schema`** - Schema for the data grid columns (derived from response)
 - **`schemaFilter`** - Schema for the filter bar (derived from request params)
 - **`onLoad`** - Fetches data, passing `context.params` which contains current filter values
 
@@ -374,7 +374,7 @@ export const ticketResource = createResource("ticket")
       type: "resource-search",
       id: "search-tickets",
       title: "Tickets",
-      schemaGet: (api) => api.getTickets.responseBody,
+      schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
       onLoad: async ({ context }) => {
         return context.http.getTickets({

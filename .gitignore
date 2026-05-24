@@ -84,3 +84,7 @@ hive-mind-prompt-*.txt
 
 # Docker PostgreSQL data
 **/postgresql-data/
+
+# FleetView (Claude Code harness) local agent database
+agentdb.rvf
+agentdb.rvf.lock

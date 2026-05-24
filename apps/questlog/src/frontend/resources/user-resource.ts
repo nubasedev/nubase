@@ -57,7 +57,7 @@ export const userResource = createResource("user")
       type: "resource-create",
       id: "create-user",
       title: "Add User",
-      schemaPost: (api) => api.postUser.requestBody,
+      schema: (api) => api.postUser.requestBody,
       breadcrumbs: [{ label: "Users", to: "/r/user/search" }, "Add User"],
       onSubmit: async ({ data, context }) => {
         return context.http.postUser({ data });
@@ -67,7 +67,7 @@ export const userResource = createResource("user")
       type: "resource-view",
       id: "view-user",
       title: "View User",
-      schemaGet: (api) =>
+      schema: (api) =>
         api.getUser.responseBody
           .omit("id")
           .extend({
@@ -113,7 +113,7 @@ export const userResource = createResource("user")
       type: "resource-search",
       id: "search-users",
       title: "Users",
-      schemaGet: (api) => api.getUsers.responseBody,
+      schema: (api) => api.getUsers.responseBody,
       schemaFilter: (api) => api.getUsers.requestParams,
       breadcrumbs: () => [{ label: "Users", to: "/r/user/search" }],
       tableActions: ["delete"],
@@ -128,7 +128,7 @@ export const userResource = createResource("user")
       type: "resource-search",
       id: "team-members-search",
       title: "Members",
-      schemaGet: () => nu.array(teamUserSchema),
+      schema: () => nu.array(teamUserSchema),
       schemaParams: () => nu.object({ teamId: nu.number() }),
       schemaFilter: (api) => api.getUsers.requestParams,
       tableActions: ["delete"],

@@ -43,7 +43,7 @@ export const userResource = createResource("user")
       type: "resource-create",
       id: "create-user",
       title: "Add User",
-      schemaPost: (api) => api.postUser.requestBody,
+      schema: (api) => api.postUser.requestBody,
       breadcrumbs: [{ label: "Users", to: "/r/user/search" }, "Add User"],
       onSubmit: async ({ data, context }) => {
         return context.http.postUser({ data });
@@ -53,7 +53,7 @@ export const userResource = createResource("user")
       type: "resource-view",
       id: "view-user",
       title: "View User",
-      schemaGet: (api) => api.getUser.responseBody.omit("id"),
+      schema: (api) => api.getUser.responseBody.omit("id"),
       schemaParams: (api) => api.getUser.requestParams,
       breadcrumbs: ({ context, data }) => [
         { label: "Users", to: "/r/user/search" },
@@ -78,7 +78,7 @@ export const userResource = createResource("user")
       type: "resource-search",
       id: "search-users",
       title: "Users",
-      schemaGet: (api) => api.getUsers.responseBody,
+      schema: (api) => api.getUsers.responseBody,
       schemaFilter: (api) => api.getUsers.requestParams,
       breadcrumbs: () => [{ label: "Users", to: "/r/user/search" }],
       tableActions: ["delete"],

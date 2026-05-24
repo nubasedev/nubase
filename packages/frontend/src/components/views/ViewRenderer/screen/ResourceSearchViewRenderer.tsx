@@ -320,7 +320,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const data = useLastDefined(response?.data) ?? [];
 
   // Get the element schema from the array schema to access table layouts
-  const elementSchema = (view.schemaGet as any)?._element as
+  const elementSchema = (view.schema as any)?._element as
     | ObjectSchema<any>
     | undefined;
   const tableLayout = elementSchema?.getTableLayout();

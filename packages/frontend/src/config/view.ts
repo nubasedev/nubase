@@ -29,7 +29,7 @@ export type ResourceCreateView<
   /**
    * Schema for the form data to be posted when creating a resource.
    */
-  schemaPost: TSchema;
+  schema: TSchema;
   /**
    * Optional schema for URL parameters this view expects.
    */
@@ -60,7 +60,7 @@ export type ResourceViewView<
   /**
    * Schema for the resource data retrieved from the server.
    */
-  schemaGet: TSchema;
+  schema: TSchema;
   /**
    * Optional schema for URL parameters this view expects.
    */
@@ -101,7 +101,7 @@ export type ResourceSearchView<
   /**
    * Schema for the search results data retrieved from the server.
    */
-  schemaGet: TSchema;
+  schema: TSchema;
   /**
    * Optional schema for URL parameters this view expects.
    */

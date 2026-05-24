@@ -22,7 +22,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
     >(config: {
       id: string;
       title: string;
-      schemaGet: (api: TApiEndpoints) => TSchema;
+      schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
       actions?: ActionLayout<TActionIds>;
       breadcrumbs?: BreadcrumbDefinition<
@@ -38,13 +38,13 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<any>>;
     }): ResourceViewView<TSchema, TApiEndpoints, TParamsSchema, TActionIds> {
-      const resolvedSchema = config.schemaGet(apiEndpoints);
+      const resolvedSchema = config.schema(apiEndpoints);
       const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
 
       return {
         type: "resource-view",
         ...config,
-        schemaGet: resolvedSchema,
+        schema: resolvedSchema,
         schemaParams: resolvedSchemaParams,
       };
     },
@@ -56,7 +56,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
     >(config: {
       id: string;
       title: string;
-      schemaPost: (api: TApiEndpoints) => TSchema;
+      schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
       actions?: ActionLayout<TActionIds>;
       breadcrumbs?: BreadcrumbDefinition<TApiEndpoints, TParamsSchema>;
@@ -65,13 +65,13 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<any>>;
     }): ResourceCreateView<TSchema, TApiEndpoints, TParamsSchema, TActionIds> {
-      const resolvedSchema = config.schemaPost(apiEndpoints);
+      const resolvedSchema = config.schema(apiEndpoints);
       const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
 
       return {
         type: "resource-create",
         ...config,
-        schemaPost: resolvedSchema,
+        schema: resolvedSchema,
         schemaParams: resolvedSchemaParams,
       };
     },
@@ -83,7 +83,7 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
     >(config: {
       id: string;
       title: string;
-      schemaGet: (api: TApiEndpoints) => TSchema;
+      schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
       tableActions?: ActionLayout<TActionIds>;
       rowActions?: ActionLayout<TActionIds>;
@@ -92,13 +92,13 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
         context: NubaseContextData<TApiEndpoints, TParamsSchema>;
       }) => Promise<HttpResponse<Infer<TSchema>>>;
     }): ResourceSearchView<TSchema, TApiEndpoints, TParamsSchema, TActionIds> {
-      const resolvedSchema = config.schemaGet(apiEndpoints);
+      const resolvedSchema = config.schema(apiEndpoints);
       const resolvedSchemaParams = config.schemaParams?.(apiEndpoints);
 
       return {
         type: "resource-search",
         ...config,
-        schemaGet: resolvedSchema,
+        schema: resolvedSchema,
         schemaParams: resolvedSchemaParams,
       };
     },

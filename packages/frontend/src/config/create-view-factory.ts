@@ -14,13 +14,13 @@ export function createCreateView<
 >({
   id,
   title,
-  schemaPost,
+  schema,
   schemaParams,
   onSubmit,
 }: {
   id: string;
   title: string;
-  schemaPost: TSchema;
+  schema: TSchema;
   schemaParams?: TParamsSchema;
   onSubmit: ({
     data,
@@ -34,7 +34,7 @@ export function createCreateView<
     type: "resource-create",
     id,
     title,
-    schemaPost,
+    schema,
     ...(schemaParams && { schemaParams }),
     onSubmit,
   };
@@ -51,14 +51,14 @@ export function createViewView<
 >({
   id,
   title,
-  schemaGet,
+  schema,
   schemaParams,
   onLoad,
   onPatch,
 }: {
   id: string;
   title: string;
-  schemaGet: TSchema;
+  schema: TSchema;
   schemaParams?: TParamsSchema;
   onLoad: ({
     context,
@@ -77,7 +77,7 @@ export function createViewView<
     type: "resource-view",
     id,
     title,
-    schemaGet,
+    schema,
     ...(schemaParams && { schemaParams }),
     onLoad,
     onPatch,

@@ -25,7 +25,7 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
   const { invalidateResourceSearch } = useResourceInvalidation();
 
   const form = useSchemaForm({
-    schema: view.schemaPost,
+    schema: view.schema,
     onSubmit: async (data: ObjectOutput<any>) => {
       try {
         console.log("SCREEN RENDERER - Form submitted with data:", data);
