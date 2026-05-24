@@ -51,7 +51,6 @@ export const ticketResource = createResource("ticket")
   .withViews({
     create: {
       type: "resource-create",
-      id: "create-ticket",
       title: "Create Ticket",
       schema: (api) => api.postTicket.requestBody,
       breadcrumbs: [
@@ -64,7 +63,6 @@ export const ticketResource = createResource("ticket")
     },
     view: {
       type: "resource-view",
-      id: "view-ticket",
       title: "View Ticket",
       schema: (api) => api.getTicket.responseBody.omit("id"),
       schemaParams: (api) => api.getTicket.requestParams,
@@ -88,7 +86,6 @@ export const ticketResource = createResource("ticket")
     },
     search: {
       type: "resource-search",
-      id: "search-tickets",
       title: "Search Tickets",
       schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
@@ -110,7 +107,6 @@ export const ticketResource = createResource("ticket")
     },
     userTicketsSearch: {
       type: "resource-search",
-      id: "user-tickets-search",
       title: "Tickets",
       schema: () => nu.array(userTicketSchema),
       schemaParams: () => nu.object({ userId: nu.number() }),
@@ -129,7 +125,6 @@ export const ticketResource = createResource("ticket")
     },
     teamTicketsSearch: {
       type: "resource-search",
-      id: "team-tickets-search",
       title: "Tickets",
       schema: () => nu.array(teamTicketSchema),
       schemaParams: () => nu.object({ teamId: nu.number() }),

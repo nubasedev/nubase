@@ -60,7 +60,6 @@ Everything else — what rows to load, how to filter them, what actions to show,
   // ... regular search/view/create views ...
   userTicketsSearch: {
     type: "resource-search",
-    id: "user-tickets-search",
     title: "Tickets",
     schema: () => nu.array(userTicketSchema),
     schemaParams: () => nu.object({ userId: nu.number() }),

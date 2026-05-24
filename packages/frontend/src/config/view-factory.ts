@@ -20,7 +20,6 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       TParamsSchema extends ObjectSchema<any> | undefined = undefined,
       TActionIds extends string = string,
     >(config: {
-      id: string;
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
@@ -54,7 +53,6 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       TParamsSchema extends ObjectSchema<any> | undefined = undefined,
       TActionIds extends string = string,
     >(config: {
-      id: string;
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;
@@ -81,7 +79,6 @@ export function createViewFactory<TApiEndpoints>(apiEndpoints: TApiEndpoints) {
       TParamsSchema extends ObjectSchema<any> | undefined = undefined,
       TActionIds extends string = string,
     >(config: {
-      id: string;
       title: string;
       schema: (api: TApiEndpoints) => TSchema;
       schemaParams?: (api: TApiEndpoints) => TParamsSchema;

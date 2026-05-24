@@ -12,13 +12,11 @@ export function createCreateView<
   TEndpoints,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 >({
-  id,
   title,
   schema,
   schemaParams,
   onSubmit,
 }: {
-  id: string;
   title: string;
   schema: TSchema;
   schemaParams?: TParamsSchema;
@@ -32,7 +30,6 @@ export function createCreateView<
 }): ResourceCreateView<TSchema, TEndpoints, TParamsSchema> {
   return {
     type: "resource-create",
-    id,
     title,
     schema,
     ...(schemaParams && { schemaParams }),
@@ -49,14 +46,12 @@ export function createViewView<
   TEndpoints,
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 >({
-  id,
   title,
   schema,
   schemaParams,
   onLoad,
   onPatch,
 }: {
-  id: string;
   title: string;
   schema: TSchema;
   schemaParams?: TParamsSchema;
@@ -75,7 +70,6 @@ export function createViewView<
 }): ResourceViewView<TSchema, TEndpoints, TParamsSchema> {
   return {
     type: "resource-view",
-    id,
     title,
     schema,
     ...(schemaParams && { schemaParams }),

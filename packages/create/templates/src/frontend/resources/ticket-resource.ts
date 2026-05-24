@@ -37,7 +37,6 @@ export const ticketResource = createResource("ticket")
   .withViews({
     create: {
       type: "resource-create",
-      id: "create-ticket",
       title: "Create Ticket",
       schema: (api) => api.postTicket.requestBody,
       breadcrumbs: [
@@ -50,7 +49,6 @@ export const ticketResource = createResource("ticket")
     },
     view: {
       type: "resource-view",
-      id: "view-ticket",
       title: "View Ticket",
       schema: (api) => api.getTicket.responseBody.omit("id"),
       schemaParams: (api) => api.getTicket.requestParams,
@@ -74,7 +72,6 @@ export const ticketResource = createResource("ticket")
     },
     search: {
       type: "resource-search",
-      id: "search-tickets",
       title: "Search Tickets",
       schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,

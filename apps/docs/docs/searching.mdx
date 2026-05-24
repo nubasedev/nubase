@@ -191,7 +191,6 @@ export const ticketResource = createResource("ticket")
   .withViews({
     search: {
       type: "resource-search",
-      id: "search-tickets",
       title: "Search Tickets",
       schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,
@@ -372,7 +371,6 @@ export const ticketResource = createResource("ticket")
   .withViews({
     search: {
       type: "resource-search",
-      id: "search-tickets",
       title: "Tickets",
       schema: (api) => api.getTickets.responseBody,
       schemaFilter: (api) => api.getTickets.requestParams,

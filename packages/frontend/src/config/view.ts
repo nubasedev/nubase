@@ -12,7 +12,6 @@ export type ViewBase<
   TData = any,
 > = {
   title: string;
-  id: string;
   /**
    * Optional breadcrumb navigation trail for this view.
    */

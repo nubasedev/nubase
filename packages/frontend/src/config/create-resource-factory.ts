@@ -53,7 +53,6 @@ export type InlineCreateViewConfig<
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
   type: "resource-create";
-  id: string;
   title: string;
   schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
@@ -75,7 +74,6 @@ export type InlineViewViewConfig<
   TParamsSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
   type: "resource-view";
-  id: string;
   title: string;
   schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;
@@ -106,7 +104,6 @@ export type InlineSearchViewConfig<
   TPatchSchema extends ObjectSchema<any> | undefined = undefined,
 > = {
   type: "resource-search";
-  id: string;
   title: string;
   schema: (api: TApiEndpoints) => TSchema;
   schemaParams?: (api: TApiEndpoints) => TParamsSchema;

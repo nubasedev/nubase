@@ -55,7 +55,6 @@ export const userResource = createResource("user")
   .withViews({
     create: {
       type: "resource-create",
-      id: "create-user",
       title: "Add User",
       schema: (api) => api.postUser.requestBody,
       breadcrumbs: [{ label: "Users", to: "/r/user/search" }, "Add User"],
@@ -65,7 +64,6 @@ export const userResource = createResource("user")
     },
     view: {
       type: "resource-view",
-      id: "view-user",
       title: "View User",
       schema: (api) =>
         api.getUser.responseBody
@@ -111,7 +109,6 @@ export const userResource = createResource("user")
     },
     search: {
       type: "resource-search",
-      id: "search-users",
       title: "Users",
       schema: (api) => api.getUsers.responseBody,
       schemaFilter: (api) => api.getUsers.requestParams,
@@ -126,7 +123,6 @@ export const userResource = createResource("user")
     },
     teamMembersSearch: {
       type: "resource-search",
-      id: "team-members-search",
       title: "Members",
       schema: () => nu.array(teamUserSchema),
       schemaParams: () => nu.object({ teamId: nu.number() }),

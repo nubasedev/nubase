@@ -55,7 +55,6 @@ export const teamResource = createResource("team")
   .withViews({
     create: {
       type: "resource-create",
-      id: "create-team",
       title: "Create Team",
       schema: (api) => api.postTeam.requestBody,
       breadcrumbs: [{ label: "Teams", to: "/r/team/search" }, "Create Team"],
@@ -65,7 +64,6 @@ export const teamResource = createResource("team")
     },
     view: {
       type: "resource-view",
-      id: "view-team",
       title: "View Team",
       schema: (api) => {
         return api.getTeam.responseBody
@@ -116,7 +114,6 @@ export const teamResource = createResource("team")
     },
     search: {
       type: "resource-search",
-      id: "search-teams",
       title: "Teams",
       schema: (api) => api.getTeams.responseBody,
       schemaFilter: (api) => api.getTeams.requestParams,
