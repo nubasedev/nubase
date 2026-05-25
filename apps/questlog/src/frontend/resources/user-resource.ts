@@ -64,6 +64,7 @@ export const userResource = createResource("user")
     },
     view: {
       type: "resource-view",
+      actions: ["delete"],
       title: "View User",
       schema: (api) =>
         api.getUser.responseBody

@@ -63,6 +63,7 @@ export const ticketResource = createResource("ticket")
     },
     view: {
       type: "resource-view",
+      actions: ["delete"],
       title: "View Ticket",
       schema: (api) => api.getTicket.responseBody.omit("id"),
       schemaParams: (api) => api.getTicket.requestParams,

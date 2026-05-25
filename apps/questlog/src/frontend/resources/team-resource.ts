@@ -64,6 +64,7 @@ export const teamResource = createResource("team")
     },
     view: {
       type: "resource-view",
+      actions: ["delete"],
       title: "View Team",
       schema: (api) => {
         return api.getTeam.responseBody

@@ -7,8 +7,10 @@ import type {
   HandlerAction,
   ResourceAction,
 } from "../../../../actions/types";
-import { normalizeActionSeparators } from "../../../../actions/utils";
-import type { ActionLayout } from "../../../../config/action-layout";
+import {
+  normalizeActionSeparators,
+  resolveActionLayout,
+} from "../../../../actions/utils";
 import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
@@ -84,21 +86,6 @@ const getDefaultColumnWidth = (fieldSchema: BaseSchema<any>): number => {
 
   // Return width based on schema type or default fallback
   return DEFAULT_COLUMN_WIDTHS[fieldSchema.type] || 150;
-};
-
-// Helper function to resolve action layouts to actual actions
-const resolveActionLayout = (
-  actionLayout: ActionLayout<string> | undefined,
-  resourceActions: Record<string, any> | undefined,
-): ActionOrSeparator[] => {
-  if (!actionLayout || !resourceActions) return [];
-
-  return actionLayout
-    .map((actionId) => {
-      if (actionId === "separator") return "separator";
-      return resourceActions[actionId];
-    })
-    .filter(Boolean); // Remove any undefined actions
 };
 
 export type ResourceSearchViewRendererProps = {

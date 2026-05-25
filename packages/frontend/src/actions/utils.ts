@@ -1,4 +1,5 @@
 import type { TypedCommandDefinition } from "../commands/types";
+import type { ActionLayout } from "../config/action-layout";
 import type {
   Action,
   ActionOrSeparator,
@@ -6,6 +7,24 @@ import type {
   CommandAction,
   HandlerAction,
 } from "./types";
+
+/**
+ * Resolves an action layout (list of action id strings + separators) against
+ * a resource's action map, producing fully-resolved `ActionOrSeparator[]`.
+ * Unknown ids are silently dropped.
+ */
+export function resolveActionLayout(
+  actionLayout: ActionLayout<string> | undefined,
+  resourceActions: Record<string, any> | undefined,
+): ActionOrSeparator[] {
+  if (!actionLayout || !resourceActions) return [];
+  return actionLayout
+    .map((actionId) => {
+      if (actionId === "separator") return "separator" as const;
+      return resourceActions[actionId];
+    })
+    .filter(Boolean);
+}
 
 /**
  * Type guard to check if an action is a HandlerAction.

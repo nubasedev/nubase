@@ -1,9 +1,13 @@
 import type { ObjectOutput } from "@nubase/core";
-import { type FC, useEffect, useState } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
+import { resolveActionLayout } from "../../../../actions/utils";
+import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceViewView } from "../../../../config/view";
+import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceViewQuery } from "../../../../hooks/useNubaseQuery";
+import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { DataState } from "../../../data-state";
 import { ParentRecordProvider } from "../../../form/parent-record-context";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
@@ -32,6 +36,9 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     onError,
   } = props;
   const context = useNubaseContext();
+  const resource = resourceName
+    ? context.config.resources[resourceName]
+    : undefined;
 
   // TanStack Query is the single source of truth for the record. Mutations
   // elsewhere (e.g. form patches, inline cell edits) call invalidateResource,
@@ -82,6 +89,7 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
               initialData={initialData}
               params={params}
               resourceName={resourceName}
+              resource={resource}
               onPatch={onPatchCallback}
               onError={onError}
               context={context}
@@ -98,6 +106,7 @@ const ResourceViewForm: FC<{
   initialData: Record<string, any>;
   params?: Record<string, any>;
   resourceName?: string;
+  resource?: ResourceDescriptor;
   onPatch?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
   context: any;
@@ -106,6 +115,7 @@ const ResourceViewForm: FC<{
   initialData,
   params,
   resourceName,
+  resource,
   onPatch: onPatchCallback,
   onError,
   context,
@@ -148,27 +158,47 @@ const ResourceViewForm: FC<{
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  const resolvedActions = useMemo(
+    () => resolveActionLayout(view.actions, resource?.actions),
+    [view.actions, resource?.actions],
+  );
+
+  const recordId = initialData?.id ?? params?.id;
+  const selectedIds = useMemo(
+    () =>
+      new Set<string | number>(
+        recordId !== undefined ? [recordId] : [],
+      ) as ReadonlySet<string | number>,
+    [recordId],
+  );
+
   return (
-    <div className="h-full flex flex-col gap-2">
-      <SearchFilterBar
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="Search fields..."
-        searchExpand
-        showClearFilters={false}
-      />
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <ParentRecordProvider parent={initialData}>
-          <SchemaForm
-            form={form}
-            className="space-y-4"
-            data-testid="resource-view-form"
-          >
-            <SchemaFormBody form={form} searchTerm={searchTerm} />
-            <SchemaFormValidationErrors form={form} />
-          </SchemaForm>
-        </ParentRecordProvider>
+    <ResourceContextProvider
+      resourceType={resourceName || "unknown"}
+      selectedIds={selectedIds}
+    >
+      <div className="h-full flex flex-col gap-2">
+        <SearchFilterBar
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search fields..."
+          searchExpand
+          showClearFilters={false}
+        />
+        {resolvedActions.length > 0 && <ActionBar actions={resolvedActions} />}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <ParentRecordProvider parent={initialData}>
+            <SchemaForm
+              form={form}
+              className="space-y-4"
+              data-testid="resource-view-form"
+            >
+              <SchemaFormBody form={form} searchTerm={searchTerm} />
+              <SchemaFormValidationErrors form={form} />
+            </SchemaForm>
+          </ParentRecordProvider>
+        </div>
       </div>
-    </div>
+    </ResourceContextProvider>
   );
 };
