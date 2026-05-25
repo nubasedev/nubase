@@ -1,5 +1,5 @@
 import type { ObjectOutput } from "@nubase/core";
-import { type FC, useEffect } from "react";
+import { type FC, useEffect, useState } from "react";
 import type { ResourceViewView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
@@ -10,6 +10,7 @@ import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
+import { SearchFilterBar } from "../../../search-controls/SearchFilterBar";
 import { ResourceViewHeader } from "../../common/ResourceViewHeader";
 
 export type ResourceViewViewRendererProps = {
@@ -145,18 +146,29 @@ const ResourceViewForm: FC<{
     },
   });
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   return (
-    <div className="h-full overflow-y-auto">
-      <ParentRecordProvider parent={initialData}>
-        <SchemaForm
-          form={form}
-          className="space-y-4"
-          data-testid="resource-view-form"
-        >
-          <SchemaFormBody form={form} />
-          <SchemaFormValidationErrors form={form} />
-        </SchemaForm>
-      </ParentRecordProvider>
+    <div className="h-full flex flex-col gap-2">
+      <SearchFilterBar
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Search fields..."
+        searchExpand
+        showClearFilters={false}
+      />
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <ParentRecordProvider parent={initialData}>
+          <SchemaForm
+            form={form}
+            className="space-y-4"
+            data-testid="resource-view-form"
+          >
+            <SchemaFormBody form={form} searchTerm={searchTerm} />
+            <SchemaFormValidationErrors form={form} />
+          </SchemaForm>
+        </ParentRecordProvider>
+      </div>
     </div>
   );
 };

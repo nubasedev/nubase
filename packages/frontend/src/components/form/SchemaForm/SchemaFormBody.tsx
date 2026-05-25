@@ -17,6 +17,9 @@ export interface SchemaFormBodyProps {
   computedMetadata?: {
     debounceMs?: number;
   };
+  /** When set, only fields whose label or value matches the term are
+   *  rendered. The matching is case-insensitive and runs in-memory. */
+  searchTerm?: string;
 }
 
 // Body component - renders the form fields
@@ -24,6 +27,7 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
   form,
   className = "",
   computedMetadata,
+  searchTerm,
 }) => {
   const { schema, mode, onPatch } = form;
 
@@ -45,6 +49,9 @@ export const SchemaFormBody: React.FC<SchemaFormBodyProps> = ({
       <div className="flex-1 space-y-4 pt-1">
         <SchemaFormVerticalLayout
           layout={layout}
+          searchTerm={searchTerm}
+          formValues={form.formState}
+          metadata={mergedMetadata}
           renderField={(field: FormLayoutField<any>) => {
             const fieldName = field.name as string;
             const currentSchema = schema._shape[fieldName] as BaseSchema<any>;

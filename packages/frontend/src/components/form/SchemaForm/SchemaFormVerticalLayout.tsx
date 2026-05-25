@@ -7,6 +7,16 @@ export interface SchemaFormVerticalLayoutProps<
 > {
   layout: FormLayout<TShape>;
   renderField: (field: FormLayoutField<TShape>) => React.ReactNode;
+  /** When set, only fields whose label or stringified value contains the
+   *  term (case-insensitive) are rendered. Groups with no matching fields
+   *  are hidden entirely. */
+  searchTerm?: string;
+  /** Current form values — used to match the search term against field
+   *  values (not just labels). Passed from SchemaFormBody. */
+  formValues?: Record<string, any>;
+  /** Merged metadata keyed by field name — used to read `label` for
+   *  search matching when the layout field doesn't have one. */
+  metadata?: Record<string, { label?: string } | undefined>;
 }
 
 type LayoutItem<TShape extends ObjectShape> =
@@ -18,10 +28,32 @@ type LayoutItem<TShape extends ObjectShape> =
     }
   | { kind: "field"; field: FormLayoutField<TShape> };
 
+const fieldMatchesSearch = (
+  fieldName: string,
+  label: string | undefined,
+  value: unknown,
+  term: string,
+): boolean => {
+  const lower = term.toLowerCase();
+  if (label?.toLowerCase().includes(lower)) return true;
+  if (fieldName.toLowerCase().includes(lower)) return true;
+  if (value !== undefined && value !== null) {
+    const str = typeof value === "string" ? value : String(value);
+    if (str.toLowerCase().includes(lower)) return true;
+  }
+  return false;
+};
+
 export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
   layout,
   renderField,
+  searchTerm,
+  formValues,
+  metadata,
 }: SchemaFormVerticalLayoutProps<TShape>) => {
+  const trimmedTerm = searchTerm?.trim() ?? "";
+  const isSearching = trimmedTerm.length > 0;
+
   // Flatten groups into a single ordered stream of items. Groups only
   // contribute an optional heading (label/description/className); layout
   // concerns like the label-column splitter and field dividers are
@@ -37,7 +69,19 @@ export const SchemaFormVerticalLayout = <TShape extends ObjectShape = any>({
       });
     }
     for (const field of group.fields) {
-      if (!field.hidden) items.push({ kind: "field", field });
+      if (field.hidden) continue;
+      if (
+        isSearching &&
+        !fieldMatchesSearch(
+          String(field.name),
+          metadata?.[String(field.name)]?.label,
+          formValues?.[String(field.name)],
+          trimmedTerm,
+        )
+      ) {
+        continue;
+      }
+      items.push({ kind: "field", field });
     }
   }
 
