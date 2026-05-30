@@ -2,7 +2,6 @@ import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
 import type { ResourceCreateView } from "../../../../config/view";
 import { useSchemaForm } from "../../../../hooks";
-import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
 import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../../form/SchemaForm/SchemaFormButtonBar";
@@ -22,31 +21,27 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
 ) => {
   const { view, resourceName, onCreate, onError } = props;
   const context = useNubaseContext();
-  const { invalidateResourceSearch } = useResourceInvalidation();
 
   const form = useSchemaForm({
     schema: view.schema,
     onSubmit: async (data: ObjectOutput<any>) => {
       try {
-        console.log("SCREEN RENDERER - Form submitted with data:", data);
         const result = await view.onSubmit({
           data,
           context,
         });
 
-        // Invalidate resource search queries to refresh the list
+        // Emit a create event; the central event bridge invalidates the
+        // resource's queries so the search list refreshes.
         if (resourceName) {
-          console.log(
-            "🔄 SCREEN RENDERER - Invalidating resource search queries for:",
+          context.events.emit("resource.created", {
             resourceName,
-          );
-          await invalidateResourceSearch(resourceName);
+            source: "form",
+          });
         }
 
         onCreate?.(result);
-        console.log("SCREEN RENDERER - onCreate callback completed");
       } catch (error) {
-        console.log("SCREEN RENDERER - Error in form submission:", error);
         onError?.(error as Error);
       }
     },

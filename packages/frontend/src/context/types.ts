@@ -7,6 +7,7 @@ import type { CommandRegistry, Keybinding } from "../commands/types";
 import type { UseDialogResult } from "../components/floating/dialog";
 import type { UseModalResult } from "../components/floating/modal";
 import type { NubaseFrontendConfig } from "../config/nubase-frontend-config";
+import type { EventManager } from "../events/EventManager";
 import type { TypedApiClientFromEndpoints } from "../http/api-client-factory";
 import type { NavigationHistoryTracker } from "../navigation/navigation-history-tracker";
 import type { NubaseTheme } from "../theming/theme";
@@ -18,6 +19,10 @@ export interface NubaseContextData<
   config: NubaseFrontendConfig<TApiEndpoints>;
   commands: CommandRegistry;
   resourceActions: ResourceActionsExecutor;
+  /**
+   * Application event manager for emitting and subscribing to Nubase events.
+   */
+  events: EventManager;
   keybindings: Keybinding[];
   /**
    * Typed HTTP client instance created from the configured API endpoints.

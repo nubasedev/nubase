@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ExternalLink, X } from "lucide-react";
 import { type FC, type ReactElement, useCallback } from "react";
 import { useWorkspace } from "../../context/WorkspaceContext";
+import { useNubaseEvent } from "../../hooks/useNubaseEvent";
 import { useOverlays } from "../../hooks/useOverlays";
 import type { Overlay } from "../../utils/overlay-url";
 import { Button } from "../buttons/Button/Button";
@@ -75,6 +76,14 @@ const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
   const context = useNubaseContext();
   const navigate = useNavigate();
   const workspace = useWorkspace();
+
+  useNubaseEvent("resource.deleted", (payload) => {
+    if (payload.resourceName !== overlay.resource) return;
+    const deletedId = String(payload.resourceId);
+    if (Object.values(overlay.params).some((v) => String(v) === deletedId)) {
+      onClose();
+    }
+  });
 
   const resource = context.config.resources?.[overlay.resource];
   const view = resource?.views?.[overlay.operation];

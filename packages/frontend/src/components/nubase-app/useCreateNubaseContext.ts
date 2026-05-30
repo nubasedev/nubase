@@ -120,6 +120,7 @@ export function useCreateNubaseContext<TApiEndpoints = any>({
       config: initializationData.config,
       commands: commandRegistry,
       resourceActions: resourceActionsExecutor,
+      events: eventManager,
       keybindings:
         initializationData.config.keybindings || defaultKeybindings.get(),
       http: typedApiClient,

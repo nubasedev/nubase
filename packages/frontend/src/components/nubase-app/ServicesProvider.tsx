@@ -1,5 +1,6 @@
 import type React from "react";
 import type { NubaseFrontendConfig } from "../../config/nubase-frontend-config";
+import { useResourceEventBridge } from "../../hooks/useResourceEventBridge";
 import { ActivityIndicator } from "../activity-indicator";
 import { NubaseContextProvider } from "./NubaseContextProvider";
 import { useCreateNubaseContext } from "./useCreateNubaseContext";
@@ -53,7 +54,13 @@ export function ServicesProvider<TApiEndpoints = any>({
 
   return (
     <NubaseContextProvider context={nubaseContext}>
+      <NubaseEventBridge />
       {children}
     </NubaseContextProvider>
   );
+}
+
+function NubaseEventBridge() {
+  useResourceEventBridge();
+  return null;
 }

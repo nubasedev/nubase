@@ -114,6 +114,11 @@ class EventManagerImpl {
 }
 
 /**
+ * Public surface of the event manager exposed on the Nubase context.
+ */
+export type EventManager = Pick<EventManagerImpl, "emit" | "on" | "onMany">;
+
+/**
  * Singleton instance of the event manager
  */
 export const eventManager = new EventManagerImpl();

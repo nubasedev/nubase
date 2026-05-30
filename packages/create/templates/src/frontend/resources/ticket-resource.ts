@@ -26,6 +26,13 @@ export const ticketResource = createResource("ticket")
               context.http.deleteTicket({ params: { id: Number(id) } }),
             ),
           );
+          for (const id of selectedIds) {
+            context.events.emit("resource.deleted", {
+              resourceName: "ticket",
+              resourceId: id,
+              source: "form",
+            });
+          }
           showToast(`${count} ${label} deleted successfully`, "default");
         } catch (error) {
           console.error("Error deleting tickets:", error);

@@ -5,7 +5,6 @@ import type { ResourceDescriptor } from "../../../../config/resource";
 import type { ResourceViewView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useSchemaForm } from "../../../../hooks";
-import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceViewQuery } from "../../../../hooks/useNubaseQuery";
 import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
 import { DataState } from "../../../data-state";
@@ -41,12 +40,13 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
     : undefined;
 
   // TanStack Query is the single source of truth for the record. Mutations
-  // elsewhere (e.g. form patches, inline cell edits) call invalidateResource,
-  // which marks this query stale and refetches in the background. Because the
-  // query is configured with placeholderData: keepPreviousData, the UI keeps
-  // rendering the previous record — no spinner flash — and anything derived
-  // from the data (breadcrumbs, headers) updates automatically when the
-  // refetched record arrives.
+  // elsewhere (e.g. form patches, inline cell edits) emit resource events,
+  // which the central event bridge turns into query invalidation, marking this
+  // query stale and refetching in the background. Because the query is
+  // configured with placeholderData: keepPreviousData, the UI keeps rendering
+  // the previous record — no spinner flash — and anything derived from the
+  // data (breadcrumbs, headers) updates automatically when the refetched
+  // record arrives.
   const {
     data: response,
     isLoading,
@@ -120,8 +120,6 @@ const ResourceViewForm: FC<{
   onError,
   context,
 }) => {
-  const { invalidateResource } = useResourceInvalidation();
-
   const form = useSchemaForm({
     schema: view.schema,
     mode: "patch",
@@ -138,11 +136,18 @@ const ResourceViewForm: FC<{
           context: contextWithParams as any,
         });
 
-        // One mechanism for all consumers: invalidate the resource's queries.
-        // The view query refetches in the background, which updates
-        // `initialData` upstream and re-evaluates the breadcrumb/header.
+        // One mechanism for all consumers: emit a patch event. The central
+        // event bridge invalidates the resource's queries, the view query
+        // refetches in the background, which updates `initialData` upstream
+        // and re-evaluates the breadcrumb/header.
         if (resourceName) {
-          await invalidateResource(resourceName);
+          context.events.emit("resource.patched", {
+            resourceName,
+            fieldName,
+            value,
+            resourceId: initialData?.id ?? params?.id,
+            source: "form",
+          });
         }
 
         onPatchCallback?.(result);

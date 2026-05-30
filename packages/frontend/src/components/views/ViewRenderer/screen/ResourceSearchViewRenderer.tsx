@@ -2,11 +2,6 @@ import type { BaseSchema, ObjectSchema, TableLayoutField } from "@nubase/core";
 import { OptionalSchema } from "@nubase/core";
 import type { FC } from "react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import type {
-  ActionOrSeparator,
-  HandlerAction,
-  ResourceAction,
-} from "../../../../actions/types";
 import {
   normalizeActionSeparators,
   resolveActionLayout,
@@ -16,7 +11,6 @@ import type { ResourceSearchView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { emitEvent } from "../../../../events";
 import { useLastDefined } from "../../../../hooks/useLastDefined";
-import { useResourceInvalidation } from "../../../../hooks/useNubaseMutation";
 import { useResourceSearchQuery } from "../../../../hooks/useNubaseQuery";
 import { useOverlays } from "../../../../hooks/useOverlays";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
@@ -109,7 +103,6 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   const { view, params, resourceName, resource, onError, embedded } = props;
   const context = useNubaseContext();
   const { openOverlay } = useOverlays();
-  const { invalidateResource } = useResourceInvalidation();
 
   // Schema-derived filter state management
   const {
@@ -133,49 +126,6 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
     const filterParams = getRequestParams();
     return { ...params, ...filterParams };
   }, [params, getRequestParams]);
-
-  // Create a function to wrap actions with automatic query invalidation
-  const wrapActionsWithInvalidation = useCallback(
-    (actions: ActionOrSeparator[]): ActionOrSeparator[] => {
-      return actions.map((action) => {
-        if (action === "separator") {
-          return action;
-        }
-
-        if (action.type === "handler") {
-          // Wrap handler actions with query invalidation
-          const wrappedAction: HandlerAction = {
-            ...action,
-            onExecute: async (executionContext) => {
-              await action.onExecute(executionContext);
-              if (resourceName) {
-                await invalidateResource(resourceName);
-              }
-            },
-          };
-          return wrappedAction;
-        }
-
-        if (action.type === "resource") {
-          // Wrap resource actions with query invalidation
-          const wrappedAction: ResourceAction = {
-            ...action,
-            onExecute: async (executionContext) => {
-              await action.onExecute(executionContext);
-              if (resourceName) {
-                await invalidateResource(resourceName);
-              }
-            },
-          };
-          return wrappedAction;
-        }
-
-        // For command actions, return as-is (they would need different handling)
-        return action;
-      });
-    },
-    [resourceName, invalidateResource],
-  );
 
   // Create a function to handle cell patching
   const handleCellPatch = useCallback(
@@ -201,13 +151,8 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
           context,
         });
 
-        // Invalidate all cached queries for this resource so the grid refreshes.
-        // placeholderData: keepPreviousData on the search query means no loading flicker.
-        if (resourceName) {
-          await invalidateResource(resourceName);
-        }
-
-        // Emit event for successful cell patch (silent by default per notification rules)
+        // Emit event for successful cell patch (silent by default per notification rules).
+        // The central event bridge handles query invalidation.
         if (resourceName) {
           emitEvent("resource.patched", {
             resourceName,
@@ -233,7 +178,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
         };
       }
     },
-    [view, context, resourceName, invalidateResource],
+    [view, context, resourceName],
   );
 
   // Selection state for DataGrid
@@ -334,11 +279,8 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   // dropped from the per-row dropdown. Orphan separators from filtering
   // are normalized away before each consumer renders.
   const resolvedActions = useMemo(
-    () =>
-      wrapActionsWithInvalidation(
-        resolveActionLayout(view.actions, resource?.actions),
-      ),
-    [view.actions, resource?.actions, wrapActionsWithInvalidation],
+    () => resolveActionLayout(view.actions, resource?.actions),
+    [view.actions, resource?.actions],
   );
 
   const bulkActions = useMemo(
