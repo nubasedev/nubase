@@ -1,0 +1,104 @@
+---
+title: "ADR 0011: Event-driven resource mutations"
+description: Resource mutations broadcast typed events; cache invalidation, overlay-drawer lifecycle, and toasts are all listeners on one channel rather than calls scattered across each mutation site.
+sidebar_position: 11
+---
+
+**Status:** accepted
+
+## Context
+
+A mutation in one part of the UI usually has consequences elsewhere. Editing a field in a record's detail view must refresh the search table behind it; deleting the record shown in an overlay drawer must both drop the row from the table and close the now-stale drawer; a save may warrant a toast.
+
+The framework already had two overlapping ways to signal a mutation, used side by side at each mutation site:
+
+1. **TanStack Query invalidation** — `useResourceInvalidation().invalidateResource(name)` marks a resource's queries stale so dependent views refetch.
+2. **The event system** — `eventManager` with a typed `NubaseEventMap` (`resource.created`, `resource.patched`, …) and `defaultNotificationRules` that turn events into toasts. `emitEvent("resource.patched", …)` was fired in *some* mutation paths.
+
+The duplication was the problem. Invalidation and events were emitted inconsistently — some sites invalidated, some emitted, some did both — so behavior depended on which call a given code path happened to make. The grid's inline cell-patch invalidated *and* emitted; the detail form's field patch only invalidated; the create flow only invalidated. Worse, there was **no `resource.deleted` signal at all**, so nothing could react to a deletion. The overlay drawer had no way to learn that the record it displayed had been deleted, and would sit open showing a ghost record.
+
+A first attempt bolted on an ad-hoc `removesRecords` boolean on actions, threaded through the `ActionBar`, to tell the detail view to dismiss itself. It fixed the one case but added a parallel, single-purpose mechanism — exactly the accretion that makes a system hard to reason about.
+
+Alternatives considered:
+
+- **Keep the `removesRecords` flag.** Solved the drawer but unified nothing; every future cross-cutting reaction would need its own bespoke wiring.
+- **Auto-invalidate after every action** (the prior `wrapActionsWithInvalidation`). Convenient but implicit and coarse — it refetched regardless of what the action actually did and offered no hook for non-cache reactions like closing the drawer.
+- **Introduce a new event bus.** Unnecessary: the `eventManager` already provided typed emit/subscribe and notification rules. The fix is to make it the *single* channel, not to add another.
+
+## Decision
+
+**Resource mutations broadcast typed events. Everything that must react to a mutation — cache invalidation, drawer lifecycle, toasts — is a listener.** There is one broadcast mechanism, the existing `eventManager`, reached through the context as `context.events`.
+
+### The event is the single broadcast
+
+A mutation site does exactly one thing: emit a typed event with a payload.
+
+```ts
+context.events.emit("resource.deleted", {
+  resourceName: "ticket",
+  resourceId: id,
+  source: "form",
+});
+```
+
+The resource lifecycle events are `resource.created`, `resource.patched`, and `resource.deleted` (alongside the error events `resource.loadFailed` / `resource.saveFailed`). Payloads carry `resourceName`, an optional `resourceId`, and an optional `source` so listeners can tell an inline grid edit (`"datagrid"`) from a form save (`"form"`). Events are per-record: a bulk delete of N rows emits N `resource.deleted` events.
+
+### Emission is always explicit
+
+Nothing auto-emits. Every site that mutates data — the detail form's field patch, the grid's inline cell patch, the create form's submit, and any custom action handler such as Delete — emits its own event. A handler that mutates without emitting will not refresh dependent views; that is the deliberate cost of one predictable signal instead of blanket invalidate-after-everything magic.
+
+### Invalidation is one listener, not scattered calls
+
+A single hook, `useResourceEventBridge`, mounted once in the provider tree, is the only thing that invalidates the query cache:
+
+```ts
+events.onMany(
+  ["resource.created", "resource.patched", "resource.deleted"],
+  (p) => { if (p.resourceName) invalidateResource(p.resourceName); },
+);
+```
+
+No other code calls `invalidateResource*`. Query-key knowledge stays in `useResourceInvalidation`, and the bridge is its sole consumer.
+
+### Components subscribe to react
+
+Components react with the `useNubaseEvent(type, listener)` hook. The overlay drawer uses it to close itself when the record it shows is deleted:
+
+```ts
+useNubaseEvent("resource.deleted", (p) => {
+  if (p.resourceName !== overlay.resource) return;
+  if (Object.values(overlay.params).some((v) => String(v) === String(p.resourceId))) {
+    closeOverlay();
+  }
+});
+```
+
+This is generic — any container showing a single record can dismiss itself the same way — and keeps lifecycle logic out of the mutation handler.
+
+### Toasts: errors are framework-owned, mutation success is handler-owned
+
+Toasts are produced by **notification rules** (`defaultNotificationRules`), a listener layer inside `eventManager`. Two defaults follow from the per-record, emit-everywhere model:
+
+- **Error events toast** (load/save failures) — uniform, framework-owned feedback.
+- **`resource.patched` and `resource.deleted` are silent by default.** A patch fires on every inline field edit, so a toast per change is noise. A delete fires per record, so a framework toast would fire N times on a bulk delete; instead the delete *handler* owns a single, per-operation, count-aware message ("3 tickets deleted"). `resource.created` keeps a default toast because a create is one discrete action.
+
+Apps override any rule via `config.notificationRules`.
+
+## Consequences
+
+- **One mental model.** Emit an event; add a listener. New cross-cutting reactions (analytics, cross-resource refresh, optimistic UI) are new `context.events.on(...)` calls with no new plumbing.
+- **Invalidation lives in exactly one place.** Mutation sites no longer juggle invalidate-vs-emit, and the `removesRecords` flag and `wrapActionsWithInvalidation` wrapper are gone.
+- **Drawer lifecycle is decoupled.** Closing on delete is a generic listener, not knowledge baked into the Delete action.
+- **Toast ownership is a simple rule:** errors → framework, mutation success → the handler with the context to phrase it well.
+- **Trade-offs accepted:**
+  - **"Always explicit" is a footgun.** A mutating handler that forgets to emit will silently fail to refresh dependent views. Intentional, but new resource authors must learn it.
+  - **Per-record granularity.** A listener wanting per-operation behavior (one toast for a bulk action) must aggregate — or, as with delete, let the handler own that side effect.
+  - **Singular `resourceId`.** Bulk semantics are expressed as multiple events rather than one event carrying a set of ids.
+
+## Key references
+
+- Event system: `packages/frontend/src/events/` — `EventManager.ts`, `types.ts` (`NubaseEventMap`, `EventSource`), `defaultNotificationRules.ts`.
+- `packages/frontend/src/hooks/useResourceEventBridge.ts` — the sole events→invalidation listener.
+- `packages/frontend/src/hooks/useNubaseEvent.ts` — component subscribe hook.
+- `packages/frontend/src/components/overlays/OverlayStack.tsx` — drawer close-on-delete listener.
+- `events: EventManager` on `NubaseContextData` (`packages/frontend/src/context/types.ts`).

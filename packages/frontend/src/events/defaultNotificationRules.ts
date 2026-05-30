@@ -18,16 +18,17 @@ export const defaultNotificationRules: NotificationRules = {
     getMessage: (p) => `Resource ${p.resourceName} created successfully`,
   },
 
-  // Resource patch - shows toast for all sources
+  // Resource patch - silent by default. Inline/field edits emit this on every
+  // change; a toast per change is noise. Apps can opt in via custom rules.
   "resource.patched": {
-    toastType: "default",
-    getMessage: (p) => `Resource ${p.resourceName} updated successfully`,
+    getMessage: () => null,
   },
 
-  // Resource deletion - shows toast for all sources
+  // Resource deletion - silent by default. Delete handlers own the success
+  // toast so they can report a per-operation, count-aware message (e.g.
+  // "3 tickets deleted"); a per-record framework toast would duplicate it.
   "resource.deleted": {
-    toastType: "default",
-    getMessage: (p) => `Resource ${p.resourceName} deleted successfully`,
+    getMessage: () => null,
   },
 
   // Load failure - shows error toast for all sources
