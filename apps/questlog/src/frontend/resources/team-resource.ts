@@ -1,6 +1,5 @@
 import { nu } from "@nubase/core";
-import { commands, createResource, showToast } from "@nubase/frontend";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { createAction, createResource, deleteAction } from "@nubase/frontend";
 import { apiEndpoints } from "../../common";
 import { ticketResource } from "./ticket-resource";
 import { userResource } from "./user-resource";
@@ -12,45 +11,12 @@ export const teamResource = createResource("team")
       context.http.lookupTeams({ params: { q: query } }),
   })
   .withActions({
-    delete: {
-      label: "Delete",
-      icon: TrashIcon,
-      variant: "destructive" as const,
-      confirm: ({ selectedIds }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "team" : "teams";
-        return {
-          title: `Delete ${count} ${label}`,
-          content: `Are you sure you want to delete ${count} ${label}? This action cannot be undone.`,
-        };
-      },
-      onExecute: async ({ selectedIds, context }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "team" : "teams";
-        try {
-          await Promise.all(
-            selectedIds.map((id) =>
-              context.http.deleteTeam({ params: { id: Number(id) } }),
-            ),
-          );
-          showToast(`${count} ${label} deleted successfully`, "default");
-        } catch (error) {
-          console.error("Error deleting teams:", error);
-          showToast(`Failed to delete ${label}`, "error");
-        }
-      },
-    },
-    create: {
-      label: "Create",
-      icon: PlusIcon,
-      scope: "global",
-      onExecute: async ({ context }) => {
-        await context.commands.execute(
-          commands.workbenchOpenResourceOperationInDrawer.id,
-          { resourceId: "team", operation: "create" },
-        );
-      },
-    },
+    delete: deleteAction({
+      resourceName: "team",
+      deleteOne: ({ id, context }) =>
+        context.http.deleteTeam({ params: { id: Number(id) } }),
+    }),
+    create: createAction({ resourceName: "team" }),
   })
   .withViews({
     create: {

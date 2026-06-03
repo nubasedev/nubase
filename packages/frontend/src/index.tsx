@@ -1,6 +1,12 @@
 // Export all components
 
 export { createResourceAction } from "./actions/createResourceAction";
+export {
+  type CreateActionOptions,
+  createAction,
+  type DeleteActionOptions,
+  deleteAction,
+} from "./actions/resource-action-helpers";
 // Export actions system
 export type {
   Action,

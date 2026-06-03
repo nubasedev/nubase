@@ -1,6 +1,5 @@
 import { nu } from "@nubase/core";
-import { commands, createResource, showToast } from "@nubase/frontend";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { createAction, createResource, deleteAction } from "@nubase/frontend";
 import { apiEndpoints } from "../../common";
 import { teamUserSchema } from "../../common/schema/team-user-schema";
 import { ticketResource } from "./ticket-resource";
@@ -12,45 +11,14 @@ export const userResource = createResource("user")
       context.http.lookupUsers({ params: { q: query } }),
   })
   .withActions({
-    delete: {
-      label: "Delete",
-      icon: TrashIcon,
-      variant: "destructive" as const,
-      confirm: ({ selectedIds }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "user" : "users";
-        return {
-          title: `Delete ${count} ${label}`,
-          content: `Are you sure you want to delete ${count} ${label} from this workspace? They will no longer have access.`,
-        };
-      },
-      onExecute: async ({ selectedIds, context }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "user" : "users";
-        try {
-          await Promise.all(
-            selectedIds.map((id) =>
-              context.http.deleteUser({ params: { id: Number(id) } }),
-            ),
-          );
-          showToast(`${count} ${label} deleted successfully`, "default");
-        } catch (error) {
-          console.error("Error deleting users:", error);
-          showToast(`Failed to delete ${label}`, "error");
-        }
-      },
-    },
-    create: {
-      label: "Create",
-      icon: PlusIcon,
-      scope: "global",
-      onExecute: async ({ context }) => {
-        await context.commands.execute(
-          commands.workbenchOpenResourceOperationInDrawer.id,
-          { resourceId: "user", operation: "create" },
-        );
-      },
-    },
+    delete: deleteAction({
+      resourceName: "user",
+      deleteOne: ({ id, context }) =>
+        context.http.deleteUser({ params: { id: Number(id) } }),
+      confirmContent: ({ count, noun }) =>
+        `Are you sure you want to delete ${count} ${noun} from this workspace? They will no longer have access.`,
+    }),
+    create: createAction({ resourceName: "user" }),
   })
   .withViews({
     create: {

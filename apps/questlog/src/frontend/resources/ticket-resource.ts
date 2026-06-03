@@ -1,6 +1,5 @@
 import { nu } from "@nubase/core";
-import { commands, createResource, showToast } from "@nubase/frontend";
-import { PlusIcon, TrashIcon } from "lucide-react";
+import { createAction, createResource, deleteAction } from "@nubase/frontend";
 import { apiEndpoints } from "../../common";
 import { teamTicketSchema } from "../../common/schema/team-ticket-schema";
 import { userTicketSchema } from "../../common/schema/user-ticket-schema";
@@ -8,52 +7,12 @@ import { userTicketSchema } from "../../common/schema/user-ticket-schema";
 export const ticketResource = createResource("ticket")
   .withApiEndpoints(apiEndpoints)
   .withActions({
-    delete: {
-      label: "Delete",
-      icon: TrashIcon,
-      variant: "destructive",
-      confirm: ({ selectedIds }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "ticket" : "tickets";
-        return {
-          title: `Delete ${count} ${label}`,
-          content: `Are you sure you want to delete ${count} ${label}? This action cannot be undone.`,
-        };
-      },
-      onExecute: async ({ selectedIds, context }) => {
-        const count = selectedIds.length;
-        const label = count === 1 ? "ticket" : "tickets";
-        try {
-          await Promise.all(
-            selectedIds.map((id) =>
-              context.http.deleteTicket({ params: { id: Number(id) } }),
-            ),
-          );
-          for (const id of selectedIds) {
-            context.events.emit("resource.deleted", {
-              resourceName: "ticket",
-              resourceId: id,
-              source: "form",
-            });
-          }
-          showToast(`${count} ${label} deleted successfully`, "default");
-        } catch (error) {
-          console.error("Error deleting tickets:", error);
-          showToast(`Failed to delete ${label}`, "error");
-        }
-      },
-    },
-    create: {
-      label: "Create",
-      icon: PlusIcon,
-      scope: "global",
-      onExecute: async ({ context }) => {
-        await context.commands.execute(
-          commands.workbenchOpenResourceOperationInDrawer.id,
-          { resourceId: "ticket", operation: "create" },
-        );
-      },
-    },
+    delete: deleteAction({
+      resourceName: "ticket",
+      deleteOne: ({ id, context }) =>
+        context.http.deleteTicket({ params: { id: Number(id) } }),
+    }),
+    create: createAction({ resourceName: "ticket" }),
   })
   .withViews({
     create: {
