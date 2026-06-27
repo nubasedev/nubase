@@ -7,6 +7,7 @@ export * from "./card";
 export * from "./charts";
 export * from "./dashboard";
 export * from "./data-grid";
+export * from "./data-grid-actions";
 export * from "./data-state";
 export * from "./dock";
 export * from "./dropdown-menu";

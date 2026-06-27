@@ -17,17 +17,14 @@ import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { isServerNetworkError } from "../../../../utils/network-errors";
 import { ActivityIndicator } from "../../../activity-indicator";
 import { NuActionBar } from "../../../buttons/ActionBar/NuActionBar";
-import {
-  createActionColumn,
-  createNavigateColumn,
-  SelectColumn,
-} from "../../../data-grid/Columns";
+import { createNavigateColumn, SelectColumn } from "../../../data-grid/Columns";
 import { DataGrid } from "../../../data-grid/DataGrid";
 import {
   createPatchableColumn,
   type PatchResult,
 } from "../../../data-grid/patching";
 import type { Column } from "../../../data-grid/types";
+import { createActionColumn } from "../../../data-grid-actions";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
 import { NuResourceViewHeader } from "../../common/NuResourceViewHeader";

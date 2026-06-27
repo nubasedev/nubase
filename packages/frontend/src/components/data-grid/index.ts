@@ -2,17 +2,12 @@ import "./styles/data-grid.css";
 
 export { default as Cell } from "./Cell";
 export {
-  ACTION_COLUMN_KEY,
-  createActionColumn,
   createNavigateColumn,
   NAVIGATE_COLUMN_KEY,
   SELECT_COLUMN_KEY,
   SelectColumn,
 } from "./Columns";
 export {
-  NuActionCellFormatter,
-  NuActionCellRendererCell,
-  NuActionCellRendererGroup,
   renderCheckbox,
   renderToggleGroup,
   renderValue,

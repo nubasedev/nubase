@@ -66,7 +66,26 @@
       "linter": {
         "rules": {
           "style": {
-            "noNonNullAssertion": "off"
+            "noNonNullAssertion": "off",
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "**/actions/**",
+                      "**/context/**",
+                      "**/commands/**",
+                      "**/http/**",
+                      "**/events/**",
+                      "**/keybindings/**",
+                      "**/authentication/**"
+                    ],
+                    "message": "data-grid must stay runtime-independent: do not import Nubase runtime layers (actions, context, commands, http, events, keybindings, authentication). Put Nubase action glue in components/data-grid-actions instead."
+                  }
+                ]
+              }
+            }
           },
           "a11y": {
             "useKeyWithClickEvents": "off",
