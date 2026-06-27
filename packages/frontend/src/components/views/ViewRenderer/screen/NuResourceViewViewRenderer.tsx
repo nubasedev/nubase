@@ -182,7 +182,10 @@ const ResourceViewForm: FC<{
       resourceType={resourceName || "unknown"}
       selectedIds={selectedIds}
     >
-      <div className="h-full flex flex-col gap-2">
+      <div
+        className="h-full flex flex-col gap-2"
+        data-component="NuResourceViewViewRenderer"
+      >
         <SearchFilterBar
           searchValue={searchTerm}
           onSearchChange={setSearchTerm}
