@@ -3,13 +3,13 @@ import type { NubaseFrontendConfig } from "../../../config/nubase-frontend-confi
 import type { ResourceSearchView } from "../../../config/view";
 import { useParentRecord } from "../../form/parent-record-context";
 import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
-import { ResourceSearchViewRenderer } from "../../views/ViewRenderer/screen/ResourceSearchViewRenderer";
+import { NuResourceSearchViewRenderer } from "../../views/ViewRenderer/screen/NuResourceSearchViewRenderer";
 import type { ViewFieldRendererProps } from "../types";
 
 /**
  * Reverse-lookup: find the resource id whose `views` map contains this
  * view by reference. Used so the relation renderer can pass `resourceName`
- * and `resource` to `ResourceSearchViewRenderer` (which needs them for
+ * and `resource` to `NuResourceSearchViewRenderer` (which needs them for
  * action resolution and query invalidation).
  */
 const findResourceIdForView = (
@@ -30,11 +30,11 @@ const findResourceIdForView = (
  * The relation declares a target-resource search view (via `_view`) and a
  * function from parent → params (`_paramsFrom`). This renderer is a thin
  * delegator: it reads the parent record from context, computes the params,
- * and embeds the target view via `ResourceSearchViewRenderer` with
+ * and embeds the target view via `NuResourceSearchViewRenderer` with
  * `embedded` set. The embedded view brings its own filter bar, table,
  * actions, selection, and refetch — no duplicated state here.
  */
-export const RelationshipViewFieldRenderer = ({
+export const NuRelationshipViewFieldRenderer = ({
   schema,
 }: ViewFieldRendererProps) => {
   const relationship = schema instanceof RelationshipSchema ? schema : null;
@@ -62,7 +62,7 @@ export const RelationshipViewFieldRenderer = ({
 
   return (
     <div className="h-[400px] w-full">
-      <ResourceSearchViewRenderer
+      <NuResourceSearchViewRenderer
         view={view}
         params={params}
         resourceName={resourceName}

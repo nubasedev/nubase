@@ -2,10 +2,10 @@ import type { FC } from "react";
 import type { BreadcrumbDefinition } from "../../../config/breadcrumb";
 import type { NubaseContextData } from "../../../context/types";
 import { evaluateBreadcrumbs } from "../../../utils/evaluate-breadcrumbs";
-import { BreadcrumbBar } from "../../navigation/breadcrumb";
+import { NuBreadcrumbBar } from "../../navigation/breadcrumb";
 import { PageHeader } from "../../page-headers/PageHeader/PageHeader";
 
-export type ResourceViewHeaderProps = {
+export type NuResourceViewHeaderProps = {
   title: string;
   breadcrumbs?: BreadcrumbDefinition;
   context: NubaseContextData;
@@ -18,7 +18,7 @@ export type ResourceViewHeaderProps = {
  * Rendered at the top of every resource view body so the full-page, overlay
  * drawer, and modal variants all look identical.
  */
-export const ResourceViewHeader: FC<ResourceViewHeaderProps> = ({
+export const NuResourceViewHeader: FC<NuResourceViewHeaderProps> = ({
   title,
   breadcrumbs: breadcrumbDef,
   context,
@@ -29,7 +29,7 @@ export const ResourceViewHeader: FC<ResourceViewHeaderProps> = ({
   return (
     <div className="shrink-0">
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <BreadcrumbBar items={breadcrumbs} className="mb-2" />
+        <NuBreadcrumbBar items={breadcrumbs} className="mb-2" />
       )}
       <PageHeader title={title} />
     </div>

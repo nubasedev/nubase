@@ -7,18 +7,18 @@ import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormButtonBar } from "../../../form/SchemaForm/SchemaFormButtonBar";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
-import { ResourceViewHeader } from "../../common/ResourceViewHeader";
+import { NuResourceViewHeader } from "../../common/NuResourceViewHeader";
 
-export type ResourceCreateViewRendererProps = {
+export type NuResourceCreateViewRendererProps = {
   view: ResourceCreateView;
   resourceName?: string;
   onCreate?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
 };
 
-export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
-  props,
-) => {
+export const NuResourceCreateViewRenderer: FC<
+  NuResourceCreateViewRendererProps
+> = (props) => {
   const { view, resourceName, onCreate, onError } = props;
   const context = useNubaseContext();
 
@@ -49,7 +49,7 @@ export const ResourceCreateViewRenderer: FC<ResourceCreateViewRendererProps> = (
 
   return (
     <div className="flex flex-col h-full gap-4">
-      <ResourceViewHeader
+      <NuResourceViewHeader
         title={view.title}
         breadcrumbs={view.breadcrumbs}
         context={context}

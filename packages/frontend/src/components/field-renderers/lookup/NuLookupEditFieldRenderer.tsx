@@ -7,7 +7,7 @@ import { LookupSelect } from "../../form-controls/controls/LookupSelect/LookupSe
 import { useNubaseContext } from "../../nubase-app/NubaseContextProvider";
 import type { EditFieldRendererProps, EditFieldRendererResult } from "../types";
 
-export const LookupEditFieldRenderer = ({
+export const NuLookupEditFieldRenderer = ({
   schema,
   fieldState,
   hasError,

@@ -2,13 +2,13 @@ import type { BaseSchema, SchemaMetadata } from "@nubase/core";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { BooleanEditFieldRenderer } from "../../field-renderers/boolean/BooleanEditFieldRenderer";
 import { BooleanViewFieldRenderer } from "../../field-renderers/boolean/BooleanViewFieldRenderer";
-import { LookupEditFieldRenderer } from "../../field-renderers/lookup/LookupEditFieldRenderer";
-import { LookupViewFieldRenderer } from "../../field-renderers/lookup/LookupViewFieldRenderer";
+import { NuLookupEditFieldRenderer } from "../../field-renderers/lookup/NuLookupEditFieldRenderer";
+import { NuLookupViewFieldRenderer } from "../../field-renderers/lookup/NuLookupViewFieldRenderer";
 import { MultilineEditFieldRenderer } from "../../field-renderers/multiline/MultilineEditFieldRenderer";
 import { MultilineViewFieldRenderer } from "../../field-renderers/multiline/MultilineViewFieldRenderer";
 import { NumberEditFieldRenderer } from "../../field-renderers/number/NumberEditFieldRenderer";
 import { NumberViewFieldRenderer } from "../../field-renderers/number/NumberViewFieldRenderer";
-import { RelationshipViewFieldRenderer } from "../../field-renderers/relationship/RelationshipViewFieldRenderer";
+import { NuRelationshipViewFieldRenderer } from "../../field-renderers/relationship/NuRelationshipViewFieldRenderer";
 import { StringEditFieldRenderer } from "../../field-renderers/string/StringEditFieldRenderer";
 import { StringViewFieldRenderer } from "../../field-renderers/string/StringViewFieldRenderer";
 import type {
@@ -27,12 +27,12 @@ import { type PatchResult, PatchWrapper } from "./PatchWrapper";
 // the system will fall back to the type-based renderer
 const viewRenderersByName: Record<string, ViewFieldRenderer> = {
   multiline: MultilineViewFieldRenderer,
-  lookup: LookupViewFieldRenderer,
+  lookup: NuLookupViewFieldRenderer,
 };
 
 const editRenderersByName: Record<string, EditFieldRenderer> = {
   multiline: MultilineEditFieldRenderer,
-  lookup: LookupEditFieldRenderer,
+  lookup: NuLookupEditFieldRenderer,
 };
 
 // Renderers by schema type
@@ -40,7 +40,7 @@ const viewFieldRenderers: ViewFieldRendererMap = {
   string: StringViewFieldRenderer,
   number: NumberViewFieldRenderer,
   boolean: BooleanViewFieldRenderer,
-  relationship: RelationshipViewFieldRenderer,
+  relationship: NuRelationshipViewFieldRenderer,
 };
 
 const editFieldRenderers: EditFieldRendererMap = {

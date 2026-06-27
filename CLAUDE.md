@@ -82,6 +82,7 @@ URL params arrive as strings; schemas expect typed values. Both the frontend rou
 - **No size variants** (sm/md/lg) on new components unless explicitly requested. Pick one well-tuned default.
 - **Field renderers** live in `packages/frontend/src/components/form/renderers/{string,number,boolean,unsupported}/`. Import each renderer from its own file. The renderer maps live in `renderer-factory.tsx`.
 - **Type definitions inline before the component**, e.g. `export type CardProps = ...` immediately above the `Card` component, not grouped at the top of the file.
+- **`Nu` prefix for framework-bound components.** A component that directly requires the Nubase runtime (reads `NubaseContext`/`ResourceContext`, takes `NubaseContextData`, uses router/workspace hooks, or executes actions/commands) is prefixed `Nu*` (e.g. `NuActionBar`). Prop-driven primitives that render standalone keep plain names, even if they compose a `Nu*` child. See ADR 0012.
 
 ## Storybook
 

@@ -6,9 +6,9 @@ import {
   ModalFrameStructured,
   type ModalFrameStructuredVariant,
 } from "../../../floating/modal/ModalFrameStructured";
-import { ResourceViewViewRenderer } from "../screen/ResourceViewViewRenderer";
+import { NuResourceViewViewRenderer } from "../screen/NuResourceViewViewRenderer";
 
-export type ResourceViewViewModalRendererProps = {
+export type NuResourceViewViewModalRendererProps = {
   view: ResourceViewView;
   context: NubaseContextData;
   params?: Record<string, any>;
@@ -20,12 +20,12 @@ export type ResourceViewViewModalRendererProps = {
 };
 
 /**
- * Thin wrapper that renders the shared ResourceViewViewRenderer inside a
+ * Thin wrapper that renders the shared NuResourceViewViewRenderer inside a
  * ModalFrameStructured. The renderer provides its own header (title +
  * breadcrumbs) so this wrapper only supplies chrome.
  */
-export const ResourceViewViewModalRenderer: FC<
-  ResourceViewViewModalRendererProps
+export const NuResourceViewViewModalRenderer: FC<
+  NuResourceViewViewModalRendererProps
 > = ({
   view,
   params,
@@ -40,7 +40,7 @@ export const ResourceViewViewModalRenderer: FC<
       onClose={onClose}
       variant={frameVariant}
       body={
-        <ResourceViewViewRenderer
+        <NuResourceViewViewRenderer
           view={view}
           params={params}
           resourceName={resourceName}

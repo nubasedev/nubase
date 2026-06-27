@@ -1,6 +1,6 @@
-export type { ResourceCreateViewRendererProps } from "./ResourceCreateViewRenderer";
-export { ResourceCreateViewRenderer } from "./ResourceCreateViewRenderer";
-export type { ResourceSearchViewRendererProps } from "./ResourceSearchViewRenderer";
-export { ResourceSearchViewRenderer } from "./ResourceSearchViewRenderer";
-export type { ResourceViewViewRendererProps } from "./ResourceViewViewRenderer";
-export { ResourceViewViewRenderer } from "./ResourceViewViewRenderer";
+export type { NuResourceCreateViewRendererProps } from "./NuResourceCreateViewRenderer";
+export { NuResourceCreateViewRenderer } from "./NuResourceCreateViewRenderer";
+export type { NuResourceSearchViewRendererProps } from "./NuResourceSearchViewRenderer";
+export { NuResourceSearchViewRenderer } from "./NuResourceSearchViewRenderer";
+export type { NuResourceViewViewRendererProps } from "./NuResourceViewViewRenderer";
+export { NuResourceViewViewRenderer } from "./NuResourceViewViewRenderer";

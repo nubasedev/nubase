@@ -16,7 +16,7 @@ export interface ProportionalChartContentProps {
 
 /**
  * Renders proportional chart content (pie or donut) from ProportionalData.
- * This is a presentation component - data fetching is handled by ConnectedWidget.
+ * This is a presentation component - data fetching is handled by NuConnectedWidget.
  */
 export function ProportionalChartContent({
   data,

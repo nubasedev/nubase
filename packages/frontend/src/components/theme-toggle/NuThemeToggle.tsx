@@ -2,12 +2,12 @@ import { Moon, Sun } from "lucide-react";
 import { Button } from "../buttons/Button/Button";
 import { useNubaseContext } from "../nubase-app/NubaseContextProvider";
 
-export interface ThemeToggleProps {
+export interface NuThemeToggleProps {
   className?: string;
   defaultTheme: "light" | "dark";
 }
 
-export const ThemeToggle = ({ className }: ThemeToggleProps) => {
+export const NuThemeToggle = ({ className }: NuThemeToggleProps) => {
   const context = useNubaseContext();
 
   const toggleTheme = () => {

@@ -1,6 +1,6 @@
 import type { FC, PropsWithChildren } from "react";
 import type { BreadcrumbItem } from "../../config/breadcrumb";
-import { BreadcrumbBar } from "../navigation/breadcrumb";
+import { NuBreadcrumbBar } from "../navigation/breadcrumb";
 import { PageHeader } from "../page-headers/PageHeader/PageHeader";
 
 export type FullScreenFixedHeaderLayoutProps = {
@@ -17,7 +17,7 @@ export const FullScreenFixedHeaderLayout: FC<
   return (
     <div data-component="FullScreenLayout" className="flex flex-col h-full p-4">
       {props.breadcrumbs && props.breadcrumbs.length > 0 && (
-        <BreadcrumbBar items={props.breadcrumbs} className="mb-2 shrink-0" />
+        <NuBreadcrumbBar items={props.breadcrumbs} className="mb-2 shrink-0" />
       )}
       <div className="shrink-0">
         <PageHeader title={props.title} />

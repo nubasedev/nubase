@@ -1,7 +1,7 @@
 export {
-  LookupSelectFilter,
-  type LookupSelectFilterProps,
-} from "./LookupSelectFilter";
+  NuLookupSelectFilter,
+  type NuLookupSelectFilterProps,
+} from "./NuLookupSelectFilter";
 export {
   SearchFilterBar,
   type SearchFilterBarProps,

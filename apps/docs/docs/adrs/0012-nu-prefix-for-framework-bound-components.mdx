@@ -1,0 +1,50 @@
+---
+title: "ADR 0012: Nu prefix for framework-bound components"
+description: Components that require the Nubase runtime are prefixed `Nu*`; framework-agnostic presentational primitives keep plain names, making the boundary visible at the import site.
+sidebar_position: 12
+---
+
+**Status:** accepted
+
+## Context
+
+The frontend component library mixes two kinds of component with no visible distinction between them:
+
+1. **Presentational primitives** — `Button`, `Card`, `ButtonGroup`, `Modal`, `DataGrid`, the view/edit field renderers for scalar types, and so on. They take everything through props and render anywhere, including in isolation (Storybook, tests, a foreign app).
+2. **Framework-bound components** — ones that only work inside a running Nubase app because they read the `NubaseContext`/`ResourceContext`, take `NubaseContextData` as a prop, use the framework's router/workspace hooks, or execute actions/commands. Rendering one outside the app shell throws or silently degrades.
+
+`ActionBar` was the case that surfaced the problem. It looked like a primitive — a toolbar of buttons — but it called `useActionExecutor`, which reads the context, and its `actions` prop accepted `CommandAction`/`ResourceAction`, which are meaningless without the runtime. You could not reuse it, iterate on its visual variants in Storybook, or reason about it without dragging in the whole framework. The coupling was invisible until you tried to use it and it broke.
+
+The same hidden coupling exists across the library: the view renderers, the lookup/relationship field renderers, `TopBar`, `OverlayStack`, `ConnectedWidget`, `ThemeToggle`, and others all silently require the runtime, yet sit next to genuine primitives with indistinguishable names.
+
+Alternatives considered:
+
+- **A `primitives/` vs `app/` folder split.** Encodes the boundary in the tree, but the signal is lost at the import site (`import { ActionBar } from "@nubase/frontend"` looks the same either way) and forces large file moves.
+- **Document the boundary in prose only.** Cheap, but invisible where it matters — in editor autocomplete and at the call site — and drifts immediately.
+- **Do nothing.** The coupling stays a trap that each developer rediscovers by hitting it.
+
+## Decision
+
+**A component gets the `Nu` prefix if, and only if, it directly requires the Nubase runtime.** "Directly requires the runtime" means it does at least one of:
+
+- reads `NubaseContext` or `ResourceContext` (via `useNubaseContext`, `useResourceContext`, or `useContext`),
+- accepts `NubaseContextData` as a prop,
+- uses the framework's router/workspace hooks (`useNavigate`, `useWorkspace`, `useWorkspaceOptional`), or
+- executes actions or commands.
+
+Everything else keeps a plain name — **including** components that are *about* Nubase concepts or that compose a `Nu*` child, as long as they are prop-driven and render standalone. `MainNav`, `SchemaFilterBar`, `NqlEditor`, `Widget`, and `SearchableTreeNavigator` stay plain: each takes its data through props and has a working Storybook story, even though some render a bound child inside a live app. The test is "does *this* component reach for the runtime," not "could it ever appear in a Nubase tree."
+
+`Nu` (not the full `Nubase`) keeps call sites short and is reserved for components. The longer `Nubase` prefix stays reserved for the app shell, context, and config types (`NubaseApp`, `NubaseContextData`, `NubaseFrontendConfig`).
+
+The worked example is the `ActionBar` split:
+
+- **`ActionBar`** is now a framework-agnostic presentational toolbar. It takes button-group children and a `variant` (`default` joins groups with spacing; `ghost` draws a divider between groups). No context, no actions — fully Storybook-able.
+- **`NuActionBar`** is the runtime-bound component. It takes a list of Nubase `Action`s, executes them via `useActionExecutor`, and renders through the `ActionBar` primitive.
+
+## Consequences
+
+- The coupling is visible at the import site and in autocomplete. Seeing `Nu` tells you the component needs a live app; its absence tells you it is safe to render anywhere.
+- Presentational behavior can be extracted into a plain primitive and iterated on in Storybook independently of the runtime — as `ActionBar` now is.
+- This is a public-API change: `@nubase/frontend` consumers importing a renamed component (e.g. `ActionBar` for action lists → `NuActionBar`) must update the import. The framework is pre-1.0 and the starter template does not use these components, so the blast radius is limited.
+- New components must be classified on creation. When a previously-plain component starts reading the context, it must be renamed `Nu*` (and vice versa) — the prefix is a claim about behavior, not a permanent label.
+- A few deep, internal-only components that technically touch the runtime were left plain for now (e.g. the tree-navigator item, which uses the *optional* workspace hook and is an implementation detail of `SearchableTreeNavigator`). They can be revisited if they ever become part of the public surface.

@@ -1,4 +1,4 @@
-export { ThemeToggle, type ThemeToggleProps } from "../theme-toggle";
+export { NuThemeToggle, type NuThemeToggleProps } from "../theme-toggle";
 export {
   Dialog,
   type DialogProps,

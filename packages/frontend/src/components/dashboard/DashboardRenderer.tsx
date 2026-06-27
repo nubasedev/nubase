@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { DashboardDescriptor } from "../../config/dashboard-widget";
-import { ConnectedWidget } from "./ConnectedWidget";
 import { Dashboard, type Layout } from "./Dashboard";
+import { NuConnectedWidget } from "./NuConnectedWidget";
 
 export interface DashboardRendererProps {
   /** The dashboard descriptor to render */
@@ -19,7 +19,7 @@ export interface DashboardRendererProps {
  *
  * This component:
  * 1. Generates the layout from widget configurations
- * 2. Renders each widget as a ConnectedWidget (which handles data fetching)
+ * 2. Renders each widget as a NuConnectedWidget (which handles data fetching)
  * 3. Manages layout state (controlled or uncontrolled)
  *
  * @example
@@ -57,7 +57,7 @@ export function DashboardRenderer({
     >
       {dashboard.widgets.map((widget) => (
         <div key={widget.id}>
-          <ConnectedWidget widget={widget} />
+          <NuConnectedWidget widget={widget} />
         </div>
       ))}
     </Dashboard>

@@ -1,7 +1,7 @@
 import type { ObjectSchema } from "@nubase/core";
 import { cn } from "../../styling/cn";
 import { NqlEditor } from "../nql-editor";
-import { LookupSelectFilter } from "../search-controls/LookupSelectFilter";
+import { NuLookupSelectFilter } from "../search-controls/NuLookupSelectFilter";
 import { SearchFilterBar } from "../search-controls/SearchFilterBar";
 import {
   SelectFilter,
@@ -211,7 +211,7 @@ export function SchemaFilterBar<TSchema extends ObjectSchema<any>>({
             : [];
 
         return (
-          <LookupSelectFilter
+          <NuLookupSelectFilter
             key={descriptor.name}
             label={descriptor.label}
             lookupResource={descriptor.lookupResource}

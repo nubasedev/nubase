@@ -2,11 +2,11 @@ import type { FC } from "react";
 import type { View } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
 import type { ModalFrameStructuredVariant } from "../../../floating/modal/ModalFrameStructured";
-import { ResourceCreateViewModalRenderer } from "./ResourceCreateViewModalRenderer";
-import { ResourceSearchViewModalRenderer } from "./ResourceSearchViewModalRenderer";
-import { ResourceViewViewModalRenderer } from "./ResourceViewViewModalRenderer";
+import { NuResourceCreateViewModalRenderer } from "./NuResourceCreateViewModalRenderer";
+import { NuResourceSearchViewModalRenderer } from "./NuResourceSearchViewModalRenderer";
+import { NuResourceViewViewModalRenderer } from "./NuResourceViewViewModalRenderer";
 
-export type ModalViewRendererProps = {
+export type NuModalViewRendererProps = {
   view: View;
   context: NubaseContextData;
   params?: Record<string, any>;
@@ -17,7 +17,7 @@ export type ModalViewRendererProps = {
   frameVariant?: ModalFrameStructuredVariant;
 };
 
-export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
+export const NuModalViewRenderer: FC<NuModalViewRendererProps> = (props) => {
   const {
     view,
     context,
@@ -36,7 +36,7 @@ export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
   switch (view.type) {
     case "resource-create":
       return (
-        <ResourceCreateViewModalRenderer
+        <NuResourceCreateViewModalRenderer
           view={view}
           context={context}
           resourceName={resourceName}
@@ -47,7 +47,7 @@ export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
       );
     case "resource-view":
       return (
-        <ResourceViewViewModalRenderer
+        <NuResourceViewViewModalRenderer
           view={view}
           context={context}
           params={params}
@@ -59,7 +59,7 @@ export const ModalViewRenderer: FC<ModalViewRendererProps> = (props) => {
       );
     case "resource-search":
       return (
-        <ResourceSearchViewModalRenderer
+        <NuResourceSearchViewModalRenderer
           view={view}
           context={context}
           params={params}

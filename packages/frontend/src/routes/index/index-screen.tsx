@@ -7,7 +7,7 @@ import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvi
  * The dashboard configuration is loaded from the NubaseFrontendConfig's dashboards property.
  * Each dashboard is rendered using DashboardRenderer which:
  * 1. Creates a grid layout from widget configurations
- * 2. Renders ConnectedWidget for each widget (handles data fetching)
+ * 2. Renders NuConnectedWidget for each widget (handles data fetching)
  * 3. Displays the appropriate chart/content based on widget type
  */
 export default function IndexScreen() {

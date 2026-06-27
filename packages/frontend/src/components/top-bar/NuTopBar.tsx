@@ -3,19 +3,19 @@ import { forwardRef } from "react";
 import type { NubaseContextData } from "../../context/types";
 import { getWorkspaceFromRouter } from "../../context/WorkspaceContext";
 import { cn } from "../../styling/cn";
-import { ActionBar } from "../buttons/ActionBar";
+import { NuActionBar } from "../buttons/ActionBar";
 import { UserMenu } from "../user-avatar";
-import { SearchBar } from "./SearchBar";
+import { NuSearchBar } from "./NuSearchBar";
 
-export interface TopBarProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface NuTopBarProps extends React.HTMLAttributes<HTMLDivElement> {
   context: NubaseContextData;
 }
 
 /**
- * TopBar component that provides global search and actions.
- * Contains a SearchBar for command search and ActionBar for global actions.
+ * NuTopBar component that provides global search and actions.
+ * Contains a NuSearchBar for command search and NuActionBar for global actions.
  */
-const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
+const NuTopBar = forwardRef<HTMLDivElement, NuTopBarProps>(
   ({ className, context, ...props }, ref) => {
     const globalActions = context.config.globalActions || [];
     const hasGlobalActions = globalActions.length > 0;
@@ -53,12 +53,12 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
         </div>
 
         {/* Search Bar */}
-        <SearchBar context={context} />
+        <NuSearchBar context={context} />
 
         {/* Global Actions */}
         {hasGlobalActions && (
           <div className="flex items-center">
-            <ActionBar actions={globalActions} />
+            <NuActionBar actions={globalActions} />
           </div>
         )}
 
@@ -78,6 +78,6 @@ const TopBar = forwardRef<HTMLDivElement, TopBarProps>(
   },
 );
 
-TopBar.displayName = "TopBar";
+NuTopBar.displayName = "NuTopBar";
 
-export { TopBar };
+export { NuTopBar };

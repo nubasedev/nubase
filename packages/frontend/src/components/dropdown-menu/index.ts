@@ -1,8 +1,4 @@
 export {
-  ActionDropdownMenu,
-  type ActionDropdownMenuProps,
-} from "./ActionDropdownMenu";
-export {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -19,3 +15,7 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "./DropdownMenu";
+export {
+  NuActionDropdownMenu,
+  type NuActionDropdownMenuProps,
+} from "./NuActionDropdownMenu";

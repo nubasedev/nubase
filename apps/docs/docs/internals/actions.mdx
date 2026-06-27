@@ -98,11 +98,11 @@ Both surfaces are derived from the same `view.actions` list — the difference i
 
 | Aspect          | Per-row dropdown                              | Toolbar                                     |
 |-----------------|-----------------------------------------------|---------------------------------------------|
-| UI              | Dropdown per row                              | `ActionBar` toolbar                         |
+| UI              | Dropdown per row                              | `NuActionBar` toolbar                       |
 | Includes        | `scope: "selection"` actions only             | every action; global ones always enabled    |
 | Trigger context | Single-row `selectedIds` set (one id)         | `selectedRows` set from the grid selection  |
 | Typical actions | Delete, Edit, View                            | Create, Delete (disabled w/o selection)     |
-| Selection wiring | Driven by `ActionCellFormatter` logic        | Driven by `ResourceContextProvider` state   |
+| Selection wiring | Driven by `NuActionCellFormatter` logic      | Driven by `ResourceContextProvider` state   |
 
 Both variants ultimately call into `executeAction`, so handler/command/resource logic stays identical.
 

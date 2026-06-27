@@ -16,7 +16,7 @@ import { useOverlays } from "../../../../hooks/useOverlays";
 import { useSchemaFilters } from "../../../../hooks/useSchemaFilters";
 import { isServerNetworkError } from "../../../../utils/network-errors";
 import { ActivityIndicator } from "../../../activity-indicator";
-import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
+import { NuActionBar } from "../../../buttons/ActionBar/NuActionBar";
 import {
   createActionColumn,
   createNavigateColumn,
@@ -30,7 +30,7 @@ import {
 import type { Column } from "../../../data-grid/types";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SchemaFilterBar as SchemaFilterBarBase } from "../../../schema-filter-bar";
-import { ResourceViewHeader } from "../../common/ResourceViewHeader";
+import { NuResourceViewHeader } from "../../common/NuResourceViewHeader";
 
 /**
  * Pulls an NQL error message out of a `ServerNetworkError` whose body was
@@ -82,7 +82,7 @@ const getDefaultColumnWidth = (fieldSchema: BaseSchema<any>): number => {
   return DEFAULT_COLUMN_WIDTHS[fieldSchema.type] || 150;
 };
 
-export type ResourceSearchViewRendererProps = {
+export type NuResourceSearchViewRendererProps = {
   view: ResourceSearchView;
   params?: Record<string, any>;
   resourceName?: string;
@@ -90,16 +90,16 @@ export type ResourceSearchViewRendererProps = {
   onError?: (error: Error) => void;
   /**
    * When true the renderer drops the page-level chrome — no
-   * `ResourceViewHeader` (title + breadcrumbs) and the filter bar uses
+   * `NuResourceViewHeader` (title + breadcrumbs) and the filter bar uses
    * its `simplified` mode. Used when this view is embedded inside
    * another view's form (e.g. a 1×N relation field).
    */
   embedded?: boolean;
 };
 
-export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
-  props,
-) => {
+export const NuResourceSearchViewRenderer: FC<
+  NuResourceSearchViewRendererProps
+> = (props) => {
   const { view, params, resourceName, resource, onError, embedded } = props;
   const context = useNubaseContext();
   const { openOverlay } = useOverlays();
@@ -430,7 +430,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
   return (
     <div className={`flex flex-col h-full w-full ${embedded ? "" : "gap-4"}`}>
       {!embedded && (
-        <ResourceViewHeader
+        <NuResourceViewHeader
           title={view.title}
           breadcrumbs={view.breadcrumbs}
           context={context}
@@ -462,7 +462,7 @@ export const ResourceSearchViewRenderer: FC<ResourceSearchViewRendererProps> = (
               nqlErrorMessage={displayedNqlError}
             />
           )}
-          {bulkActions.length > 0 && <ActionBar actions={bulkActions} />}
+          {bulkActions.length > 0 && <NuActionBar actions={bulkActions} />}
           <div className="flex-1 relative">
             {/* Initial loading state - only shown on first load (no cached data) */}
             {isLoading && (

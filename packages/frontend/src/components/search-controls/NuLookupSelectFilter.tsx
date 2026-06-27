@@ -29,7 +29,7 @@ const optionVariants = cva(
   },
 );
 
-export type LookupSelectFilterProps = {
+export type NuLookupSelectFilterProps = {
   /** Label for the filter button */
   label: string;
 
@@ -61,9 +61,9 @@ export type LookupSelectFilterProps = {
   className?: string;
 };
 
-export const LookupSelectFilter = React.forwardRef<
+export const NuLookupSelectFilter = React.forwardRef<
   HTMLButtonElement,
-  LookupSelectFilterProps
+  NuLookupSelectFilterProps
 >(
   (
     {
@@ -393,4 +393,4 @@ export const LookupSelectFilter = React.forwardRef<
   },
 );
 
-LookupSelectFilter.displayName = "LookupSelectFilter";
+NuLookupSelectFilter.displayName = "NuLookupSelectFilter";

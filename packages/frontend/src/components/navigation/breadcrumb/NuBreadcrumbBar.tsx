@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "./Breadcrumb";
 
-export type BreadcrumbBarProps = {
+export type NuBreadcrumbBarProps = {
   items: BreadcrumbItem[];
   className?: string;
 };
@@ -38,7 +38,10 @@ function makeWorkspaceAwarePath(
   return path;
 }
 
-export const BreadcrumbBar: FC<BreadcrumbBarProps> = ({ items, className }) => {
+export const NuBreadcrumbBar: FC<NuBreadcrumbBarProps> = ({
+  items,
+  className,
+}) => {
   const navigate = useNavigate();
   const workspace = useWorkspaceOptional();
 

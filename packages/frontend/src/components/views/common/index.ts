@@ -1,4 +1,4 @@
 export {
-  ResourceViewHeader,
-  type ResourceViewHeaderProps,
-} from "./ResourceViewHeader";
+  NuResourceViewHeader,
+  type NuResourceViewHeaderProps,
+} from "./NuResourceViewHeader";

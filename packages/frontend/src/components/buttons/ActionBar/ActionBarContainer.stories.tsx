@@ -10,8 +10,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { createHandlerAction } from "../../../actions/utils";
-import { ActionBar } from "./ActionBar";
 import { ActionBarContainer } from "./ActionBarContainer";
+import { NuActionBar } from "./NuActionBar";
 
 const meta: Meta<typeof ActionBarContainer> = {
   title: "Buttons/ActionBarContainer",
@@ -26,7 +26,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const sampleActionBar = (
-  <ActionBar
+  <NuActionBar
     actions={[
       createHandlerAction({ id: "save", icon: Save }, () =>
         alert("Save clicked"),
@@ -56,7 +56,7 @@ export const Default: Story = {
 export const WithLabels: Story = {
   render: () => (
     <ActionBarContainer>
-      <ActionBar
+      <NuActionBar
         actions={[
           createHandlerAction({ id: "save", icon: Save, label: "Save" }, () =>
             alert("Save clicked"),
@@ -103,7 +103,7 @@ export const MultipleActionBars: Story = {
   render: () => (
     <div className="space-y-4">
       <ActionBarContainer>
-        <ActionBar
+        <NuActionBar
           actions={[
             createHandlerAction(
               { id: "save", icon: Save, label: "Save Document" },
@@ -118,7 +118,7 @@ export const MultipleActionBars: Story = {
       </ActionBarContainer>
 
       <ActionBarContainer>
-        <ActionBar
+        <NuActionBar
           actions={[
             createHandlerAction({ id: "edit", icon: Edit }, () =>
               alert("Edit clicked"),

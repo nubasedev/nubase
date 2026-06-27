@@ -1,1 +1,1 @@
-export { ThemeToggle, type ThemeToggleProps } from "./ThemeToggle";
+export { NuThemeToggle, type NuThemeToggleProps } from "./NuThemeToggle";

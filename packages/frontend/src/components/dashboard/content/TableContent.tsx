@@ -7,7 +7,7 @@ export interface TableContentProps {
 
 /**
  * Renders table content from TableData.
- * This is a presentation component - data fetching is handled by ConnectedWidget.
+ * This is a presentation component - data fetching is handled by NuConnectedWidget.
  */
 export function TableContent({ data, maxRows }: TableContentProps) {
   const displayRows = maxRows ? data.rows.slice(0, maxRows) : data.rows;

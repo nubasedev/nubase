@@ -1,19 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  Copy,
-  Download,
-  Edit,
-  Filter,
-  Minus,
-  Plus,
-  RefreshCw,
-  Save,
-  Search,
-  Settings,
-  Share,
-  Trash2,
-} from "lucide-react";
-import { createHandlerAction } from "../../../actions/utils";
+import { Copy, Edit, Plus, Save, Settings, Trash2 } from "lucide-react";
+import { Button } from "../Button/Button";
+import { ButtonGroup } from "../ButtonGroup/ButtonGroup";
 import { ActionBar } from "./ActionBar";
 
 const meta: Meta<typeof ActionBar> = {
@@ -24,8 +12,9 @@ const meta: Meta<typeof ActionBar> = {
   },
   tags: ["autodocs"],
   argTypes: {
-    actions: {
-      control: false,
+    variant: {
+      control: { type: "inline-radio" },
+      options: ["default", "ghost"],
     },
   },
 };
@@ -33,174 +22,105 @@ const meta: Meta<typeof ActionBar> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const IconsOnly: Story = {
+export const Default: Story = {
   render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction({ id: "save", icon: Save }, () =>
-          alert("Save clicked"),
-        ),
-        createHandlerAction({ id: "copy", icon: Copy }, () =>
-          alert("Copy clicked"),
-        ),
-        createHandlerAction(
-          { id: "delete", icon: Trash2, variant: "destructive" },
-          () => alert("Delete clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "edit", icon: Edit }, () =>
-          alert("Edit clicked"),
-        ),
-        createHandlerAction({ id: "add", icon: Plus }, () =>
-          alert("Add clicked"),
-        ),
-        createHandlerAction({ id: "remove", icon: Minus }, () =>
-          alert("Remove clicked"),
-        ),
-      ]}
-    />
+    <ActionBar variant="default">
+      <ButtonGroup variant="default">
+        <Button variant="outline" size="sm">
+          Save
+        </Button>
+        <Button variant="outline" size="sm">
+          Copy
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup variant="default">
+        <Button variant="outline" size="sm">
+          Edit
+        </Button>
+        <Button variant="outline" size="sm">
+          Add
+        </Button>
+      </ButtonGroup>
+    </ActionBar>
   ),
 };
 
-export const LabelsOnly: Story = {
+export const Ghost: Story = {
   render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction({ id: "save", label: "Save" }, () =>
-          alert("Save clicked"),
-        ),
-        createHandlerAction({ id: "export", label: "Export" }, () =>
-          alert("Export clicked"),
-        ),
-        createHandlerAction({ id: "share", label: "Share" }, () =>
-          alert("Share clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "settings", label: "Settings" }, () =>
-          alert("Settings clicked"),
-        ),
-        createHandlerAction({ id: "refresh", label: "Refresh" }, () =>
-          alert("Refresh clicked"),
-        ),
-      ]}
-    />
+    <ActionBar variant="ghost">
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost" size="sm">
+          Archive
+        </Button>
+        <Button variant="ghost" size="sm">
+          Report
+        </Button>
+        <Button variant="ghost" size="sm">
+          Snooze
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost" size="sm">
+          Forward
+        </Button>
+        <Button variant="ghost" size="sm">
+          Reply
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost" size="sm">
+          Delete
+        </Button>
+      </ButtonGroup>
+    </ActionBar>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The `ghost` variant uses borderless buttons and draws a thin vertical divider between groups — a divider appears only at a group boundary.",
+      },
+    },
+  },
 };
 
-export const IconsWithLabels: Story = {
+export const GhostWithIcons: Story = {
   render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction({ id: "save", icon: Save, label: "Save" }, () =>
-          alert("Save clicked"),
-        ),
-        createHandlerAction(
-          { id: "download", icon: Download, label: "Download" },
-          () => alert("Download clicked"),
-        ),
-        createHandlerAction({ id: "share", icon: Share, label: "Share" }, () =>
-          alert("Share clicked"),
-        ),
-        "separator",
-        createHandlerAction(
-          { id: "settings", icon: Settings, label: "Settings" },
-          () => alert("Settings clicked"),
-        ),
-      ]}
-    />
-  ),
-};
-
-export const SingleGroup: Story = {
-  render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction(
-          { id: "search", icon: Search, label: "Search" },
-          () => alert("Search clicked"),
-        ),
-        createHandlerAction(
-          { id: "filter", icon: Filter, label: "Filter" },
-          () => alert("Filter clicked"),
-        ),
-        createHandlerAction({ id: "refresh", icon: RefreshCw }, () =>
-          alert("Refresh clicked"),
-        ),
-      ]}
-    />
-  ),
-};
-
-export const WithDisabledActions: Story = {
-  render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction({ id: "save", icon: Save, label: "Save" }, () =>
-          alert("Save clicked"),
-        ),
-        createHandlerAction(
-          { id: "copy", icon: Copy, label: "Copy", disabled: true },
-          () => alert("Copy clicked"),
-        ),
-        createHandlerAction(
-          {
-            id: "delete",
-            icon: Trash2,
-            label: "Delete",
-            disabled: true,
-            variant: "destructive",
-          },
-          () => alert("Delete clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "edit", icon: Edit }, () =>
-          alert("Edit clicked"),
-        ),
-        createHandlerAction(
-          { id: "refresh", icon: RefreshCw, disabled: true },
-          () => alert("Refresh clicked"),
-        ),
-      ]}
-    />
-  ),
-};
-
-export const ManyGroups: Story = {
-  render: () => (
-    <ActionBar
-      actions={[
-        createHandlerAction({ id: "save", icon: Save }, () =>
-          alert("Save clicked"),
-        ),
-        createHandlerAction({ id: "copy", icon: Copy }, () =>
-          alert("Copy clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "edit", icon: Edit }, () =>
-          alert("Edit clicked"),
-        ),
-        createHandlerAction(
-          { id: "delete", icon: Trash2, variant: "destructive" },
-          () => alert("Delete clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "search", icon: Search }, () =>
-          alert("Search clicked"),
-        ),
-        createHandlerAction({ id: "filter", icon: Filter }, () =>
-          alert("Filter clicked"),
-        ),
-        "separator",
-        createHandlerAction({ id: "download", icon: Download }, () =>
-          alert("Download clicked"),
-        ),
-        createHandlerAction({ id: "share", icon: Share }, () =>
-          alert("Share clicked"),
-        ),
-        createHandlerAction({ id: "settings", icon: Settings }, () =>
-          alert("Settings clicked"),
-        ),
-      ]}
-    />
+    <ActionBar variant="ghost">
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost" size="sm">
+          <Save />
+          Save
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Copy />
+          Copy
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost" size="sm">
+          <Edit />
+          Edit
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Plus />
+          Add
+        </Button>
+        <Button variant="ghost" size="sm">
+          <Settings />
+          Settings
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup variant="ghost">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 />
+          Delete
+        </Button>
+      </ButtonGroup>
+    </ActionBar>
   ),
 };

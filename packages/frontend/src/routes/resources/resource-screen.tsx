@@ -1,9 +1,9 @@
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useNubaseContext } from "../../components/nubase-app/NubaseContextProvider";
-import { ResourceCreateViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceCreateViewRenderer";
-import { ResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceSearchViewRenderer";
-import { ResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/ResourceViewViewRenderer";
+import { NuResourceCreateViewRenderer } from "../../components/views/ViewRenderer/screen/NuResourceCreateViewRenderer";
+import { NuResourceSearchViewRenderer } from "../../components/views/ViewRenderer/screen/NuResourceSearchViewRenderer";
+import { NuResourceViewViewRenderer } from "../../components/views/ViewRenderer/screen/NuResourceViewViewRenderer";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import { emitEvent } from "../../events";
 
@@ -54,7 +54,7 @@ export default function ResourceScreen() {
   switch (resourceView.type) {
     case "resource-create":
       body = (
-        <ResourceCreateViewRenderer
+        <NuResourceCreateViewRenderer
           view={resourceView}
           resourceName={resourceName}
           onCreate={(data) => {
@@ -101,7 +101,7 @@ export default function ResourceScreen() {
       }
 
       body = (
-        <ResourceViewViewRenderer
+        <NuResourceViewViewRenderer
           view={resourceView}
           params={validatedParams}
           resourceName={resourceName}
@@ -135,7 +135,7 @@ export default function ResourceScreen() {
       }
 
       body = (
-        <ResourceSearchViewRenderer
+        <NuResourceSearchViewRenderer
           view={resourceView}
           params={validatedParams}
           resourceName={resourceName}

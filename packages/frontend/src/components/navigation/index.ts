@@ -1,7 +1,5 @@
 export {
   Breadcrumb,
-  BreadcrumbBar,
-  type BreadcrumbBarProps,
   BreadcrumbEllipsis,
   type BreadcrumbEllipsisProps,
   BreadcrumbItem,
@@ -15,6 +13,8 @@ export {
   type BreadcrumbProps,
   BreadcrumbSeparator,
   type BreadcrumbSeparatorProps,
+  NuBreadcrumbBar,
+  type NuBreadcrumbBarProps,
 } from "./breadcrumb";
 export {
   filterNavItems,

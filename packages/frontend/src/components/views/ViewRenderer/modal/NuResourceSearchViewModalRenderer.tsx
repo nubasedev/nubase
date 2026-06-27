@@ -1,43 +1,40 @@
-import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
-import type { ResourceCreateView } from "../../../../config/view";
+import type { ResourceSearchView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
 import {
   ModalFrameStructured,
   type ModalFrameStructuredVariant,
 } from "../../../floating/modal/ModalFrameStructured";
-import { ResourceCreateViewRenderer } from "../screen/ResourceCreateViewRenderer";
+import { NuResourceSearchViewRenderer } from "../screen/NuResourceSearchViewRenderer";
 
-export type ResourceCreateViewModalRendererProps = {
-  view: ResourceCreateView;
+export type NuResourceSearchViewModalRendererProps = {
+  view: ResourceSearchView;
   context: NubaseContextData;
+  params?: Record<string, any>;
   resourceName?: string;
   onClose?: () => void;
-  onCreate?: (data: ObjectOutput<any>) => void;
+  onRowClick?: (row: any) => void;
   onError?: (error: Error) => void;
   frameVariant?: ModalFrameStructuredVariant;
 };
 
 /**
- * Thin wrapper that renders the shared ResourceCreateViewRenderer inside a
+ * Thin wrapper that renders the shared NuResourceSearchViewRenderer inside a
  * ModalFrameStructured. The renderer provides its own header (title +
  * breadcrumbs) so this wrapper only supplies chrome.
  */
-export const ResourceCreateViewModalRenderer: FC<
-  ResourceCreateViewModalRendererProps
-> = ({ view, resourceName, onClose, onCreate, onError, frameVariant }) => {
+export const NuResourceSearchViewModalRenderer: FC<
+  NuResourceSearchViewModalRendererProps
+> = ({ view, params, resourceName, onClose, onError, frameVariant }) => {
   return (
     <ModalFrameStructured
       onClose={onClose}
       variant={frameVariant}
       body={
-        <ResourceCreateViewRenderer
+        <NuResourceSearchViewRenderer
           view={view}
+          params={params}
           resourceName={resourceName}
-          onCreate={(data) => {
-            onCreate?.(data);
-            onClose?.();
-          }}
           onError={onError}
         />
       }

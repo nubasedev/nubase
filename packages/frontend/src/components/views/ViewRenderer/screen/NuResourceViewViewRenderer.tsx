@@ -6,7 +6,7 @@ import type { ResourceViewView } from "../../../../config/view";
 import { ResourceContextProvider } from "../../../../context/ResourceContext";
 import { useSchemaForm } from "../../../../hooks";
 import { useResourceViewQuery } from "../../../../hooks/useNubaseQuery";
-import { ActionBar } from "../../../buttons/ActionBar/ActionBar";
+import { NuActionBar } from "../../../buttons/ActionBar/NuActionBar";
 import { DataState } from "../../../data-state";
 import { ParentRecordProvider } from "../../../form/parent-record-context";
 import { SchemaForm } from "../../../form/SchemaForm/SchemaForm";
@@ -14,9 +14,9 @@ import { SchemaFormBody } from "../../../form/SchemaForm/SchemaFormBody";
 import { SchemaFormValidationErrors } from "../../../form/SchemaForm/SchemaFormValidationErrors";
 import { useNubaseContext } from "../../../nubase-app/NubaseContextProvider";
 import { SearchFilterBar } from "../../../search-controls/SearchFilterBar";
-import { ResourceViewHeader } from "../../common/ResourceViewHeader";
+import { NuResourceViewHeader } from "../../common/NuResourceViewHeader";
 
-export type ResourceViewViewRendererProps = {
+export type NuResourceViewViewRendererProps = {
   view: ResourceViewView;
   params?: Record<string, any>;
   resourceName?: string;
@@ -24,7 +24,7 @@ export type ResourceViewViewRendererProps = {
   onError?: (error: Error) => void;
 };
 
-export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
+export const NuResourceViewViewRenderer: FC<NuResourceViewViewRendererProps> = (
   props,
 ) => {
   const {
@@ -62,7 +62,7 @@ export const ResourceViewViewRenderer: FC<ResourceViewViewRendererProps> = (
 
   return (
     <div className="flex flex-col h-full gap-4">
-      <ResourceViewHeader
+      <NuResourceViewHeader
         title={view.title}
         breadcrumbs={view.breadcrumbs}
         context={context}
@@ -190,7 +190,9 @@ const ResourceViewForm: FC<{
           searchExpand
           showClearFilters={false}
         />
-        {resolvedActions.length > 0 && <ActionBar actions={resolvedActions} />}
+        {resolvedActions.length > 0 && (
+          <NuActionBar actions={resolvedActions} />
+        )}
         <div className="flex-1 overflow-y-auto min-h-0">
           <ParentRecordProvider parent={initialData}>
             <SchemaForm

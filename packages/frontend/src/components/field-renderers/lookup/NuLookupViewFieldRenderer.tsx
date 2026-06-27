@@ -10,7 +10,7 @@ import { EmptyValue, ViewFieldWrapper } from "../ViewFieldWrapper";
  * View renderer for lookup fields.
  * Fetches and displays the referenced entity's display text using the lookup callback.
  */
-export const LookupViewFieldRenderer = ({
+export const NuLookupViewFieldRenderer = ({
   fieldState,
   metadata,
 }: ViewFieldRendererProps) => {

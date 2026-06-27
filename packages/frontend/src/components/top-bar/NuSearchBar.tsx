@@ -4,17 +4,17 @@ import { forwardRef } from "react";
 import type { NubaseContextData } from "../../context/types";
 import { cn } from "../../styling/cn";
 
-export interface SearchBarProps
+export interface NuSearchBarProps
   extends Omit<React.ComponentProps<"button">, "onClick"> {
   context: NubaseContextData;
   placeholder?: string;
 }
 
 /**
- * SearchBar component that triggers the command palette when clicked.
+ * NuSearchBar component that triggers the command palette when clicked.
  * Provides a unified search interface for all commands in the application.
  */
-const SearchBar = forwardRef<HTMLButtonElement, SearchBarProps>(
+const NuSearchBar = forwardRef<HTMLButtonElement, NuSearchBarProps>(
   (
     { className, context, placeholder = "Search commands...", ...props },
     ref,
@@ -51,6 +51,6 @@ const SearchBar = forwardRef<HTMLButtonElement, SearchBarProps>(
   },
 );
 
-SearchBar.displayName = "SearchBar";
+NuSearchBar.displayName = "NuSearchBar";
 
-export { SearchBar };
+export { NuSearchBar };

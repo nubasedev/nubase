@@ -9,9 +9,9 @@ import {
 import { useEffect, useState } from "react";
 import { MainNav } from "@/components/navigation/main-nav/MainNav";
 import type { AuthenticationState } from "../authentication/types";
-import { ActivityIndicator, Dock, TopBar } from "../components";
+import { ActivityIndicator, Dock, NuTopBar } from "../components";
 import { useNubaseContext } from "../components/nubase-app/NubaseContextProvider";
-import { OverlayStack } from "../components/overlays/OverlayStack";
+import { NuOverlayStack } from "../components/overlays/NuOverlayStack";
 import {
   getWorkspaceFromRouter,
   useWorkspace,
@@ -162,11 +162,11 @@ function AppShellComponent() {
   return (
     <>
       <Dock
-        top={<TopBar context={context} />}
+        top={<NuTopBar context={context} />}
         left={<MainNav items={context.config.mainMenu} />}
         center={<Outlet />}
       />
-      <OverlayStack />
+      <NuOverlayStack />
     </>
   );
 }

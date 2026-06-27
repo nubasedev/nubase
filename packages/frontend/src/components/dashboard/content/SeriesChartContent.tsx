@@ -27,7 +27,7 @@ export interface SeriesChartContentProps {
 
 /**
  * Renders series chart content (line, bar, or area) from SeriesData.
- * This is a presentation component - data fetching is handled by ConnectedWidget.
+ * This is a presentation component - data fetching is handled by NuConnectedWidget.
  */
 export function SeriesChartContent({ data, variant }: SeriesChartContentProps) {
   const chartConfig = React.useMemo(() => {

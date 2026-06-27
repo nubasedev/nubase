@@ -259,6 +259,7 @@ describe("Package Exports Validation", () => {
     const expectedExports = [
       "ActivityIndicator",
       "ActionBar",
+      "NuActionBar",
       "Button",
       "SchemaForm",
       "Modal",

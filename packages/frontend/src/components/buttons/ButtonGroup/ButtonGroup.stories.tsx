@@ -108,6 +108,64 @@ export const MixedWithStandaloneButton: Story = {
   },
 };
 
+export const Ghost: Story = {
+  render: () => (
+    <ButtonGroup variant="ghost">
+      <Button variant="ghost">Archive</Button>
+      <Button variant="ghost">Report</Button>
+      <Button variant="ghost">Snooze</Button>
+    </ButtonGroup>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `ghost` variant drops the borders so borderless buttons sit adjacent. To separate groups with a divider, wrap multiple ghost ButtonGroups in an `<ActionBar variant="ghost">`.',
+      },
+    },
+  },
+};
+
+export const GhostWithIcons: Story = {
+  render: () => (
+    <ButtonGroup variant="ghost">
+      <Button variant="ghost" size="sm">
+        Open here
+      </Button>
+      <Button variant="ghost" size="sm">
+        <ExternalLink />
+        Open in new tab
+      </Button>
+    </ButtonGroup>
+  ),
+};
+
+export const Variants: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4 items-start">
+      <ButtonGroup variant="default">
+        <Button variant="outline">Archive</Button>
+        <Button variant="outline">Report</Button>
+        <Button variant="outline">Snooze</Button>
+      </ButtonGroup>
+
+      <ButtonGroup variant="ghost">
+        <Button variant="ghost">Archive</Button>
+        <Button variant="ghost">Report</Button>
+        <Button variant="ghost">Snooze</Button>
+      </ButtonGroup>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "`default` joins buttons with collapsing borders; `ghost` drops the borders so buttons sit adjacent.",
+      },
+    },
+  },
+};
+
 export const Pagination: Story = {
   render: () => (
     <ButtonGroup>

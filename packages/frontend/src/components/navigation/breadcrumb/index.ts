@@ -14,4 +14,4 @@ export {
   BreadcrumbSeparator,
   type BreadcrumbSeparatorProps,
 } from "./Breadcrumb";
-export { BreadcrumbBar, type BreadcrumbBarProps } from "./BreadcrumbBar";
+export { NuBreadcrumbBar, type NuBreadcrumbBarProps } from "./NuBreadcrumbBar";

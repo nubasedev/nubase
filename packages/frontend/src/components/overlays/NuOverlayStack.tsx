@@ -10,7 +10,7 @@ import { ButtonGroup } from "../buttons/ButtonGroup/ButtonGroup";
 import { Drawer } from "../floating/drawer/Drawer";
 import type { BaseModalFrameProps } from "../floating/modal/types";
 import { useNubaseContext } from "../nubase-app/NubaseContextProvider";
-import { ModalViewRenderer } from "../views/ViewRenderer/modal/ModalViewRenderer";
+import { NuModalViewRenderer } from "../views/ViewRenderer/modal/NuModalViewRenderer";
 
 type OverlayErrorFrameProps = BaseModalFrameProps & {
   message: string;
@@ -142,7 +142,7 @@ const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
       );
     } else {
       content = (
-        <ModalViewRenderer
+        <NuModalViewRenderer
           view={view}
           context={context}
           params={validatedParams}
@@ -171,7 +171,7 @@ const OverlayDrawer: FC<OverlayDrawerProps> = ({ overlay, onClose }) => {
   );
 };
 
-export const OverlayStack: FC = () => {
+export const NuOverlayStack: FC = () => {
   const { overlay, closeOverlay } = useOverlays();
   if (!overlay) return null;
   return <OverlayDrawer overlay={overlay} onClose={closeOverlay} />;

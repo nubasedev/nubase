@@ -1,5 +1,3 @@
-export type { ConnectedWidgetProps } from "./ConnectedWidget";
-export { ConnectedWidget } from "./ConnectedWidget";
 export type {
   DashboardDragConfig,
   DashboardGridConfig,
@@ -13,3 +11,5 @@ export type { DashboardRendererProps } from "./DashboardRenderer";
 export { DashboardRenderer } from "./DashboardRenderer";
 export type { DashboardWidgetProps } from "./DashboardWidget";
 export { DashboardWidget } from "./DashboardWidget";
+export type { NuConnectedWidgetProps } from "./NuConnectedWidget";
+export { NuConnectedWidget } from "./NuConnectedWidget";

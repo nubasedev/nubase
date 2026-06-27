@@ -14,12 +14,12 @@ import { SeriesChartContent } from "./content/SeriesChartContent";
 import { TableContent } from "./content/TableContent";
 import { DashboardWidget } from "./DashboardWidget";
 
-export interface ConnectedWidgetProps {
+export interface NuConnectedWidgetProps {
   widget: WidgetDescriptor<unknown>;
 }
 
 /**
- * ConnectedWidget handles data fetching and renders the appropriate content
+ * NuConnectedWidget handles data fetching and renders the appropriate content
  * inside a DashboardWidget based on the widget type.
  *
  * This component:
@@ -28,7 +28,7 @@ export interface ConnectedWidgetProps {
  * 3. Renders the appropriate content renderer based on widget type
  * 4. Wraps everything in the DashboardWidget presentation component
  */
-export function ConnectedWidget({ widget }: ConnectedWidgetProps) {
+export function NuConnectedWidget({ widget }: NuConnectedWidgetProps) {
   const context = useNubaseContext();
 
   const { data, isLoading, error } = useQuery({

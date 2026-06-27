@@ -1,8 +1,8 @@
 import { SquareArrowOutUpRight } from "lucide-react";
 import type { ActionOrSeparator } from "../../actions/types";
 import {
-  ActionCellRendererCell,
-  ActionCellRendererGroup,
+  NuActionCellRendererCell,
+  NuActionCellRendererGroup,
   SelectCellFormatter,
 } from "./cellRenderers";
 import {
@@ -113,7 +113,7 @@ export function createActionColumn<R>(
     frozen: true,
     renderHeaderCell: () => null,
     renderCell: (props) => (
-      <ActionCellRendererCell
+      <NuActionCellRendererCell
         {...props}
         actions={actions}
         context={context}
@@ -121,7 +121,11 @@ export function createActionColumn<R>(
       />
     ),
     renderGroupCell: (props) => (
-      <ActionCellRendererGroup {...props} actions={actions} context={context} />
+      <NuActionCellRendererGroup
+        {...props}
+        actions={actions}
+        context={context}
+      />
     ),
   };
 }

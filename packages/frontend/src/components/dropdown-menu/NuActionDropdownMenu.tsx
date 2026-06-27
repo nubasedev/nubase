@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "./DropdownMenu";
 
-export interface ActionDropdownMenuProps {
+export interface NuActionDropdownMenuProps {
   trigger: React.ReactNode;
   actions: ActionOrSeparator[];
   className?: string;
@@ -34,9 +34,9 @@ export interface ActionDropdownMenuProps {
  * Supports both command and handler actions, with automatic action execution.
  * Actions can be grouped using "separator" entries.
  */
-const ActionDropdownMenu = forwardRef<
+const NuActionDropdownMenu = forwardRef<
   React.ElementRef<typeof DropdownMenu>,
-  ActionDropdownMenuProps
+  NuActionDropdownMenuProps
 >(
   (
     {
@@ -103,6 +103,6 @@ const ActionDropdownMenu = forwardRef<
   },
 );
 
-ActionDropdownMenu.displayName = "ActionDropdownMenu";
+NuActionDropdownMenu.displayName = "NuActionDropdownMenu";
 
-export { ActionDropdownMenu };
+export { NuActionDropdownMenu };

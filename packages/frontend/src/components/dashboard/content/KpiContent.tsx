@@ -7,7 +7,7 @@ export interface KpiContentProps {
 
 /**
  * Renders KPI content (single value with optional trend) from KpiData.
- * This is a presentation component - data fetching is handled by ConnectedWidget.
+ * This is a presentation component - data fetching is handled by NuConnectedWidget.
  */
 export function KpiContent({ data }: KpiContentProps) {
   const trendColor =

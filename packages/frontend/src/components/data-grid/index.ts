@@ -10,9 +10,9 @@ export {
   SelectColumn,
 } from "./Columns";
 export {
-  ActionCellFormatter,
-  ActionCellRendererCell,
-  ActionCellRendererGroup,
+  NuActionCellFormatter,
+  NuActionCellRendererCell,
+  NuActionCellRendererGroup,
   renderCheckbox,
   renderToggleGroup,
   renderValue,
