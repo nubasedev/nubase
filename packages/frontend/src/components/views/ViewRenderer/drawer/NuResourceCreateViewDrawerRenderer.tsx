@@ -2,34 +2,29 @@ import type { ObjectOutput } from "@nubase/core";
 import type { FC } from "react";
 import type { ResourceCreateView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
-import {
-  ModalFrameStructured,
-  type ModalFrameStructuredVariant,
-} from "../../../floating/modal/ModalFrameStructured";
+import { DrawerFrameStructured } from "../../../floating/drawer/DrawerFrameStructured";
 import { NuResourceCreateViewRenderer } from "../screen/NuResourceCreateViewRenderer";
 
-export type NuResourceCreateViewModalRendererProps = {
+export type NuResourceCreateViewDrawerRendererProps = {
   view: ResourceCreateView;
   context: NubaseContextData;
   resourceName?: string;
   onClose?: () => void;
   onCreate?: (data: ObjectOutput<any>) => void;
   onError?: (error: Error) => void;
-  frameVariant?: ModalFrameStructuredVariant;
 };
 
 /**
  * Thin wrapper that renders the shared NuResourceCreateViewRenderer inside a
- * ModalFrameStructured. The renderer provides its own header (title +
+ * DrawerFrameStructured. The renderer provides its own header (title +
  * breadcrumbs) so this wrapper only supplies chrome.
  */
-export const NuResourceCreateViewModalRenderer: FC<
-  NuResourceCreateViewModalRendererProps
-> = ({ view, resourceName, onClose, onCreate, onError, frameVariant }) => {
+export const NuResourceCreateViewDrawerRenderer: FC<
+  NuResourceCreateViewDrawerRendererProps
+> = ({ view, resourceName, onClose, onCreate, onError }) => {
   return (
-    <ModalFrameStructured
+    <DrawerFrameStructured
       onClose={onClose}
-      variant={frameVariant}
       body={
         <NuResourceCreateViewRenderer
           view={view}

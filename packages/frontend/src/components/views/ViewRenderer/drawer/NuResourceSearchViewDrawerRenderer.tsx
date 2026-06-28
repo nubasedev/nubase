@@ -1,13 +1,10 @@
 import type { FC } from "react";
 import type { ResourceSearchView } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
-import {
-  ModalFrameStructured,
-  type ModalFrameStructuredVariant,
-} from "../../../floating/modal/ModalFrameStructured";
+import { DrawerFrameStructured } from "../../../floating/drawer/DrawerFrameStructured";
 import { NuResourceSearchViewRenderer } from "../screen/NuResourceSearchViewRenderer";
 
-export type NuResourceSearchViewModalRendererProps = {
+export type NuResourceSearchViewDrawerRendererProps = {
   view: ResourceSearchView;
   context: NubaseContextData;
   params?: Record<string, any>;
@@ -15,21 +12,19 @@ export type NuResourceSearchViewModalRendererProps = {
   onClose?: () => void;
   onRowClick?: (row: any) => void;
   onError?: (error: Error) => void;
-  frameVariant?: ModalFrameStructuredVariant;
 };
 
 /**
  * Thin wrapper that renders the shared NuResourceSearchViewRenderer inside a
- * ModalFrameStructured. The renderer provides its own header (title +
+ * DrawerFrameStructured. The renderer provides its own header (title +
  * breadcrumbs) so this wrapper only supplies chrome.
  */
-export const NuResourceSearchViewModalRenderer: FC<
-  NuResourceSearchViewModalRendererProps
-> = ({ view, params, resourceName, onClose, onError, frameVariant }) => {
+export const NuResourceSearchViewDrawerRenderer: FC<
+  NuResourceSearchViewDrawerRendererProps
+> = ({ view, params, resourceName, onClose, onError }) => {
   return (
-    <ModalFrameStructured
+    <DrawerFrameStructured
       onClose={onClose}
-      variant={frameVariant}
       body={
         <NuResourceSearchViewRenderer
           view={view}

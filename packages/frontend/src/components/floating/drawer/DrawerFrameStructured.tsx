@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from "react";
 
-export type ModalFrameStructuredProps = {
+export type DrawerFrameStructuredProps = {
   onClose?: () => void;
   header?: ReactNode;
   body?: ReactNode;
@@ -8,7 +8,7 @@ export type ModalFrameStructuredProps = {
   className?: string;
 };
 
-export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
+export const DrawerFrameStructured: FC<DrawerFrameStructuredProps> = ({
   header,
   body,
   footer,
@@ -16,8 +16,8 @@ export const ModalFrameStructured: FC<ModalFrameStructuredProps> = ({
 }) => {
   return (
     <div
-      data-component="ModalFrameStructured"
-      className={`rounded-lg bg-card border shadow-sm max-h-[calc(100vh_-_2rem)] flex flex-col overflow-hidden ${className}`}
+      data-component="DrawerFrameStructured"
+      className={`h-full bg-transparent flex flex-col overflow-hidden ${className}`}
     >
       {header && <div className="shrink-0 p-4 pb-3">{header}</div>}
 

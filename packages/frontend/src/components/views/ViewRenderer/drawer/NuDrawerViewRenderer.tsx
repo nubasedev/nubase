@@ -1,33 +1,23 @@
 import type { FC } from "react";
 import type { View } from "../../../../config/view";
 import type { NubaseContextData } from "../../../../context/types";
-import type { ModalFrameStructuredVariant } from "../../../floating/modal/ModalFrameStructured";
-import { NuResourceCreateViewModalRenderer } from "./NuResourceCreateViewModalRenderer";
-import { NuResourceSearchViewModalRenderer } from "./NuResourceSearchViewModalRenderer";
-import { NuResourceViewViewModalRenderer } from "./NuResourceViewViewModalRenderer";
+import { NuResourceCreateViewDrawerRenderer } from "./NuResourceCreateViewDrawerRenderer";
+import { NuResourceSearchViewDrawerRenderer } from "./NuResourceSearchViewDrawerRenderer";
+import { NuResourceViewViewDrawerRenderer } from "./NuResourceViewViewDrawerRenderer";
 
-export type NuModalViewRendererProps = {
+export type NuDrawerViewRendererProps = {
   view: View;
   context: NubaseContextData;
   params?: Record<string, any>;
   resourceName?: string;
   onClose?: () => void;
-  onRowClick?: (row: any) => void; // For search modals
+  onRowClick?: (row: any) => void; // For search drawers
   onError?: (error: Error) => void;
-  frameVariant?: ModalFrameStructuredVariant;
 };
 
-export const NuModalViewRenderer: FC<NuModalViewRendererProps> = (props) => {
-  const {
-    view,
-    context,
-    params,
-    resourceName,
-    onClose,
-    onRowClick,
-    onError,
-    frameVariant,
-  } = props;
+export const NuDrawerViewRenderer: FC<NuDrawerViewRendererProps> = (props) => {
+  const { view, context, params, resourceName, onClose, onRowClick, onError } =
+    props;
 
   if (!view) {
     return null;
@@ -36,30 +26,28 @@ export const NuModalViewRenderer: FC<NuModalViewRendererProps> = (props) => {
   switch (view.type) {
     case "resource-create":
       return (
-        <NuResourceCreateViewModalRenderer
+        <NuResourceCreateViewDrawerRenderer
           view={view}
           context={context}
           resourceName={resourceName}
           onClose={onClose}
           onError={onError}
-          frameVariant={frameVariant}
         />
       );
     case "resource-view":
       return (
-        <NuResourceViewViewModalRenderer
+        <NuResourceViewViewDrawerRenderer
           view={view}
           context={context}
           params={params}
           resourceName={resourceName}
           onClose={onClose}
           onError={onError}
-          frameVariant={frameVariant}
         />
       );
     case "resource-search":
       return (
-        <NuResourceSearchViewModalRenderer
+        <NuResourceSearchViewDrawerRenderer
           view={view}
           context={context}
           params={params}
@@ -67,7 +55,6 @@ export const NuModalViewRenderer: FC<NuModalViewRendererProps> = (props) => {
           onClose={onClose}
           onRowClick={onRowClick}
           onError={onError}
-          frameVariant={frameVariant}
         />
       );
     default:

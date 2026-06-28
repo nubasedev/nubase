@@ -3,15 +3,15 @@ export {
   type NuResourceViewHeaderProps,
 } from "./common";
 export {
-  NuModalViewRenderer,
-  type NuModalViewRendererProps,
-  NuResourceCreateViewModalRenderer,
-  type NuResourceCreateViewModalRendererProps,
-  NuResourceSearchViewModalRenderer,
-  type NuResourceSearchViewModalRendererProps,
-  NuResourceViewViewModalRenderer,
-  type NuResourceViewViewModalRendererProps,
-} from "./ViewRenderer/modal";
+  NuDrawerViewRenderer,
+  type NuDrawerViewRendererProps,
+  NuResourceCreateViewDrawerRenderer,
+  type NuResourceCreateViewDrawerRendererProps,
+  NuResourceSearchViewDrawerRenderer,
+  type NuResourceSearchViewDrawerRendererProps,
+  NuResourceViewViewDrawerRenderer,
+  type NuResourceViewViewDrawerRendererProps,
+} from "./ViewRenderer/drawer";
 export {
   NuResourceCreateViewRenderer,
   type NuResourceCreateViewRendererProps,

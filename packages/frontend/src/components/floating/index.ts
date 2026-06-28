@@ -5,7 +5,12 @@ export {
   type UseDialogResult,
   useDialog,
 } from "./dialog";
-export { Drawer, type DrawerProps } from "./drawer";
+export {
+  Drawer,
+  DrawerFrameStructured,
+  type DrawerFrameStructuredProps,
+  type DrawerProps,
+} from "./drawer";
 export {
   type BaseModalFrameProps,
   Modal,

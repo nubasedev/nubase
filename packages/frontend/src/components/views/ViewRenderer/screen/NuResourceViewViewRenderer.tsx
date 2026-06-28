@@ -61,7 +61,10 @@ export const NuResourceViewViewRenderer: FC<NuResourceViewViewRendererProps> = (
   }, [error, onError]);
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div
+      data-component="NuResourceViewViewRenderer"
+      className="flex flex-col h-full gap-4"
+    >
       <NuResourceViewHeader
         title={view.title}
         breadcrumbs={view.breadcrumbs}
@@ -196,7 +199,7 @@ const ResourceViewForm: FC<{
         {resolvedActions.length > 0 && (
           <NuActionBar actions={resolvedActions} />
         )}
-        <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex-1 overflow-y-auto min-h-0 pr-4">
           <ParentRecordProvider parent={initialData}>
             <SchemaForm
               form={form}
